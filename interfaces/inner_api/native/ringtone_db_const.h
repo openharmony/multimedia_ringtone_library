@@ -42,7 +42,7 @@ const std::string ROOT_TONE_PRELOAD_PATH_CHINA = "/sys_prod/variant/region_comm/
 const std::string ROOT_TONE_PRELOAD_PATH_OVERSEA = "/sys_prod/variant/region_comm/oversea/resource/media/audio";
 
 // ringtone DB file name
-const std::string RINGTONE_COLUMN_DATA_ABILITY_DB_NAME = "ringtone_library.db";
+const std::string RINGTONE_LIBRARY_DB_NAME = "ringtone_library.db";
 
 // ringtone db version
 const int32_t RINGTONE_RDB_VERSION = 1;

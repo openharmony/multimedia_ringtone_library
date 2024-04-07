@@ -53,10 +53,19 @@ public:
     EXPORT static std::string StrCreateTimeByMilliseconds(const std::string &format, int64_t time);
     EXPORT static std::string SplitByChar(const std::string &str, const char split);
     EXPORT static std::string GetExtensionFromPath(const std::string &path);
+    EXPORT static std::string GetFileNameFromPath(const std::string &path);
+    EXPORT static std::string GetBaseNameFromPath(const std::string &path);
     EXPORT static int32_t OpenFile(const std::string &filePath, const std::string &mode);
     EXPORT static int32_t CreateFile(const std::string &filePath);
+    EXPORT static bool IsSameFile(const std::string &srcPath, const std::string &dstPath);
     EXPORT static bool IsFileExists(const std::string &fileName);
     EXPORT static bool DeleteFile(const std::string &fileName);
+    EXPORT static bool MoveFile(const std::string &oldPath, const std::string &newPath);
+    EXPORT static bool CopyFileUtil(const std::string &filePath, const std::string &newPath);
+    EXPORT static int32_t RemoveDirectory(const std::string &path);
+    EXPORT static bool Mkdir(const std::string &subStr, std::shared_ptr<int> errCodePtr = nullptr);
+    EXPORT static bool IsDirectory(const std::string &dirName, std::shared_ptr<int> errCodePtr = nullptr);
+    EXPORT static bool CreateDirectory(const std::string &dirPath, std::shared_ptr<int> errCodePtr = nullptr);
 };
 } // namespace Media
 } // namespace OHOS

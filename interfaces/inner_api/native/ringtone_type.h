@@ -20,7 +20,7 @@ namespace OHOS {
 namespace Media {
 
 enum ToneType : int32_t {
-    TONE_TYPE_INVALID = 0,
+    TONE_TYPE_INVALID = -1,
     TONE_TYPE_ALARM,
     TONE_TYPE_RINGTONE,
     TONE_TYPE_NOTIFICATION,
@@ -28,8 +28,8 @@ enum ToneType : int32_t {
 };
 
 enum SourceType : int32_t {
-    SOURCE_TYPE_INVALID = 0,
-    SOURCE_TYPE_PRESET,  // system preset
+    SOURCE_TYPE_INVALID = -1,
+    SOURCE_TYPE_PRESET = 1,  // system preset
     SOURCE_TYPE_CUSTOMISED,  // user customised
     SOURCE_TYPE_MAX,
 };
@@ -43,12 +43,13 @@ enum ResultSetDataType : int32_t {
 };
 
 enum MediaType : int32_t {
-    MEDIA_TYPE_INVALID = 0,
+    MEDIA_TYPE_INVALID = -1,
     MEDIA_TYPE_AUDIO = 2,
     MEDIA_TYPE_MAX
 };
 
 enum ToneSettingType : int32_t {
+    TONE_SETTING_TYPE_INVALID = -1,
     TONE_SETTING_TYPE_ALARM = 0,
     TONE_SETTING_TYPE_SHOT,
     TONE_SETTING_TYPE_RINGTONE,
@@ -80,9 +81,33 @@ enum RingToneType : int32_t {
 
 enum AlarmToneType : int32_t {
     ALARM_TONE_TYPE_NOT = 0, // not set
-    ALARM_TONE_TYPE_SIM_CARD_1, // SimCard 1
+    ALARM_TONE_TYPE, // alarm tone
     ALARM_TONE_TYPE_MAX
 };
+
+// default value
+const int32_t TONE_ID_DEFAULT = -1;
+const std::string DATA_DEFAULT = {};
+const int64_t SIZE_DEFAULT = 0;
+const std::string DISPLAY_NAME_DEFAULT = {};
+const std::string TITLE_DEFAULT = {};
+const int32_t METADATA_MEDIA_TYPE_DEFAULT = MEDIA_TYPE_AUDIO;
+const int32_t TONE_TYPE_DEFAULT = TONE_TYPE_INVALID;
+const std::string MIME_TYPE_DEFAULT = {};
+const int32_t SOURCE_TYPE_DEFAULT = SOURCE_TYPE_INVALID;
+const int64_t DATE_ADDED_DEFAULT = 0;
+const int64_t DATE_MODIFIED_DEFAULT = 0;
+const int64_t DATE_TAKEN_DEFAULT = 0;
+const int32_t DURATION_DEFAULT = 0;
+const int32_t SHOT_TONE_TYPE_DEFAULT = SHOT_TONE_TYPE_NOT;
+const int32_t SHOT_TONE_SOURCE_TYPE_DEFAULT = SOURCE_TYPE_INVALID;
+const int32_t NOTIFICATION_TONE_TYPE_DEFAULT = NOTIFICATION_TONE_TYPE_NOT;
+const int32_t NOTIFICATION_TONE_SOURCE_TYPE_DEFAULT = SOURCE_TYPE_INVALID;
+const int32_t RING_TONE_TYPE_DEFAULT = RING_TONE_TYPE_NOT;
+const int32_t RING_TONE_SOURCE_TYPE_DEFAULT = SOURCE_TYPE_INVALID;
+const int32_t ALARM_TONE_TYPE_DEFAULT = ALARM_TONE_TYPE_NOT;
+const int32_t ALARM_TONE_SOURCE_TYPE_DEFAULT = SOURCE_TYPE_INVALID;
+const int32_t TONE_SETTING_TYPE_DEFAULT = TONE_SETTING_TYPE_INVALID;
 
 const char SLASH_CHAR = '/';
 constexpr int32_t DEFAULT_INT32 = 0;

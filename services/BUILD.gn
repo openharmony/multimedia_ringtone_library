@@ -17,7 +17,7 @@ import("//foundation/multimedia/ringtone_library/ringtone_library.gni")
 config("ringtone_public_config") {
   include_dirs = [
     "${RINGTONE_SCANNER_PATH}/include",
-    "${RINGTONE_BACKUP_PATH}/include",
+    "${RINGTONE_RESTORE_PATH}/include",
     "${RINGTONE_EXTENSION_PATH}/include",
     "${RINGTONE_DFX_PATH}/include",
     "${RINGTONE_SERVICES_PATH}/utils/include",
@@ -83,10 +83,20 @@ ohos_shared_library("ringtone_data_extension") {
     "ringtone_data_extension/src/ringtone_subscriber.cpp",
   ]
 
+  ringtone_restore_source = [
+    "${RINGTONE_SERVICES_PATH}/ringtone_restore/src/ringtone_restore_db_utils.cpp",
+    "${RINGTONE_SERVICES_PATH}/ringtone_restore/src/ringtone_rdb_transaction.cpp",
+    "${RINGTONE_SERVICES_PATH}/ringtone_restore/src/ringtone_setting_manager.cpp",
+    "${RINGTONE_SERVICES_PATH}/ringtone_restore/src/ringtone_restore_base.cpp",
+    "${RINGTONE_SERVICES_PATH}/ringtone_restore/src/ringtone_restore.cpp",
+    "${RINGTONE_SERVICES_PATH}/ringtone_restore/src/ringtone_restore_factory.cpp",
+  ]
+
   sources = ringtone_extension_sources
   sources += ringtone_scan_source
   sources += ringtone_utils_source
   sources += ringtone_dfx_source
+  sources += ringtone_restore_source
 
   public_configs = [ ":ringtone_public_config" ]
 

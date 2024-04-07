@@ -23,9 +23,9 @@
 #include "ringtone_file_utils.h"
 #include "ringtone_log.h"
 
-using namespace std;
 namespace OHOS {
 namespace Media {
+using namespace std;
 shared_ptr<DfxWorker> DfxWorker::dfxWorkerInstance_{nullptr};
 
 shared_ptr<DfxWorker> DfxWorker::GetInstance()

@@ -18,12 +18,11 @@
 #include "ringtone_errno.h"
 #include "ringtone_log.h"
 
+namespace OHOS {
+namespace Media {
 using namespace std;
 using namespace OHOS::NativeRdb;
 using namespace OHOS::DataShare;
-
-namespace OHOS {
-namespace Media {
 
 RingtoneDataCommand::RingtoneDataCommand(const Uri &uri, const string &table, const RingtoneOperationType type)
     : uri_(uri), tableName_(table), oprnType_(type), toneId_(-1)

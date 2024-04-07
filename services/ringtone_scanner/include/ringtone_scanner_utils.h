@@ -38,29 +38,6 @@ constexpr int32_t MAX_BATCH_SIZE = 5;
 
 constexpr int32_t UNKNOWN_ID = -1;
 
-// Const for Metadata defaults
-const int32_t TONE_ID_DEFAULT = 0;
-const std::string DATA_DEFAULT = "";
-const int64_t SIZE_DEFAULT = 0;
-const std::string DISPLAY_NAME_DEFAULT = "";
-const std::string TITLE_DEFAULT = "";
-const int32_t METADATA_MEDIA_TYPE_DEFAULT = 2;
-const int32_t TONE_TYPE_DEFAULT = 0;
-const std::string MIME_TYPE_DEFAULT = "";
-const int32_t SOURCE_TYPE_DEFAULT = 0;
-const int64_t DATE_ADDED_DEFAULT = 0;
-const int64_t DATE_MODIFIED_DEFAULT = 0;
-const int64_t DATE_TAKEN_DEFAULT = 0;
-const int32_t DURATION_DEFAULT = 0;
-const int32_t SHOT_TONE_TYPE_DEFAULT = 0;
-const int32_t SHOT_TONE_SOURCE_TYPE_DEFAULT = 2;
-const int32_t NOTIFICATION_TONE_TYPE_DEFAULT = 0;
-const int32_t NOTIFICATION_TONE_SOURCE_TYPE_DEFAULT = 2;
-const int32_t RING_TONE_TYPE_DEFAULT = 0;
-const int32_t RING_TONE_SOURCE_TYPE_DEFAULT = 2;
-const int32_t ALARM_TONE_TYPE_DEFAULT = 0;
-const int32_t ALARM_TONE_SOURCE_TYPE_DEFAULT = 2;
-
 const std::string DEFAULT_AUDIO_MIME_TYPE = "audio/*";
 
 static std::vector<std::string> EXTRACTOR_SUPPORTED_MIME = {

@@ -18,10 +18,9 @@
 
 #include "ringtone_log.h"
 
-using namespace std;
-
 namespace OHOS {
 namespace Media {
+using namespace std;
 using ResultTypeMap = unordered_map<string, ResultSetDataType>;
 
 static const ResultTypeMap &GetResultTypeMap()

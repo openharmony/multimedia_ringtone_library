@@ -21,11 +21,10 @@
 #include "ringtone_log.h"
 #include "ringtone_type.h"
 
-using namespace std;
-using PrivacyRanges = vector<pair<uint32_t, uint32_t>>;
-
 namespace OHOS {
 namespace Media {
+using namespace std;
+using PrivacyRanges = vector<pair<uint32_t, uint32_t>>;
 RingtonePrivacyManager::RingtonePrivacyManager(const string &path, const string &mode) : path_(path), mode_(mode)
 {}
 

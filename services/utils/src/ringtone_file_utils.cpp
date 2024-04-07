@@ -16,8 +16,13 @@
 
 #include "ringtone_file_utils.h"
 
+#include <dirent.h>
 #include <fcntl.h>
+#include <ftw.h>
 #include <fstream>
+#include <sstream>
+#include <sys/sendfile.h>
+#include <unistd.h>
 
 #include "directory_ex.h"
 #include "ringtone_errno.h"
@@ -27,7 +32,8 @@
 namespace OHOS {
 namespace Media {
 using namespace std;
-
+static const int32_t OPEN_FDS = 128;
+static const mode_t MODE_RWX_USR_GRP = 02771;
 const vector<string> EXIF_SUPPORTED_EXTENSION = {
     RINGTONE_CONTAINER_TYPE_MP3,
     RINGTONE_CONTAINER_TYPE_OGG
@@ -57,6 +63,128 @@ string RingtoneFileUtils::GetExtensionFromPath(const string &path)
         transform(extention.begin(), extention.end(), extention.begin(), ::tolower);
     }
     return extention;
+}
+
+string RingtoneFileUtils::GetFileNameFromPath(const string &path)
+{
+    string fileName = {};
+    size_t found = path.rfind("/");
+    if (found != std::string::npos && (found + 1) < path.size()) {
+        fileName = path.substr(found + 1);
+    } else {
+        fileName = "";
+    }
+
+    return fileName;
+}
+
+string RingtoneFileUtils::GetBaseNameFromPath(const string &path)
+{
+    size_t found = path.rfind("/");
+    size_t foundDot = path.rfind(".");
+
+    string baseName = {};
+    found = (found == std::string::npos ? 0 : found);
+    if ((foundDot > found) && (foundDot != std::string::npos)) {
+        baseName = path.substr(found + 1, foundDot - found - 1);
+    } else {
+        baseName = "";
+    }
+
+    return baseName;
+}
+
+bool RingtoneFileUtils::IsSameFile(const string &srcPath, const string &dstPath)
+{
+    struct stat srcStatInfo {};
+    struct stat dstStatInfo {};
+
+    if (access(srcPath.c_str(), F_OK) || access(dstPath.c_str(), F_OK)) {
+        return false;
+    }
+    if (stat(srcPath.c_str(), &srcStatInfo) != 0) {
+        RINGTONE_ERR_LOG("Failed to get file %{private}s StatInfo, err=%{public}d", srcPath.c_str(), errno);
+        return false;
+    }
+    if (stat(dstPath.c_str(), &dstStatInfo) != 0) {
+        RINGTONE_ERR_LOG("Failed to get file %{private}s StatInfo, err=%{public}d", dstPath.c_str(), errno);
+        return false;
+    }
+    if (srcStatInfo.st_size != dstStatInfo.st_size) { /* file size */
+        RINGTONE_INFO_LOG("Size differs, %{public}lld != %{public}lld", (long long)srcStatInfo.st_size,
+            (long long)dstStatInfo.st_size);
+        return false;
+    }
+
+    return true;
+}
+
+static int32_t UnlinkCb(const char *fpath, const struct stat *sb, int32_t typeflag, struct FTW *ftwbuf)
+{
+    CHECK_AND_RETURN_RET_LOG(fpath != nullptr, E_FAIL, "fpath == nullptr");
+    int32_t errRet = remove(fpath);
+    if (errRet) {
+        RINGTONE_ERR_LOG("Failed to remove errno: %{public}d, path: %{private}s", errno, fpath);
+    }
+
+    return errRet;
+}
+
+int32_t RingtoneFileUtils::RemoveDirectory(const string &path)
+{
+    return nftw(path.c_str(), UnlinkCb, OPEN_FDS, FTW_DEPTH | FTW_PHYS);
+}
+
+bool RingtoneFileUtils::Mkdir(const string &subStr, shared_ptr<int> errCodePtr)
+{
+    mode_t mask = umask(0);
+    if (mkdir(subStr.c_str(), MODE_RWX_USR_GRP) == -1) {
+        if (errCodePtr != nullptr) {
+            *errCodePtr = errno;
+        }
+        RINGTONE_ERR_LOG("Failed to create directory %{public}d", errno);
+        umask(mask);
+        return (errno == EEXIST) ? true : false;
+    }
+    umask(mask);
+    return true;
+}
+
+bool RingtoneFileUtils::IsDirectory(const string &dirName, shared_ptr<int> errCodePtr)
+{
+    struct stat statInfo {};
+
+    if (stat(dirName.c_str(), &statInfo) == 0) {
+        if (statInfo.st_mode & S_IFDIR) {
+            return true;
+        }
+    } else if (errCodePtr != nullptr) {
+        *errCodePtr = errno;
+        return false;
+    }
+
+    return false;
+}
+
+bool RingtoneFileUtils::CreateDirectory(const string &dirPath, shared_ptr<int> errCodePtr)
+{
+    string subStr;
+    string segment;
+
+    stringstream folderStream(dirPath);
+    while (getline(folderStream, segment, '/')) {
+        if (segment.empty()) {
+            continue;
+        }
+
+        subStr.append(SLASH_CHAR + segment);
+        if (!IsDirectory(subStr, errCodePtr)) {
+            if (!Mkdir(subStr, errCodePtr)) {
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 int32_t RingtoneFileUtils::OpenFile(const string &filePath, const string &mode)
@@ -141,7 +269,69 @@ int32_t RingtoneFileUtils::CreateFile(const string &filePath)
 
 bool RingtoneFileUtils::DeleteFile(const string &fileName)
 {
-    return (remove(fileName.c_str()) == E_SUCCESS);
+    return (remove(fileName.c_str()) == 0);
+}
+
+bool RingtoneFileUtils::MoveFile(const string &oldPath, const string &newPath)
+{
+    bool errRet = false;
+
+    if (IsFileExists(oldPath) && !IsFileExists(newPath)) {
+        errRet = (rename(oldPath.c_str(), newPath.c_str()) == 0);
+    }
+
+    return errRet;
+}
+
+bool RingtoneFileUtils::CopyFileUtil(const string &filePath, const string &newPath)
+{
+    struct stat fst{};
+    bool errCode = false;
+    if (filePath.size() >= PATH_MAX) {
+        RINGTONE_ERR_LOG("File path too long %{public}d", static_cast<int>(filePath.size()));
+        return errCode;
+    }
+    RINGTONE_INFO_LOG("File path is %{private}s", filePath.c_str());
+    string absFilePath;
+    if (!PathToRealPath(filePath, absFilePath)) {
+        RINGTONE_ERR_LOG("file is not real path, file path: %{private}s", filePath.c_str());
+        return errCode;
+    }
+    if (absFilePath.empty()) {
+        RINGTONE_ERR_LOG("Failed to obtain the canonical path for source path%{private}s %{public}d",
+                      filePath.c_str(), errno);
+        return errCode;
+    }
+
+    int32_t source = open(absFilePath.c_str(), O_RDONLY);
+    if (source == -1) {
+        RINGTONE_ERR_LOG("Open failed for source file");
+        return errCode;
+    }
+
+    int32_t dest = open(newPath.c_str(), O_WRONLY | O_CREAT, MODE_RWX_USR_GRP);
+    if (dest == -1) {
+        RINGTONE_ERR_LOG("Open failed for destination file %{public}d", errno);
+        RINGTONE_ERR_LOG("liuxk, filepath=%{public}s", newPath.c_str());
+        close(source);
+        return errCode;
+    }
+
+    if (fstat(source, &fst) == 0) {
+        // Copy file content
+        if (sendfile(dest, source, nullptr, fst.st_size) != E_ERR) {
+            // Copy ownership and mode of source file
+            if (fchown(dest, fst.st_uid, fst.st_gid) == 0 &&
+                fchmod(dest, fst.st_mode) == 0) {
+                errCode = true;
+            }
+        }
+    }
+
+    close(source);
+    close(dest);
+
+    return errCode;
 }
 
 int64_t RingtoneFileUtils::Timespec2Millisecond(const struct timespec &time)

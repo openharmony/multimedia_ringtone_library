@@ -276,7 +276,7 @@ void RingtoneSettings::CleanDefaultSettings(int32_t settingType, shared_ptr<Nati
     } else if (settingType == TONE_SETTING_TYPE_NOTIFICATION) {
         toneType1 = NOTIFICATION_TONE_TYPE;
     } else if (settingType == TONE_SETTING_TYPE_ALARM) {
-        toneType1 = ALARM_TONE_TYPE_SIM_CARD_1;
+        toneType1 = ALARM_TONE_TYPE;
     } else {
         RINGTONE_INFO_LOG("tone type arguement error");
     }

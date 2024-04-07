@@ -27,19 +27,17 @@
 #include "ringtone_scanner_manager.h"
 #include "ringtone_tracer.h"
 
-
+namespace OHOS {
+namespace Media {
 using namespace std;
 using namespace OHOS::AppExecFwk;
 using namespace OHOS::AbilityRuntime;
 using namespace OHOS::NativeRdb;
 using namespace OHOS::DataShare;
 using namespace OHOS::RdbDataShareAdapter;
-
-namespace OHOS {
-namespace Media {
 shared_ptr<RingtoneDataManager> RingtoneDataManager::instance_ = nullptr;
 mutex RingtoneDataManager::mutex_;
-RingtoneUnistore *g_uniStore_ = nullptr;
+shared_ptr<RingtoneUnistore> g_uniStore = nullptr;
 
 RingtoneDataManager::RingtoneDataManager(void)
 {
@@ -72,9 +70,9 @@ int32_t RingtoneDataManager::Init(const shared_ptr<OHOS::AbilityRuntime::Context
         return E_OK;
     }
     context_ = context;
-    if (g_uniStore_ == nullptr) {
-        g_uniStore_ = RingtoneRdbStore::GetInstance(context_);
-        if (g_uniStore_ == nullptr) {
+    if (g_uniStore == nullptr) {
+        g_uniStore = RingtoneRdbStore::GetInstance(context_);
+        if (g_uniStore == nullptr) {
             RINGTONE_ERR_LOG("RingtoneDataManager is not initialized");
             return E_DB_FAIL;
         }
@@ -94,7 +92,7 @@ int32_t RingtoneDataManager::Insert(RingtoneDataCommand &cmd, const DataShareVal
         RINGTONE_ERR_LOG("RingtoneDataManager is not initialized");
         return E_FAIL;
     }
-    if (g_uniStore_ == nullptr) {
+    if (g_uniStore == nullptr) {
         RINGTONE_ERR_LOG("rdb store is not initialized");
         return E_DB_FAIL;
     }
@@ -107,7 +105,7 @@ int32_t RingtoneDataManager::Insert(RingtoneDataCommand &cmd, const DataShareVal
     cmd.SetValueBucket(value);
 
     int64_t outRowId = E_HAS_DB_ERROR;
-    auto retRdb = g_uniStore_->Insert(cmd, outRowId);
+    auto retRdb = g_uniStore->Insert(cmd, outRowId);
     if (retRdb != NativeRdb::E_OK) {
         RINGTONE_ERR_LOG("Insert operation failed. Result %{public}d.", retRdb);
         return E_HAS_DB_ERROR;
@@ -163,7 +161,7 @@ int32_t RingtoneDataManager::Delete(RingtoneDataCommand &cmd, const DataSharePre
         RINGTONE_DEBUG_LOG("RingtoneDataManager is not initialized");
         return E_FAIL;
     }
-    if (g_uniStore_ == nullptr) {
+    if (g_uniStore == nullptr) {
         RINGTONE_ERR_LOG("rdb store is not initialized");
         return E_DB_FAIL;
     }
@@ -179,12 +177,12 @@ int32_t RingtoneDataManager::Delete(RingtoneDataCommand &cmd, const DataSharePre
     cmd.GetAbsRdbPredicates()->SetWhereArgs(rdbPredicate.GetWhereArgs());
 
     vector<string> columns = {RINGTONE_COLUMN_TONE_ID, RINGTONE_COLUMN_DATA};
-    auto absResultSet = g_uniStore_->Query(cmd, columns);
+    auto absResultSet = g_uniStore->Query(cmd, columns);
 
     DeleteFileFromResultSet(absResultSet);
 
     int32_t deletedRows = E_HAS_DB_ERROR;
-    int32_t ret = g_uniStore_->Delete(cmd, deletedRows);
+    int32_t ret = g_uniStore->Delete(cmd, deletedRows);
     if (ret != NativeRdb::E_OK || deletedRows <= 0) {
         RINGTONE_ERR_LOG("Delete operation failed. Result %{public}d.", ret);
         deletedRows = E_HAS_DB_ERROR;
@@ -203,7 +201,7 @@ int32_t RingtoneDataManager::Update(RingtoneDataCommand &cmd, const DataShareVal
         RINGTONE_DEBUG_LOG("RingtoneDataManager is not initialized");
         return E_FAIL;
     }
-    if (g_uniStore_ == nullptr) {
+    if (g_uniStore == nullptr) {
         RINGTONE_ERR_LOG("rdb store is not initialized");
         return E_DB_FAIL;
     }
@@ -221,7 +219,7 @@ int32_t RingtoneDataManager::Update(RingtoneDataCommand &cmd, const DataShareVal
     cmd.GetAbsRdbPredicates()->SetWhereArgs(rdbPredicate.GetWhereArgs());
 
     int32_t updatedRows = E_HAS_DB_ERROR;
-    int32_t result = g_uniStore_->Update(cmd, updatedRows);
+    int32_t result = g_uniStore->Update(cmd, updatedRows);
     if (result != NativeRdb::E_OK || updatedRows <= 0) {
         RINGTONE_ERR_LOG("Update operation failed. Result %{public}d. Updated %{public}d", result, updatedRows);
         updatedRows = E_HAS_DB_ERROR;
@@ -240,7 +238,7 @@ shared_ptr<ResultSetBridge> RingtoneDataManager::Query(RingtoneDataCommand &cmd,
         RINGTONE_DEBUG_LOG("RingtoneDataManager is not initialized");
         return nullptr;
     }
-    if (g_uniStore_ == nullptr) {
+    if (g_uniStore == nullptr) {
         RINGTONE_ERR_LOG("rdb store is not initialized");
         return nullptr;
     }
@@ -253,7 +251,7 @@ shared_ptr<ResultSetBridge> RingtoneDataManager::Query(RingtoneDataCommand &cmd,
     cmd.GetAbsRdbPredicates()->SetWhereArgs(rdbPredicate.GetWhereArgs());
     cmd.GetAbsRdbPredicates()->SetOrder(rdbPredicate.GetOrder());
 
-    auto absResultSet = g_uniStore_->Query(cmd, columns);
+    auto absResultSet = g_uniStore->Query(cmd, columns);
 
     RINGTONE_DEBUG_LOG("end");
     return RdbUtils::ToResultSetBridge(absResultSet);
@@ -329,7 +327,7 @@ shared_ptr<RingtoneAsset> RingtoneDataManager::GetRingtoneAssetFromId(const stri
     RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::QUERY);
     cmd.GetAbsRdbPredicates()->EqualTo(RINGTONE_COLUMN_TONE_ID, id);
 
-    auto resultSet = g_uniStore_->Query(cmd, {RINGTONE_COLUMN_TONE_ID, RINGTONE_COLUMN_DATA});
+    auto resultSet = g_uniStore->Query(cmd, {RINGTONE_COLUMN_TONE_ID, RINGTONE_COLUMN_DATA});
     if (resultSet == nullptr) {
         RINGTONE_ERR_LOG("Failed to obtain file asset from database");
         return nullptr;

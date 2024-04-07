@@ -21,10 +21,10 @@
 #include "ringtone_log.h"
 #include "ringtone_type.h"
 
-using namespace std;
-
 namespace OHOS {
 namespace Media {
+using namespace std;
+
 RingtoneAsset::RingtoneAsset()
 {
 }

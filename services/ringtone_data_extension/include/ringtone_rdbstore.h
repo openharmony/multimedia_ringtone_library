@@ -26,9 +26,11 @@ class RingtoneDataCallBack;
 
 class RingtoneRdbStore final : public RingtoneUnistore {
 public:
-    EXPORT static RingtoneUnistore *GetInstance(const std::shared_ptr<OHOS::AbilityRuntime::Context> &context =
-        nullptr);
+    EXPORT static std::shared_ptr<RingtoneUnistore> GetInstance(
+        const std::shared_ptr<OHOS::AbilityRuntime::Context> &context = nullptr);
     EXPORT virtual ~RingtoneRdbStore();
+
+    explicit RingtoneRdbStore(const std::shared_ptr<OHOS::AbilityRuntime::Context> &context);
 
     EXPORT virtual int32_t Init() override;
     EXPORT virtual void Stop() override;
@@ -44,8 +46,6 @@ public:
         const std::vector<std::string> &selectionArgs = std::vector<std::string>()) override;
     EXPORT std::shared_ptr<NativeRdb::RdbStore> GetRaw() override;
 private:
-    explicit RingtoneRdbStore(const std::shared_ptr<OHOS::AbilityRuntime::Context> &context);
-
     std::string bundleName_ {BUNDLE_NAME};
     NativeRdb::RdbStoreConfig config_ {""};
     static std::shared_ptr<NativeRdb::RdbStore> rdbStore_;
