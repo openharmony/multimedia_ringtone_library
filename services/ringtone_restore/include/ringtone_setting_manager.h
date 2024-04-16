@@ -33,6 +33,7 @@ public:
     int32_t CommitSetting(int32_t toneId, std::string &tonePath, int32_t settingType,
         int32_t toneType, int32_t sourceType);
     void FlushSettings();
+    int32_t TravelQueryResultSet(std::string querySql, std::function<bool (std::shared_ptr<RingtoneMetadata> &)> func);
 private:
     struct SettingItem {
         int32_t toneId = TONE_ID_DEFAULT;
@@ -51,7 +52,6 @@ private:
     int32_t CleanupSetting(int32_t settingType, int32_t toneType, int32_t sourceType);
     void ExtractMetaFromColumn(const std::shared_ptr<NativeRdb::ResultSet> &resultSet,
         std::unique_ptr<RingtoneMetadata> &metadata, const std::string &col);
-    int32_t TravelQueryResultSet(std::string querySql, std::function<bool (std::shared_ptr<RingtoneMetadata> &)> func);
     int32_t UpdateSettingsByPath(std::string &tonePath, int32_t settingType, int32_t toneType, int32_t sourceType);
     int32_t UpdateShotSetting(std::shared_ptr<RingtoneMetadata> &meta, int32_t toneType, int32_t sourceType);
     int32_t UpdateRingtoneSetting(std::shared_ptr<RingtoneMetadata> &meta, int32_t toneType, int32_t sourceType);

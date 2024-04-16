@@ -112,7 +112,8 @@ int32_t RingtoneDataCallBack::CreatePreloadFolder(const string &path)
 int32_t RingtoneDataCallBack::PrepareDir()
 {
     static const vector<string> userPreloadDirs = {
-        { RINGTONE_CUSTOMIZED_ALARM }, { RINGTONE_CUSTOMIZED_RINGTONE }, { RINGTONE_CUSTOMIZED_NOTIFICATIONS }
+        { RINGTONE_CUSTOMIZED_ALARM_PATH }, { RINGTONE_CUSTOMIZED_RINGTONE_PATH },
+        { RINGTONE_CUSTOMIZED_NOTIFICATIONS_PATH }
     };
 
     for (const auto &dir: userPreloadDirs) {

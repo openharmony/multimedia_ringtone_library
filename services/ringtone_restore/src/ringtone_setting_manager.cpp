@@ -127,7 +127,6 @@ void RingtoneSettingManager::TravelSettings(function<int32_t (string &, SettingI
 
 void RingtoneSettingManager::FlushSettings()
 {
-    RINGTONE_INFO_LOG("liuxk, ------------------------------------------------------");
     TravelSettings([this](string &tonePath, SettingItem &item) -> int32_t {
         int32_t ret = CleanupSetting(item.settingType, item.toneType, item.sourceType);
         if (ret != E_OK) {
@@ -222,7 +221,6 @@ int32_t RingtoneSettingManager::UpdateShotSetting(shared_ptr<RingtoneMetadata> &
         RINGTONE_COLUMN_SHOT_TONE_TYPE + " = " + to_string(val) + ", " +
         RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE + " = " + to_string(sourceType) +
         " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(meta->GetToneId());
-    RINGTONE_INFO_LOG("liuxk, for update sql=%{public}s", updateSql.c_str());
     int32_t rdbRet = ringtoneRdb_->ExecuteSql(updateSql);
     if (rdbRet < 0) {
         RINGTONE_ERR_LOG("execute update failed");
@@ -245,7 +243,6 @@ int32_t RingtoneSettingManager::UpdateRingtoneSetting(shared_ptr<RingtoneMetadat
         RINGTONE_COLUMN_RING_TONE_TYPE + " = " + to_string(val) + ", " +
         RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE + " = " + to_string(sourceType) +
         " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(meta->GetToneId());
-    RINGTONE_INFO_LOG("liuxk, for update sql=%{public}s", updateSql.c_str());
     int32_t rdbRet = ringtoneRdb_->ExecuteSql(updateSql);
     if (rdbRet < 0) {
         RINGTONE_ERR_LOG("execute update failed");
@@ -262,7 +259,6 @@ int32_t RingtoneSettingManager::UpdateNotificationSetting(shared_ptr<RingtoneMet
         RINGTONE_COLUMN_NOTIFICATION_TONE_TYPE + " = " + to_string(toneType) + ", " +
         RINGTONE_COLUMN_NOTIFICATION_TONE_SOURCE_TYPE + " = " + to_string(sourceType) +
         " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(meta->GetToneId());
-    RINGTONE_INFO_LOG("liuxk, for update sql=%{public}s", updateSql.c_str());
     int32_t rdbRet = ringtoneRdb_->ExecuteSql(updateSql);
     if (rdbRet < 0) {
         RINGTONE_ERR_LOG("execute update failed");
@@ -279,7 +275,6 @@ int32_t RingtoneSettingManager::UpdateAlarmSetting(shared_ptr<RingtoneMetadata> 
         RINGTONE_COLUMN_ALARM_TONE_TYPE + " = " + to_string(toneType) + ", " +
         RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE + " = " + to_string(sourceType) +
         " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(meta->GetToneId());
-    RINGTONE_INFO_LOG("liuxk, for update sql=%{public}s", updateSql.c_str());
     int32_t rdbRet = ringtoneRdb_->ExecuteSql(updateSql);
     if (rdbRet < 0) {
         RINGTONE_ERR_LOG("execute update failed");
@@ -351,7 +346,6 @@ int32_t RingtoneSettingManager::UpdateSettingsWithToneId(int32_t settingType, in
         return E_INVALID_ARGUMENTS;
     }
     if (!updateSql.empty()) {
-        RINGTONE_INFO_LOG("liuxk, for cleanup sql=%{public}s", updateSql.c_str());
         int32_t rdbRet = ringtoneRdb_->ExecuteSql(updateSql);
         if (rdbRet < 0) {
             RINGTONE_ERR_LOG("execute update failed");
@@ -361,49 +355,53 @@ int32_t RingtoneSettingManager::UpdateSettingsWithToneId(int32_t settingType, in
     return ret;
 }
 
+static const string SHOT_SETTING_CLEANUP_CLAUSE = "UPDATE ToneFiles SET " + RINGTONE_COLUMN_SHOT_TONE_TYPE + " = " +
+    to_string(SHOT_TONE_TYPE_DEFAULT) + ", " + RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE + " = " +
+    to_string(SHOT_TONE_SOURCE_TYPE_DEFAULT);
+
+static const string RINGTONE_SETTING_CLEANUP_CLAUSE = "UPDATE ToneFiles SET " + RINGTONE_COLUMN_RING_TONE_TYPE + " = " +
+    to_string(RING_TONE_TYPE_DEFAULT) + ", " + RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE + "=" +
+    to_string(RING_TONE_SOURCE_TYPE_DEFAULT);
+
 int32_t RingtoneSettingManager::CleanupSettingFromRdb(int32_t settingType, int32_t toneType, int32_t sourceType)
 {
     int32_t ret = E_OK;
     string updateSql = {};
     if (settingType == TONE_SETTING_TYPE_SHOT) {
         if (toneType == SHOT_TONE_TYPE_SIM_CARD_BOTH) {
-            updateSql = "UPDATE ToneFiles SET " + RINGTONE_COLUMN_SHOT_TONE_TYPE + " = " +
-                to_string(SHOT_TONE_TYPE_NOT) + " WHERE " + RINGTONE_COLUMN_SHOT_TONE_TYPE + " <> " +
-                to_string(SHOT_TONE_TYPE_NOT) + " AND " + RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE + " = " +
+            updateSql = SHOT_SETTING_CLEANUP_CLAUSE + " WHERE " + RINGTONE_COLUMN_SHOT_TONE_TYPE + " <> " +
+                to_string(SHOT_TONE_TYPE_DEFAULT) + " AND " + RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE + " = " +
                 to_string(sourceType);
         } else {
-            updateSql = "UPDATE ToneFiles SET " + RINGTONE_COLUMN_SHOT_TONE_TYPE + " = " +
-                to_string(SHOT_TONE_TYPE_NOT) + " WHERE " + RINGTONE_COLUMN_SHOT_TONE_TYPE + " = " +
-                to_string(toneType) + " AND " + RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE + " = " +
-                to_string(sourceType);
+            updateSql = SHOT_SETTING_CLEANUP_CLAUSE + " WHERE " + RINGTONE_COLUMN_SHOT_TONE_TYPE + " = " +
+                to_string(toneType) + " AND " + RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE + " = " + to_string(sourceType);
         }
     } else if(settingType == TONE_SETTING_TYPE_RINGTONE) {
         if (toneType == RING_TONE_TYPE_SIM_CARD_BOTH) {
-            updateSql = "UPDATE ToneFiles SET " + RINGTONE_COLUMN_RING_TONE_TYPE + " = " +
-                to_string(RING_TONE_TYPE_NOT) + " WHERE " + RINGTONE_COLUMN_RING_TONE_TYPE + " <> " +
-                to_string(RING_TONE_TYPE_NOT) + " AND " + RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE + " = " +
+            updateSql = RINGTONE_SETTING_CLEANUP_CLAUSE  + " WHERE " + RINGTONE_COLUMN_RING_TONE_TYPE + " <> " +
+                to_string(RING_TONE_TYPE_DEFAULT) + " AND " + RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE + " = " +
                 to_string(sourceType);
         } else {
-            updateSql = "UPDATE ToneFiles SET " + RINGTONE_COLUMN_RING_TONE_TYPE + " = " +
-                to_string(RING_TONE_TYPE_NOT) + " WHERE " + RINGTONE_COLUMN_RING_TONE_TYPE + " = " +
+            updateSql = RINGTONE_SETTING_CLEANUP_CLAUSE  + " WHERE " + RINGTONE_COLUMN_RING_TONE_TYPE + " = " +
                 to_string(toneType) + " AND " + RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE + " = " +
                 to_string(sourceType);
         }
     } else if (settingType == TONE_SETTING_TYPE_NOTIFICATION) {
         updateSql = "UPDATE ToneFiles SET " + RINGTONE_COLUMN_NOTIFICATION_TONE_TYPE + " = " +
-            to_string(NOTIFICATION_TONE_TYPE_NOT) + " WHERE " + RINGTONE_COLUMN_NOTIFICATION_TONE_TYPE + " = " +
-            to_string(toneType) + " AND " + RINGTONE_COLUMN_NOTIFICATION_TONE_SOURCE_TYPE + " = " +
+            to_string(NOTIFICATION_TONE_TYPE_NOT) + ", " + RINGTONE_COLUMN_NOTIFICATION_TONE_SOURCE_TYPE + " = " +
+            to_string(NOTIFICATION_TONE_SOURCE_TYPE_DEFAULT) + " WHERE " + RINGTONE_COLUMN_NOTIFICATION_TONE_TYPE +
+            " = " + to_string(toneType) + " AND " + RINGTONE_COLUMN_NOTIFICATION_TONE_SOURCE_TYPE + " = " +
             to_string(sourceType);
     } else if (settingType == TONE_SETTING_TYPE_ALARM) {
         updateSql = "UPDATE ToneFiles SET " + RINGTONE_COLUMN_ALARM_TONE_TYPE + " = " +
-            to_string(ALARM_TONE_TYPE_NOT) + " WHERE " + RINGTONE_COLUMN_ALARM_TONE_TYPE + " = " +
+            to_string(ALARM_TONE_TYPE_NOT) + ", " + RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE + " = " +
+            to_string(ALARM_TONE_SOURCE_TYPE_DEFAULT) + " WHERE " + RINGTONE_COLUMN_ALARM_TONE_TYPE + " = " +
             to_string(toneType) + " AND " + RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE + " = " +
             to_string(sourceType);
     } else {
         return E_INVALID_ARGUMENTS;
     }
     if (!updateSql.empty()) {
-        RINGTONE_INFO_LOG("liuxk, for cleanup sql=%{public}s", updateSql.c_str());
         int32_t rdbRet = ringtoneRdb_->ExecuteSql(updateSql);
         if (rdbRet < 0) {
             RINGTONE_ERR_LOG("execute update failed");

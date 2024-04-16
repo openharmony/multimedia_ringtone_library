@@ -50,14 +50,14 @@ ohos_shared_library("ringtone_data_extension") {
   install_enable = true
 
   ringtone_scan_source = [
-    "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_scan_executor.cpp",
-    "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_scanner.cpp",
-    "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_scanner_manager.cpp",
-    "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_scanner_db.cpp",
+    "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_default_setting.cpp",
     "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_metadata.cpp",
     "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_metadata_extractor.cpp",
+    "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_scan_executor.cpp",
+    "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_scanner.cpp",
+    "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_scanner_db.cpp",
+    "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_scanner_manager.cpp",
     "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_scanner_utils.cpp",
-    "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_settings.cpp",
   ]
 
   ringtone_utils_source = [

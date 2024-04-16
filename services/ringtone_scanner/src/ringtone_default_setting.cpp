@@ -1,0 +1,144 @@
+/*
+ * Copyright (C) 2024 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+#define MLOG_TAG "RingtoneDefaultSetting"
+
+#include "ringtone_default_setting.h"
+
+#include "parameter.h"
+#include "rdb_errno.h"
+#include "ringtone_errno.h"
+#include "ringtone_log.h"
+#include "ringtone_type.h"
+#include "ringtone_scanner_db.h"
+#include "ringtone_setting_manager.h"
+
+namespace OHOS {
+namespace Media {
+using namespace std;
+static const int32_t SYSPARA_SIZE = 128;
+std::unique_ptr<RingtoneDefaultSetting> RingtoneDefaultSetting::GetObj(std::shared_ptr<NativeRdb::RdbStore> &rdb)
+{
+    return make_unique<RingtoneDefaultSetting>(rdb);
+}
+
+RingtoneDefaultSetting::RingtoneDefaultSetting(shared_ptr<NativeRdb::RdbStore> &rdb)
+{
+    settingMgr_ = make_unique<RingtoneSettingManager>(rdb);
+}
+
+string RingtoneDefaultSetting::GetTonePathByDisplayName(string &name)
+{
+    string pathStr = {};
+    string querySql = "SELECT data FROM ToneFiles WHERE display_name = "s + "\"" + name + "\"";
+    settingMgr_->TravelQueryResultSet(querySql, [&](shared_ptr<RingtoneMetadata> &meta) -> bool {
+        pathStr = meta->GetData();
+        if (!pathStr.empty()) {
+            return true;
+        }
+        return false;
+    });
+
+    return pathStr;
+}
+
+void RingtoneDefaultSetting::ShotToneDefaultSettings()
+{
+    char paramValue1[SYSPARA_SIZE] = {0};
+    char paramValue2[SYSPARA_SIZE] = {0};
+
+    GetParameter(PARAM_RINGTONE_SETTING_SHOT, "", paramValue1, SYSPARA_SIZE);
+    GetParameter(PARAM_RINGTONE_SETTING_SHOT2, "", paramValue2, SYSPARA_SIZE);
+
+    if (strcmp(paramValue1, "")) {
+        string tonePath = {};
+        string strVal = {paramValue1};
+        tonePath = GetTonePathByDisplayName(strVal);
+        if (!tonePath.empty() && tonePath != "") {
+            settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_SHOT, SHOT_TONE_TYPE_SIM_CARD_1,
+                SOURCE_TYPE_PRESET);
+        }
+    }
+
+    if (strcmp(paramValue2, "")) {
+        string tonePath = {};
+        string strVal = {paramValue2};
+        tonePath = GetTonePathByDisplayName(strVal);
+        if (!tonePath.empty() && tonePath != "") {
+            settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_SHOT, SHOT_TONE_TYPE_SIM_CARD_2,
+                SOURCE_TYPE_PRESET);
+        }
+    }
+}
+
+void RingtoneDefaultSetting::NotificationToneDefaultSettings()
+{
+    char paramValue[SYSPARA_SIZE] = {0};
+    GetParameter(PARAM_RINGTONE_SETTING_NOTIFICATIONTONE, "", paramValue, SYSPARA_SIZE);
+
+    if (strcmp(paramValue, "")) {
+        string tonePath = {};
+        string strVal = {paramValue};
+        tonePath = GetTonePathByDisplayName(strVal);
+        if (!tonePath.empty() && tonePath != "") {
+            settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_NOTIFICATION,
+                NOTIFICATION_TONE_TYPE, SOURCE_TYPE_PRESET);
+        }
+    }
+}
+
+void RingtoneDefaultSetting::RingToneDefaultSettings()
+{
+    char paramValue1[SYSPARA_SIZE] = {0};
+    char paramValue2[SYSPARA_SIZE] = {0};
+
+    GetParameter(PARAM_RINGTONE_SETTING_RINGTONE, "", paramValue1, SYSPARA_SIZE);
+    GetParameter(PARAM_RINGTONE_SETTING_RINGTONE2, "", paramValue2, SYSPARA_SIZE);
+
+    if (strcmp(paramValue1, "")) {
+        string tonePath = {};
+        string strVal = {paramValue1};
+        tonePath = GetTonePathByDisplayName(strVal);
+        if (!tonePath.empty() && tonePath != "") {
+            settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_RINGTONE, RING_TONE_TYPE_SIM_CARD_1,
+                SOURCE_TYPE_PRESET);
+        }
+    }
+
+    if (strcmp(paramValue2, "")) {
+        string tonePath = {};
+        string strVal = {paramValue2};
+        tonePath = GetTonePathByDisplayName(strVal);
+        if (!tonePath.empty() && tonePath != "") {
+            settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_RINGTONE, RING_TONE_TYPE_SIM_CARD_2,
+                SOURCE_TYPE_PRESET);
+        }
+    }
+}
+
+void RingtoneDefaultSetting::Update()
+{
+    ShotToneDefaultSettings();
+    NotificationToneDefaultSettings();
+    RingToneDefaultSettings();
+
+    if (settingMgr_ != nullptr) {
+        settingMgr_->FlushSettings();
+    } else {
+        RINGTONE_ERR_LOG("ringtone setting mgr is nullptr");
+    }
+}
+
+} // namespace Media
+} // namespace OHOS

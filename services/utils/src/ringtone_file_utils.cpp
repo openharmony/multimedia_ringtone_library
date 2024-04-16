@@ -312,7 +312,6 @@ bool RingtoneFileUtils::CopyFileUtil(const string &filePath, const string &newPa
     int32_t dest = open(newPath.c_str(), O_WRONLY | O_CREAT, MODE_RWX_USR_GRP);
     if (dest == -1) {
         RINGTONE_ERR_LOG("Open failed for destination file %{public}d", errno);
-        RINGTONE_ERR_LOG("liuxk, filepath=%{public}s", newPath.c_str());
         close(source);
         return errCode;
     }

@@ -31,15 +31,15 @@ const std::string RINGTONE_URI = RINGTONE_URI_SCHEME + ":///" + RINGTONE_URI_AUT
 const std::string RINGTONE_PATH_URI = RINGTONE_URI_SCHEME + ":///" + RINGTONE_URI_AUTHORITY + "/" + RINGTONE_URI_PATH;
 
 // ringtone user customized tones file location
-const std::string RINGTONE_CUSTOMIZED_ALARM = "/storage/media/local/files/Ringtone/alarms";
-const std::string RINGTONE_CUSTOMIZED_RINGTONE = "/storage/media/local/files/Ringtone/ringtones";
-const std::string RINGTONE_CUSTOMIZED_NOTIFICATIONS = "/storage/media/local/files/Ringtone/notifications";
+const std::string RINGTONE_CUSTOMIZED_ALARM_PATH = "/storage/media/local/files/Ringtone/alarms";
+const std::string RINGTONE_CUSTOMIZED_RINGTONE_PATH = "/storage/media/local/files/Ringtone/ringtones";
+const std::string RINGTONE_CUSTOMIZED_NOTIFICATIONS_PATH = "/storage/media/local/files/Ringtone/notifications";
 const std::string RINGTONE_CUSTOMIZED_BASE_PATH = "/storage/media/local/files";
 
-// ringtone preload patches
-const std::string ROOT_TONE_PRELOAD_PATH_NOAH = "/sys_prod/resource/media/audio";
-const std::string ROOT_TONE_PRELOAD_PATH_CHINA = "/sys_prod/variant/region_comm/china/resource/media/audio";
-const std::string ROOT_TONE_PRELOAD_PATH_OVERSEA = "/sys_prod/variant/region_comm/oversea/resource/media/audio";
+// ringtone preload pathes
+const std::string ROOT_TONE_PRELOAD_PATH_NOAH_PATH = "/sys_prod/resource/media/audio";
+const std::string ROOT_TONE_PRELOAD_PATH_CHINA_PATH = "/sys_prod/variant/region_comm/china/resource/media/audio";
+const std::string ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH = "/sys_prod/variant/region_comm/oversea/resource/media/audio";
 
 // ringtone DB file name
 const std::string RINGTONE_LIBRARY_DB_NAME = "ringtone_library.db";

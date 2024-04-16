@@ -18,11 +18,11 @@
 #include "ringtone_scanner.h"
 
 #include "directory_ex.h"
+#include "ringtone_default_setting.h"
 #include "ringtone_file_utils.h"
 #include "ringtone_log.h"
 #include "ringtone_mimetype_utils.h"
 #include "ringtone_rdbstore.h"
-#include "ringtone_settings.h"
 
 namespace OHOS {
 namespace Media {
@@ -42,19 +42,19 @@ static std::unordered_map<std::string, std::pair<int32_t, int32_t>> g_typeMap = 
     {LOCAL_DIR + "/notifications", {SOURCE_TYPE_CUSTOMISED, TONE_TYPE_NOTIFICATION}},
 #endif
     // customized tones map
-    {RINGTONE_CUSTOMIZED_ALARM, {SOURCE_TYPE_CUSTOMISED, TONE_TYPE_ALARM}},
-    {RINGTONE_CUSTOMIZED_RINGTONE, {SOURCE_TYPE_CUSTOMISED, TONE_TYPE_RINGTONE}},
-    {RINGTONE_CUSTOMIZED_NOTIFICATIONS, {SOURCE_TYPE_CUSTOMISED, TONE_TYPE_NOTIFICATION}},
+    {RINGTONE_CUSTOMIZED_ALARM_PATH, {SOURCE_TYPE_CUSTOMISED, TONE_TYPE_ALARM}},
+    {RINGTONE_CUSTOMIZED_RINGTONE_PATH, {SOURCE_TYPE_CUSTOMISED, TONE_TYPE_RINGTONE}},
+    {RINGTONE_CUSTOMIZED_NOTIFICATIONS_PATH, {SOURCE_TYPE_CUSTOMISED, TONE_TYPE_NOTIFICATION}},
     // customized tones map
-    {ROOT_TONE_PRELOAD_PATH_NOAH + "/alarms", {SOURCE_TYPE_CUSTOMISED, TONE_TYPE_ALARM}},
-    {ROOT_TONE_PRELOAD_PATH_NOAH + "/ringtones", {SOURCE_TYPE_CUSTOMISED, TONE_TYPE_RINGTONE}},
-    {ROOT_TONE_PRELOAD_PATH_NOAH + "/notifications", {SOURCE_TYPE_CUSTOMISED, TONE_TYPE_NOTIFICATION}},
-    {ROOT_TONE_PRELOAD_PATH_CHINA + "/alarms", {SOURCE_TYPE_CUSTOMISED, TONE_TYPE_ALARM}},
-    {ROOT_TONE_PRELOAD_PATH_CHINA + "/ringtones", {SOURCE_TYPE_CUSTOMISED, TONE_TYPE_RINGTONE}},
-    {ROOT_TONE_PRELOAD_PATH_CHINA + "/notifications", {SOURCE_TYPE_CUSTOMISED, TONE_TYPE_NOTIFICATION}},
-    {ROOT_TONE_PRELOAD_PATH_OVERSEA + "/alarms", {SOURCE_TYPE_CUSTOMISED, TONE_TYPE_ALARM}},
-    {ROOT_TONE_PRELOAD_PATH_OVERSEA + "/ringtones", {SOURCE_TYPE_CUSTOMISED, TONE_TYPE_RINGTONE}},
-    {ROOT_TONE_PRELOAD_PATH_OVERSEA + "/notifications", {SOURCE_TYPE_CUSTOMISED, TONE_TYPE_NOTIFICATION}},
+    {ROOT_TONE_PRELOAD_PATH_NOAH_PATH + "/alarms", {SOURCE_TYPE_PRESET, TONE_TYPE_ALARM}},
+    {ROOT_TONE_PRELOAD_PATH_NOAH_PATH + "/ringtones", {SOURCE_TYPE_PRESET, TONE_TYPE_RINGTONE}},
+    {ROOT_TONE_PRELOAD_PATH_NOAH_PATH + "/notifications", {SOURCE_TYPE_PRESET, TONE_TYPE_NOTIFICATION}},
+    {ROOT_TONE_PRELOAD_PATH_CHINA_PATH + "/alarms", {SOURCE_TYPE_PRESET, TONE_TYPE_ALARM}},
+    {ROOT_TONE_PRELOAD_PATH_CHINA_PATH + "/ringtones", {SOURCE_TYPE_PRESET, TONE_TYPE_RINGTONE}},
+    {ROOT_TONE_PRELOAD_PATH_CHINA_PATH + "/notifications", {SOURCE_TYPE_PRESET, TONE_TYPE_NOTIFICATION}},
+    {ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH + "/alarms", {SOURCE_TYPE_PRESET, TONE_TYPE_ALARM}},
+    {ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH + "/ringtones", {SOURCE_TYPE_PRESET, TONE_TYPE_RINGTONE}},
+    {ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH + "/notifications", {SOURCE_TYPE_PRESET, TONE_TYPE_NOTIFICATION}},
 };
 
 
@@ -127,9 +127,9 @@ int32_t RingtoneScannerObj::BootScan()
 #ifndef OHOS_LOCAL_DEBUG_DISABLE
         LOCAL_DIR,
 #endif
-        ROOT_TONE_PRELOAD_PATH_NOAH,
-        ROOT_TONE_PRELOAD_PATH_CHINA,
-        ROOT_TONE_PRELOAD_PATH_OVERSEA,
+        ROOT_TONE_PRELOAD_PATH_NOAH_PATH,
+        ROOT_TONE_PRELOAD_PATH_CHINA_PATH,
+        ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH,
     };
 
     int64_t scanStart = RingtoneFileUtils::UTCTimeMilliSeconds();
@@ -153,10 +153,9 @@ int32_t RingtoneScannerObj::BootScan()
         }
     }
 
-    // reset ringtone settings
-    RingtoneSettings::ShotToneDefaultSettings();
-    RingtoneSettings::NotificationToneDefaultSettings();
-    RingtoneSettings::RingToneDefaultSettings();
+    // reset ringtone default settings
+    auto rawRdb = RingtoneRdbStore::GetInstance()->GetRaw();
+    RingtoneDefaultSetting::GetObj(rawRdb)->Update();
 
     int64_t scanEnd = RingtoneFileUtils::UTCTimeMilliSeconds();
     RINGTONE_INFO_LOG("total preload tone files count:%{public}d, scanned: %{public}d, costed-time:%{public}lld ms",

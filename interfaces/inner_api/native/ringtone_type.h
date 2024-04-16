@@ -85,6 +85,12 @@ enum AlarmToneType : int32_t {
     ALARM_TONE_TYPE_MAX
 };
 
+// ringtone system default setting
+static const char PARAM_RINGTONE_SETTING_SHOT[] = "persist.ringtone.setting.shot";
+static const char PARAM_RINGTONE_SETTING_SHOT2[] = "persist.ringtone.setting.shot2";
+static const char PARAM_RINGTONE_SETTING_NOTIFICATIONTONE[] = "persist.ringtone.setting.notification";
+static const char PARAM_RINGTONE_SETTING_RINGTONE[] = "persist.ringtone.setting.ringtone";
+static const char PARAM_RINGTONE_SETTING_RINGTONE2[] = "persist.ringtone.setting.ringtone2";
 // default value
 const int32_t TONE_ID_DEFAULT = -1;
 const std::string DATA_DEFAULT = {};
