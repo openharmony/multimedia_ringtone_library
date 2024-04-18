@@ -41,7 +41,6 @@ private:
     int32_t PopulateMetadata(const std::shared_ptr<NativeRdb::ResultSet> &resultSet,
         std::unique_ptr<RingtoneMetadata> &metaData);
     std::vector<FileInfo> ConvertToFileInfos(std::vector<std::shared_ptr<RingtoneMetadata>> &metaDatas);
-    bool MoveFileInternal(const std::string &src, const std::string &dest);
     void UpdateRestoreFileInfo(FileInfo &info);
 private:
     std::shared_ptr<NativeRdb::RdbStore> restoreRdb_ = nullptr;

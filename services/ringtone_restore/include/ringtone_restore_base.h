@@ -34,7 +34,7 @@ protected:
     virtual std::vector<NativeRdb::ValuesBucket> MakeInsertValues(std::vector<FileInfo> &infos);
     virtual void InsertTones(std::vector<FileInfo> &infos);
 
-    static int32_t MoveFile(const std::string &srcFile, const std::string &dstFile);
+    static bool MoveFile(const std::string &src, const std::string &dst);
     static int32_t MoveDirectory(const std::string &srcDir, const std::string &dstDir);
 private:
     static std::string GetRestoreDir(const int32_t toneType);
