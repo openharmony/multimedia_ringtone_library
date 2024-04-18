@@ -14,6 +14,8 @@
  */
 
 #include "ringtone_restore_napi.h"
+#include "ringtone_restore_factory.h"
+#include "ringtone_restore_type.h"
 #include "ringtone_log.h"
 #include "ringtone_errno.h"
 #include "ringtone_db_const.h"
@@ -48,6 +50,21 @@ static int32_t GetIntFromParams(napi_env env, const napi_value args[], size_t in
         return result;
     }
     napi_get_value_int32(env, args[index], &result);
+    return result;
+}
+
+static std::string GetStringFromParams(napi_env env, const napi_value args[], size_t index)
+{
+    napi_valuetype valueType = napi_undefined;
+    if (napi_typeof(env, args[index], &valueType) != napi_ok || valueType != napi_string) {
+        // NapiError::ThrowError(env, JS_ERR_PARAMETER_INVALID);
+        return "";
+    }
+
+    size_t resultLength;
+    napi_get_value_string_utf8(env, args[index], nullptr, 0, &resultLength);
+    std::string result(resultLength, '\0');
+    napi_get_value_string_utf8(env, args[index], &result[0], resultLength + 1, &resultLength);
     return result;
 }
 
@@ -89,7 +106,15 @@ napi_value RingtoneRestoreNapi::JSStartRestore(napi_env env, napi_callback_info 
     }
     napi_get_undefined(env, &result);
     int32_t scenceCode = GetIntFromParams(env, argv, 0);
+    std::string baseBackupPath = GetStringFromParams(env, argv, 1);
     RINGTONE_INFO_LOG("scenceCode: %{public}d", scenceCode);
+    RINGTONE_INFO_LOG("backupPath: %{public}s", baseBackupPath.c_str());
+    auto restore = RingtoneRestoreFactory::CreateObj(RestoreSceneType(scenceCode));
+    if ((restore != nullptr) && (restore->Init(baseBackupPath)) == Media::E_OK) {
+        restore->StartRestore();
+    } else {
+        RINGTONE_ERR_LOG("ringtone-restore failed on init");
+    }
     RINGTONE_INFO_LOG("JSStartRestore end");
     return result;
 }

@@ -103,14 +103,6 @@ void RingtoneDataShareExtension::OnStart(const AAFwk::Want &want)
         RingtoneScannerManager::GetInstance()->Start(false);
         SetParameter(RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY, RINGTONE_PARAMETER_SCANNER_COMPLETED_TRUE);
     }
-
-    // ringtone backup restore
-    auto restore = RingtoneRestoreFactory::CreateObj(RESTORE_SCENE_TYPE_SINGLE_CLONE);
-    if ((restore != nullptr) && (restore->Init(RINGTONE_SINGLE_CLONE_BACKUP_PATH)) == Media::E_OK) {
-        restore->StartRestore();
-    } else {
-        RINGTONE_ERR_LOG("ringtone-restore failed on init");
-    }
     RINGTONE_INFO_LOG("end.");
 }
 

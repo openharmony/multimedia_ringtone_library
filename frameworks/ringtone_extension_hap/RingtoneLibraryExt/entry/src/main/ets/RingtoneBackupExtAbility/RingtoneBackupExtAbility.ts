@@ -44,15 +44,15 @@ export default class RingtoneBackupExtAbility extends BackupExtensionAbility {
     let srcPath:string;
     let destPath:string;
     if (bundleVersion.name === UPGRADE_NAME && bundleVersion.code === 0) {
-      await ringtonerestore.startRestore(UPGRADE_RESTORE);
+      await ringtonerestore.startRestore(UPGRADE_RESTORE, backupBasePath);
       srcPath = backupFilePath;
       destPath = ringtonePath;
     } else if (bundleVersion.name === DUAL_FRAME_CLONE_NAME && bundleVersion.code === 0) {
-      await ringtonerestore.startRestore(DUAL_FRAME_CLONE_RESTORE);
+      await ringtonerestore.startRestore(DUAL_FRAME_CLONE_RESTORE, backupBasePath);
       srcPath = backupFilePath;
       destPath = ringtonePath;
     } else {
-      await ringtonerestore.startRestore(CLONE_RESTORE);
+      await ringtonerestore.startRestore(CLONE_RESTORE, backupBasePath);
       srcPath = backupFilePath;
       destPath = ringtonePath;
     }
@@ -97,12 +97,12 @@ export default class RingtoneBackupExtAbility extends BackupExtensionAbility {
   }
 
   private async moveConflictFile(srcFile : string, dstFile : string) : Promise<void> {
-  let srcStat = fs.statSync(srcFile);
-  let dstStat = fs.statSync(dstFile);
-  if (srcStat.size === dstStat.size) {
-    console.log(TAG, `conflictFile is same, srcFile: [${srcFile}] size: (${srcStat.size}), dstFile: [${dstFile}] size: (${dstStat.size}), return.`);
-    return;
-  }
+    let srcStat = fs.statSync(srcFile);
+    let dstStat = fs.statSync(dstFile);
+    if (srcStat.size === dstStat.size) {
+      console.log(TAG, `conflictFile is same, srcFile: [${srcFile}] size: (${srcStat.size}), dstFile: [${dstFile}] size: (${dstStat.size}), return.`);
+      return;
+    }
     const srcArr = srcFile.split('/');
     const dstArr = dstFile.split('/');
     const srcFileName = srcArr[srcArr.length - 1];
