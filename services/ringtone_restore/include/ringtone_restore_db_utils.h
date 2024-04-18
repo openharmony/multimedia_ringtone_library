@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef RINGTONE_RESTORE_DATABASE_UTILS_H_
-#define RINGTONE_RESTORE_DATABASE_UTILS_H_
+#ifndef RINGTONE_RESTORE_DATABASE_UTILS_H
+#define RINGTONE_RESTORE_DATABASE_UTILS_H
 
 #include <string>
 
@@ -54,4 +54,4 @@ public:
 } // namespace Media
 } // namespace OHOS
 
-#endif  // RINGTONE_RESTORE_DATABASE_UTILS_H_
+#endif  // RINGTONE_RESTORE_DATABASE_UTILS_H

@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef RINGTONE_RESTORE_BASE_H_
-#define RINGTONE_RESTORE_BASE_H_
+#ifndef RINGTONE_RESTORE_BASE_H
+#define RINGTONE_RESTORE_BASE_H
 
 #include "restore_interface.h"
 #include "ringtone_restore_type.h"
@@ -48,4 +48,4 @@ private:
 } // namespace Media
 } // namespace OHOS
 
-#endif  // RINGTONE_RESTORE_BASE_H_
+#endif  // RINGTONE_RESTORE_BASE_H

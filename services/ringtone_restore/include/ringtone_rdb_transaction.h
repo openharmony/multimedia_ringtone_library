@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef RINGTONE_RDB_TRANSACTION_H_
-#define RINGTONE_RDB_TRANSACTION_H_
+#ifndef RINGTONE_RDB_TRANSACTION_H
+#define RINGTONE_RDB_TRANSACTION_H
 
 #include <atomic>
 #include <condition_variable>
@@ -61,4 +61,4 @@ private:
 };
 } // namespace OHOS::Media
 
-#endif // RINGTONE_RDB_TRANSACTION_H_
+#endif // RINGTONE_RDB_TRANSACTION_H

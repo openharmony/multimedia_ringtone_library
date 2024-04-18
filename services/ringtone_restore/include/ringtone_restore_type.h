@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef RINGTONE_RESTORE_CONST_H_
-#define RINGTONE_RESTORE_CONST_H_
+#ifndef RINGTONE_RESTORE_CONST_H
+#define RINGTONE_RESTORE_CONST_H
 
 #include <string>
 #include <unordered_set>
@@ -32,10 +32,10 @@ const std::string RINGTONE_BACKUP_SUFFIX_DIR = "/storage/media/local/files/Ringt
 const std::string RINGTONE_RESTORE_DIR = "/storage/media/local/files/Ringtone";
 
 enum RestoreSceneType : int32_t {
-    RESTORE_SCENE_TYPE_INVILID = -1, 
-    RESTORE_SCENE_TYPE_SINGLE_CLONE, 
-    RESTORE_SCENE_TYPE_DUAL_CLONE, 
-    RESTORE_SCENE_TYPE_MAX, 
+    RESTORE_SCENE_TYPE_INVILID = -1,
+    RESTORE_SCENE_TYPE_SINGLE_CLONE,
+    RESTORE_SCENE_TYPE_DUAL_CLONE,
+    RESTORE_SCENE_TYPE_MAX,
 };
 
 struct FileInfo {
@@ -65,4 +65,4 @@ struct FileInfo {
 } // namespace Media
 } // namespace OHOS
 
-#endif  // RINGTONE_RESTORE_CONST_H_
+#endif  // RINGTONE_RESTORE_CONST_H

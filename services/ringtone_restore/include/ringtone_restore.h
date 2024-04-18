@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef RINGTONE_RESTORE_H_
-#define RINGTONE_RESTORE_H_
+#ifndef RINGTONE_RESTORE_H
+#define RINGTONE_RESTORE_H
 
 #include "rdb_helper.h"
 #include "result_set.h"
@@ -51,4 +51,4 @@ private:
 } // namespace Media
 } // namespace OHOS
 
-#endif  // RINGTONE_RESTORE_H_
+#endif  // RINGTONE_RESTORE_H

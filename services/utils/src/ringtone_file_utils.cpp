@@ -299,7 +299,7 @@ bool RingtoneFileUtils::CopyFileUtil(const string &filePath, const string &newPa
     }
     if (absFilePath.empty()) {
         RINGTONE_ERR_LOG("Failed to obtain the canonical path for source path%{private}s %{public}d",
-                      filePath.c_str(), errno);
+            filePath.c_str(), errno);
         return errCode;
     }
 

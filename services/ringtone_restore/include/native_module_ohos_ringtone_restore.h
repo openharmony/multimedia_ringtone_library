@@ -13,20 +13,10 @@
  * limitations under the License.
  */
 
-#ifndef RESTORE_INTERFACE_H
-#define RESTORE_INTERFACE_H
+#ifndef OHOS_RINGTONE_NATIVE_MODULE_RESTORE_H
+#define OHOS_RINGTONE_NATIVE_MODULE_RESTORE_H
 
-#include <string>
+#include "ringtone_restore_napi.h"
+#include "napi/native_node_api.h"
 
-namespace OHOS {
-namespace Media {
-class RestoreInterface {
-public:
-    virtual ~RestoreInterface() {}
-    virtual int32_t Init(const std::string &backupPath) = 0;
-    virtual void StartRestore() = 0;
-};
-} // namespace Media
-} // namespace OHOS
-
-#endif // RESTORE_INTERFACE_H
+#endif // OHOS_RINGTONE_NATIVE_MODULE_RESTORE_H

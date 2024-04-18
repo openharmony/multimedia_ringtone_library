@@ -13,32 +13,25 @@
  * limitations under the License.
  */
 
-#define MLOG_TAG "RingtoneRestoreFactory"
+#ifndef OHOS_MEDIA_RINGTONE_RESTORE_NAPI_H
+#define OHOS_MEDIA_RINGTONE_RESTORE_NAPI_H
 
-#include <memory>
-
-#include "ringtone_restore_factory.h"
-
-#include "restore_interface.h"
-#include "ringtone_log.h"
-#include "ringtone_restore.h"
+#include "napi/native_api.h"
+#include "napi/native_node_api.h"
 
 namespace OHOS {
 namespace Media {
-std::unique_ptr<RestoreInterface> RingtoneRestoreFactory::CreateObj(RestoreSceneType type)
-{
-    std::unique_ptr<RestoreInterface> obj = nullptr;
+class RingtoneRestoreNapi {
+public:
+    static napi_value Init(napi_env env, napi_value exports);
 
-    if (type == RESTORE_SCENE_TYPE_SINGLE_CLONE) {
-        obj = std::make_unique<RingtoneRestore>();
-    } else if (RESTORE_SCENE_TYPE_DUAL_CLONE) {
-        // reserve for dual-fw restore
-        RINGTONE_ERR_LOG("error: dual-fw clone is not implemented");
-    } else {
-        RINGTONE_ERR_LOG("error: invalid argument");
-    }
+    RingtoneRestoreNapi() = default;
+    ~RingtoneRestoreNapi() = default;
 
-    return obj;
-}
+private:
+    static napi_value JSStartRestore(napi_env env, napi_callback_info info);
+};
 } // namespace Media
 } // namespace OHOS
+
+#endif // OHOS_MEDIA_RINGTONE_RESTORE_NAPI_H

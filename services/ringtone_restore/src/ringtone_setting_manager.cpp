@@ -66,8 +66,7 @@ RingtoneSettingManager::RingtoneSettingManager(std::shared_ptr<NativeRdb::RdbSto
 {
 }
 
-int32_t RingtoneSettingManager::CommitSetting(int32_t toneId, string &tonePath, int32_t settingType, int32_t toneType,
-    int32_t sourceType)
+int32_t RingtoneSettingManager::CommitSettingCompare(int32_t settingType, int32_t toneType, int32_t sourceType)
 {
     if ((sourceType != SOURCE_TYPE_PRESET) && (sourceType != SOURCE_TYPE_CUSTOMISED)) {
         return E_INVALID_ARGUMENTS;
@@ -86,6 +85,15 @@ int32_t RingtoneSettingManager::CommitSetting(int32_t toneId, string &tonePath, 
     if ((settingType == TONE_SETTING_TYPE_RINGTONE) && ((toneType <= RING_TONE_TYPE_NOT) ||
         (toneType >= TONE_SETTING_TYPE_MAX))) {
         return E_INVALID_ARGUMENTS;
+    }
+}
+
+int32_t RingtoneSettingManager::CommitSetting(int32_t toneId, string &tonePath, int32_t settingType, int32_t toneType,
+    int32_t sourceType)
+{
+    auto ret = CommitSettingCompare(settingType, toneType, sourceType);
+    if (!ret) {
+        return ret;
     }
     SettingItem item = {toneId, settingType, toneType, sourceType};
     for (auto it = settings_.find(tonePath); it != settings_.end(); it++) {
@@ -376,7 +384,7 @@ int32_t RingtoneSettingManager::CleanupSettingFromRdb(int32_t settingType, int32
             updateSql = SHOT_SETTING_CLEANUP_CLAUSE + " WHERE " + RINGTONE_COLUMN_SHOT_TONE_TYPE + " = " +
                 to_string(toneType) + " AND " + RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE + " = " + to_string(sourceType);
         }
-    } else if(settingType == TONE_SETTING_TYPE_RINGTONE) {
+    } else if (settingType == TONE_SETTING_TYPE_RINGTONE) {
         if (toneType == RING_TONE_TYPE_SIM_CARD_BOTH) {
             updateSql = RINGTONE_SETTING_CLEANUP_CLAUSE  + " WHERE " + RINGTONE_COLUMN_RING_TONE_TYPE + " <> " +
                 to_string(RING_TONE_TYPE_DEFAULT) + " AND " + RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE + " = " +

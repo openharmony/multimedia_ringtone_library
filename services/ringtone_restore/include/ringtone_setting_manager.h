@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef RINGTONE_SETTING_MANAGER_H_
-#define RINGTONE_SETTING_MANAGER_H_
+#ifndef RINGTONE_SETTING_MANAGER_H
+#define RINGTONE_SETTING_MANAGER_H
 
 #include <string>
 #include <unordered_set>
@@ -41,6 +41,7 @@ private:
         int32_t toneType = TONE_TYPE_DEFAULT;
         int32_t sourceType = SOURCE_TYPE_DEFAULT;
     };
+    int32_t CommitSettingCompare(int32_t settingType, int32_t toneType, int32_t sourceType);
     void TravelSettings(std::function<int32_t (std::string &, SettingItem &)> func);
     int32_t PopulateMetadata(const std::shared_ptr<NativeRdb::ResultSet> &resultSet,
         std::unique_ptr<RingtoneMetadata> &metaData);
@@ -64,4 +65,4 @@ private:
 } // namespace Media
 } // namespace OHOS
 
-#endif // RINGTONE_SETTING_MANAGER_H_
+#endif // RINGTONE_SETTING_MANAGER_H

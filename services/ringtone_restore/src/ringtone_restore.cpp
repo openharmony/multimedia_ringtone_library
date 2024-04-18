@@ -245,30 +245,30 @@ bool RingtoneRestore::OnPrepare(FileInfo &info, const std::string &destPath)
     int32_t repeatCount = 1;
     string srcPath = backupPath_ + info.data;
     while (RingtoneFileUtils::IsFileExists(destPath + "/" + fileName)) {
-        // if (RingtoneFileUtils::IsSameFile(srcPath, destPath + "/" + fileName)) {
-        //     RINGTONE_ERR_LOG("samefile: srcPath=%{public}s, dstPath=%{public}s", srcPath.c_str(),
-        //         (destPath + "/" + fileName).c_str());
-        //     return false;
-        // }
+        if (RingtoneFileUtils::IsSameFile(srcPath, destPath + "/" + fileName)) {
+            RINGTONE_ERR_LOG("samefile: srcPath=%{public}s, dstPath=%{public}s", srcPath.c_str(),
+                (destPath + "/" + fileName).c_str());
+            return false;
+        }
         fileName = baseName + "(" + to_string(repeatCount++) + ")" + "." + extensionName;
     }
     info.restorePath = destPath + "/" + fileName;
 
-    // if (!MoveFileInternal(srcPath, info.restorePath)) {
-    //     return false;
-    // }
+    if (!MoveFileInternal(srcPath, info.restorePath)) {
+        return false;
+    }
 
-    // UpdateRestoreFileInfo(info);
+    UpdateRestoreFileInfo(info);
 
     return true;
 }
 
 void RingtoneRestore::OnFinished(vector<FileInfo> &infos)
 {
-    // if (!RingtoneFileUtils::RemoveDirectory(backupPath_)) {
-    //     RINGTONE_ERR_LOG("cleanup backup dir failed, restorepath=%{public}s, err: %{public}s",
-    //         backupPath_.c_str(), strerror(errno));
-    // }
+    if (!RingtoneFileUtils::RemoveDirectory(backupPath_)) {
+        RINGTONE_ERR_LOG("cleanup backup dir failed, restorepath=%{public}s, err: %{public}s",
+            backupPath_.c_str(), strerror(errno));
+    }
 }
 } // namespace Media
 } // namespace OHOS

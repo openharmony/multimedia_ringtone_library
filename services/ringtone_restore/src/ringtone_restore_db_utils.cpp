@@ -96,7 +96,8 @@ std::unordered_map<std::string, std::string> RingtoneRestoreDbUtils::GetColumnIn
         std::string columnName = GetStringVal(PRAGMA_TABLE_NAME, resultSet);
         std::string columnType = GetStringVal(PRAGMA_TABLE_TYPE, resultSet);
         if (columnName.empty() || columnType.empty()) {
-            RINGTONE_ERR_LOG("Empty column name or type: %{public}s, %{public}s", columnName.c_str(), columnType.c_str());
+            RINGTONE_ERR_LOG("Empty column name or type: %{public}s, %{public}s", columnName.c_str(),
+                columnType.c_str());
             continue;
         }
         columnInfoMap[columnName] = columnType;

@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef RINGTONE_DEFAULT_SETTING_H_
-#define RINGTONE_DEFAULT_SETTING_H_
+#ifndef RINGTONE_DEFAULT_SETTING_H
+#define RINGTONE_DEFAULT_SETTING_H
 
 #include <memory>
 #include <string>
@@ -44,4 +44,4 @@ private:
 } // namespace Media
 } // namespace OHOS
 
-#endif // RINGTONE_DEFAULT_SETTING_H_
+#endif // RINGTONE_DEFAULT_SETTING_H

@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef BACKUP_RESTORE_FACTORY_H_
-#define BACKUP_RESTORE_FACTORY_H_
+#ifndef BACKUP_RESTORE_FACTORY_H
+#define BACKUP_RESTORE_FACTORY_H
 
 #include <memory>
 
@@ -33,4 +33,4 @@ public:
 } // namespace Media
 } // namespace OHOS
 
-#endif  // BACKUP_RESTORE_FACTORY_H_
+#endif  // BACKUP_RESTORE_FACTORY_H

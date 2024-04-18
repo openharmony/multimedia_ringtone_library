@@ -80,21 +80,21 @@ void RingtoneRestoreBase::CheckSetting(FileInfo &info)
     if ((info.shotToneType > SHOT_TONE_TYPE_NOT) && (info.shotToneType < SHOT_TONE_TYPE_MAX) &&
             (info.shotToneSourceType == SOURCE_TYPE_CUSTOMISED)) {
         settingMgr_->CommitSetting(info.toneId, info.restorePath, TONE_SETTING_TYPE_SHOT, info.shotToneType,
-                info.shotToneSourceType);
+            info.shotToneSourceType);
     }
     if (info.ringToneType > RING_TONE_TYPE_NOT && info.ringToneType < RING_TONE_TYPE_MAX &&
             info.ringToneSourceType == SOURCE_TYPE_CUSTOMISED) {
         settingMgr_->CommitSetting(info.toneId, info.restorePath, TONE_SETTING_TYPE_RINGTONE, info.ringToneType,
-                info.ringToneSourceType);
+            info.ringToneSourceType);
     }
     if (info.notificationToneType == NOTIFICATION_TONE_TYPE &&
             info.notificationToneSourceType == SOURCE_TYPE_CUSTOMISED) {
         settingMgr_->CommitSetting(info.toneId, info.restorePath, TONE_SETTING_TYPE_NOTIFICATION,
-                info.notificationToneType, info.notificationToneSourceType);
+            info.notificationToneType, info.notificationToneSourceType);
     }
     if (info.alarmToneType == ALARM_TONE_TYPE && info.alarmToneSourceType == SOURCE_TYPE_CUSTOMISED) {
         settingMgr_->CommitSetting(info.toneId, info.restorePath, TONE_SETTING_TYPE_ALARM, info.alarmToneType,
-                info.alarmToneSourceType);
+            info.alarmToneSourceType);
     }
 }
 
@@ -143,11 +143,11 @@ string RingtoneRestoreBase::GetRestoreDir(const int32_t toneType)
 {
     string path = {};
     if (toneType == ToneType::TONE_TYPE_ALARM) {
-         path = RINGTONE_RESTORE_DIR + "/" + "alarms";
+        path = RINGTONE_RESTORE_DIR + "/" + "alarms";
     } else if (toneType == TONE_TYPE_RINGTONE) {
-         path = RINGTONE_RESTORE_DIR + "/" + "ringtones";
+        path = RINGTONE_RESTORE_DIR + "/" + "ringtones";
     } else if (toneType == TONE_TYPE_NOTIFICATION) {
-         path = RINGTONE_RESTORE_DIR + "/" + "notifications";
+        path = RINGTONE_RESTORE_DIR + "/" + "notifications";
     } else {
         path = {};
     }
@@ -215,7 +215,8 @@ int32_t RingtoneRestoreBase::MoveDirectory(const std::string &srcDir, const std:
         std::string tmpFilePath = srcFilePath;
         std::string dstFilePath = tmpFilePath.replace(0, srcDir.length(), dstDir);
         if (MoveFile(srcFilePath, dstFilePath) != E_OK) {
-            RINGTONE_ERR_LOG("Move file from %{private}s to %{private}s failed", srcFilePath.c_str(), dstFilePath.c_str());
+            RINGTONE_ERR_LOG("Move file from %{private}s to %{private}s failed", srcFilePath.c_str(),
+                dstFilePath.c_str());
             return E_FAIL;
         }
     }
