@@ -1,0 +1,28 @@
+{
+  "string": [
+    {
+      "name": "entry_desc",
+      "value": "description"
+    },
+    {
+      "name": "MainAbility_desc",
+      "value": "description"
+    },
+    {
+      "name": "DataShareExtAbility_desc",
+      "value": "description"
+    },
+    {
+      "name": "permission_used_stats",
+      "value": "Allow the application to access the permission usage records"
+    },
+    {
+      "name": "permission_proxy_authorization_uri",
+      "value": "Allow the application proxy to grant URIs"
+    },
+    {
+      "name": "permission_get_bundle_info_privileged",
+      "value": "Allows querying of the app's basic information and other sensitive information"
+    }
+  ]
+}

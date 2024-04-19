@@ -1,0 +1,17 @@
+{
+  "app": {
+    "bundleName": "com.ohos.ringtonelibrary.ringtonelibrarydata",
+    "vendor": "huawei",
+    "versionCode": 10000000,
+    "versionName": "1.0.0.0",
+    "minAPIVersion": 12,
+    "targetAPIVersion": 12,
+    "KeepAlive": false,
+    "removable": false,
+    "singleton": false,
+    "icon": "$media:app_icon",
+    "label": "$string:app_name",
+    "generateBuildHash": true,
+    "distributedNotificationEnabled": true
+  }
+}
