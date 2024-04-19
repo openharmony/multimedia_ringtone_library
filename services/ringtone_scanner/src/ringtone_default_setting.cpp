@@ -38,15 +38,32 @@ RingtoneDefaultSetting::RingtoneDefaultSetting(shared_ptr<NativeRdb::RdbStore> &
     settingMgr_ = make_unique<RingtoneSettingManager>(rdb);
 }
 
+#ifndef OHOS_LOCAL_DEBUG_DISABLE
+// just for debug
+static const std::string LOCAL_DIR = "/storage/media/local/data/com.ohos.ringtonelibrary.ringtonelibrarydata";
+#endif
 string RingtoneDefaultSetting::GetTonePathByDisplayName(string &name)
 {
     string pathStr = {};
     string querySql = "SELECT data FROM ToneFiles WHERE display_name = "s + "\"" + name + "\"";
     settingMgr_->TravelQueryResultSet(querySql, [&](shared_ptr<RingtoneMetadata> &meta) -> bool {
         pathStr = meta->GetData();
-        if (!pathStr.empty()) {
+        if (pathStr.empty()) {
+            pathStr = {};
+            return false;
+        }
+        if (pathStr.find(ROOT_TONE_PRELOAD_PATH_NOAH_PATH) == 0 ||
+            pathStr.find(ROOT_TONE_PRELOAD_PATH_CHINA_PATH) == 0 ||
+#ifndef OHOS_LOCAL_DEBUG_DISABLE
+            pathStr.find(LOCAL_DIR) == 0 ||
+#endif
+            pathStr.find(ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH) == 0) {
+#ifndef OHOS_LOCAL_DEBUG_DISABLE
+            RINGTONE_ERR_LOG("liuxk, find path=%{public}s", pathStr.c_str());
+#endif
             return true;
         }
+        pathStr = {};
         return false;
     });
 
