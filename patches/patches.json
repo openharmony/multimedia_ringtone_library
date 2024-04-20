@@ -1,0 +1,50 @@
+{
+    "patches": [
+        {
+            "project":"productdefine_common",
+            "path":"productdefine/common",
+            "pr_url":"https://gitee.com/openharmony/productdefine_common/pulls/864"
+        },
+        {
+            "project":"applications_hap ",
+            "path":"applications/standard/hap",
+            "pr_url":"https://gitee.com/openharmony/applications_hap/pulls/2436"
+        },
+        {
+            "project":"vendor_hihope",
+            "path":"vendor/hihope",
+            "pr_url":"https://gitee.com/openharmony/vendor_hihope/pulls/1160"
+        },
+        {
+            "project":"ability_ability_runtime",
+            "path":"foundation/ability/ability_runtime",
+            "pr_url":"https://gitee.com/openharmony/ability_ability_runtime/pulls/8205"
+        },
+        {
+            "project":"filemanagement_storage_service",
+            "path":"foundation/filemanagement/storage_service",
+            "pr_url":"https://gitee.com/openharmony/filemanagement_storage_service/pulls/907"
+        },
+        {
+            "project":"hiviewdfx_hitrace",
+            "path":"base/hiviewdfx/hitrace",
+            "pr_url":"https://gitee.com/openharmony/hiviewdfx_hitrace/pulls/393"
+        },
+        {
+            "project":"security_access_token",
+            "path":"base/security/access_token",
+            "pr_url":"https://gitee.com/openharmony/security_access_token/pulls/1750"
+        },
+        {
+            "project":"security_selinux_adapter",
+            "path":"base/security/selinux_adapter",
+            "pr_url":"https://gitee.com/openharmony/security_selinux_adapter/pulls/4052"
+        },
+        {
+            "project":"startup_appspawn",
+            "path":"base/startup/appspawn",
+            "pr_url":"https://gitee.com/openharmony/startup_appspawn/pulls/1050"
+        }
+        
+    ]
+}
