@@ -1,0 +1,70 @@
+# Copyright (C) 2024 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/test.gni")
+import("//foundation/multimedia/ringtone_library/ringtone_library.gni")
+
+group("unittest") {
+  testonly = true
+
+  deps = [ ":ringtone_scanner_unittest" ]
+}
+
+ohos_unittest("ringtone_scanner_unittest") {
+  module_out_path = "ringtone_library/ringtonelibraryextention"
+
+  include_dirs = [
+    "./include",
+    "../ringtone_unittest_utils/include",
+    "${RINGTONE_EXTENSION_PATH}/include",
+    "${RINGTONE_SERVICES_PATH}/utils/include",
+    "${RINGTONE_INTERFACES_PATH}/inner_api/native",
+    "${RINGTONE_SCANNER_PATH}/include",
+  ]
+
+  sources = [
+    "../ringtone_unittest_utils/src/ringtone_unittest_utils.cpp",
+    "./src/ringtone_metadata_extractor_test.cpp",
+    "./src/ringtone_scanner_db_test.cpp",
+    "./src/ringtone_scanner_test.cpp",
+    "./src/ringtone_scanner_unit_test.cpp",
+    "./src/ringtone_scanner_utils_test.cpp",
+  ]
+
+  deps = [ "${RINGTONE_ROOT_PATH}/services:ringtone_data_extension" ]
+
+  external_deps = [
+    "ability_runtime:ability_context_native",
+    "ability_runtime:ability_manager",
+    "ability_runtime:app_context",
+    "c_utils:utils",
+    "data_share:datashare_common",
+    "data_share:datashare_provider",
+    "ipc:ipc_single",
+    "napi:ace_napi",
+    "player_framework:media_client",
+    "relational_store:rdb_data_share_adapter",
+  ]
+
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+
+  if (is_standard_system) {
+    external_deps += [ "hilog:libhilog" ]
+  } else {
+    external_deps += [ "hilog:libhilog" ]
+  }
+}
