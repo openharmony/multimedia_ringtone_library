@@ -1,0 +1,157 @@
+# Copyright (C) 2024 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/ohos.gni")
+import("//foundation/multimedia/ringtone_library/ringtone_library.gni")
+
+config("ringtone_public_config") {
+  include_dirs = [
+    "${RINGTONE_SCANNER_PATH}/include",
+    "${RINGTONE_BACKUP_PATH}/include",
+    "${RINGTONE_EXTENSION_PATH}/include",
+    "${RINGTONE_DFX_PATH}/include",
+    "${RINGTONE_SERVICES_PATH}/utils/include",
+    "${RINGTONE_INTERFACES_PATH}/inner_api/native",
+    "${RINGTONE_HELPER_PATH}/include",
+  ]
+  ldflags = [ "-Wl,--gc-sections" ]
+
+  cflags = [
+    "-Wall",
+    "-Werror",
+    "-fvisibility=hidden",
+    "-fdata-sections",
+    "-ffunction-sections",
+    "-Wno-unused-but-set-variable",
+    "-Os",
+  ]
+
+  cflags_cc = [
+    "-fvisibility-inlines-hidden",
+    "-Os",
+  ]
+
+  if (target_cpu == "arm") {
+    cflags += [ "-DBINDER_IPC_32BIT" ]
+  }
+}
+
+ohos_shared_library("ringtone_data_extension") {
+  install_enable = true
+
+  ringtone_scan_source = [
+    "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_scan_executor.cpp",
+    "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_scanner.cpp",
+    "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_scanner_manager.cpp",
+    "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_scanner_db.cpp",
+    "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_metadata.cpp",
+    "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_metadata_extractor.cpp",
+    "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_scanner_utils.cpp",
+    "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_settings.cpp",
+  ]
+
+  ringtone_utils_source = [
+    "${RINGTONE_SERVICES_PATH}/utils/src/permission_utils.cpp",
+    "${RINGTONE_SERVICES_PATH}/utils/src/ringtone_file_utils.cpp",
+    "${RINGTONE_SERVICES_PATH}/utils/src/ringtone_mimetype_utils.cpp",
+    "${RINGTONE_SERVICES_PATH}/utils/src/ringtone_privacy_manager.cpp",
+  ]
+
+  ringtone_dfx_source = [
+    "${RINGTONE_SERVICES_PATH}/ringtone_dfx/src/dfx_manager.cpp",
+    "${RINGTONE_SERVICES_PATH}/ringtone_dfx/src/dfx_reporter.cpp",
+    "${RINGTONE_SERVICES_PATH}/ringtone_dfx/src/dfx_worker.cpp",
+  ]
+
+  ringtone_extension_sources = [
+    "ringtone_data_extension/src/ringtone_bundle_manager.cpp",
+    "ringtone_data_extension/src/ringtone_data_command.cpp",
+    "ringtone_data_extension/src/ringtone_data_manager.cpp",
+    "ringtone_data_extension/src/ringtone_datashare_extension.cpp",
+    "ringtone_data_extension/src/ringtone_datashare_stub_impl.cpp",
+    "ringtone_data_extension/src/ringtone_rdbstore.cpp",
+    "ringtone_data_extension/src/ringtone_subscriber.cpp",
+  ]
+
+  sources = ringtone_extension_sources
+  sources += ringtone_scan_source
+  sources += ringtone_utils_source
+  sources += ringtone_dfx_source
+
+  public_configs = [ ":ringtone_public_config" ]
+
+  deps = [
+    ":ringtonelibrary_param.para",
+    ":ringtonelibrary_param.para.dac",
+    "${RINGTONE_ROOT_PATH}/services/ringtone_helper:ringtone_data_helper",
+  ]
+
+  external_deps = [
+    "ability_base:want",
+    "ability_base:zuri",
+    "ability_runtime:app_context",
+    "ability_runtime:app_manager",
+    "ability_runtime:extensionkit_native",
+    "ability_runtime:runtime",
+    "access_token:libaccesstoken_sdk",
+    "access_token:libprivacy_sdk",
+    "c_utils:utils",
+    "common_event_service:cesfwk_innerkits",
+    "data_share:datashare_common",
+    "data_share:datashare_consumer",
+    "data_share:datashare_provider",
+    "hilog:libhilog",
+    "hisysevent:libhisysevent",
+    "hitrace:hitrace_meter",
+    "init:libbegetutil",
+    "ipc:ipc_core",
+    "napi:ace_napi",
+    "player_framework:media_client",
+    "preferences:native_preferences",
+    "relational_store:native_rdb",
+    "relational_store:rdb_data_share_adapter",
+    "samgr:samgr_proxy",
+  ]
+
+  if (!ringtone_link_opt) {
+    sanitize = {
+      cfi = true
+      cfi_cross_dso = true
+      debug = false
+      integer_overflow = true
+      ubsan = true
+      boundary_sanitize = true
+      stack_protector_ret = true
+    }
+  }
+
+  cflags_cc = [
+    "-fvisibility-inlines-hidden",
+    "-Os",
+  ]
+
+  subsystem_name = "multimedia"
+  part_name = "ringtone_library"
+}
+
+ohos_prebuilt_etc("ringtonelibrary_param.para") {
+  source = "etc/ringtonelibrary_param.para"
+  part_name = "ringtone_library"
+  module_install_dir = "etc/param"
+}
+
+ohos_prebuilt_etc("ringtonelibrary_param.para.dac") {
+  source = "etc/ringtonelibrary_param.para.dac"
+  part_name = "ringtone_library"
+  module_install_dir = "etc/param"
+}
