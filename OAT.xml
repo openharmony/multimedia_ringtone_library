@@ -67,10 +67,44 @@
                 <filteritem type="filepath" name="src/test/.*" desc="Test files"/>
             </filefilter>
             <filefilter name="defaultPolicyFilter" desc="Filters for compatibility，license header policies">
-                <filteritem type="filepath" name="src/main/java/ohos/oat/analysis/headermatcher/.*"
-                        desc="License matcher rules, not license header"/>
+                <filteritem type="filepath" name="frameworks/ringtone_extension_hap/RingtoneLibraryExt/entry/build-profile.json5"
+                        desc="Ringtone library file, and this file does not support comments"/>
+                <filteritem type="filepath" name="frameworks/ringtone_extension_hap/RingtoneLibraryExt/entry/hvigorfile.js"
+                        desc="Ringtone library file, and this file does not support comments"/>
+                <filteritem type="filepath" name="frameworks/ringtone_extension_hap/RingtoneLibraryExt/entry/src/ohosTest/module.json5"
+                        desc="Ringtone library file, and this file does not support comments"/>
+                <filteritem type="filepath" name="frameworks/ringtone_extension_hap/RingtoneLibraryExt/build-profile.json5"
+                        desc="Ringtone library file, and this file does not support comments"/>
+                <filteritem type="filepath" name="frameworks/ringtone_extension_hap/RingtoneLibraryExt/hvigorfile.js"
+                        desc="Ringtone library file, and this file does not support comments"/>
+                <filteritem type="filepath" name="frameworks/ringtone_extension_hap/RingtoneLibraryExt/entry/src/ohosTest/ets/TestAbility/pages/index.ets"
+                        desc="Ringtone library file"/>
+                <filteritem type="filepath" name="frameworks/ringtone_extension_hap/RingtoneLibraryExt/entry/src/main/ets/pages/index.ets"
+                        desc="Ringtone library file"/>
+                <filteritem type="filepath" name="frameworks/ringtone_extension_hap/RingtoneLibraryExt/entry/src/ohosTest/ets/test/Ability.test.ets"
+                        desc="Ringtone library file"/>
+                <filteritem type="filepath" name="frameworks/ringtone_extension_hap/RingtoneLibraryExt/entry/src/ohosTest/ets/test/List.test.ets"
+                        desc="Ringtone library file"/>
             </filefilter>
             <filefilter name="copyrightPolicyFilter" desc="Filters for copyright header policies">
+                <filteritem type="filepath" name="frameworks/ringtone_extension_hap/RingtoneLibraryExt/entry/build-profile.json5"
+                        desc="Ringtone library file, and this file does not support comments"/>
+                <filteritem type="filepath" name="frameworks/ringtone_extension_hap/RingtoneLibraryExt/entry/hvigorfile.js"
+                        desc="Ringtone library file, and this file does not support comments"/>
+                <filteritem type="filepath" name="frameworks/ringtone_extension_hap/RingtoneLibraryExt/entry/src/ohosTest/module.json5"
+                        desc="Ringtone library file, and this file does not support comments"/>
+                <filteritem type="filepath" name="frameworks/ringtone_extension_hap/RingtoneLibraryExt/build-profile.json5"
+                        desc="Ringtone library file, and this file does not support comments"/>
+                <filteritem type="filepath" name="frameworks/ringtone_extension_hap/RingtoneLibraryExt/hvigorfile.js"
+                        desc="Ringtone library file, and this file does not support comments"/>
+                <filteritem type="filepath" name="frameworks/ringtone_extension_hap/RingtoneLibraryExt/entry/src/ohosTest/ets/TestAbility/pages/index.ets"
+                        desc="Ringtone library file"/>
+                <filteritem type="filepath" name="frameworks/ringtone_extension_hap/RingtoneLibraryExt/entry/src/main/ets/pages/index.ets"
+                        desc="Ringtone library file"/>
+                <filteritem type="filepath" name="frameworks/ringtone_extension_hap/RingtoneLibraryExt/entry/src/ohosTest/ets/test/Ability.test.ets"
+                        desc="Ringtone library file"/>
+                <filteritem type="filepath" name="frameworks/ringtone_extension_hap/RingtoneLibraryExt/entry/src/ohosTest/ets/test/List.test.ets"
+                        desc="Ringtone library file"/>
             </filefilter>
             <filefilter name="licenseFileNamePolicyFilter" desc="Filters for LICENSE file policies">
             </filefilter>
