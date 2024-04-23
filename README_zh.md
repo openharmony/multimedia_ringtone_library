@@ -6,10 +6,10 @@
 - [相关仓](#section1533973044317)
 
 ## 简介<a name="section1158716411637"></a>
-**图1** ringtonelibrary组件架构图
+**图1** RingtoneLibrary组件架构图
 ![](figures/ringtonelibrary-architecture_zh.png "ringtonelibrary-architecture")
 **ringtone\_library** 仓库提供了一系列易用的接口用于设定及获取系统铃音信息。
-RingtoneLibrary接口暂不对外部应用开放, 仅内部使用。
+RingtoneLibrary接口仅内部使用。
 
 支持能力列举如下：
 - 读取铃音内容
@@ -18,7 +18,7 @@ RingtoneLibrary接口暂不对外部应用开放, 仅内部使用。
 - 扫描系统预制铃音目录
 
 ## 目录<a name="section161941989596"></a>
-仓目录结构如下：
+仓库目录结构如下：
 ```
 /foundation/multimedia/ringtone_library/   # 铃音库组件代码
 ├── frameworks                             # 框架代码
@@ -36,8 +36,8 @@ RingtoneLibrary接口暂不对外部应用开放, 仅内部使用。
 
 ## 使用说明<a name="usage-guidelines"></a>
 ### 概述
-提供铃音列表的增、删、改、查等接口
-接口参数主要有对象类型的Uri、DataSharePredicates和DataShareValuesBucket等
+提供铃音列表的增、删、改、查等接口，
+接口参数主要有对象类型的Uri、DataSharePredicates和DataShareValuesBucket等。
 
 使用接口功能前，需要先获取DataShareHelper
 ```cpp
@@ -158,8 +158,8 @@ std::shared_ptr<DataShare::DataShareHelper> datashareHelper = DataShare::DataSha
   | --------         | -------- | ---------------------- | ----  | ------------------------------ |
   | uri              | 只读     | Uri&                 | 是    | 具体操作的uri        |
   | condition        | 只读     | DataSharePredicates&   | 是    | 查询条件             |
-  | resultColumns    | 只读     | std::vector<std::string>& | 是    | 需要查询的列字段名称   |
-  | businessError    | 只读     | DatashareBusinessError& | 是   | 异常代码 |
+  | resultColumns    | 读写     | std::vector<std::string>& | 是    | 需要查询的列字段名称   |
+  | businessError    | 读写     | DatashareBusinessError& | 是   | 异常代码 |
 
 返回值为ResultSet结果集
 
