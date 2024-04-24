@@ -21,8 +21,7 @@
 namespace OHOS {
 namespace Media {
 
-const std::string BUNDLE_NAME = "com.ohos.ringtonelibrary.ringtonelibrarydata";
-const std::string SLASH_STR = "/";
+const std::string RINGTONE_BUNDLE_NAME = "com.ohos.ringtonelibrary.ringtonelibrarydata";
 
 const std::string RINGTONE_URI_SCHEME       = "datashare";
 const std::string RINGTONE_URI_AUTHORITY    = "ringtone";

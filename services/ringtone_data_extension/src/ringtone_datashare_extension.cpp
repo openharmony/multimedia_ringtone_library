@@ -17,7 +17,6 @@
 #include "ringtone_datashare_extension.h"
 
 #include "app_mgr_client.h"
-#include "ringtone_restore_factory.h"
 #include "datashare_ext_ability_context.h"
 #include "dfx_manager.h"
 #include "parameter.h"
@@ -25,7 +24,6 @@
 #include "ringtone_data_manager.h"
 #include "ringtone_datashare_stub_impl.h"
 #include "ringtone_log.h"
-#include "ringtone_restore_type.h"
 #include "ringtone_scanner_manager.h"
 #include "runtime.h"
 #include "singleton.h"
@@ -103,6 +101,7 @@ void RingtoneDataShareExtension::OnStart(const AAFwk::Want &want)
         RingtoneScannerManager::GetInstance()->Start(false);
         SetParameter(RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY, RINGTONE_PARAMETER_SCANNER_COMPLETED_TRUE);
     }
+
     RINGTONE_INFO_LOG("end.");
 }
 

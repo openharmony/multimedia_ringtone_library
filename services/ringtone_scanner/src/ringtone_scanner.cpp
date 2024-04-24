@@ -23,6 +23,7 @@
 #include "ringtone_log.h"
 #include "ringtone_mimetype_utils.h"
 #include "ringtone_rdbstore.h"
+#include "ringtone_scanner_utils.h"
 
 namespace OHOS {
 namespace Media {
@@ -219,7 +220,6 @@ int32_t RingtoneScannerObj::CleanupDirectory()
 
 int32_t RingtoneScannerObj::CommitTransaction()
 {
-    unordered_set<MediaType> mediaTypeSet = {};
     unique_ptr<RingtoneMetadata> data;
     string tableName = RINGTONE_TABLE;
 

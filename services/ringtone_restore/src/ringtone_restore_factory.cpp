@@ -20,6 +20,7 @@
 #include "ringtone_restore_factory.h"
 
 #include "restore_interface.h"
+#include "ringtone_dualfw_restore.h"
 #include "ringtone_log.h"
 #include "ringtone_restore.h"
 
@@ -31,9 +32,9 @@ std::unique_ptr<RestoreInterface> RingtoneRestoreFactory::CreateObj(RestoreScene
 
     if (type == RESTORE_SCENE_TYPE_SINGLE_CLONE) {
         obj = std::make_unique<RingtoneRestore>();
-    } else if (RESTORE_SCENE_TYPE_DUAL_CLONE) {
+    } else if (RESTORE_SCENE_TYPE_DUAL_CLONE || RESTORE_SCENE_TYPE_DUAL_UPGRADE) {
         // reserve for dual-fw restore
-        RINGTONE_ERR_LOG("error: dual-fw clone is not implemented");
+        obj = std::make_unique<RingtoneDualfwRestore>();
     } else {
         RINGTONE_ERR_LOG("error: invalid argument");
     }

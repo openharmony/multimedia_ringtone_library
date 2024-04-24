@@ -177,7 +177,7 @@ bool RingtoneFileUtils::CreateDirectory(const string &dirPath, shared_ptr<int> e
             continue;
         }
 
-        subStr.append(SLASH_CHAR + segment);
+        subStr.append(RINGTONE_SLASH_CHAR + segment);
         if (!IsDirectory(subStr, errCodePtr)) {
             if (!Mkdir(subStr, errCodePtr)) {
                 return false;
@@ -286,34 +286,34 @@ bool RingtoneFileUtils::MoveFile(const string &oldPath, const string &newPath)
 bool RingtoneFileUtils::CopyFileUtil(const string &filePath, const string &newPath)
 {
     struct stat fst{};
-    bool errCode = false;
+    bool ret = false;
     if (filePath.size() >= PATH_MAX) {
         RINGTONE_ERR_LOG("File path too long %{public}d", static_cast<int>(filePath.size()));
-        return errCode;
+        return ret;
     }
     RINGTONE_INFO_LOG("File path is %{private}s", filePath.c_str());
     string absFilePath;
     if (!PathToRealPath(filePath, absFilePath)) {
         RINGTONE_ERR_LOG("file is not real path, file path: %{private}s", filePath.c_str());
-        return errCode;
+        return ret;
     }
     if (absFilePath.empty()) {
         RINGTONE_ERR_LOG("Failed to obtain the canonical path for source path%{private}s %{public}d",
             filePath.c_str(), errno);
-        return errCode;
+        return ret;
     }
 
     int32_t source = open(absFilePath.c_str(), O_RDONLY);
     if (source == -1) {
         RINGTONE_ERR_LOG("Open failed for source file");
-        return errCode;
+        return ret;
     }
 
     int32_t dest = open(newPath.c_str(), O_WRONLY | O_CREAT, MODE_RWX_USR_GRP);
     if (dest == -1) {
         RINGTONE_ERR_LOG("Open failed for destination file %{public}d", errno);
         close(source);
-        return errCode;
+        return ret;
     }
 
     if (fstat(source, &fst) == 0) {
@@ -322,7 +322,7 @@ bool RingtoneFileUtils::CopyFileUtil(const string &filePath, const string &newPa
             // Copy ownership and mode of source file
             if (fchown(dest, fst.st_uid, fst.st_gid) == 0 &&
                 fchmod(dest, fst.st_mode) == 0) {
-                errCode = true;
+                ret= true;
             }
         }
     }
@@ -330,7 +330,7 @@ bool RingtoneFileUtils::CopyFileUtil(const string &filePath, const string &newPa
     close(source);
     close(dest);
 
-    return errCode;
+    return ret;
 }
 
 int64_t RingtoneFileUtils::Timespec2Millisecond(const struct timespec &time)

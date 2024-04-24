@@ -76,7 +76,7 @@ static int32_t CheckPermission(void)
         return E_FAIL;
     }
     std::string bundleName = context->GetBundleName();
-    if (bundleName.compare(BUNDLE_NAME) != 0) {
+    if (bundleName.compare(RINGTONE_BUNDLE_NAME) != 0) {
         RINGTONE_ERR_LOG("bundle name is invalid: %{public}s", bundleName.c_str());
         return E_FAIL;
     }
@@ -109,6 +109,10 @@ napi_value RingtoneRestoreNapi::JSStartRestore(napi_env env, napi_callback_info 
     std::string baseBackupPath = GetStringFromParams(env, argv, 1);
     RINGTONE_INFO_LOG("scenceCode: %{public}d", scenceCode);
     RINGTONE_INFO_LOG("backupPath: %{public}s", baseBackupPath.c_str());
+    // just for debug dualfw restore
+    scenceCode = RESTORE_SCENE_TYPE_DUAL_UPGRADE;
+    baseBackupPath = "/data/storage/el2/backup/restore";
+
     auto restore = RingtoneRestoreFactory::CreateObj(RestoreSceneType(scenceCode));
     if ((restore != nullptr) && (restore->Init(baseBackupPath)) == Media::E_OK) {
         restore->StartRestore();

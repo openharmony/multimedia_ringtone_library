@@ -79,8 +79,8 @@ static int SetPermission()
 
 static int RingtoneRead(const unique_ptr<RingtoneAsset> &ringtoneAsset)
 {
-    if (ringtoneAsset != nullptr && ringtoneAsset->GetPath() != DEFAULT_STR) {
-        string uriStr = RINGTONE_PATH_URI + SLASH_STR + to_string(ringtoneAsset->GetId());
+    if (ringtoneAsset != nullptr && ringtoneAsset->GetPath() != RINGTONE_DEFAULT_STR) {
+        string uriStr = RINGTONE_PATH_URI + RINGTONE_SLASH_CHAR + to_string(ringtoneAsset->GetId());
         Uri ofUri(uriStr);
         auto fd = g_dataShareHelper->OpenFile(ofUri, "rw");
         cout << "OpenFile fd = " << fd << endl;

@@ -85,19 +85,19 @@ string RingtoneMimeTypeUtils::GetMimeTypeFromExtension(const string &extension,
     return DEFAULT_MIME_TYPE;
 }
 
-MediaType RingtoneMimeTypeUtils::GetMediaTypeFromMimeType(const string &mimeType)
+RingtoneMediaType RingtoneMimeTypeUtils::GetMediaTypeFromMimeType(const string &mimeType)
 {
     size_t pos = mimeType.find_first_of("/");
     if (pos == string::npos) {
         RINGTONE_ERR_LOG("Invalid mime type: %{private}s", mimeType.c_str());
-        return MEDIA_TYPE_INVALID;
+        return RINGTONE_MEDIA_TYPE_INVALID;
     }
     string prefix = mimeType.substr(0, pos);
     if (prefix == "audio") {
-        return MEDIA_TYPE_AUDIO;
+        return RINGTONE_MEDIA_TYPE_AUDIO;
     } else {
         RINGTONE_ERR_LOG("Invalid mime type: %{private}s", mimeType.c_str());
-        return MEDIA_TYPE_INVALID;
+        return RINGTONE_MEDIA_TYPE_INVALID;
     }
 }
 } // namespace Media

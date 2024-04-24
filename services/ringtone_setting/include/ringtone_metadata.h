@@ -17,7 +17,6 @@
 #define RINGTONE_METADATA_H
 
 #include "ringtone_db_const.h"
-#include "ringtone_scanner_utils.h"
 #include "ringtone_type.h"
 
 
@@ -97,7 +96,7 @@ public:
     EXPORT void Init();
 
     using RingtoneMetadataFnPtr = void (RingtoneMetadata::*)(const VariantData &);
-    std::unordered_map<std::string, std::pair<ResultSetDataType, RingtoneMetadataFnPtr>> memberFuncMap_;
+    std::unordered_map<std::string, std::pair<RingtoneResultSetDataType, RingtoneMetadataFnPtr>> memberFuncMap_;
 
     EXPORT std::string ToString() const;
 private:

@@ -16,8 +16,10 @@
 #define MLOG_TAG "Scanner"
 
 #include "ringtone_scanner_manager.h"
+
 #include "directory_ex.h"
 #include "ringtone_log.h"
+#include "ringtone_scanner_utils.h"
 
 namespace OHOS {
 namespace Media {

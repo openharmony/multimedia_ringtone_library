@@ -17,6 +17,7 @@
 #define RINGTONE_SCANNER_OBJ_H
 
 #include <dirent.h>
+#include <sys/stat.h>
 
 #include "iringtone_scanner_callback.h"
 #include "ringtone_db_const.h"

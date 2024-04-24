@@ -17,6 +17,8 @@
 
 #include "ringtone_restore.h"
 
+#include <sys/stat.h>
+
 #include "datashare_ext_ability.h"
 #include "datashare_ext_ability_context.h"
 #include "result_set_utils.h"
@@ -69,7 +71,7 @@ int32_t RingtoneRestore::Init(const std::string &backupPath)
 void RingtoneRestore::ExtractMetaFromColumn(const shared_ptr<NativeRdb::ResultSet> &resultSet,
     unique_ptr<RingtoneMetadata> &metadata, const std::string &col)
 {
-    ResultSetDataType dataType = ResultSetDataType::TYPE_NULL;
+    RingtoneResultSetDataType dataType = RingtoneResultSetDataType::DATA_TYPE_NULL;
     RingtoneMetadata::RingtoneMetadataFnPtr requestFunc = nullptr;
     auto itr = metadata->memberFuncMap_.find(col);
     if (itr != metadata->memberFuncMap_.end()) {

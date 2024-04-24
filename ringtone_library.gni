@@ -11,17 +11,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-RINGTONE_ROOT_PATH = "//foundation/multimedia/ringtone_library"
-RINGTONE_SERVICES_PATH = "${RINGTONE_ROOT_PATH}/services"
+RINGTONE_ROOT_PATH       = "//foundation/multimedia/ringtone_library"
+RINGTONE_SERVICES_PATH   = "${RINGTONE_ROOT_PATH}/services"
 RINGTONE_FRAMEWORKS_PATH = "${RINGTONE_ROOT_PATH}/frameworks"
-
-RINGTONE_SCANNER_PATH = "${RINGTONE_SERVICES_PATH}/ringtone_scanner"
-RINGTONE_RESTORE_PATH = "${RINGTONE_SERVICES_PATH}/ringtone_restore"
-RINGTONE_EXTENSION_PATH = "${RINGTONE_SERVICES_PATH}/ringtone_data_extension"
-RINGTONE_DFX_PATH = "${RINGTONE_SERVICES_PATH}/ringtone_dfx"
 RINGTONE_INTERFACES_PATH = "${RINGTONE_ROOT_PATH}/interfaces"
-RINGTONE_HELPER_PATH = "${RINGTONE_SERVICES_PATH}/ringtone_helper"
-RINGTONE_EXT_HAP_PATH = "${RINGTONE_FRAMEWORKS_PATH}/ringtone_extension_hap"
+
+RINGTONE_EXT_HAP_PATH    = "${RINGTONE_FRAMEWORKS_PATH}/ringtone_extension_hap"
+
+RINGTONE_SCANNER_PATH    = "${RINGTONE_SERVICES_PATH}/ringtone_scanner"
+RINGTONE_RESTORE_PATH    = "${RINGTONE_SERVICES_PATH}/ringtone_restore"
+RINGTONE_EXTENSION_PATH  = "${RINGTONE_SERVICES_PATH}/ringtone_data_extension"
+RINGTONE_DFX_PATH        = "${RINGTONE_SERVICES_PATH}/ringtone_dfx"
+RINGTONE_HELPER_PATH     = "${RINGTONE_SERVICES_PATH}/ringtone_helper"
+RINGTONE_SETTING_PATH    = "${RINGTONE_SERVICES_PATH}/ringtone_setting"
+RINGTONE_UTILS_PATH      = "${RINGTONE_SERVICES_PATH}/utils"
 
 declare_args() {
   ringtone_link_opt = false
