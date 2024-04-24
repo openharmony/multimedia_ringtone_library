@@ -5,10 +5,10 @@
 - [Repositories Involved](#section1533973044317)
 
 ## Introduction<a name="section1158716411637"></a>
-**Figures 1** ringtonelibrary architecture
+**Figures 1** RingtoneLibrary architecture
 ![](figures/ringtonelibrary-architecture_en.png "ringtonelibrary-architecture")
 **ringtone\_library** repository provides a set of easy-to-use APIs for setting and getting ringtone information.
-RingtoneLibrary APIs can only be used internally, not exposed to public application currently.
+RingtoneLibrary APIs can only be used internally.
 
 The various capabilities can be categorized as below:
 - Read ringtone information
