@@ -40,6 +40,9 @@ const std::string ROOT_TONE_PRELOAD_PATH_NOAH_PATH = "/sys_prod/resource/media/a
 const std::string ROOT_TONE_PRELOAD_PATH_CHINA_PATH = "/sys_prod/variant/region_comm/china/resource/media/audio";
 const std::string ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH = "/sys_prod/variant/region_comm/oversea/resource/media/audio";
 
+// ringtone DB file path
+const std::string RINGTONE_LIBRARY_DB_PATH = "/data/storage/el2/database/rdb";
+
 // ringtone DB file name
 const std::string RINGTONE_LIBRARY_DB_NAME = "ringtone_library.db";
 

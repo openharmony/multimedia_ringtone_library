@@ -43,10 +43,10 @@ int32_t RingtoneRestoreBase::Init(const string &backupPath)
         return E_FAIL;
     }
     int32_t errCode = 0;
-    string realPath = NativeRdb::RdbSqlUtils::GetDefaultDatabasePath(context->GetDatabaseDir(),
+    string realPath = NativeRdb::RdbSqlUtils::GetDefaultDatabasePath(RINGTONE_LIBRARY_DB_PATH,
         RINGTONE_LIBRARY_DB_NAME, errCode);
     int32_t err = RingtoneRestoreDbUtils::InitDb(localRdb_, RINGTONE_LIBRARY_DB_NAME, realPath,
-        context->GetBundleName(), true);
+        RINGTONE_BUNDLE_NAME, true);
     if (err != E_OK) {
         RINGTONE_ERR_LOG("medialibrary rdb fail, err = %{public}d", err);
         return E_FAIL;
