@@ -30,7 +30,7 @@ using namespace testing::ext;
 
 namespace OHOS {
 namespace Media {
-RingtoneUnistore *g_uniStore = nullptr;
+shared_ptr<RingtoneUnistore> g_uniStore = nullptr;
 const std::string CREATE_RINGTONE_TABLE = "CREATE TABLE IF NOT EXISTS " + RINGTONE_TABLE + "(" +
     RINGTONE_COLUMN_TONE_ID                       + " INTEGER  PRIMARY KEY AUTOINCREMENT, " +
     RINGTONE_COLUMN_DATA                          + " TEXT              , " +

@@ -20,6 +20,7 @@
 #include "ringtone_errno.h"
 #include "ringtone_log.h"
 #include "ringtone_mimetype_utils.h"
+#include "ringtone_type.h"
 
 using std::string;
 using namespace testing::ext;
@@ -180,7 +181,7 @@ const std::map<string, string> g_testExt2MimeType = {
     {"medialib_GetMimeTypeFromExtension_test", "application/octet-stream"}
 };
 
-const std::map<string, MediaType> g_testMimeType2MediaType = {
+const std::map<string, RingtoneMediaType> g_testMimeType2MediaType = {
     { "application/epub+zip", RINGTONE_MEDIA_TYPE_INVALID },
     { "application/lrc", RINGTONE_MEDIA_TYPE_INVALID },
     { "application/pkix-cert", RINGTONE_MEDIA_TYPE_INVALID },

@@ -26,6 +26,7 @@
 #include "ringtone_log.h"
 #include "ringtone_scanner_utils.h"
 #include "ringtone_tracer.h"
+#include "ringtone_type.h"
 
 using namespace std;
 using namespace OHOS;
@@ -233,7 +234,7 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareInsert_test_001, TestSize.Level0)
     tracer.Start("DataShareInsert10Column");
     for (int index = 0; index < NUMBER_OF_TIMES; index++) {
         DataShareValuesBucket values;
-        values.Put(RINGTONE_COLUMN_DATA, static_cast<string>(RINGTONE_LIBRARY_PATH + SLASH_STR +
+        values.Put(RINGTONE_COLUMN_DATA, static_cast<string>(RINGTONE_LIBRARY_PATH + RINGTONE_SLASH_CHAR +
             TEST_INSERT_RINGTONE_LIBRARY + to_string(index) + MTP_FORMAT_OGG));
         values.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
         values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
@@ -266,14 +267,14 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareInsert_test_002, TestSize.Level0)
 
 HWTEST_F(RingtoneUnitTest, medialib_datashareInsert_test_003, TestSize.Level0)
 {
-    Uri uri(DEFAULT_STR);
+    Uri uri(RINGTONE_DEFAULT_STR);
 
     int64_t start = UTCTimeSeconds();
     RingtoneTracer tracer;
     tracer.Start("DataShareInsertColumn");
     DataShareValuesBucket values;
     values.Put(RINGTONE_COLUMN_TONE_ID, TONE_ID_DEFAULT);
-    values.Put(RINGTONE_COLUMN_DATA, static_cast<string>(RINGTONE_LIBRARY_PATH + SLASH_STR +
+    values.Put(RINGTONE_COLUMN_DATA, static_cast<string>(RINGTONE_LIBRARY_PATH + RINGTONE_SLASH_CHAR +
         TEST_INSERT_RINGTONE_LIBRARY + to_string(0) + MTP_FORMAT_OGG));
     values.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
     values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG); // todo construct by us
@@ -296,7 +297,7 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareInsert_test_004, TestSize.Level0)
     RingtoneTracer tracer;
     tracer.Start("DataShareInsertColumn");
     DataShareValuesBucket values;
-    values.Put(RINGTONE_COLUMN_DATA, static_cast<string>(errorRingtoneLibraryPath + SLASH_STR +
+    values.Put(RINGTONE_COLUMN_DATA, static_cast<string>(errorRingtoneLibraryPath + RINGTONE_SLASH_CHAR +
         TEST_INSERT_RINGTONE_LIBRARY + to_string(0) + MTP_FORMAT_OGG));
     values.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
     values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG); // todo construct by us
@@ -317,7 +318,7 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareInsert_test_005, TestSize.Level0)
     RingtoneTracer tracer;
     tracer.Start("DataShareInsertColumn");
     DataShareValuesBucket values;
-    values.Put(RINGTONE_COLUMN_DATA, static_cast<string>(RINGTONE_LIBRARY_PATH + SLASH_STR +
+    values.Put(RINGTONE_COLUMN_DATA, static_cast<string>(RINGTONE_LIBRARY_PATH + RINGTONE_SLASH_CHAR +
         TEST_INSERT_RINGTONE_LIBRARY + to_string(0) + MTP_FORMAT_OGG));
     values.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
     values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG); // todo construct by us
@@ -334,7 +335,7 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareUpdate_test_001, TestSize.Level0)
 {
     Uri uri(RINGTONE_PATH_URI);
     DataShareValuesBucket values;
-    values.Put(RINGTONE_COLUMN_DATA, static_cast<string>(RINGTONE_LIBRARY_PATH + SLASH_STR +
+    values.Put(RINGTONE_COLUMN_DATA, static_cast<string>(RINGTONE_LIBRARY_PATH + RINGTONE_SLASH_CHAR +
         TEST_INSERT_RINGTONE_LIBRARY + to_string(0) + MTP_FORMAT_OGG));
     values.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
     values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG); // todo construct by us
@@ -467,7 +468,7 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareDelete_test_001, TestSize.Level0)
 {
     Uri uri(RINGTONE_PATH_URI);
     DataShareValuesBucket values;
-    values.Put(RINGTONE_COLUMN_DATA, static_cast<string>(RINGTONE_LIBRARY_PATH + SLASH_STR +
+    values.Put(RINGTONE_COLUMN_DATA, static_cast<string>(RINGTONE_LIBRARY_PATH + RINGTONE_SLASH_CHAR +
         TEST_INSERT_RINGTONE_LIBRARY + to_string(0) + MTP_FORMAT_OGG));
     values.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
     values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG); // todo construct by us
@@ -496,7 +497,7 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareDelete_test_002, TestSize.Level0)
 
 HWTEST_F(RingtoneUnitTest, medialib_datashareDelete_test_003, TestSize.Level0)
 {
-    Uri uri(DEFAULT_STR);
+    Uri uri(RINGTONE_DEFAULT_STR);
 
     DataSharePredicates predicates;
 
@@ -506,7 +507,7 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareDelete_test_003, TestSize.Level0)
 
 HWTEST_F(RingtoneUnitTest, medialib_datashareDelete_test_004, TestSize.Level0)
 {
-    Uri uri(DEFAULT_STR);
+    Uri uri(RINGTONE_DEFAULT_STR);
 
     DataSharePredicates predicates;
     vector<string> selectionArgs = { ZERO };
@@ -534,7 +535,7 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareOpenFile_test_001, TestSize.Level0)
 {
     Uri uri(RINGTONE_PATH_URI);
     DataShareValuesBucket values;
-    values.Put(RINGTONE_COLUMN_DATA, static_cast<string>(RINGTONE_LIBRARY_PATH + SLASH_STR +
+    values.Put(RINGTONE_COLUMN_DATA, static_cast<string>(RINGTONE_LIBRARY_PATH + RINGTONE_SLASH_CHAR +
         TEST_INSERT_RINGTONE_LIBRARY + to_string(0) + MTP_FORMAT_OGG));
     values.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
     values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG); // todo construct by us
@@ -553,8 +554,8 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareOpenFile_test_001, TestSize.Level0)
     auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
     cout << "query count = " << to_string(results->GetCount()) << endl;
     unique_ptr<RingtoneAsset> ringtoneAsset = results->GetFirstObject();
-    if (ringtoneAsset != nullptr && ringtoneAsset->GetPath() != DEFAULT_STR) {
-        string uriStr = RINGTONE_PATH_URI + SLASH_STR + to_string(ringtoneAsset->GetId());
+    if (ringtoneAsset != nullptr && ringtoneAsset->GetPath() != RINGTONE_DEFAULT_STR) {
+        string uriStr = RINGTONE_PATH_URI + RINGTONE_SLASH_CHAR + to_string(ringtoneAsset->GetId());
         Uri ofUri(uriStr);
         string mode = RINGTONE_FILEMODE_READWRITE;
         auto fd = g_dataShareHelper->OpenFile(ofUri, mode);
@@ -580,7 +581,7 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareOpenFile_test_002, TestSize.Level0)
 
 HWTEST_F(RingtoneUnitTest, medialib_datashareOpenFile_test_003, TestSize.Level0)
 {
-    const string uriStr = RINGTONE_PATH_URI + SLASH_STR + "1";
+    const string uriStr = RINGTONE_PATH_URI + RINGTONE_SLASH_CHAR + "1";
     Uri uri(uriStr);
     string mode = RINGTONE_FILEMODE_READWRITE;
 
