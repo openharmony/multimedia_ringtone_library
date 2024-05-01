@@ -28,6 +28,10 @@ public:
     RingtoneRestoreBase() = default;
     virtual ~RingtoneRestoreBase() = default;
     int32_t Init(const std::string &backupPath) override;
+    virtual std::shared_ptr<NativeRdb::RdbStore> GetBaseDb() override
+    {
+        return localRdb_;
+    }
 protected:
     virtual bool OnPrepare(FileInfo &info, const std::string &destPath) = 0;
     virtual void OnFinished(std::vector<FileInfo> &fileInfos) = 0;

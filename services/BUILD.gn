@@ -142,7 +142,6 @@ ohos_shared_library("ringtonerestore") {
 
   sources = [
     "${RINGTONE_RESTORE_PATH}/src/native_module_ohos_ringtone_restore.cpp",
-    "${RINGTONE_RESTORE_PATH}/src/restore_interface.cpp",
     "${RINGTONE_RESTORE_PATH}/src/ringtone_rdb_transaction.cpp",
     "${RINGTONE_RESTORE_PATH}/src/ringtone_restore.cpp",
     "${RINGTONE_RESTORE_PATH}/src/ringtone_restore_base.cpp",
@@ -218,6 +217,7 @@ ohos_shared_library("ringtone_utils") {
     "${RINGTONE_UTILS_PATH}/src/ringtone_file_utils.cpp",
     "${RINGTONE_UTILS_PATH}/src/ringtone_mimetype_utils.cpp",
     "${RINGTONE_UTILS_PATH}/src/ringtone_privacy_manager.cpp",
+    "${RINGTONE_UTILS_PATH}/src/ringtone_props.cpp",
   ]
 
   public_configs = [ ":ringtone_public_visible_config" ]
@@ -243,6 +243,7 @@ ohos_shared_library("ringtone_utils") {
     "hilog:libhilog",
     "hitrace:hitrace_meter",
     "ipc:ipc_core",
+    "relational_store:native_rdb",
     "samgr:samgr_proxy",
   ]
 

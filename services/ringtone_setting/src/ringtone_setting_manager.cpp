@@ -134,6 +134,7 @@ void RingtoneSettingManager::TravelSettings(function<int32_t (string &, SettingI
 void RingtoneSettingManager::FlushSettings()
 {
     TravelSettings([this](string &tonePath, SettingItem &item) -> int32_t {
+        RINGTONE_ERR_LOG("liuxk, tonePath=%{public}s", tonePath.c_str());
         int32_t ret = CleanupSetting(item.settingType, item.toneType, item.sourceType);
         if (ret != E_OK) {
             RINGTONE_ERR_LOG("error: cleanup settings failed, tonePath=%{public}s", tonePath.c_str());
@@ -352,6 +353,7 @@ int32_t RingtoneSettingManager::UpdateSettingsWithToneId(int32_t settingType, in
         return E_INVALID_ARGUMENTS;
     }
     if (!updateSql.empty()) {
+        RINGTONE_ERR_LOG("liuxk, execute update sql=%{public}s", updateSql.c_str());
         int32_t rdbRet = ringtoneRdb_->ExecuteSql(updateSql);
         if (rdbRet < 0) {
             RINGTONE_ERR_LOG("execute update failed");
@@ -408,6 +410,7 @@ int32_t RingtoneSettingManager::CleanupSettingFromRdb(int32_t settingType, int32
         return E_INVALID_ARGUMENTS;
     }
     if (!updateSql.empty()) {
+        RINGTONE_ERR_LOG("liuxk, execute updateSql=%{public}s", updateSql.c_str());
         int32_t rdbRet = ringtoneRdb_->ExecuteSql(updateSql);
         if (rdbRet < 0) {
             RINGTONE_ERR_LOG("execute update failed");

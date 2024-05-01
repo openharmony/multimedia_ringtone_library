@@ -41,7 +41,7 @@ const std::string ROOT_TONE_PRELOAD_PATH_CHINA_PATH = "/sys_prod/variant/region_
 const std::string ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH = "/sys_prod/variant/region_comm/oversea/resource/media/audio";
 
 // ringtone DB file path
-const std::string RINGTONE_LIBRARY_DB_PATH = "/data/storage/el2/database/rdb";
+const std::string RINGTONE_LIBRARY_DB_PATH = "/data/storage/el2/database";
 
 // ringtone DB file name
 const std::string RINGTONE_LIBRARY_DB_NAME = "ringtone_library.db";
@@ -49,10 +49,16 @@ const std::string RINGTONE_LIBRARY_DB_NAME = "ringtone_library.db";
 // ringtone db version
 const int32_t RINGTONE_RDB_VERSION = 1;
 
-// ringtone table name
-const std::string RINGTONE_TABLE                         = "ToneFiles";
+// RingtoneProps table name
+const std::string PROPERTIES_TABLE                                   = "RingtoneProps";
+// RingtoneProps table column name
+const std::string RINGTONEPROPS_COLUMN_ID                       = "id";
+const std::string RINGTONEPROPS_COLUMN_NAME                     = "name";
+const std::string RINGTONEPROPS_COLUMN_VALUE                    = "value";
 
-// ringtone table field name
+// ringtone table name
+const std::string RINGTONE_TABLE                                = "ToneFiles";
+// ringtone table column name
 const std::string RINGTONE_COLUMN_TONE_ID                       = "tone_id";
 const std::string RINGTONE_COLUMN_DATA                          = "data";
 const std::string RINGTONE_COLUMN_SIZE                          = "size";

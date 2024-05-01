@@ -92,6 +92,16 @@
           ],
           "when": "inuse"
         }
+      },
+      {
+        "name": "ohos.permission.READ_AUDIO",
+        "reason": "$string:permission_read_audio",
+        "usedScene": {
+          "abilities": [
+            "RingtoneBackupExtAbility"
+          ],
+          "when": "inuse"
+        }
       }
     ]
   }

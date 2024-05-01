@@ -230,11 +230,13 @@ int32_t RingtoneDualfwRestore::DupToneFile(FileInfo &info)
     string uriStr = MEDIALIBRARY_DATA_URI + "/" + MEDIA_AUDIOOPRN + "/" + to_string(info.toneId);
 
     Uri openFileUri(uriStr);
+    RINGTONE_ERR_LOG("liuxk, openfile uri=%{public}s", uriStr.c_str());
     int32_t srcFd = mediaDataShare_->OpenFile(openFileUri, "r");
 
     if (srcFd < 0) {
         return E_ERR;
     }
+    RINGTONE_ERR_LOG("liuxk, openfile finished uri=%{public}s", uriStr.c_str());
 
     int32_t dstFd = open(info.restorePath.c_str(), O_WRONLY | O_CREAT, MODE_RWX_USR_GRP);
     if (dstFd < 0) {

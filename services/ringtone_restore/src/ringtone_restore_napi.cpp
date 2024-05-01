@@ -14,15 +14,16 @@
  */
 
 #include "ringtone_restore_napi.h"
-#include "ringtone_restore_factory.h"
-#include "ringtone_restore_type.h"
-#include "ringtone_log.h"
-#include "ringtone_errno.h"
-#include "ringtone_db_const.h"
+
 #include "application_context.h"
 #include "js_native_api.h"
-#include "napi/native_api.h"
-#include "napi/native_node_api.h"
+#include "ringtone_db_const.h"
+#include "ringtone_errno.h"
+#include "ringtone_log.h"
+#include "ringtone_napi_utils.h"
+#include "ringtone_props.h"
+#include "ringtone_restore_factory.h"
+#include "ringtone_restore_type.h"
 
 #define MLOG_TAG "Common"
 
@@ -84,10 +85,50 @@ static int32_t CheckPermission(void)
     return E_OK;
 }
 
+static int32_t RingtoneDualfwUpgrade(std::unique_ptr<RestoreInterface> &restore, string backupPath)
+{
+    int32_t ret = E_OK;
+    if ((restore != nullptr) && (restore->Init(backupPath)) == Media::E_OK) {
+        RingtoneProps props(restore->GetBaseDb());
+        if (props.Init() != E_OK) {
+            RINGTONE_INFO_LOG("ringtone props table init failed");
+        }
+        std::string upgradeCompleteProp = props.GetProp(UPGRADE_COMPLETE_PROP, UPGRADE_COMPLETE_VAL_FALSE);
+        RINGTONE_INFO_LOG("upgradeCompleteProp=%{public}s", upgradeCompleteProp.c_str());
+        if (upgradeCompleteProp != UPGRADE_COMPLETE_VAL_TRUE) {
+            RINGTONE_INFO_LOG("start dualfw upgrade");
+            restore->StartRestore();
+            props.SetProp(UPGRADE_COMPLETE_PROP, UPGRADE_COMPLETE_VAL_TRUE);
+            RINGTONE_INFO_LOG("dualfw upgrade finished");
+        }
+    } else {
+        RINGTONE_ERR_LOG("ringtone-restore failed on init");
+        ret = E_HAS_DB_ERROR;
+    }
+
+    return ret;
+}
+
+static int32_t RingtoneRestore(std::unique_ptr<RestoreInterface> &restore, string backupPath)
+{
+    int32_t ret = E_OK;
+    if ((restore != nullptr) && (restore->Init(backupPath)) == Media::E_OK) {
+        RINGTONE_INFO_LOG("start restore....");
+        restore->StartRestore();
+        RINGTONE_INFO_LOG("restore finished");
+    } else {
+        RINGTONE_ERR_LOG("ringtone-restore failed on init");
+        ret = E_HAS_DB_ERROR;
+    }
+
+    return ret;
+}
+
 napi_value RingtoneRestoreNapi::JSStartRestore(napi_env env, napi_callback_info info)
 {
     napi_value result = nullptr;
     RINGTONE_INFO_LOG("JSStartRestore start");
+    napi_get_undefined(env, &result);
     if (CheckPermission() != E_OK) {
         RINGTONE_ERR_LOG("check permission failed");
         return result;
@@ -114,10 +155,17 @@ napi_value RingtoneRestoreNapi::JSStartRestore(napi_env env, napi_callback_info 
     baseBackupPath = "/data/storage/el2/backup/restore";
 
     auto restore = RingtoneRestoreFactory::CreateObj(RestoreSceneType(scenceCode));
-    if ((restore != nullptr) && (restore->Init(baseBackupPath)) == Media::E_OK) {
-        restore->StartRestore();
-    } else {
-        RINGTONE_ERR_LOG("ringtone-restore failed on init");
+    switch (scenceCode) {
+        case RESTORE_SCENE_TYPE_SINGLE_CLONE:
+            RingtoneRestore(restore, baseBackupPath);
+            break;
+        case RESTORE_SCENE_TYPE_DUAL_CLONE:
+        case RESTORE_SCENE_TYPE_DUAL_UPGRADE:
+            RingtoneDualfwUpgrade(restore, baseBackupPath);
+            break;
+        default:
+            RINGTONE_ERR_LOG("scense code argument err, scenceCode=%{public}d", scenceCode);
+            break;
     }
     RINGTONE_INFO_LOG("JSStartRestore end");
     return result;

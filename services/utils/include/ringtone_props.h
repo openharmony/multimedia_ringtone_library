@@ -13,23 +13,30 @@
  * limitations under the License.
  */
 
-#ifndef RESTORE_INTERFACE_H
-#define RESTORE_INTERFACE_H
+#ifndef RINGTONE_PROPS_H_
+#define RINGTONE_PROPS_H_
 
-#include <string>
-
+#include "rdb_sql_utils.h"
 #include "rdb_store.h"
 
 namespace OHOS {
 namespace Media {
-class RestoreInterface {
+#define EXPORT __attribute__ ((visibility ("default")))
+using namespace std;
+using namespace OHOS;
+class RingtoneProps {
 public:
-    virtual ~RestoreInterface() {}
-    virtual int32_t Init(const std::string &backupPath) = 0;
-    virtual std::shared_ptr<NativeRdb::RdbStore> GetBaseDb() = 0;
-    virtual void StartRestore() = 0;
+    EXPORT RingtoneProps(shared_ptr<NativeRdb::RdbStore> rdb);
+    EXPORT ~RingtoneProps() = default;
+
+    EXPORT int32_t Init();
+    EXPORT string GetProp(const string &propName, const string &defaultVal);
+    EXPORT bool SetProp(const string &propName, const string &propVal);
+private:
+    int32_t GetPropFromResultSet(shared_ptr<NativeRdb::ResultSet> resultSet, string &propVal);
+    shared_ptr<NativeRdb::RdbStore> store_;
 };
 } // namespace Media
 } // namespace OHOS
 
-#endif // RESTORE_INTERFACE_H
+#endif // RINGTONE_PROPS_H_

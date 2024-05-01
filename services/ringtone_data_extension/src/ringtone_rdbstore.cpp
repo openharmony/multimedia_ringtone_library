@@ -22,10 +22,11 @@
 #include "ringtone_errno.h"
 #include "ringtone_log.h"
 #include "ringtone_tracer.h"
+#include "result_set_utils.h"
 
 namespace OHOS::Media {
 using namespace std;
-using namespace OHOS::NativeRdb;
+using namespace OHOS;
 static const mode_t MODE_RWX_USR_GRP = 02771;
 const std::string CREATE_RINGTONE_TABLE = "CREATE TABLE IF NOT EXISTS " + RINGTONE_TABLE + "(" +
     RINGTONE_COLUMN_TONE_ID                       + " INTEGER  PRIMARY KEY AUTOINCREMENT, " +
@@ -125,7 +126,7 @@ int32_t RingtoneDataCallBack::PrepareDir()
     return NativeRdb::E_OK;
 }
 
-int32_t RingtoneDataCallBack::InitSql(RdbStore &store)
+int32_t RingtoneDataCallBack::InitSql(NativeRdb::RdbStore &store)
 {
     for (const string &sqlStr : g_initSqls) {
         if (store.ExecuteSql(sqlStr) != NativeRdb::E_OK) {
@@ -136,7 +137,7 @@ int32_t RingtoneDataCallBack::InitSql(RdbStore &store)
     return NativeRdb::E_OK;
 }
 
-int32_t RingtoneDataCallBack::OnCreate(RdbStore &store)
+int32_t RingtoneDataCallBack::OnCreate(NativeRdb::RdbStore &store)
 {
     if (InitSql(store) != NativeRdb::E_OK) {
         RINGTONE_DEBUG_LOG("error");
@@ -150,7 +151,7 @@ int32_t RingtoneDataCallBack::OnCreate(RdbStore &store)
     return NativeRdb::E_OK;
 }
 
-int32_t RingtoneDataCallBack::OnUpgrade(RdbStore &store, int32_t oldVersion, int32_t newVersion)
+int32_t RingtoneDataCallBack::OnUpgrade(NativeRdb::RdbStore &store, int32_t oldVersion, int32_t newVersion)
 {
     RINGTONE_DEBUG_LOG("OnUpgrade old:%d, new:%d", oldVersion, newVersion);
 
@@ -184,12 +185,12 @@ RingtoneRdbStore::RingtoneRdbStore(const shared_ptr<OHOS::AbilityRuntime::Contex
     string databaseDir = context->GetDatabaseDir();
     string name = RINGTONE_LIBRARY_DB_NAME;
     int32_t errCode = 0;
-    string realPath = RdbSqlUtils::GetDefaultDatabasePath(databaseDir, name, errCode);
+    string realPath = NativeRdb::RdbSqlUtils::GetDefaultDatabasePath(databaseDir, name, errCode);
     config_.SetName(move(name));
     config_.SetPath(move(realPath));
     config_.SetBundleName(context->GetBundleName());
     config_.SetArea(context->GetArea());
-    config_.SetSecurityLevel(SecurityLevel::S3);
+    config_.SetSecurityLevel(NativeRdb::SecurityLevel::S3);
 }
 
 int32_t RingtoneRdbStore::Init()
@@ -201,7 +202,7 @@ int32_t RingtoneRdbStore::Init()
 
     int32_t errCode = 0;
     RingtoneDataCallBack rdbDataCallBack;
-    rdbStore_ = RdbHelper::GetRdbStore(config_, RINGTONE_RDB_VERSION, rdbDataCallBack, errCode);
+    rdbStore_ = NativeRdb::RdbHelper::GetRdbStore(config_, RINGTONE_RDB_VERSION, rdbDataCallBack, errCode);
     if (rdbStore_ == nullptr) {
         RINGTONE_ERR_LOG("GetRdbStore is failed , errCode=%{public}d", errCode);
         return E_ERR;

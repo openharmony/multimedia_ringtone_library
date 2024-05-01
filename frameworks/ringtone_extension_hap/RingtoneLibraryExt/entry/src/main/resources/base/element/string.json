@@ -31,6 +31,10 @@
     {
       "name": "permission_read_media",
       "value": "Allows an application to read media files from the user’s external storage."
+    },
+    {
+      "name": "permission_read_audio",
+      "value": "Allows access to the audio files in a user directory."
     }
   ]
 }
