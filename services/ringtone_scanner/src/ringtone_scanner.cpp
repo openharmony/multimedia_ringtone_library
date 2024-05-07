@@ -32,12 +32,12 @@ using namespace OHOS::AppExecFwk;
 using namespace OHOS::DataShare;
 static const int32_t SCANNER_WAIT_FOR_TIMEOUT = 10000; // ms
 #ifndef OHOS_LOCAL_DEBUG_DISABLE
-// just for debug
+// liuxk just for debug
 static const std::string LOCAL_DIR = "/storage/media/local/data/com.ohos.ringtonelibrary.ringtonelibrarydata";
 #endif
 static std::unordered_map<std::string, std::pair<int32_t, int32_t>> g_typeMap = {
 #ifndef OHOS_LOCAL_DEBUG_DISABLE
-    // just for debug
+    // liuxk just for debug
     {LOCAL_DIR + "/alarms", {SOURCE_TYPE_CUSTOMISED, TONE_TYPE_ALARM}},
     {LOCAL_DIR + "/ringtones", {SOURCE_TYPE_PRESET, TONE_TYPE_RINGTONE}},
     {LOCAL_DIR + "/notifications", {SOURCE_TYPE_CUSTOMISED, TONE_TYPE_NOTIFICATION}},
@@ -126,6 +126,7 @@ int32_t RingtoneScannerObj::BootScan()
 {
     static const std::vector<std::string> preloadDirs = {
 #ifndef OHOS_LOCAL_DEBUG_DISABLE
+        // liuxk just for debug
         LOCAL_DIR,
 #endif
         ROOT_TONE_PRELOAD_PATH_NOAH_PATH,
@@ -362,13 +363,14 @@ int32_t RingtoneScannerObj::AddToTransaction()
 
 int32_t RingtoneScannerObj::GetMediaInfo()
 {
+#ifdef ENABLE_METADATA_EXTRACTOR
     auto pos = data_->GetMimeType().find_first_of("/");
     std::string mimePrefix = data_->GetMimeType().substr(0, pos) + "/*";
-    if (find(EXTRACTOR_SUPPORTED_MIME.begin(), EXTRACTOR_SUPPORTED_MIME.end(),
-        mimePrefix) != EXTRACTOR_SUPPORTED_MIME.end()) {
+    if (find(EXTRACTOR_SUPPORTED_MIME.begin(), EXTRACTOR_SUPPORTED_MIME.end(), mimePrefix) !=
+        EXTRACTOR_SUPPORTED_MIME.end()) {
         return RingtoneMetadataExtractor::Extract(data_);
     }
-
+#endif // ENABLE_METADATA_EXTRACTOR
     return E_OK;
 }
 

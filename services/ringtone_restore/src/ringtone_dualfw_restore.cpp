@@ -212,12 +212,12 @@ void RingtoneDualfwRestore::StartRestore()
         if (ret == E_SUCCESS) {
             infos.push_back(info);
         }
-        RINGTONE_INFO_LOG("liuxk, ***************************************************");
-        RINGTONE_INFO_LOG("liuxk, toneName               = %{public}s", info.data.c_str());
-        RINGTONE_INFO_LOG("liuxk, settingType            = %{public}d", item.settingType);
-        RINGTONE_INFO_LOG("liuxk, toneType               = %{public}d", item.toneType);
-        RINGTONE_INFO_LOG("liuxk, defaultSysSet          = %{public}d", item.defaultSysSet);
-        RINGTONE_INFO_LOG("liuxk, setFlag                = %{public}d", item.setFlag);
+        RINGTONE_INFO_LOG("***************************************************");
+        RINGTONE_INFO_LOG("toneName               = %{public}s", info.data.c_str());
+        RINGTONE_INFO_LOG("settingType            = %{public}d", item.settingType);
+        RINGTONE_INFO_LOG("toneType               = %{public}d", item.toneType);
+        RINGTONE_INFO_LOG("defaultSysSet          = %{public}d", item.defaultSysSet);
+        RINGTONE_INFO_LOG("setFlag                = %{public}d", item.setFlag);
     }); 
 
     if ((!infos.empty()) && (infos.size() != 0)) {
@@ -230,13 +230,11 @@ int32_t RingtoneDualfwRestore::DupToneFile(FileInfo &info)
     string uriStr = MEDIALIBRARY_DATA_URI + "/" + MEDIA_AUDIOOPRN + "/" + to_string(info.toneId);
 
     Uri openFileUri(uriStr);
-    RINGTONE_ERR_LOG("liuxk, openfile uri=%{public}s", uriStr.c_str());
     int32_t srcFd = mediaDataShare_->OpenFile(openFileUri, "r");
 
     if (srcFd < 0) {
         return E_ERR;
     }
-    RINGTONE_ERR_LOG("liuxk, openfile finished uri=%{public}s", uriStr.c_str());
 
     int32_t dstFd = open(info.restorePath.c_str(), O_WRONLY | O_CREAT, MODE_RWX_USR_GRP);
     if (dstFd < 0) {

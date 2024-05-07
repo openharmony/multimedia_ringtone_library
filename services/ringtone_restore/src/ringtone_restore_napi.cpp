@@ -150,7 +150,7 @@ napi_value RingtoneRestoreNapi::JSStartRestore(napi_env env, napi_callback_info 
     std::string baseBackupPath = GetStringFromParams(env, argv, 1);
     RINGTONE_INFO_LOG("scenceCode: %{public}d", scenceCode);
     RINGTONE_INFO_LOG("backupPath: %{public}s", baseBackupPath.c_str());
-    // just for debug dualfw restore
+    // liuxk just for debug dualfw restore
     scenceCode = RESTORE_SCENE_TYPE_DUAL_UPGRADE;
     baseBackupPath = "/data/storage/el2/backup/restore";
 
