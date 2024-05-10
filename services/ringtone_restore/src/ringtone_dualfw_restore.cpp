@@ -28,6 +28,7 @@
 #include "file_asset.h"
 #include "fetch_result.h"
 #include "iservice_registry.h"
+#include "medialibrary_db_const.h"
 #include "result_set_utils.h"
 #include "ringtone_errno.h"
 #include "ringtone_file_utils.h"
@@ -47,7 +48,7 @@ static const string DUALFW_SOUND_CONF_XML = "setting_system.xml";
 // static const string DUALFW_UPGRADE_PATH = "/data/service/el1/public/update/migrate_server/plugins/200/back/sourceXml";
 // static const string DUALFW_CLONE_PATH = "/data/storage/el2/backup/restore";
 static std::shared_ptr<DataShare::DataShareHelper> CreateMediaDataShare(int32_t systemAbilityId)
-{   
+{
     RINGTONE_INFO_LOG("CreateDataShareHelper::CreateFileExtHelper ");
     auto saManager = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (saManager == nullptr) {
@@ -83,10 +84,10 @@ int32_t RingtoneDualfwRestore::ParseDualfwConf(string &xml)
 
     parser->ConfTraval([this](std::unique_ptr<DualFwConfRow> &conf) -> void {
         dualfwSetting_->ProcessConfRow(conf);
-    }); 
-    
+    });
+
     return E_SUCCESS;
-} 
+}
 
 int32_t RingtoneDualfwRestore::Init(const std::string &backupPath)
 {
@@ -120,6 +121,25 @@ int32_t RingtoneDualfwRestore::Init(const std::string &backupPath)
     return E_OK;
 }
 
+static void MediaUriAppendKeyValue(string &uri, const string &key, const string &value)
+{
+    string uriKey = key + '=';
+    if (uri.find(uriKey) != string::npos) {
+        return;
+    }
+
+    char queryMark = (uri.find('?') == string::npos) ? '?' : '&';
+    string append = queryMark + key + '=' + value;
+
+    size_t posJ = uri.find('#');
+    if (posJ == string::npos) {
+        uri += append;
+    } else {
+        uri.insert(posJ, append);
+    }
+}
+
+static const string KEY_API_VERSION = "API_VERSION";
 static unique_ptr<FileAsset> QueryMediaFileAsset(std::shared_ptr<DataShare::DataShareHelper> &mediaDataShare,
     DualfwSettingItem &item)
 {
@@ -133,9 +153,11 @@ static unique_ptr<FileAsset> QueryMediaFileAsset(std::shared_ptr<DataShare::Data
     DataShare::DataSharePredicates predicates;
     string prefix = MEDIA_DATA_DB_NAME + " = \"" + item.toneFileName + "\"";
     predicates.SetWhereClause(prefix);
-    Uri queryFileUri(URI_QUERY_AUDIO);
+    string queryFileUri = UFM_QUERY_AUDIO;
+    MediaUriAppendKeyValue(queryFileUri, KEY_API_VERSION, to_string(MEDIA_API_VERSION_V10));
     shared_ptr<DataShare::DataShareResultSet> resultSet = nullptr;
-    resultSet = mediaDataShare->Query(queryFileUri, predicates, columns);
+    Uri uri(queryFileUri);
+    resultSet = mediaDataShare->Query(uri, predicates, columns);
     if (resultSet == nullptr) {
         RINGTONE_INFO_LOG("query resultset is null");
         return nullptr;
@@ -218,7 +240,7 @@ void RingtoneDualfwRestore::StartRestore()
         RINGTONE_INFO_LOG("toneType               = %{public}d", item.toneType);
         RINGTONE_INFO_LOG("defaultSysSet          = %{public}d", item.defaultSysSet);
         RINGTONE_INFO_LOG("setFlag                = %{public}d", item.setFlag);
-    }); 
+    });
 
     if ((!infos.empty()) && (infos.size() != 0)) {
         InsertTones(infos);
