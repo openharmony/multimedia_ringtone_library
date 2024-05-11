@@ -83,8 +83,11 @@ ohos_shared_library("ringtone_data_extension") {
   public_configs = [ ":ringtone_public_config" ]
 
   deps = [
-    ":ringtonelibrary_param.para",
-    ":ringtonelibrary_param.para.dac",
+    ":ringtone_scanner_param.para",
+    ":ringtone_setting_notifications.para",
+    ":ringtone_setting_ringtones.para",
+    ":ringtone_setting_shots.para",
+    ":ringtone_param.para.dac",
     ":ringtone_utils",
     ":ringtone_setting",
     "${RINGTONE_ROOT_PATH}/services/ringtone_helper:ringtone_data_helper",
@@ -307,14 +310,32 @@ ohos_shared_library("ringtone_setting") {
   part_name = "ringtone_library"
 }
 
-ohos_prebuilt_etc("ringtonelibrary_param.para") {
-  source = "etc/ringtonelibrary_param.para"
+ohos_prebuilt_etc("ringtone_scanner_param.para") {
+  source = "etc/ringtone_scanner_param.para"
   part_name = "ringtone_library"
   module_install_dir = "etc/param"
 }
 
-ohos_prebuilt_etc("ringtonelibrary_param.para.dac") {
-  source = "etc/ringtonelibrary_param.para.dac"
+ohos_prebuilt_etc("ringtone_setting_notifications.para") {
+  source = "etc/ringtone_setting_notifications.para"
+  part_name = "ringtone_library"
+  module_install_dir = "etc/param"
+}
+
+ohos_prebuilt_etc("ringtone_setting_ringtones.para") {
+  source = "etc/ringtone_setting_ringtones.para"
+  part_name = "ringtone_library"
+  module_install_dir = "etc/param"
+}
+
+ohos_prebuilt_etc("ringtone_setting_shots.para") {
+  source = "etc/ringtone_setting_shots.para"
+  part_name = "ringtone_library"
+  module_install_dir = "etc/param"
+}
+
+ohos_prebuilt_etc("ringtone_param.para.dac") {
+  source = "etc/ringtone_param.para.dac"
   part_name = "ringtone_library"
   module_install_dir = "etc/param"
 }
