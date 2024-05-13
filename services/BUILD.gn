@@ -158,7 +158,9 @@ ohos_shared_library("ringtonerestore") {
 
   configs = [ "//build/config/compiler:exceptions" ]
 
-  ldflags = [ "-Wl" ]
+  ldflags = [ "-Wl", "--coverage" ]
+
+  cflags_cc = [ "--coverage" ]
 
   deps = [
     ":ringtone_data_extension",

@@ -22,7 +22,7 @@ using namespace std;
 namespace OHOS {
 namespace Media {
 
-const string RingtoneOpenCall::CREATE_RINGTONE_TABLE = "CREATE TABLE IF NOT EXISTS " + RINGTONE_TABLE + "(" +
+const string RingtoneRestoreRdbOpenCb::CREATE_RINGTONE_TABLE = "CREATE TABLE IF NOT EXISTS " + RINGTONE_TABLE + "(" +
     RINGTONE_COLUMN_TONE_ID                       + " INTEGER  PRIMARY KEY AUTOINCREMENT, " +
     RINGTONE_COLUMN_DATA                          + " TEXT              , " +
     RINGTONE_COLUMN_SIZE                          + " BIGINT   DEFAULT 0, " +
@@ -45,37 +45,53 @@ const string RingtoneOpenCall::CREATE_RINGTONE_TABLE = "CREATE TABLE IF NOT EXIS
     RINGTONE_COLUMN_ALARM_TONE_TYPE               + " INT      DEFAULT 0, " +
     RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE        + " INT      DEFAULT 0  " + ")";
 
-int RingtoneOpenCall::OnCreate(NativeRdb::RdbStore &store) {
+int RingtoneRestoreRdbOpenCb::OnCreate(NativeRdb::RdbStore &store)
+{
     return store.ExecuteSql(CREATE_RINGTONE_TABLE);
 }
 
-int RingtoneOpenCall::OnUpgrade(NativeRdb::RdbStore &store, int oldVersion, int newVersion) {
+int RingtoneRestoreRdbOpenCb::OnUpgrade(NativeRdb::RdbStore &store, int oldVersion, int newVersion)
+{
     return 0;
 }
 
-void RingtoneSource::Init(const std::string &dbPath) {
-    NativeRdb::RdbStoreConfig config(dbPath);
-    RingtoneOpenCall helper;
+int RingtoneLocalRdbOpenCb::OnCreate(NativeRdb::RdbStore &store)
+{
+    return 0;
+}
+
+int RingtoneLocalRdbOpenCb::OnUpgrade(NativeRdb::RdbStore &store, int oldVersion, int newVersion)
+{
+    return 0;
+}
+
+void RingtoneSource::Init(const std::string &restoreDbPath, const std::string &localDbPath)
+{
     int errCode = 0;
-    shared_ptr<NativeRdb::RdbStore> store = NativeRdb::RdbHelper::GetRdbStore(config, 1, helper, errCode);
-    ringtoneStorePtr_ = store;
+    NativeRdb::RdbStoreConfig localRdbConfig(localDbPath);
+    RingtoneLocalRdbOpenCb localDbHelper;
+    localRdbPtr_ = NativeRdb::RdbHelper::GetRdbStore(localRdbConfig, 1, localDbHelper, errCode);
+    NativeRdb::RdbStoreConfig restoreRdbConfig(restoreDbPath);
+    RingtoneRestoreRdbOpenCb restoreDbHelper;
+    restoreRdbPtr_ = NativeRdb::RdbHelper::GetRdbStore(restoreRdbConfig, 1, restoreDbHelper, errCode);
     InitRingtoneDb();
 }
 
-void RingtoneSource::InitRingtoneDb() {
-    ringtoneStorePtr_->ExecuteSql("INSERT INTO " + RINGTONE_TABLE +
+void RingtoneSource::InitRingtoneDb()
+{
+    restoreRdbPtr_->ExecuteSql("INSERT INTO " + RINGTONE_TABLE +
         " VALUES (last_insert_rowid()+1, '/storage/media/local/files/Ringtone/alarms/Adara.ogg'," +
         " 10414, 'Adara.ogg', 'Adara', 2, 0, 'audio/ogg', 2, 1505707241000, 1505707241846, 1505707241," +
         " 600, 0, -1, 0, -1, 0, -1, 1, 2)");
-    ringtoneStorePtr_->ExecuteSql("INSERT INTO " + RINGTONE_TABLE +
+    restoreRdbPtr_->ExecuteSql("INSERT INTO " + RINGTONE_TABLE +
         " VALUES (last_insert_rowid()+1, '/storage/media/local/files/Ringtone/ringtones/Carme.ogg'," +
         " 26177, 'Carme.ogg', 'Carme', 2, 1, 'audio/ogg', 2, 1505707241000, 1505707241846, 1505707241," +
         " 1242, 0, -1, 0, -1, 3, 2, 0, -1)");
-    ringtoneStorePtr_->ExecuteSql("INSERT INTO " + RINGTONE_TABLE +
+    restoreRdbPtr_->ExecuteSql("INSERT INTO " + RINGTONE_TABLE +
         " VALUES (last_insert_rowid()+1, '/storage/media/local/files/Ringtone/notifications/Radon.ogg'," +
         " 25356, 'Radon.ogg', 'Radon', 2, 2, 'audio/ogg', 2, 1505707241000, 1505707241846, 1505707241," +
         " 1800, 0, -1, 1, 2, 0, -1, 0, -1)");
-    ringtoneStorePtr_->ExecuteSql("INSERT INTO " + RINGTONE_TABLE +
+    restoreRdbPtr_->ExecuteSql("INSERT INTO " + RINGTONE_TABLE +
         " VALUES (last_insert_rowid()+1, '/storage/media/local/files/Ringtone/notifications/Titan.ogg'," +
         " 30984, 'Titan.ogg', 'Titan', 2, 2, 'audio/ogg', 2, 1505707241000, 1505707241846, 1505707241," +
         " 1947, 3, 2, 0, -1, 0, -1, 0, -1)");

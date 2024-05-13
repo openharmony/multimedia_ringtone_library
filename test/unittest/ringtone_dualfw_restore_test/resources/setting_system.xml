@@ -1,0 +1,711 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+
+<settings version="205">
+
+  <setting id="1" name="volume_fm" value="5" package="android" defaultValue="5" defaultSysSet="true" />
+
+  <setting id="43202" name="persist.sys.easywakeup.c" value="com.huawei.camera;com.huawei.camera" package="com.huawei.motionservice" defaultValue="com.huawei.camera;com.huawei.camera" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="43203" name="persist.sys.easywakeup.e" value="com.android.browser;com.UCMobile.main.UCMobile" package="com.huawei.motionservice" defaultValue="com.android.browser;com.UCMobile.main.UCMobile" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="43204" name="persist.sys.easywakeup.m" value="com.android.mediacenter;com.android.mediacenter.PageActivity" package="com.huawei.motionservice" defaultValue="com.android.mediacenter;com.android.mediacenter.PageActivity" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="43201" name="persist.sys.easywakeup.o" value="null;null" package="com.huawei.motionservice" defaultValue="null;null" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="43205" name="persist.sys.easywakeup.w" value="com.huawei.android.totemweatherapp;com.huawei.android.totemweatherapp.WeatherHome" package="com.huawei.motionservice" defaultValue="com.huawei.android.totemweatherapp;com.huawei.android.totemweatherapp.WeatherHome" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="65" name="hw_reduce_sar_special" value="208,308,340,543,546,547,647,742" package="android" defaultValue="208,308,340,543,546,547,647,742" defaultSysSet="true" />
+
+  <setting id="3123" name="enable_expand_on_huawei_unlock" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="52349" name="UserccpUxEnable" value="1" package="com.huawei.systemmanager" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="3113" name="wifi_to_pdp" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="511" name="delay_set_last_show_time" value="1710899449907" package="com.android.settings" defaultValue="1710899449907" defaultSysSet="true" />
+
+  <setting id="3156" name="color_temperature_dismode" value="480" package="android" defaultValue="480" defaultSysSet="true" />
+
+  <setting id="78" name="bds_status" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="191" name="has_enable_media_controller" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="228" name="fingersense_multiwindow_enabled" value="1" package="com.huawei.motionservice" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="3124" name="traffic_switch" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="208" name="hsm_nodisturb" value="0" package="com.huawei.systemmanager" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="15214" name="wlan_switch_on" value="0" package="com.android.settings" defaultValue="0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="18293" name="db_iotpluginloadstatus" value="1" package="com.android.systemui" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="61390" name="calendar.enhanced.services.state" value="1" package="com.huawei.calendar" preserve_in_restore="true" />
+
+  <setting id="62" name="color_mode_switch" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="52357" name="product_version_number0" value="DCO-AL00 4.2.0.200(SP2C00E200R6P6log)_DCO-AL00 4.2.0.200(SP2C00E200R6P6log)" package="com.android.phone" defaultValue="DCO-AL00 4.2.0.200(SP2C00E200R6P6log)_DCO-AL00 4.2.0.200(SP2C00E200R6P6log)" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="34364" name="vibrate_when_ringing2" value="1" package="com.android.settings" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="3148" name="gps_start_mode" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="40" name="default_customed_apk" value="com.huawei.android.launcher/.Launcher" package="android" defaultValue="com.huawei.android.launcher/.Launcher" defaultSysSet="true" />
+
+  <setting id="52491" name="slot0_remember_pin" value="0" package="com.huawei.systemserver" defaultValue="0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="60" name="specIccidRBSeqList" value="45400:8985231" package="android" defaultValue="45400:8985231" defaultSysSet="true" />
+
+  <setting id="3160" name="eyes_protection_mode" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="3162" name="eye_comfort_endtime" value="420" package="android" defaultValue="420" defaultSysSet="true" />
+
+  <setting id="378" name="is_support_multi_party_call_feature" value="1" package="com.huawei.meetime" />
+
+  <setting id="13" name="auto_answer" value="-1" package="android" defaultValue="-1" defaultSysSet="true" />
+
+  <setting id="69029" name="spline_start_lux_default_brightness" value="44.84" package="android" defaultValue="44.84" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="61376" name="emergency_post_location_switch" value="1" package="com.huawei.hwstartupguide" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="3093" name="enable_navbar_talkback" value="1" package="com.android.settings" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="69031" name="screen_auto_brightness" value="45" package="android" defaultValue="45" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="190" name="last_enter_mediacontroller_flag" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="165" name="enable_annoy_card_1" value="0" package="com.huawei.systemmanager" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="166" name="enable_annoy_card_2" value="0" package="com.huawei.systemmanager" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="43198" name="persist.sys.easywakeup.down" value="null;null" package="com.huawei.motionservice" defaultValue="null;null" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="43199" name="persist.sys.easywakeup.left" value="null;null" package="com.huawei.motionservice" defaultValue="null;null" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="3132" name="virtual_key_type" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="45" name="no_write_sms_package" value="com.huawei.android.ds,com.android.mediacenter,com.huawei.hwid,com.huawei.security,com.huawei.hisuite" package="android" defaultValue="com.huawei.android.ds,com.android.mediacenter,com.huawei.hwid,com.huawei.security,com.huawei.hisuite" defaultSysSet="true" />
+
+  <setting id="26901" name="traffic_set" value="1" package="com.huawei.systemmanager" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="65447" name="turn_off_wifi_state" value="0" package="com.huawei.powergenie" defaultValue="0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="61819" name="volume_music_speaker" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="67" name="hw_def_theme" value="/hw_product/region_comm/china/themes/UpWind.hwt" package="android" defaultValue="/hw_product/region_comm/china/themes/UpWind.hwt" defaultSysSet="true" />
+
+  <setting id="43099" name="distributed_connect_enabled" value="0" package="com.android.networkstack.inprocess" defaultValue="0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="3119" name="play_camera_sound" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="52352" name="UsersohUxEnable" value="1" package="com.huawei.systemmanager" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="42836" name="vr_headset_status" value="0" package="com.huawei.securityserver" defaultValue="0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="1156" name="space_clean" value="1" package="com.huawei.systemmanager" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="8" name="volume_tts" value="11" package="android" defaultValue="11" defaultSysSet="true" />
+
+  <setting id="3181" name="notification_light_pulse" value="0" package="com.huawei.systemmanager" defaultValue="0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="3129" name="smart_notification_switch" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="387" name="theme_calendar_path" value="/hw_product/region_comm/china/media/audio/notifications/Bellatrix.ogg" package="com.huawei.android.thememanager" defaultValue="/hw_product/region_comm/china/media/audio/notifications/Bellatrix.ogg" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="510" name="delay_set_show_state" value="1" package="com.android.settings" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="1154" name="cloud_maintenance" value="1" package="com.huawei.systemmanager" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="3187" name="notification_sound" value="content://media/internal/audio/media/198" package="com.huawei.android.thememanager" defaultValue="content://media/internal/audio/media/198" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="18294" name="smart_scenes_visible_status" value="1" package="com.android.systemui" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="26904" name="auto_download_mms_card1_roaming" value="0" package="com.android.mms" preserve_in_restore="true" />
+
+  <setting id="3092" name="ai_navigationbar_newsimple" value="0" package="com.android.settings" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="384" name="theme_alarm_alert_path" value="/hw_product/region_comm/china/media/audio/alarms/Antimony.ogg" package="com.huawei.android.thememanager" defaultValue="/hw_product/region_comm/china/media/audio/alarms/Antimony.ogg" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="67842" name="wifi_ap_manual_connect" value="1" package="com.android.settings" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="3120" name="camera_lift_sounds_enabled" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="3190" name="UseraswUxEnable" value="1" package="com.huawei.systemmanager" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="234" name="next_alarm_formatted" value="" package="com.huawei.deskclock" preserve_in_restore="true" />
+
+  <setting id="3193" name="UserSmtChgState" value="0" package="com.huawei.systemmanager" defaultValue="0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="5" name="volume_alarm" value="12" package="android" defaultValue="12" defaultSysSet="true" />
+
+  <setting id="58" name="is_show_google" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="0" name="volume_music" value="5" package="android" defaultValue="5" defaultSysSet="true" />
+
+  <setting id="4" name="volume_voice" value="12" package="android" defaultValue="12" defaultSysSet="true" />
+
+  <setting id="3139" name="show_password" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="43125" name="wifi_csp_dispaly_state" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="61389" name="china_pps_ad_status" value="0" package="com.huawei.android.totemweather" />
+
+  <setting id="278" name="message_path" value="/system/media/audio/notifications/Betelgeuse.ogg" package="android" defaultValue="/system/media/audio/notifications/Betelgeuse.ogg" defaultSysSet="true" />
+
+  <setting id="3154" name="show_notification_icon_on_status_bar" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="3186" name="ringtone" value="content://media/internal/audio/media/97" package="com.huawei.android.thememanager" defaultValue="content://media/internal/audio/media/97" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="52354" name="hw_telephony_radio_state" value="1" package="com.android.phone" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="43197" name="persist.sys.easywakeup.up" value="null;null" package="com.huawei.motionservice" defaultValue="null;null" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="3130" name="smart_notifications_autoupdate_mode" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="3178" name="font_weight_scale_simple_mode" package="com.android.settings" />
+
+  <setting id="54585" name="key_open_low_level" value="100" package="com.huawei.systemmanager" defaultValue="100" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="188" name="key_open_low_state" value="0" package="com.huawei.systemmanager" defaultValue="0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="289" name="verifition_sms_protect_enable" value="1" package="com.android.mms" />
+
+  <setting id="3182" name="notification_way_switch" value="0" package="com.huawei.systemmanager" defaultValue="0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="3096" name="screen_off_timeout_newsimple" value="-1" package="com.android.settings" defaultValue="-1" defaultSysSet="true" />
+
+  <setting id="220" name="hsm_netassistant" value="1" package="com.huawei.systemmanager" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="16" name="hearing_aid" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="42589" name="super_terminal_close_status" value="1" package="com.android.systemui" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="285" name="first_boot_flag" value="1" package="com.android.mms" />
+
+  <setting id="38" name="cloud_per_dwonload_time" value="604800000" package="android" defaultValue="604800000" defaultSysSet="true" />
+
+  <setting id="71" name="custom_certify_picture" value="/hw_product/hw_oem/DCO-AL00/media/DCO-AL00.png" package="android" defaultValue="/hw_product/hw_oem/DCO-AL00/media/DCO-AL00.png" defaultSysSet="true" />
+
+  <setting id="3141" name="lock_to_app_enabled" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="69027" name="spline_offset_brightness_last" value="44.84" package="android" defaultValue="44.84" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="54155" name="alarm_time" value="1711481906451" package="com.huawei.systemmanager" defaultValue="1711481906451" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="26903" name="enable_always_allow_mms" value="1" package="com.android.mms" preserve_in_restore="true" />
+
+  <setting id="1155" name="net_assistant_manager" value="1" package="com.huawei.systemmanager" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="82" name="eye_comfort_morewarm" value="10" package="android" defaultValue="10" defaultSysSet="true" />
+
+  <setting id="50" name="show_mms_expired_status" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="29545" name="volume_tts_speaker" value="10" package="android" defaultValue="10" defaultSysSet="true" />
+
+  <setting id="2" name="volume_ring" value="10" package="android" defaultValue="10" defaultSysSet="true" />
+
+  <setting id="284" name="messageSub1" value="content://media/internal/audio/media/60" package="com.android.mms" preserve_in_restore="true" />
+
+  <setting id="52356" name="remember_pin_feature" value="1" package="com.huawei.systemserver" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="70" name="upgrade_guide_activity_path" value="com.huawei.android.hwupgradeguide.UpgradeWizardActivity" package="android" defaultValue="com.huawei.android.hwupgradeguide.UpgradeWizardActivity" defaultSysSet="true" />
+
+  <setting id="1695" name="is_turbo_charging" value="0" package="com.huawei.systemmanager" defaultValue="0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="3927" name="screen_auto_brightness_adj" value="0.0" package="com.android.settings" defaultValue="0.0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="175" name="radio.data.stall.recovery.action" value="0" package="com.android.phone" defaultValue="0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="18404" name="stylus_enable" value="0" package="com.huawei.stylus.floatmenu" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="85" name="smart_backlight_enable" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="43123" name="hsm_notification" value="1" package="com.huawei.systemmanager" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="34" name="vonr_hd_call" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="4041" name="screen_brightness_mode" value="1" package="com.android.settings" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="4076" name="accelerated_charging_popup" value="0" package="com.huawei.systemmanager" defaultValue="0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="3117" name="color_temperature_mode" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="244" name="alarm_alert_set" value="1" package="com.android.providers.media.module" />
+
+  <setting id="10" name="mute_streams_affected" value="111" package="android" defaultValue="111" defaultSysSet="true" />
+
+  <setting id="3094" name="ai_navigationbar_talkback" value="0" package="com.android.settings" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="50229" name="hdb_enabled" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="3138" name="keyguard_default_time_zone" value="" package="android" defaultValue="" defaultSysSet="true" />
+
+  <setting id="198" name="contactsSwitch" value="1" package="com.huawei.contacts" />
+
+  <setting id="3142" name="time_synchronization" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="68" name="hw_theme_sort" value="Delighting##Up Wind##Flagship Track##Boundless##Waves##Watery##Spring Emerald##Summer Bay##Autumn Shine##Town" package="android" defaultValue="Delighting##Up Wind##Flagship Track##Boundless##Waves##Watery##Spring Emerald##Summer Bay##Autumn Shine##Town" defaultSysSet="true" />
+
+  <setting id="66" name="email_ai_translation" value="true" package="android" defaultValue="true" defaultSysSet="true" />
+
+  <setting id="17" name="tty_mode" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="3170" name="default_volume_key_control" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="41226" name="db_iotpluginfind" value="0" package="com.android.systemui" defaultValue="0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="231" name="fingersense_letters_enabled_support" value="1" package="com.huawei.motionservice" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="18" name="screen_brightness_for_vr" value="86" package="android" defaultValue="86" defaultSysSet="true" />
+
+  <setting id="238" name="ringtone_set" value="1" package="com.android.providers.media.module" />
+
+  <setting id="4046" name="spline_is_user_change" value="0" package="android" defaultValue="0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="61298" name="font_scale" value="1.0" package="android" defaultValue="1.0" defaultSysSet="true" />
+
+  <setting id="43362" name="show_wifi_page" value="0" package="com.android.systemui" defaultValue="0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="12" name="dim_screen" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="189" name="keyguard_shortcut_indexs" value="0,1,3,4" package="com.android.systemui" defaultValue="0,1,3,4" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="16370" name="is_scroll" value="0" package="com.huawei.android.thememanager" defaultValue="0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="44" name="is_email_anr_support" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="3099" name="hw_ebook_mode_switch" value="0" package="com.android.settings" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="3166" name="physic_navi_haptic_feedback_enabled" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="73" name="end_button_behavior" value="2" package="android" defaultValue="2" defaultSysSet="true" />
+
+  <setting id="218" name="hsm_antivirus" value="1" package="com.huawei.systemmanager" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="37319" name="bt_tether_on" value="0" package="com.android.settings" defaultValue="0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="229" name="fingersense_multiwindow_enabled_support" value="1" package="com.huawei.motionservice" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="158" name="notch_device_type" value="1" package="com.android.systemui" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="3177" name="font_weight_scale_normal" package="com.android.settings" />
+
+  <setting id="33" name="touch_disable_mode" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="3167" name="input_method_auto_change" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="43200" name="persist.sys.easywakeup.right" value="null;null" package="com.huawei.motionservice" defaultValue="null;null" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="69034" name="screen_brightness_nit" value="0" package="android" defaultValue="0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="15645" name="awareness_datasource_switch_clipboard" value="1" package="com.huawei.hiai" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="207" name="hsm_bootstart" value="1" package="com.huawei.systemmanager" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="14" name="allow_all_devices_connection" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="52489" name="android.intent.action.SIM_STATE_CHANGED" value="ABSENT" package="com.android.settings" defaultValue="ABSENT" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="43120" name="hsm_harassment" value="1" package="com.huawei.systemmanager" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="3134" name="pedometer_enabled" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="3100" name="hdr_image_display" value="1" package="com.android.settings" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="77" name="system_boot_time" value="1710898071682" package="android" defaultValue="1710898071682" defaultSysSet="true" />
+
+  <setting id="275" name="calendar" value="content://media/internal/audio/media/198" package="com.huawei.android.thememanager" defaultValue="content://media/internal/audio/media/198" defaultSysSet="true" />
+
+  <setting id="182" name="db_iotpluginexist" value="1" package="com.android.systemui" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="43118" name="hsm_filedelete" value="1" package="com.huawei.systemmanager" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="3149" name="assisted_gps_roaming_enabled" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="69035" name="verify_unlock_success_time" value="2024-03-29 11:13:48" package="com.android.systemui" defaultValue="2024-03-29 11:13:48" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="386" name="theme_email_path" value="/hw_product/region_comm/china/media/audio/notifications/Bellatrix.ogg" package="com.huawei.android.thememanager" defaultValue="/hw_product/region_comm/china/media/audio/notifications/Bellatrix.ogg" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="65466" name="CtrlSocketSaving" value="0" package="com.huawei.powergenie" defaultValue="0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="23898" name="himessage_usage_state" value="1" package="com.huawei.meetime" />
+
+  <setting id="241" name="notification_sound_set" value="1" package="com.android.providers.media.module" />
+
+  <setting id="57" name="hw_theme_support_pay" value="true" package="android" defaultValue="true" defaultSysSet="true" />
+
+  <setting id="3116" name="color_temperature" value="128" package="android" defaultValue="128" defaultSysSet="true" />
+
+  <setting id="7" name="volume_bluetooth_sco" value="7" package="android" defaultValue="7" defaultSysSet="true" />
+
+  <setting id="52359" name="hw_volte_user_switch_0" value="1" package="com.android.phone" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="3158" name="status_bar_pure_display_enabled" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="52350" name="UserpeakUxEnable" value="0" package="com.huawei.systemmanager" defaultValue="0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="25" name="lockscreen_sounds_enabled" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="26872" name="esim_psim_switch_for_telephony" value="-1" package="com.android.phone" defaultValue="-1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="20" name="user_rotation" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="156" name="simpleui_mode" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="54" name="hw_customized_networkType" value="CA:4G+" package="android" defaultValue="CA:4G+" defaultSysSet="true" />
+
+  <setting id="29546" name="volume_voice_earpiece" value="15" package="android" defaultValue="15" defaultSysSet="true" />
+
+  <setting id="47847" name="lockscreen.password_type" value="131072" package="com.android.settings" defaultValue="131072" defaultSysSet="true" />
+
+  <setting id="281" name="hw_rcs_version_code" value="140000340" package="com.android.mms" preserve_in_restore="true" />
+
+  <setting id="26906" name="last_dealed_icc_number" value="46011" package="com.android.systemui" defaultValue="46011" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="47845" name="first_lock_time" value="2024-03-26 16:13:24" package="com.android.settings" defaultValue="2024-03-26 16:13:24" defaultSysSet="true" />
+
+  <setting id="61395" name="accelerometer_rotation" value="1" package="com.huawei.hwstartupguide" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="1175" name="sp_key_is_user_agree_location" value="1" package="com.huawei.android.totemweather" preserve_in_restore="true" />
+
+  <setting id="279" name="email" value="content://media/internal/audio/media/198" package="com.huawei.android.thememanager" defaultValue="content://media/internal/audio/media/198" defaultSysSet="true" />
+
+  <setting id="61385" name="huawei_hbm_signagreement_status" value="1" package="com.huawei.hwstartupguide" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="1696" name="current_turbo_status" value="0" package="com.huawei.systemmanager" defaultValue="0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="227" name="fingersense_smartshot_enabled_support" value="1" package="com.huawei.motionservice" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="388" name="theme_notification_sound_path" value="/hw_product/region_comm/china/media/audio/notifications/Bellatrix.ogg" package="com.huawei.android.thememanager" defaultValue="/hw_product/region_comm/china/media/audio/notifications/Bellatrix.ogg" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="3153" name="hw_msim_signal_cluster_style" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="3135" name="smart_earphone_control" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="194" name="is_preset_meetime" value="1" package="com.huawei.contacts" />
+
+  <setting id="26895" name="preferredApnIdEx4gSlot" value="0,0,0,0,0" package="com.android.phone" defaultValue="0,0,0,0,0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="4036" name="hw_screen_temp_brightness" value="46" package="com.android.settings" defaultValue="46" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="69030" name="spline_ambient_lux" value="121.0" package="android" defaultValue="121.0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="53" name="enable_get_location" value="com.huawei.parentcontrol;com.huawei.hidisk" package="android" defaultValue="com.huawei.parentcontrol;com.huawei.hidisk" defaultSysSet="true" />
+
+  <setting id="1141" name="weather_secret_notify_remind_for_sp" value="2" package="com.huawei.android.totemweather" />
+
+  <setting id="26866" name="oldstate" value="risk" package="com.huawei.hiview" defaultValue="risk" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="61386" name="huawei_browser_signagreement_status" value="1" package="com.huawei.hwstartupguide" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="26871" name="esim_psim_switch_for_sim" value="-1" package="com.android.phone" defaultValue="-1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="3932" name="spline_ominlevel_time" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="26891" name="any_sim_detect" value="true" package="com.android.phone" defaultValue="true" defaultSysSet="true" />
+
+  <setting id="31" name="screen_off_timeout" value="30000" package="android" defaultValue="30000" defaultSysSet="true" />
+
+  <setting id="235" name="search_yellowpage_control" value="1" package="com.huawei.contacts" preserve_in_restore="true" />
+
+  <setting id="4040" name="hw_screen_brightness_mode_value" value="1" package="com.android.settings" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="3183" name="unlock_screen_notify" value="0" package="com.huawei.systemmanager" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="15887" name="show_touches" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="3121" name="ringtone2" value="content://media/internal/audio/media/96" package="android" defaultValue="content://media/internal/audio/media/96" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="61392" name="ai_navigationbar" value="0" package="com.android.settings" defaultValue="0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="29355" name="volume_alarm_speaker" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="3165" name="swap_key_position" value="-1" package="android" defaultValue="-1" defaultSysSet="true" />
+
+  <setting id="34363" name="vibrate_when_ringing" value="0" package="com.android.settings" defaultValue="0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="69038" name="current_show_smart_reminder" value="hwid_recommend" package="com.android.settings" defaultValue="hwid_recommend" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="3198" name="UsersohUxTitle" value="100" package="com.huawei.systemmanager" defaultValue="100" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="3188" name="alarm_alert" value="content://media/internal/audio/media/192" package="com.huawei.android.thememanager" defaultValue="content://media/internal/audio/media/192" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="3126" name="show_network_speed_enabled" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="3091" name="enable_navbar_newsimple" value="1" package="com.android.settings" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="230" name="fingersense_letters_enabled" value="0" package="com.huawei.motionservice" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="380" name="hicall_migrate_state" value="1" package="com.huawei.meetime" />
+
+  <setting id="26" name="pointer_speed" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="3114" name="AllowConnectDevices" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="61381" name="skytone_agreement_record" value='{"state":1,"version":"20221215_20230821"}' package="com.huawei.hwstartupguide" defaultValue='{"state":1,"version":"20221215_20230821"}' defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="43121" name="hsm_powermanager" value="1" package="com.huawei.systemmanager" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="18407" name="advanced_visual_effect" value="1" package="com.android.settings" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="61383" name="weather_secret_notify_remind" value="2" package="com.huawei.hwstartupguide" defaultValue="2" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="32" name="single_hand_screen_zoom" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="3095" name="new_simple_mode" value="0" package="com.android.settings" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="61379" name="skytone.policy.status" value="1" package="com.huawei.hwstartupguide" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="3145" name="has_agps_settings" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="3137" name="dual_clocks" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="43210" name="persist.sys.fingerjoint.c" value="null;null" package="com.huawei.motionservice" defaultValue="null;null" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="43211" name="persist.sys.fingerjoint.e" value="null;null" package="com.huawei.motionservice" defaultValue="null;null" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="43212" name="persist.sys.fingerjoint.m" value="null;null" package="com.huawei.motionservice" defaultValue="null;null" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="43213" name="persist.sys.fingerjoint.w" value="null;null" package="com.huawei.motionservice" defaultValue="null;null" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="226" name="fingersense_smartshot_enabled" value="1" package="com.huawei.motionservice" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="3115" name="auto_eyes_protection" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="61377" name="smart_network_switching" value="1" package="com.huawei.hwstartupguide" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="243" name="alarm_alert_path" value="/hw_product/region_comm/china/media/audio/alarms/Antimony.ogg" package="android" defaultValue="/hw_product/region_comm/china/media/audio/alarms/Antimony.ogg" defaultSysSet="true" />
+
+  <setting id="52274" name="mode_ringer_streams_affected" value="422" package="android" defaultValue="422" defaultSysSet="true" />
+
+  <setting id="3199" name="UsersohUxCmt" value="smart_charge_soh_lv1_cmt" package="com.huawei.systemmanager" defaultValue="smart_charge_soh_lv1_cmt" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="4073" name="charge_temperature_control_default" value="0" package="com.android.settings" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="43119" name="hsm_phonescan" value="1" package="com.huawei.systemmanager" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="64232" name="show_notification_flag" value="1" package="com.android.systemui" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="197" name="is_support_hifence" value="1" package="com.huawei.systemserver" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="61391" name="hisearch.policy.status" value="1" package="com.huawei.search" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="69028" name="spline_last_lux_default_brightness" value="44.84" package="android" defaultValue="44.84" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="6" name="volume_notification" value="10" package="android" defaultValue="10" defaultSysSet="true" />
+
+  <setting id="3103" name="already_show_roaming_plus_dialog" value="0" package="com.android.systemui" defaultValue="0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="43117" name="hsm_spacefree" value="1" package="com.huawei.systemmanager" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="47" name="power_saving_on" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="3600" name="delay_set_click_state" value="1" package="com.android.settings" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="3174" name="eye_comfort_valid" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="69036" name="keyguard_lock_unlock_type_notify" value="unlock_password" package="com.android.systemui" defaultValue="unlock_password" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="65573" name="awareness_xiaoyi_card_num" value="2" package="com.huawei.ohos.suggestion" defaultValue="2" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="3097" name="hw_dc_brightness_dimming_switch" value="0" package="com.android.settings" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="232" name="fingersense_screen_recording_enabled" value="1" package="com.huawei.motionservice" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="15" name="dtmf_tone_type" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="1128" name="trust_space_switch" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="3159" name="eye_comfort_schedule_switch" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="68901" name="screen_lock_time" value="17" package="com.android.systemui" defaultValue="17" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="23" name="dtmf_tone" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="43124" name="hsm_protect_app" value="1" package="com.huawei.systemmanager" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="35" name="androidBeam" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="68836" name="wifipro_manual_connect_ap_configkey" value="" package="android" defaultValue="" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="61384" name="hw_numbermark_notification_option" value="true" package="com.huawei.hwstartupguide" defaultValue="true" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="282" name="message" value="content://media/internal/audio/media/60" package="com.android.mms" defaultValue="content://media/internal/audio/media/60" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="196" name="is_support_hardware_geofence" value="1" package="com.huawei.systemserver" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="68838" name="wifi_secure_check_state" value="0" package="com.huawei.systemmanager" defaultValue="0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="29536" name="volume_ring_speaker" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="83" name="support_sensor_feature" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="72" name="hw_default_support_call_barring" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="1146" name="xiaoyi_suggestion_can_draw_overlays" value="1" package="com.huawei.ohos.suggestion" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="3122" name="statusbar_drop_down_mode" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="26905" name="auto_download_mms_card2_roaming" value="0" package="com.android.mms" preserve_in_restore="true" />
+
+  <setting id="379" name="is_support_personification_feature" value="1" package="com.huawei.meetime" />
+
+  <setting id="61382" name="hw_update_yellowpage_option" value="1" package="com.huawei.hwstartupguide" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="17566" name="time_12_24" value="24" package="com.android.settings" defaultValue="24" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="3111" name="pointer_location" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="503" name="system_locales" value="zh-Hans-CN" package="android" defaultValue="zh-Hans-CN" defaultSysSet="true" />
+
+  <setting id="61393" name="enable_navbar" value="1" package="com.android.settings" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="52471" name="time_chang" value="1711451439087" package="com.huawei.systemmanager" defaultValue="1711451439087" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="3161" name="eye_comfort_starttime" value="1320" package="android" defaultValue="1320" defaultSysSet="true" />
+
+  <setting id="1169" name="keyguard_enabled" value="1" package="com.android.systemui" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="43116" name="hsm_processmanager" value="1" package="com.huawei.systemmanager" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="247" name="ringtone2_set" value="1" package="com.android.providers.media.module" />
+
+  <setting id="3" name="volume_system" value="15" package="android" defaultValue="15" defaultSysSet="true" />
+
+  <setting id="52" name="black_languages" value="*_EH,*_XK" package="android" defaultValue="*_EH,*_XK" defaultSysSet="true" />
+
+  <setting id="202" name="sim_apn_opkey0" package="com.android.phone" preserve_in_restore="true" />
+
+  <setting id="200" name="sim_apn_opkey1" package="com.android.phone" preserve_in_restore="true" />
+
+  <setting id="237" name="ringtone_path" value="/system/media/audio/ringtones/Thallium.ogg" package="android" defaultValue="/system/media/audio/ringtones/Thallium.ogg" defaultSysSet="true" />
+
+  <setting id="61461" name="ota_service_updated" value="0" package="com.huawei.hwstartupguide" defaultValue="0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="3110" name="master_mono" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="5607" name="softap_name_changed" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="280" name="email_path" value="/hw_product/region_comm/china/media/audio/notifications/Bellatrix.ogg" package="android" defaultValue="/hw_product/region_comm/china/media/audio/notifications/Bellatrix.ogg" defaultSysSet="true" />
+
+  <setting id="43122" name="hsm_netcontroller" value="1" package="com.huawei.systemmanager" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="3169" name="auto_hide_navigationbar" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="81" name="eye_comfort_lesswarm" value="10" package="android" defaultValue="10" defaultSysSet="true" />
+
+  <setting id="26870" name="esim_switch_enabled_subid" value="0" package="com.android.phone" defaultValue="0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="61394" name="oobe_original_rotation" value="-2" package="com.huawei.hwstartupguide" defaultValue="-2" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="37" name="apn_pro_editable" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="24" name="sound_effects_enabled" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="3146" name="has_assisted_gps" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="3098" name="master_balance" value="0.0" package="com.android.settings" defaultValue="0.0" defaultSysSet="true" />
+
+  <setting id="3163" name="user_set_warm" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="3194" name="UserSmtChgFeature" value="1" package="com.huawei.systemmanager" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="23705" name="meetime_ringtone" package="com.huawei.meetime" />
+
+  <setting id="22578" name="call_log_merge_type" value="0" package="com.android.phone" defaultValue="0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="1157" name="UserSmartPeakCap" value="0" package="com.huawei.systemmanager" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="3144" name="has_pgps_config" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="3185" name="battery_percent_switch" value="0" package="com.huawei.systemmanager" defaultValue="0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="3184" name="SmartModeStatus" value="1" package="com.huawei.systemmanager" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="3180" name="notification_batch_management_sort_mode" value="0" package="com.huawei.systemmanager" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="36" name="hw_natural_tone_display_switch" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="3101" name="charge_temperature_control_enable" value="0" package="com.android.settings" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="62924" name="lock_settings_time" value="2024-03-28 15:19:37" package="com.android.settings" defaultValue="2024-03-28 15:19:37" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="1144" name="home_weather_info" value="" package="com.huawei.android.totemweather" defaultValue="" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="61387" name="hsm.policy.status" value="1" package="com.huawei.hwstartupguide" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="76" name="fingerprint_slide_switch" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="1147" name="oobe_hisuggestion_agreement_state" value="2" package="com.huawei.ohos.suggestion" defaultValue="2" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="64653" name="hicare_nps_enabled" value="1" package="com.huawei.phoneservice" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="233" name="fingersense_screen_recording_enabled_support" value="1" package="com.huawei.motionservice" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="1162" name="hsm.policy.date" value="1710900381607" package="com.huawei.systemmanager" defaultValue="1710900381607" defaultSysSet="true" />
+
+  <setting id="3179" name="notification_sort_mode" value="0" package="com.huawei.systemmanager" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="221" name="motion_triple_finger_shot" value="1" package="com.huawei.motionservice" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="3151" name="assisted_gps_service_port" value="7275" package="android" defaultValue="7275" defaultSysSet="true" />
+
+  <setting id="43100" name="distributed_net_available" value="0" package="com.android.networkstack.inprocess" defaultValue="0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="69032" name="screen_brightness" value="45" package="android" defaultValue="45" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="1173" name="sp_key_service_type" value="10001" package="com.huawei.android.totemweather" />
+
+  <setting id="240" name="notification_sound_path" value="/hw_product/region_comm/china/media/audio/notifications/Bellatrix.ogg" package="android" defaultValue="/hw_product/region_comm/china/media/audio/notifications/Bellatrix.ogg" defaultSysSet="true" />
+
+  <setting id="164" name="switch_dual_card_slots" value="0" package="com.android.phone" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="3176" name="font_weight_scale" value="1.0" package="com.android.settings" defaultValue="1.0" defaultSysSet="true" />
+
+  <setting id="3155" name="color_temperature_pos" value="330,330" package="android" defaultValue="330,330" defaultSysSet="true" />
+
+  <setting id="3157" name="color_temperature_rgb" value="1.0,1.0,1.0" package="android" defaultValue="1.0,1.0,1.0" defaultSysSet="true" />
+
+  <setting id="385" name="theme_message_path" value="/system/media/audio/notifications/Betelgeuse.ogg" package="com.huawei.android.thememanager" defaultValue="/system/media/audio/notifications/Betelgeuse.ogg" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="39" name="colors_themes" value="white,/system/themes/Brightness.hwt;black,/system/themes/Brightness.hwt" package="android" defaultValue="white,/system/themes/Brightness.hwt;black,/system/themes/Brightness.hwt" defaultSysSet="true" />
+
+  <setting id="1271" name="calendar_providers_support_important_event" value="1" package="com.android.providers.calendar" />
+
+  <setting id="3147" name="assisted_gps_mode" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="3143" name="has_time_synchronization" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="3131" name="hide_virtual_key" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="61380" name="hw_numbermark_option" value="hw_numbermark_usenetworks" package="com.huawei.hwstartupguide" defaultValue="hw_numbermark_usenetworks" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="43113" name="slot1_remember_pin" value="0" package="com.huawei.systemserver" defaultValue="0" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="276" name="calendar_path" value="/hw_product/region_comm/china/media/audio/notifications/Bellatrix.ogg" package="android" defaultValue="/hw_product/region_comm/china/media/audio/notifications/Bellatrix.ogg" defaultSysSet="true" />
+
+  <setting id="246" name="ringtone2_path" value="/system/media/audio/ringtones/Tethys_48k.ogg" package="android" defaultValue="/system/media/audio/ringtones/Tethys_48k.ogg" defaultSysSet="true" />
+
+  <setting id="55" name="hw_status_bar_operators" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="56" name="hw_theme_support_hwid" value="true" package="android" defaultValue="true" defaultSysSet="true" />
+
+  <setting id="383" name="theme_ringtone_path" value="/system/media/audio/ringtones/Thallium.ogg" package="com.huawei.android.thememanager" defaultValue="/system/media/audio/ringtones/Thallium.ogg" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="3133" name="single_hand_switch" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+  <setting id="75" name="haptic_feedback_enabled" value="1" package="android" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="219" name="hsm_ad_detect" value="1" package="com.huawei.systemmanager" defaultValue="1" defaultSysSet="true" />
+
+  <setting id="59" name="roamingBrokerSequenceList" value="CTExcel,45431,46003|CTExcel,45431,45400" package="android" defaultValue="CTExcel,45431,46003|CTExcel,45431,45400" defaultSysSet="true" />
+
+  <setting id="80" name="volume_music_remote_submix" value="15" package="android" defaultValue="15" defaultSysSet="true" />
+
+  <setting id="61378" name="caas_video_alarm_switch" value="1" package="com.huawei.hwstartupguide" defaultValue="1" defaultSysSet="true" preserve_in_restore="true" />
+
+  <setting id="3150" name="assisted_gps_service_IP" value="supl.platform.hicloud.com" package="android" defaultValue="supl.platform.hicloud.com" defaultSysSet="true" />
+
+  <setting id="3128" name="battery_percent_switch_in" value="0" package="android" defaultValue="0" defaultSysSet="true" />
+
+</settings>

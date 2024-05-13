@@ -25,15 +25,22 @@ namespace OHOS {
 namespace Media {
 class RingtoneSource {
 public:
-    void Init(const std::string &dbPath);
+    void Init(const std::string &restoreDbPath, const std::string &localDbPath);
     void InitRingtoneDb();
-    std::shared_ptr<NativeRdb::RdbStore> ringtoneStorePtr_;
+    std::shared_ptr<NativeRdb::RdbStore> restoreRdbPtr_;
+    std::shared_ptr<NativeRdb::RdbStore> localRdbPtr_;
 };
-class RingtoneOpenCall : public NativeRdb::RdbOpenCallback {
+
+class RingtoneRestoreRdbOpenCb : public NativeRdb::RdbOpenCallback {
 public:
     int OnCreate(NativeRdb::RdbStore &rdbStore) override;
     int OnUpgrade(NativeRdb::RdbStore &rdbStore, int oldVersion, int newVersion) override;
     static const std::string CREATE_RINGTONE_TABLE;
+};
+
+class RingtoneLocalRdbOpenCb : public NativeRdb::RdbOpenCallback {
+    int OnCreate(NativeRdb::RdbStore &rdbStore) override;
+    int OnUpgrade(NativeRdb::RdbStore &rdbStore, int oldVersion, int newVersion) override;
 };
 } // namespace Media
 } // namespace OHOS

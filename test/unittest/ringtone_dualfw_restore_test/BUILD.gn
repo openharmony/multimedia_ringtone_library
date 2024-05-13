@@ -17,10 +17,10 @@ import("//foundation/multimedia/ringtone_library/ringtone_library.gni")
 group("unittest") {
   testonly = true
 
-  deps = [":ringtone_restore_unittest"]
+  deps = [":ringtone_dualfw_restore_unittest"]
 }
 
-ohos_unittest("ringtone_restore_unittest") {
+ohos_unittest("ringtone_dualfw_restore_unittest") {
   module_out_path = "ringtone_library/ringtonelibraryextention"
 
   include_dirs = [
@@ -33,8 +33,7 @@ ohos_unittest("ringtone_restore_unittest") {
   ]
 
   sources = [
-    "./src/ringtone_source.cpp",
-    "./src/ringtone_restore_test.cpp",
+    "./src/ringtone_dualfw_restore_test.cpp",
     "../ringtone_unittest_utils/src/ringtone_unittest_utils.cpp",
     "${RINGTONE_RESTORE_PATH}/src/ringtone_rdb_transaction.cpp",
     "${RINGTONE_RESTORE_PATH}/src/ringtone_restore_base.cpp",
@@ -91,11 +90,11 @@ ohos_unittest("ringtone_restore_unittest") {
   }
 
   resource_config_file =
-    "${RINGTONE_ROOT_PATH}/test/unittest/ringtone_restore_test/resources/ohos_test.xml"
+    "${RINGTONE_ROOT_PATH}/test/unittest/ringtone_dualfw_restore_test/resources/ohos_test.xml"
 
   if (is_standard_system) {
-    external_deps = [ "hilog:libhilog" ]
+    external_deps += [ "hilog:libhilog" ]
   } else {
-    external_deps = [ "hilog:libhilog" ]
+    external_deps += [ "hilog:libhilog" ]
   }
 }
