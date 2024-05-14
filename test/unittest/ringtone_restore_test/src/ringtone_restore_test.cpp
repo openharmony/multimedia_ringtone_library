@@ -30,12 +30,15 @@
 #include "ringtone_errno.h"
 #include "ringtone_log.h"
 #include "ability_context_impl.h"
+#include "datashare_helper.h"
+#include "iservice_registry.h"
 
 using namespace std;
 using namespace testing::ext;
 
 namespace OHOS {
 namespace Media {
+constexpr int STORAGE_MANAGER_MANAGER_ID = 5003;
 static const int32_t INVALID_QUERY_OFFSET = -1;
 const string TEST_BACKUP_PATH = "/data/test/backup";
 const string TEST_BACKUP_DB_PATH = TEST_BACKUP_PATH + "/data/storage/el2/database/rdb/ringtone_library.db";
@@ -104,6 +107,11 @@ void QueryInt(shared_ptr<NativeRdb::RdbStore> rdbStore, const string &querySql, 
 }
 
 void RingtoneRestoreTest::SetUpTestCase(void) {
+    auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    auto remoteObj = sam->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+    shared_ptr<DataShare::DataShareHelper> ringtoneshare_ =
+        DataShare::DataShareHelper::Creator(remoteObj, "datashare:///ringtone");
+    ringtoneshare_->Release();
     Init(ringtoneSource, TEST_BACKUP_DB_PATH);
     restoreService = make_unique<RingtoneRestore>();
     restoreService->localRdb_ = ringtoneSource.localRdbPtr_; // local database
