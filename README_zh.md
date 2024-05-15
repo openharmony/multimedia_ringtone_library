@@ -6,10 +6,12 @@
 - [相关仓](#section1533973044317)
 
 ## 简介<a name="section1158716411637"></a>
-**图1** RingtoneLibrary组件架构图
-![](figures/ringtonelibrary-architecture_zh.png "ringtonelibrary-architecture")
 **ringtone\_library** 仓库提供了一系列易用的接口用于设定及获取系统铃音信息。
-RingtoneLibrary接口仅内部使用。
+**ringtone\_library** 提供了标准DataShareExtension接口，支持存储及查询通过SystemSoundManager设置的自定义来电/闹钟/短信/系统通知铃音文件。
+系统应用及音乐开放能力RingtoneKit通过SystemSoundManager设置及查询自定义铃音，非系统应用通过音乐开放能力RingtoneKit设置及查询自定义铃音。
+
+**图1** ringtonelibrary组件架构图
+![](figures/ringtonelibrary-architecture_zh.png "ringtonelibrary-architecture")
 
 支持能力列举如下：
 - 读取铃音内容
@@ -36,7 +38,7 @@ RingtoneLibrary接口仅内部使用。
 
 ## 使用说明<a name="usage-guidelines"></a>
 ### 概述
-提供铃音列表的增、删、改、查等接口，
+提供铃音列表的增、删、改、查等接口，可以通过Uri("datashare:///ringtone/ringtone")对铃音列表进行操作。
 接口参数主要有对象类型的Uri、DataSharePredicates和DataShareValuesBucket等。
 
 使用接口功能前，需要先获取DataShareHelper
@@ -46,20 +48,19 @@ auto remoteObj = saManager->GetSystemAbility(systemAbilityId);
 std::shared_ptr<DataShare::DataShareHelper> datashareHelper = DataShare::DataShareHelper::Creator(remoteObj, "datashare:///ringtone/ringtone");
 ```
 
-### 铃音列表
+### 新增铃音接口
 #### datashareHelper->Insert(const Uri &uri, const DataShareValuesBucket &value);
-- 接口说明
 
-  新增铃音
-
-- insert参数描述
+- 参数描述
 
   | 名称     | 读写属性 | 类型                   | 必填 | 描述                           |
   | -------- | -------- | ---------------------- | ---- | ------------------------------ |
-  | uri      | 只读     | Uri&                 | 是   | 具体操作的uri     |
+  | uri      | 只读     | Uri&                 | 是   | 铃音库操作Uri("datashare:///ringtone/ringtone")     |
   | value    | 只读     | DataShareValuesBucket& | 是   | 数据库字段key-value对象 |
 
-返回值为 来电铃音id
+- 返回值
+
+  来电铃音id
 
 - 示例
     ```cpp
@@ -97,21 +98,22 @@ std::shared_ptr<DataShare::DataShareHelper> datashareHelper = DataShare::DataSha
     int32_t ret = dataShareHelper->Insert(ringtoneUri, valuesBucket);
     ```
 
+### 删除铃音接口
 #### datashareHelper->Delete(const Uri &uri, const DataSharePredicates &predicates);
-- 接口说明
-
-  删除铃音
 
 - Delete参数描述
 
   | 名称         | 读写属性 | 类型                    | 必填 | 描述                           |
   | --------     | -------- | ---------------------- | ---- | ------------------------------ |
-  | uri          | 只读     | Uri&                 | 是   | 具体操作的uri          |
-  | condition    | 只读     | DataSharePredicates&    | 是   | 删除条件              |
+  | uri          | 只读     | Uri&                 | 是   | 铃音库操作Uri("datashare:///ringtone/ringtone")          |
+  | condition    | 只读     | DataSharePredicates&    | 是   | 数据库删除条件              |
 
-返回值为删除的铃音数量
+- 返回值
+
+  删除的铃音数量
 
 - 示例
+
     ```cpp
     Uri ringtoneUri("datashare:///ringtone/ringtone");
     DataShare::DataSharePredicates deletePredicates;
@@ -120,20 +122,20 @@ std::shared_ptr<DataShare::DataShareHelper> datashareHelper = DataShare::DataSha
     int32_t ret = g_dataShareHelper->Delete(ringtoneUri, deletePredicates);
     ```
 
+### 修改铃音接口
 #### datashareHelper->Update(const Uri &uri, const DataSharePredicates &predicates, const DataShareValuesBucket &value);
-- 接口说明
-
-  修改铃音
 
 - Update参数描述
 
   | 名称         | 读写属性 | 类型                    | 必填 | 描述                           |
   | --------     | -------- | ---------------------- | ---- | ------------------------------ |
   | uri          | 只读     | Uri&                 | 是   | 具体操作的uri          |
-  | condition    | 只读     | DataSharePredicates&    | 是   | 更新条件               |
+  | condition    | 只读     | DataSharePredicates&    | 是   | 数据库更新条件               |
   | value        | 只读     | DataShareValuesBucket& | 是   | 数据库字段key-value对象 |
 
-返回值为修改的铃音数量
+- 返回值
+
+  修改的铃音数量
 
 - 示例
     ```cpp
@@ -147,21 +149,20 @@ std::shared_ptr<DataShare::DataShareHelper> datashareHelper = DataShare::DataSha
     int32_t ret = dataShareHelper->Update(ringtoneUri, deletePredicates, updateValuesBucket);
     ```
 
+### 查询铃音接口
 #### datashareHelper->Query(const Uri &uri, const DataSharePredicates &predicates, std::vector<std::string> &columns, DatashareBusinessError &businessError);
-- 接口说明
-
-  查询铃音
 
 - Query参数描述
 
   | 名称             | 读写属性 | 类型                    | 必填  | 描述                           |
   | --------         | -------- | ---------------------- | ----  | ------------------------------ |
-  | uri              | 只读     | Uri&                 | 是    | 具体操作的uri        |
+  | uri              | 只读     | Uri&                 | 是    | 铃音库操作Uri("datashare:///ringtone/ringtone")        |
   | condition        | 只读     | DataSharePredicates&   | 是    | 查询条件             |
-  | resultColumns    | 读写     | std::vector<std::string>& | 是    | 需要查询的列字段名称   |
-  | businessError    | 读写     | DatashareBusinessError& | 是   | 异常代码 |
+  | resultColumns    | 只读     | std::vector<std::string>& | 是    | 需要查询的列字段名称   |
+  | businessError    | 只读     | DatashareBusinessError& | 是   | 异常代码 |
 
-返回值为ResultSet结果集
+- 返回值
+  数据库ResultSet结果集
 
 - 示例
     ```cpp
@@ -178,6 +179,32 @@ std::shared_ptr<DataShare::DataShareHelper> datashareHelper = DataShare::DataSha
     };
     auto resultSet = dataShareHelper->Query(ringtoneUri, queryPredicates, columns, &businessError);
     ```
+### RingtoneLibrary数据库表结构
+|字段名|类型|描述|
+|---|---|---|
+|ringtone_id|INTEGER|主键，数据库自增|
+|data|TEXT|铃音文件存储路径|
+|size|BITINT|铃音文件大小|
+|display_name|TEXT|title+后缀|
+|title|TEXT|铃音名称|
+|media_type|TEXT|媒体类型，音频类为2|
+|tone_type|INTEGER|ALARM = 0, RINGTONE = 1, NOTIFICATION = 2, NOTIFICATION可以设置为短信和通知|
+|mime_type|TEXT|UTI类型|
+|source_type|INTEGER|系统预制(1)，用户自定义(2)|
+|date_added|BIGINT|时间戳，添加时间|
+|date_modified|BIGINT|时间戳，修改时间|
+|date_taken|BIGINT|时间戳，创建时间|
+|duration|INTEGER|时长，毫秒值|
+|shot_tone_type|INTEGER|短信铃音类型： 非短信音(0)，卡1短信音(1)，卡2短信音(2)，双卡短信音(3)|
+|shot_tone_source_type|INTEGER|系统设置(1)，用户设置(2)|
+|notification_tone_type|INTEGER|通知音铃音类型： 非通知音(0)，通知音(1)|
+|notification_tone_source_type|INTEGER|系统设置(1)，用户设置(2)|
+|ring_tone_type|INTEGER|通话铃音类型： 非通话铃音(0)，卡1铃音(1)，卡2铃音(2)，双卡铃音(3)|
+|ring_tone_source_type|INTEGER|系统设置(1)，用户设置(2)|
+|alarm_tone_type|INTEGER|闹钟铃音类型： 非闹钟铃音(0)，闹钟铃音(1)|
+|alarm_tone_source_type|INTEGER|系统设置(1)，用户设置(2)|
+
 
 ## 相关仓<a name="section1533973044317"></a>
 **[multimedia/ringtone_library](https://gitee.com/openharmony/multimedia_ringtone_library)**
+**[multimedia/player_framework](https://gitee.com/openharmony/multimedia_player_framework)**
