@@ -17,7 +17,7 @@ import("//foundation/multimedia/ringtone_library/ringtone_library.gni")
 group("unittest") {
   testonly = true
 
-  deps = [":ringtone_restore_unittest"]
+  deps = [ ":ringtone_restore_unittest" ]
 }
 
 ohos_unittest("ringtone_restore_unittest") {
@@ -33,52 +33,52 @@ ohos_unittest("ringtone_restore_unittest") {
   ]
 
   sources = [
-    "./src/ringtone_source.cpp",
-    "./src/ringtone_restore_test.cpp",
-    "../ringtone_unittest_utils/src/ringtone_unittest_utils.cpp",
+    "${RINGTONE_RESTORE_PATH}/src/dualfw_conf_parser.cpp",
+    "${RINGTONE_RESTORE_PATH}/src/dualfw_sound_setting.cpp",
+    "${RINGTONE_RESTORE_PATH}/src/native_module_ohos_ringtone_restore.cpp",
+    "${RINGTONE_RESTORE_PATH}/src/ringtone_dualfw_restore.cpp",
     "${RINGTONE_RESTORE_PATH}/src/ringtone_rdb_transaction.cpp",
+    "${RINGTONE_RESTORE_PATH}/src/ringtone_restore.cpp",
     "${RINGTONE_RESTORE_PATH}/src/ringtone_restore_base.cpp",
     "${RINGTONE_RESTORE_PATH}/src/ringtone_restore_db_utils.cpp",
     "${RINGTONE_RESTORE_PATH}/src/ringtone_restore_factory.cpp",
-    "${RINGTONE_RESTORE_PATH}/src/ringtone_restore.cpp",
-    "${RINGTONE_RESTORE_PATH}/src/native_module_ohos_ringtone_restore.cpp",
     "${RINGTONE_RESTORE_PATH}/src/ringtone_restore_napi.cpp",
-    "${RINGTONE_RESTORE_PATH}/src/dualfw_sound_setting.cpp",
-    "${RINGTONE_RESTORE_PATH}/src/dualfw_conf_parser.cpp",
-    "${RINGTONE_RESTORE_PATH}/src/ringtone_dualfw_restore.cpp",
+    "../ringtone_unittest_utils/src/ringtone_unittest_utils.cpp",
+    "./src/ringtone_restore_test.cpp",
+    "./src/ringtone_source.cpp",
   ]
 
   configs = [ "//build/config/compiler:exceptions" ]
 
   deps = [
-    "${RINGTONE_ROOT_PATH}/services:ringtonerestore",
     "${RINGTONE_ROOT_PATH}/services:ringtone_data_extension",
-    "${RINGTONE_ROOT_PATH}/services:ringtone_utils",
     "${RINGTONE_ROOT_PATH}/services:ringtone_setting",
+    "${RINGTONE_ROOT_PATH}/services:ringtone_utils",
+    "${RINGTONE_ROOT_PATH}/services:ringtonerestore",
   ]
 
   external_deps = [
     "ability_base:zuri",
-    "ability_runtime:runtime",
+    "ability_runtime:ability_context_native",
+    "ability_runtime:ability_manager",
     "ability_runtime:app_context",
     "ability_runtime:app_manager",
-    "ability_runtime:ability_manager",
-    "ability_runtime:ability_context_native",
     "ability_runtime:extensionkit_native",
-    "ipc:ipc_single",
+    "ability_runtime:runtime",
     "access_token:libaccesstoken_sdk",
     "access_token:libnativetoken",
     "access_token:libtoken_setproc",
     "bundle_framework:appexecfwk_core",
+    "c_utils:utils",
     "data_share:datashare_common",
     "data_share:datashare_consumer",
     "data_share:datashare_provider",
-    "c_utils:utils",
     "hilog:libhilog",
+    "init:libbegetutil",
+    "ipc:ipc_single",
     "libxml2:libxml2",
     "media_library:media_library",
     "napi:ace_napi",
-    "init:libbegetutil",
     "relational_store:native_rdb",
     "relational_store:rdb_data_share_adapter",
     "samgr:samgr_proxy",
@@ -90,8 +90,7 @@ ohos_unittest("ringtone_restore_unittest") {
     debug = false
   }
 
-  resource_config_file =
-    "${RINGTONE_ROOT_PATH}/test/unittest/ringtone_restore_test/resources/ohos_test.xml"
+  resource_config_file = "${RINGTONE_ROOT_PATH}/test/unittest/ringtone_restore_test/resources/ohos_test.xml"
 
   if (is_standard_system) {
     external_deps = [ "hilog:libhilog" ]

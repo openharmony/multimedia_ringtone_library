@@ -43,7 +43,7 @@ ohos_unittest("ringtone_scanner_unittest") {
 
   deps = [
     "${RINGTONE_ROOT_PATH}/services:ringtone_data_extension",
-    "${RINGTONE_ROOT_PATH}/services:ringtone_setting"
+    "${RINGTONE_ROOT_PATH}/services:ringtone_setting",
   ]
 
   external_deps = [

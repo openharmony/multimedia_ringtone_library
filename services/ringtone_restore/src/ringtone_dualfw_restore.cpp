@@ -45,8 +45,6 @@ using namespace std;
 static const mode_t MODE_RWX_USR_GRP = 02771;
 constexpr int STORAGE_MANAGER_MANAGER_ID = 5003;
 static const string DUALFW_SOUND_CONF_XML = "setting_system.xml";
-// static const string DUALFW_UPGRADE_PATH = "/data/service/el1/public/update/migrate_server/plugins/200/back/sourceXml";
-// static const string DUALFW_CLONE_PATH = "/data/storage/el2/backup/restore";
 static std::shared_ptr<DataShare::DataShareHelper> CreateMediaDataShare(int32_t systemAbilityId)
 {
     RINGTONE_INFO_LOG("CreateDataShareHelper::CreateFileExtHelper ");
@@ -143,8 +141,7 @@ static const string KEY_API_VERSION = "API_VERSION";
 static unique_ptr<FileAsset> QueryMediaFileAsset(std::shared_ptr<DataShare::DataShareHelper> &mediaDataShare,
     DualfwSettingItem &item)
 {
-    if (mediaDataShare == nullptr || item.toneFileName.empty() || item.toneFileName == ""/* liuxk for debug ||
-        item.defaultSysSet == true*/) {
+    if (mediaDataShare == nullptr || item.toneFileName.empty() || item.toneFileName == "") {
         RINGTONE_ERR_LOG("argument errr, return nullptr");
         return nullptr;
     }
@@ -253,7 +250,6 @@ int32_t RingtoneDualfwRestore::DupToneFile(FileInfo &info)
 
     Uri openFileUri(uriStr);
     int32_t srcFd = mediaDataShare_->OpenFile(openFileUri, "r");
-
     if (srcFd < 0) {
         return E_ERR;
     }
@@ -314,12 +310,11 @@ bool RingtoneDualfwRestore::OnPrepare(FileInfo &info, const std::string &dstPath
             RINGTONE_ERR_LOG("Failed to get file %{private}s StatInfo, err=%{public}d", dstName.c_str(), errno);
             return false;
         }
-        /* liuxk for debug
         if (info.size == dstStatInfo.st_size) {
             RINGTONE_ERR_LOG("samefile: srcPath=%{public}s, dstPath=%{public}s", info.data.c_str(),
                 (dstPath + "/" + fileName).c_str());
             return false;
-        } */
+        }
         fileName = baseName + "(" + to_string(repeatCount++) + ")" + "." + extensionName;
     }
     info.restorePath = dstPath + "/" + fileName;

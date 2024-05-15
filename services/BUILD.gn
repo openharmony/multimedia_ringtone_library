@@ -83,13 +83,13 @@ ohos_shared_library("ringtone_data_extension") {
   public_configs = [ ":ringtone_public_config" ]
 
   deps = [
+    ":ringtone_param.para.dac",
     ":ringtone_scanner_param.para",
+    ":ringtone_setting",
     ":ringtone_setting_notifications.para",
     ":ringtone_setting_ringtones.para",
     ":ringtone_setting_shots.para",
-    ":ringtone_param.para.dac",
     ":ringtone_utils",
-    ":ringtone_setting",
     "${RINGTONE_ROOT_PATH}/services/ringtone_helper:ringtone_data_helper",
   ]
 
@@ -144,28 +144,26 @@ ohos_shared_library("ringtonerestore") {
   ]
 
   sources = [
+    "${RINGTONE_RESTORE_PATH}/src/dualfw_conf_parser.cpp",
+    "${RINGTONE_RESTORE_PATH}/src/dualfw_sound_setting.cpp",
     "${RINGTONE_RESTORE_PATH}/src/native_module_ohos_ringtone_restore.cpp",
+    "${RINGTONE_RESTORE_PATH}/src/ringtone_dualfw_restore.cpp",
     "${RINGTONE_RESTORE_PATH}/src/ringtone_rdb_transaction.cpp",
     "${RINGTONE_RESTORE_PATH}/src/ringtone_restore.cpp",
     "${RINGTONE_RESTORE_PATH}/src/ringtone_restore_base.cpp",
     "${RINGTONE_RESTORE_PATH}/src/ringtone_restore_db_utils.cpp",
     "${RINGTONE_RESTORE_PATH}/src/ringtone_restore_factory.cpp",
     "${RINGTONE_RESTORE_PATH}/src/ringtone_restore_napi.cpp",
-    "${RINGTONE_RESTORE_PATH}/src/dualfw_sound_setting.cpp",
-    "${RINGTONE_RESTORE_PATH}/src/dualfw_conf_parser.cpp",
-    "${RINGTONE_RESTORE_PATH}/src/ringtone_dualfw_restore.cpp",
   ]
 
   configs = [ "//build/config/compiler:exceptions" ]
 
-  ldflags = [ "-Wl", "--coverage" ]
-
-  cflags_cc = [ "--coverage" ]
+  ldflags = [ "-Wl" ]
 
   deps = [
     ":ringtone_data_extension",
+    ":ringtone_setting",
     ":ringtone_utils",
-    ":ringtone_setting"
   ]
 
   external_deps = [
@@ -183,9 +181,9 @@ ohos_shared_library("ringtonerestore") {
     "data_share:datashare_consumer",
     "data_share:datashare_provider",
     "hilog:libhilog",
+    "init:libbegetutil",
     "libxml2:libxml2",
     "media_library:media_library",
-    "init:libbegetutil",
     "napi:ace_napi",
     "relational_store:native_rdb",
     "relational_store:rdb_data_share_adapter",
@@ -276,10 +274,9 @@ ohos_shared_library("ringtone_setting") {
     "${RINGTONE_UTILS_PATH}/include",
   ]
 
-
   sources = [
-    "${RINGTONE_SETTING_PATH}/src/ringtone_setting_manager.cpp",
     "${RINGTONE_SETTING_PATH}/src/ringtone_metadata.cpp",
+    "${RINGTONE_SETTING_PATH}/src/ringtone_setting_manager.cpp",
   ]
 
   configs = [ "//build/config/compiler:exceptions" ]
@@ -314,30 +311,35 @@ ohos_shared_library("ringtone_setting") {
 
 ohos_prebuilt_etc("ringtone_scanner_param.para") {
   source = "etc/ringtone_scanner_param.para"
+  subsystem_name = "multimedia"
   part_name = "ringtone_library"
   module_install_dir = "etc/param"
 }
 
 ohos_prebuilt_etc("ringtone_setting_notifications.para") {
   source = "etc/ringtone_setting_notifications.para"
+  subsystem_name = "multimedia"
   part_name = "ringtone_library"
   module_install_dir = "etc/param"
 }
 
 ohos_prebuilt_etc("ringtone_setting_ringtones.para") {
   source = "etc/ringtone_setting_ringtones.para"
+  subsystem_name = "multimedia"
   part_name = "ringtone_library"
   module_install_dir = "etc/param"
 }
 
 ohos_prebuilt_etc("ringtone_setting_shots.para") {
   source = "etc/ringtone_setting_shots.para"
+  subsystem_name = "multimedia"
   part_name = "ringtone_library"
   module_install_dir = "etc/param"
 }
 
 ohos_prebuilt_etc("ringtone_param.para.dac") {
   source = "etc/ringtone_param.para.dac"
+  subsystem_name = "multimedia"
   part_name = "ringtone_library"
   module_install_dir = "etc/param"
 }

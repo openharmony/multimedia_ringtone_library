@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef RINGTONE_DUALFW_RESTORE_H_
-#define RINGTONE_DUALFW_RESTORE_H_
+#ifndef RINGTONE_DUALFW_RESTORE_H
+#define RINGTONE_DUALFW_RESTORE_H
 
 #include "datashare_helper.h"
 #include "dualfw_sound_setting.h"
@@ -47,4 +47,4 @@ private:
 } // namespace Media
 } // namespace OHOS
 
-#endif  // RINGTONE_DUALFW_RESTORE_H_
+#endif  // RINGTONE_DUALFW_RESTORE_H

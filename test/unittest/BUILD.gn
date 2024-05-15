@@ -20,7 +20,5 @@ group("test") {
     "ringtone_scanner_test:ringtone_scanner_unittest",
     "ringtone_test:ringtone_unittest",
     "ringtone_utils_test:ringtone_utils_unittest",
-    "ringtone_restore_test:ringtone_restore_unittest",
-    "ringtone_dualfw_restore_test:ringtone_dualfw_restore_unittest",
   ]
 }

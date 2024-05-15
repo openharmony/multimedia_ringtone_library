@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef DUALFW_CONF_PARSER_H_
-#define DUALFW_CONF_PARSER_H_
+#ifndef DUALFW_CONF_PARSER_H
+#define DUALFW_CONF_PARSER_H
 
 #include <functional>
 #include <string>
@@ -34,8 +34,7 @@ struct DualFwConfRow {
     bool preserveInRestore;
 };
 
-class DualfwConfParser
-{
+class DualfwConfParser {
 public:
     DualfwConfParser(const std::string &path);
     ~DualfwConfParser() {};
@@ -50,4 +49,4 @@ private:
 };
 } // namespace Media
 } // namespace OHOS
-#endif // DUALFW_CONF_PARSER_H_
+#endif // DUALFW_CONF_PARSER_H

@@ -117,11 +117,9 @@ int32_t DualfwSoundSetting::ProcessConfRow(std::unique_ptr<DualFwConfRow> &conf)
         } else if (found->second.rowType == DUALFW_CONFROW_PATH) {
             settings_[found->second.item].toneFileName = RingtoneFileUtils::GetFileNameFromPath(conf->value);
         } else {
-            // RINGTONE_ERR_LOG("unkown dualfw conf row, name:%{public}s", conf->name.c_str());
             ret = E_ERR;
         }
     } else {
-        // RINGTONE_ERR_LOG("%{public}s is not a dualfw sound setting", conf->name.c_str());
         ret = E_ERR;
     }
 

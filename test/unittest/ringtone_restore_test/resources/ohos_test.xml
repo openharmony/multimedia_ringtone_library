@@ -24,10 +24,6 @@
             <option name="shell" value="mkdir -p /storage/media/local/files/Ringtone/ringtones/" />
             <option name="shell" value="mkdir -p /storage/media/local/files/Ringtone/notifications/" />
             <option name="shell" value="mkdir -p /storage/media/local/files/Ringtone/alarms/" />
-            <option name="push" value="ogg/Adara.ogg -> /data/test/backup/storage/media/local/files/Ringtone/alarms" src="res" />
-            <option name="push" value="ogg/Carme.ogg -> /data/test/backup/storage/media/local/files/Ringtone/ringtones" src="res" />
-            <option name="push" value="ogg/Radon.ogg -> /data/test/backup/storage/media/local/files/Ringtone/notifications" src="res" />
-            <option name="push" value="ogg/Titan.ogg -> /data/test/backup/storage/media/local/files/Ringtone/notifications" src="res" />
         </preparer>
     </target>
 </configuration>

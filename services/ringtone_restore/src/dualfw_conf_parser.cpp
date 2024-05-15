@@ -135,7 +135,7 @@ int32_t DualfwConfParser::ParseConf(xmlNodePtr node)
 
 void DualfwConfParser::ConfTraval(std::function<void (std::unique_ptr<DualFwConfRow> &)> func)
 {
-    RINGTONE_INFO_LOG("dualfw confs num: %{public}u", DualFwConfs_.size());
+    RINGTONE_INFO_LOG("dualfw confs num: %{public}zu", DualFwConfs_.size());
     for (size_t i = 0; i < DualFwConfs_.size(); i++) {
         func(DualFwConfs_[i]);
     }

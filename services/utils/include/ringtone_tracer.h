@@ -28,7 +28,7 @@ public:
     virtual ~RingtoneTracer()
     {
         for (int32_t i = 0; i < count_; i++) {
-            FinishTrace(HITRACE_TAG_RINGTONE);
+            FinishTrace(HITRACE_TAG_FILEMANAGEMENT);
         }
 
         count_ = 0;
@@ -36,13 +36,13 @@ public:
 
     void Start(const std::string &label)
     {
-        StartTrace(HITRACE_TAG_RINGTONE, label);
+        StartTrace(HITRACE_TAG_FILEMANAGEMENT, label);
         count_++;
     }
 
     void Finish()
     {
-        FinishTrace(HITRACE_TAG_RINGTONE);
+        FinishTrace(HITRACE_TAG_FILEMANAGEMENT);
         count_--;
     }
 

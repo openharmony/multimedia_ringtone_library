@@ -172,16 +172,16 @@ static void InsertDateAdded(const RingtoneMetadata &metadata, ValuesBucket &outV
             int64_t dateModified = metadata.GetDateModified();
             if (dateModified == 0) {
                 dateAdded = RingtoneFileUtils::UTCTimeMilliSeconds();
-                RINGTONE_WARN_LOG("Invalid dateAdded time, use current time instead: %{public}lld",
+                RINGTONE_WARN_LOG("Invalid dateAdded time, use current time instead: %{public}" PRId64,
                     static_cast<long long>(dateAdded));
             } else {
                 dateAdded = dateModified;
-                RINGTONE_WARN_LOG("Invalid dateAdded time, use dateModified instead: %{public}lld",
+                RINGTONE_WARN_LOG("Invalid dateAdded time, use dateModified instead: %{public}" PRId64,
                     static_cast<long long>(dateAdded));
             }
         } else {
             dateAdded = dateTaken * MSEC_TO_SEC;
-            RINGTONE_WARN_LOG("Invalid dateAdded time, use dateTaken instead: %{public}lld",
+            RINGTONE_WARN_LOG("Invalid dateAdded time, use dateTaken instead: %{public}" PRId64,
                 static_cast<long long>(dateAdded));
         }
     }

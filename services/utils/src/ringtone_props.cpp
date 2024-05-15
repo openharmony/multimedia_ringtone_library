@@ -75,7 +75,6 @@ string RingtoneProps::GetProp(const string &propName, const string &defaultVal)
         RINGTONEPROPS_COLUMN_NAME + " = \"" + propName + "\"";
 
     auto resultSet = store_->QuerySql(queryPropsSql);
-
     if (resultSet == nullptr) {
         RINGTONE_INFO_LOG("resultset is null");
         return defaultVal;

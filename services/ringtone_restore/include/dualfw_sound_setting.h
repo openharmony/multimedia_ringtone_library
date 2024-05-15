@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef DUALFW_SOUND_SETTING_H_
-#define DUALFW_SOUND_SETTING_H_
+#ifndef DUALFW_SOUND_SETTING_H
+#define DUALFW_SOUND_SETTING_H
 
 #include <functional>
 #include <string>
@@ -33,8 +33,7 @@ struct DualfwSettingItem {
     bool setFlag {false};
 };
 
-class DualfwSoundSetting
-{
+class DualfwSoundSetting {
 public:
     DualfwSoundSetting();
     ~DualfwSoundSetting() = default;
@@ -46,4 +45,4 @@ private:
 
 } // namespace Media
 } // namespace OHOS
-#endif // DUALFW_SOUND_SETTING_H_
+#endif // DUALFW_SOUND_SETTING_H

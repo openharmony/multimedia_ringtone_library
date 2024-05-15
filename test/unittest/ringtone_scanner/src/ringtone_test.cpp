@@ -76,12 +76,11 @@ static void RingtoneIndex()
         valuesBucket.Put(RINGTONE_COLUMN_DATA, static_cast<string>(RINGTONE_LIBRARY_PATH + "/" +
             "test_insert_ringtone_library" + to_string(index) + ".ogg"));
         valuesBucket.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(ringtoneSize));
-        // todo construct by us
         valuesBucket.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>("rainning") + ".ogg");
         valuesBucket.Put(RINGTONE_COLUMN_TITLE, static_cast<string>("rainning"));
         valuesBucket.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(type));
         valuesBucket.Put(RINGTONE_COLUMN_TONE_TYPE, static_cast<int>(type));
-        valuesBucket.Put(RINGTONE_COLUMN_MIME_TYPE, static_cast<string>("ogg")); // todo construct by us
+        valuesBucket.Put(RINGTONE_COLUMN_MIME_TYPE, static_cast<string>("ogg"));
         valuesBucket.Put(RINGTONE_COLUMN_SOURCE_TYPE, static_cast<int>(1));
         valuesBucket.Put(RINGTONE_COLUMN_DATE_ADDED, static_cast<int64_t>(addedTime));
         valuesBucket.Put(RINGTONE_COLUMN_DATE_MODIFIED, static_cast<int64_t>(modifiedTime));
@@ -140,8 +139,7 @@ static int32_t RingtoneQuery()
     DatashareBusinessError businessError;
     DataSharePredicates queryPredicates;
     queryPredicates.EqualTo(RINGTONE_COLUMN_SHOT_TONE_TYPE, to_string(1));
-    vector<string> columns = { { RINGTONE_COLUMN_TONE_ID }, { RINGTONE_COLUMN_DISPLAY_NAME },
-        { RINGTONE_COLUMN_DATE_ADDED }, { RINGTONE_COLUMN_SHOT_TONE_TYPE } };
+    vector<string> columns = {};
     auto resultSet = g_dataShareHelper->Query(ringtoneUri, queryPredicates, columns, &businessError);
     errCode = businessError.GetCode();
     cout << "Query errCode=" << errCode << endl;
@@ -186,10 +184,6 @@ static int32_t RingtoneQuery()
 int32_t main()
 {
     vector<string> perms;
-    perms.push_back("ohos.permission.READ_MEDIA");
-    perms.push_back("ohos.permission.WRITE_MEDIA");
-    perms.push_back("ohos.permission.FILE_ACCESS_MANAGER");
-    perms.push_back("ohos.permission.GET_BUNDLE_INFO_PRIVILEGED");
     perms.push_back("ohos.permission.WRITE_RINGTONE");
 
     uint64_t tokenId = 0;

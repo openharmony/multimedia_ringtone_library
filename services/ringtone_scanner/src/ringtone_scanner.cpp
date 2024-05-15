@@ -31,17 +31,7 @@ using namespace std;
 using namespace OHOS::AppExecFwk;
 using namespace OHOS::DataShare;
 static const int32_t SCANNER_WAIT_FOR_TIMEOUT = 10000; // ms
-#ifndef OHOS_LOCAL_DEBUG_DISABLE
-// liuxk just for debug
-static const std::string LOCAL_DIR = "/storage/media/local/data/com.ohos.ringtonelibrary.ringtonelibrarydata";
-#endif
 static std::unordered_map<std::string, std::pair<int32_t, int32_t>> g_typeMap = {
-#ifndef OHOS_LOCAL_DEBUG_DISABLE
-    // liuxk just for debug
-    {LOCAL_DIR + "/alarms", {SOURCE_TYPE_CUSTOMISED, TONE_TYPE_ALARM}},
-    {LOCAL_DIR + "/ringtones", {SOURCE_TYPE_PRESET, TONE_TYPE_RINGTONE}},
-    {LOCAL_DIR + "/notifications", {SOURCE_TYPE_CUSTOMISED, TONE_TYPE_NOTIFICATION}},
-#endif
     // customized tones map
     {RINGTONE_CUSTOMIZED_ALARM_PATH, {SOURCE_TYPE_CUSTOMISED, TONE_TYPE_ALARM}},
     {RINGTONE_CUSTOMIZED_RINGTONE_PATH, {SOURCE_TYPE_CUSTOMISED, TONE_TYPE_RINGTONE}},
@@ -125,10 +115,6 @@ void RingtoneScannerObj::Scan()
 int32_t RingtoneScannerObj::BootScan()
 {
     static const std::vector<std::string> preloadDirs = {
-#ifndef OHOS_LOCAL_DEBUG_DISABLE
-        // liuxk just for debug
-        LOCAL_DIR,
-#endif
         ROOT_TONE_PRELOAD_PATH_NOAH_PATH,
         ROOT_TONE_PRELOAD_PATH_CHINA_PATH,
         ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH,
@@ -160,8 +146,8 @@ int32_t RingtoneScannerObj::BootScan()
     RingtoneDefaultSetting::GetObj(rawRdb)->Update();
 
     int64_t scanEnd = RingtoneFileUtils::UTCTimeMilliSeconds();
-    RINGTONE_INFO_LOG("total preload tone files count:%{public}d, scanned: %{public}d, costed-time:%{public}lld ms",
-        tonesScannedCount_, tonesScannedCount_, scanEnd - scanStart);
+    RINGTONE_INFO_LOG("total preload tone files count:%{public}d, scanned: %{public}d, costed-time:%{public}"
+        PRId64 " ms", tonesScannedCount_, tonesScannedCount_, scanEnd - scanStart);
     unique_lock<mutex> lock(scannerLock_);
     scannerCv_.notify_one();
     return E_OK;

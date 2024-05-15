@@ -21,6 +21,7 @@
 #include "dfx_manager.h"
 #include "parameter.h"
 #include "permission_utils.h"
+#include "ipc_skeleton.h"
 #include "ringtone_data_manager.h"
 #include "ringtone_datashare_stub_impl.h"
 #include "ringtone_log.h"
@@ -134,6 +135,11 @@ sptr<IRemoteObject> RingtoneDataShareExtension::OnConnect(const AAFwk::Want &wan
 static int32_t CheckRingtonePerm(RingtoneDataCommand &cmd, bool isWrite)
 {
     auto err = E_SUCCESS;
+    if (!RingtonePermissionUtils::IsSystemApp()) {
+        RINGTONE_ERR_LOG("RingtoneLibrary should only be called by system applications!");
+        return E_PERMISSION_DENIED;
+    }
+
     if (isWrite) {
         err = (RingtonePermissionUtils::CheckCallerPermission(PERM_WRITE_RINGTONE) ? E_SUCCESS : E_PERMISSION_DENIED);
     }
@@ -192,7 +198,7 @@ void RingtoneDataShareExtension::DumpDataShareValueBucket(const std::vector<stri
                 tab.c_str(), value.data());
         } else if (std::get_if<int64_t>(&(valueObject.value))) {
             auto value = static_cast<int64_t>(valueObject);
-            RINGTONE_INFO_LOG("field: %{public}s, value=%{public}lld",
+            RINGTONE_INFO_LOG("field: %{public}s, value=%{public}" PRId64,
                 tab.c_str(), value);
         } else if (std::get_if<std::string>(&(valueObject.value))) {
             auto value = static_cast<std::string>(valueObject);

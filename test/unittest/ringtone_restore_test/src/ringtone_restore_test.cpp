@@ -106,7 +106,8 @@ void QueryInt(shared_ptr<NativeRdb::RdbStore> rdbStore, const string &querySql, 
     RINGTONE_INFO_LOG("Query %{public}s result: %{public}d", querySql.c_str(), result);
 }
 
-void RingtoneRestoreTest::SetUpTestCase(void) {
+void RingtoneRestoreTest::SetUpTestCase(void)
+{
     auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remoteObj = sam->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     shared_ptr<DataShare::DataShareHelper> ringtoneshare_ =
@@ -119,7 +120,8 @@ void RingtoneRestoreTest::SetUpTestCase(void) {
     restoreService->settingMgr_ = make_unique<RingtoneSettingManager>(ringtoneSource.localRdbPtr_);
 }
 
-void RingtoneRestoreTest::TearDownTestCase(void) {
+void RingtoneRestoreTest::TearDownTestCase(void)
+{
     ClearData();
     restoreService->localRdb_ = nullptr;
     restoreService->restoreRdb_ = nullptr;
