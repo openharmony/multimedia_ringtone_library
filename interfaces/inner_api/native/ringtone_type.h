@@ -34,18 +34,18 @@ enum SourceType : int32_t {
     SOURCE_TYPE_MAX,
 };
 
-enum ResultSetDataType : int32_t {
-    TYPE_NULL = 0,
-    TYPE_STRING,
-    TYPE_INT32,
-    TYPE_INT64,
-    TYPE_DOUBLE
+enum RingtoneResultSetDataType : int32_t {
+    DATA_TYPE_NULL = 0,
+    DATA_TYPE_STRING,
+    DATA_TYPE_INT32,
+    DATA_TYPE_INT64,
+    DATA_TYPE_DOUBLE
 };
 
-enum MediaType : int32_t {
-    MEDIA_TYPE_INVALID = -1,
-    MEDIA_TYPE_AUDIO = 2,
-    MEDIA_TYPE_MAX
+enum RingtoneMediaType : int32_t {
+    RINGTONE_MEDIA_TYPE_INVALID = -1,
+    RINGTONE_MEDIA_TYPE_AUDIO = 2,
+    RINGTONE_MEDIA_TYPE_MAX
 };
 
 enum ToneSettingType : int32_t {
@@ -97,7 +97,7 @@ const std::string DATA_DEFAULT = {};
 const int64_t SIZE_DEFAULT = 0;
 const std::string DISPLAY_NAME_DEFAULT = {};
 const std::string TITLE_DEFAULT = {};
-const int32_t METADATA_MEDIA_TYPE_DEFAULT = MEDIA_TYPE_AUDIO;
+const int32_t METADATA_MEDIA_TYPE_DEFAULT = RINGTONE_MEDIA_TYPE_AUDIO;
 const int32_t TONE_TYPE_DEFAULT = TONE_TYPE_INVALID;
 const std::string MIME_TYPE_DEFAULT = {};
 const int32_t SOURCE_TYPE_DEFAULT = SOURCE_TYPE_INVALID;
@@ -115,10 +115,10 @@ const int32_t ALARM_TONE_TYPE_DEFAULT = ALARM_TONE_TYPE_NOT;
 const int32_t ALARM_TONE_SOURCE_TYPE_DEFAULT = SOURCE_TYPE_INVALID;
 const int32_t TONE_SETTING_TYPE_DEFAULT = TONE_SETTING_TYPE_INVALID;
 
-const char SLASH_CHAR = '/';
-constexpr int32_t DEFAULT_INT32 = 0;
-constexpr int64_t DEFAULT_INT64 = 0;
-const std::string DEFAULT_STR = "";
+const char RINGTONE_SLASH_CHAR = '/';
+constexpr int32_t RINGTONE_DEFAULT_INT32 = 0;
+constexpr int64_t RINGTONE_DEFAULT_INT64 = 0;
+const std::string RINGTONE_DEFAULT_STR = "";
 
 /** Supported ringtone types */
 const std::string RINGTONE_CONTAINER_TYPE_3GA   = "3ga";

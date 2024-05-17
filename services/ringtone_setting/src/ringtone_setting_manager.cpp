@@ -16,14 +16,12 @@
 
 #include "ringtone_setting_manager.h"
 
-#include "parameter.h"
 #include "rdb_errno.h"
 #include "result_set_utils.h"
 #include "ringtone_errno.h"
 #include "ringtone_log.h"
 #include "ringtone_metadata.h"
 #include "ringtone_type.h"
-#include "ringtone_scanner_db.h"
 
 namespace OHOS {
 namespace Media {
@@ -86,6 +84,7 @@ int32_t RingtoneSettingManager::CommitSettingCompare(int32_t settingType, int32_
         (toneType >= TONE_SETTING_TYPE_MAX))) {
         return E_INVALID_ARGUMENTS;
     }
+    return E_OK;
 }
 
 int32_t RingtoneSettingManager::CommitSetting(int32_t toneId, string &tonePath, int32_t settingType, int32_t toneType,
@@ -174,7 +173,7 @@ int32_t RingtoneSettingManager::PopulateMetadata(const shared_ptr<NativeRdb::Res
 void RingtoneSettingManager::ExtractMetaFromColumn(const shared_ptr<NativeRdb::ResultSet> &resultSet,
     unique_ptr<RingtoneMetadata> &metadata, const std::string &col)
 {
-    ResultSetDataType dataType = ResultSetDataType::TYPE_NULL;
+    RingtoneResultSetDataType dataType = RingtoneResultSetDataType::DATA_TYPE_NULL;
     RingtoneMetadata::RingtoneMetadataFnPtr requestFunc = nullptr;
     auto itr = metadata->memberFuncMap_.find(col);
     if (itr != metadata->memberFuncMap_.end()) {

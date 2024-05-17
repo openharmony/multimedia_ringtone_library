@@ -22,6 +22,7 @@
 #include "ringtone_scanner.h"
 #undef private
 #include "ringtone_scanner_db.h"
+#include "ringtone_scanner_utils.h"
 #include "ringtone_unittest_utils.h"
 
 using namespace std;

@@ -41,7 +41,10 @@ ohos_unittest("ringtone_scanner_unittest") {
     "./src/ringtone_scanner_utils_test.cpp",
   ]
 
-  deps = [ "${RINGTONE_ROOT_PATH}/services:ringtone_data_extension" ]
+  deps = [
+    "${RINGTONE_ROOT_PATH}/services:ringtone_data_extension",
+    "${RINGTONE_ROOT_PATH}/services:ringtone_setting",
+  ]
 
   external_deps = [
     "ability_runtime:ability_context_native",

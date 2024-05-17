@@ -46,7 +46,7 @@ public:
         const std::vector<std::string> &selectionArgs = std::vector<std::string>()) override;
     EXPORT std::shared_ptr<NativeRdb::RdbStore> GetRaw() override;
 private:
-    std::string bundleName_ {BUNDLE_NAME};
+    std::string bundleName_ {RINGTONE_BUNDLE_NAME};
     NativeRdb::RdbStoreConfig config_ {""};
     static std::shared_ptr<NativeRdb::RdbStore> rdbStore_;
 };

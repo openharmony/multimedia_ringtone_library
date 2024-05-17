@@ -55,8 +55,8 @@ public:
 private:
     EXPORT std::unique_ptr<T> GetObject(std::shared_ptr<NativeRdb::ResultSet> &resultSet);
     EXPORT std::variant<int32_t, int64_t, std::string, double> GetRowValFromColumn(std::string columnName,
-        ResultSetDataType dataType, std::shared_ptr<NativeRdb::ResultSet> &resultSet);
-    std::variant<int32_t, int64_t, std::string, double> GetValByIndex(int32_t index, ResultSetDataType dataType,
+        RingtoneResultSetDataType dataType, std::shared_ptr<NativeRdb::ResultSet> &resultSet);
+    std::variant<int32_t, int64_t, std::string, double> GetValByIndex(int32_t index, RingtoneResultSetDataType dataType,
         std::shared_ptr<NativeRdb::ResultSet> &resultSet);
 
     void SetRingtoneAsset(RingtoneAsset *asset, std::shared_ptr<NativeRdb::ResultSet> &resultSet);

@@ -34,7 +34,7 @@
         "description": "$string:DataShareExtAbility_desc",
         "type": "dataShare",
         "uri": "datashare://ringtone",
-        "visible": false
+        "visible": true
       },
       {
         "srcEntrance": "./ets/RingtoneBackupExtAbility/RingtoneBackupExtAbility.ts",
@@ -43,7 +43,7 @@
         "srcLanguage": "ets",
         "description": "$string:RingtoneBackupExtAbility_desc",
         "type": "backup",
-        "visible": false,
+        "visible": true,
         "metadata": [
           {
             "name": "ohos.extension.backup",
@@ -79,6 +79,26 @@
         "usedScene": {
           "abilities": [
             "DataShareExtAbility"
+          ],
+          "when": "inuse"
+        }
+      },
+      {
+        "name": "ohos.permission.READ_MEDIA",
+        "reason": "$string:permission_read_media",
+        "usedScene": {
+          "abilities": [
+            "RingtoneBackupExtAbility"
+          ],
+          "when": "inuse"
+        }
+      },
+      {
+        "name": "ohos.permission.READ_AUDIO",
+        "reason": "$string:permission_read_audio",
+        "usedScene": {
+          "abilities": [
+            "RingtoneBackupExtAbility"
           ],
           "when": "inuse"
         }

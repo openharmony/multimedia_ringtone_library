@@ -24,6 +24,8 @@
 #include "ringtone_scanner_db.h"
 #undef private
 #include "ringtone_unittest_utils.h"
+#include "ringtone_scanner_utils.h"
+#include "ringtone_type.h"
 
 using namespace std;
 using namespace OHOS;
@@ -79,7 +81,7 @@ HWTEST_F(RingtoneScannerDbTest, scannerDb_InsertMetadata_test_001, TestSize.Leve
     metadata.SetData(ROOT_MEDIA_DIR);
     metadata.SetDisplayName(RingtoneScannerUtils::GetFileNameFromUri(ROOT_MEDIA_DIR));
     metadata.SetTitle(RingtoneScannerUtils::GetFileTitle(metadata.GetDisplayName()));
-    metadata.SetMediaType(static_cast<MediaType>(MEDIA_TYPE_AUDIO));
+    metadata.SetMediaType(static_cast<RingtoneMediaType>(RINGTONE_MEDIA_TYPE_AUDIO));
     metadata.SetSize(statInfo.st_size);
     metadata.SetDateModified(statInfo.st_mtime);
     ret = ringtoneScannerDb.InsertMetadata(metadata, tableName);
@@ -101,7 +103,7 @@ HWTEST_F(RingtoneScannerDbTest, scannerDb_UpdateMetadata_test_001, TestSize.Leve
     metadata.SetData(ROOT_MEDIA_DIR);
     metadata.SetDisplayName(RingtoneScannerUtils::GetFileNameFromUri(ROOT_MEDIA_DIR));
     metadata.SetTitle(RingtoneScannerUtils::GetFileTitle(metadata.GetDisplayName()));
-    metadata.SetMediaType(static_cast<MediaType>(MEDIA_TYPE_AUDIO));
+    metadata.SetMediaType(static_cast<RingtoneMediaType>(RINGTONE_MEDIA_TYPE_AUDIO));
     metadata.SetSize(statInfo.st_size);
     metadata.SetDateModified(statInfo.st_mtime);
     metadata.SetToneId(albumId);

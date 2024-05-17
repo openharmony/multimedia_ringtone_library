@@ -28,13 +28,17 @@ public:
     RingtoneRestoreBase() = default;
     virtual ~RingtoneRestoreBase() = default;
     int32_t Init(const std::string &backupPath) override;
+    virtual std::shared_ptr<NativeRdb::RdbStore> GetBaseDb() override
+    {
+        return localRdb_;
+    }
 protected:
     virtual bool OnPrepare(FileInfo &info, const std::string &destPath) = 0;
     virtual void OnFinished(std::vector<FileInfo> &fileInfos) = 0;
     virtual std::vector<NativeRdb::ValuesBucket> MakeInsertValues(std::vector<FileInfo> &infos);
     virtual void InsertTones(std::vector<FileInfo> &infos);
 
-    static int32_t MoveFile(const std::string &srcFile, const std::string &dstFile);
+    static bool MoveFile(const std::string &src, const std::string &dst);
     static int32_t MoveDirectory(const std::string &srcDir, const std::string &dstDir);
 private:
     static std::string GetRestoreDir(const int32_t toneType);

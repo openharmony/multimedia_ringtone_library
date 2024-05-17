@@ -17,15 +17,14 @@
 #include "ringtone_datashare_extension.h"
 
 #include "app_mgr_client.h"
-#include "ringtone_restore_factory.h"
 #include "datashare_ext_ability_context.h"
 #include "dfx_manager.h"
 #include "parameter.h"
 #include "permission_utils.h"
+#include "ipc_skeleton.h"
 #include "ringtone_data_manager.h"
 #include "ringtone_datashare_stub_impl.h"
 #include "ringtone_log.h"
-#include "ringtone_restore_type.h"
 #include "ringtone_scanner_manager.h"
 #include "runtime.h"
 #include "singleton.h"
@@ -104,13 +103,6 @@ void RingtoneDataShareExtension::OnStart(const AAFwk::Want &want)
         SetParameter(RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY, RINGTONE_PARAMETER_SCANNER_COMPLETED_TRUE);
     }
 
-    // ringtone backup restore
-    auto restore = RingtoneRestoreFactory::CreateObj(RESTORE_SCENE_TYPE_SINGLE_CLONE);
-    if ((restore != nullptr) && (restore->Init(RINGTONE_SINGLE_CLONE_BACKUP_PATH)) == Media::E_OK) {
-        restore->StartRestore();
-    } else {
-        RINGTONE_ERR_LOG("ringtone-restore failed on init");
-    }
     RINGTONE_INFO_LOG("end.");
 }
 
@@ -143,6 +135,11 @@ sptr<IRemoteObject> RingtoneDataShareExtension::OnConnect(const AAFwk::Want &wan
 static int32_t CheckRingtonePerm(RingtoneDataCommand &cmd, bool isWrite)
 {
     auto err = E_SUCCESS;
+    if (!RingtonePermissionUtils::IsSystemApp()) {
+        RINGTONE_ERR_LOG("RingtoneLibrary should only be called by system applications!");
+        return E_PERMISSION_DENIED;
+    }
+
     if (isWrite) {
         err = (RingtonePermissionUtils::CheckCallerPermission(PERM_WRITE_RINGTONE) ? E_SUCCESS : E_PERMISSION_DENIED);
     }
@@ -201,7 +198,7 @@ void RingtoneDataShareExtension::DumpDataShareValueBucket(const std::vector<stri
                 tab.c_str(), value.data());
         } else if (std::get_if<int64_t>(&(valueObject.value))) {
             auto value = static_cast<int64_t>(valueObject);
-            RINGTONE_INFO_LOG("field: %{public}s, value=%{public}lld",
+            RINGTONE_INFO_LOG("field: %{public}s, value=%{public}" PRId64,
                 tab.c_str(), value);
         } else if (std::get_if<std::string>(&(valueObject.value))) {
             auto value = static_cast<std::string>(valueObject);

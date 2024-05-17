@@ -11,9 +11,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ringtone.scanner.completed = false
-persist.ringtone.setting.ringtone =
-persist.ringtone.setting.ringtone2 =
-persist.ringtone.setting.shot =
-persist.ringtone.setting.shot2 =
 persist.ringtone.setting.notification =

@@ -31,7 +31,7 @@ public:
     EXPORT static std::string GetMimeTypeFromExtension(const std::string &extension);
     EXPORT static std::string GetMimeTypeFromExtension(const std::string &extension,
         const std::unordered_map<std::string, std::vector<std::string>> &mimeTypeMap);
-    EXPORT static MediaType GetMediaTypeFromMimeType(const std::string &mimeType);
+    EXPORT static RingtoneMediaType GetMediaTypeFromMimeType(const std::string &mimeType);
 
 private:
     static void CreateMapFromJson();

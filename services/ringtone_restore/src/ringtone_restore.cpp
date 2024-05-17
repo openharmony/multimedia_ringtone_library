@@ -17,6 +17,8 @@
 
 #include "ringtone_restore.h"
 
+#include <sys/stat.h>
+
 #include "datashare_ext_ability.h"
 #include "datashare_ext_ability_context.h"
 #include "result_set_utils.h"
@@ -32,7 +34,7 @@ namespace Media {
 using namespace std;
 static const int32_t QUERY_COUNT = 500;
 static const int32_t INVALID_QUERY_OFFSET = -1;
-
+static string RINGTONELIBRARY_DB_PATH = "/data/storage/el2/database";
 int32_t RingtoneRestore::Init(const std::string &backupPath)
 {
     RINGTONE_INFO_LOG("Init db start");
@@ -40,7 +42,7 @@ int32_t RingtoneRestore::Init(const std::string &backupPath)
         RINGTONE_ERR_LOG("error: backup path is null");
         return E_INVALID_ARGUMENTS;
     }
-    dbPath_ = backupPath + "/" + RINGTONE_LIBRARY_DB_NAME;
+    dbPath_ = backupPath + "/" + RINGTONELIBRARY_DB_PATH + "/rdb" + "/" + RINGTONE_LIBRARY_DB_NAME;
     backupPath_ = backupPath;
 
     if (!RingtoneFileUtils::IsFileExists(dbPath_)) {
@@ -50,13 +52,8 @@ int32_t RingtoneRestore::Init(const std::string &backupPath)
     if (RingtoneRestoreBase::Init(backupPath) != E_OK) {
         return E_FAIL;
     }
-    auto context = AbilityRuntime::Context::GetApplicationContext();
-    if (context == nullptr) {
-        RINGTONE_ERR_LOG("Failed to get context");
-        return E_FAIL;
-    }
     int32_t err = RingtoneRestoreDbUtils::InitDb(restoreRdb_, RINGTONE_LIBRARY_DB_NAME, dbPath_,
-        context->GetBundleName(), true);
+        RINGTONE_BUNDLE_NAME, true);
     if (err != E_OK) {
         RINGTONE_ERR_LOG("ringtone rdb fail, err = %{public}d", err);
         return E_HAS_DB_ERROR;
@@ -69,7 +66,7 @@ int32_t RingtoneRestore::Init(const std::string &backupPath)
 void RingtoneRestore::ExtractMetaFromColumn(const shared_ptr<NativeRdb::ResultSet> &resultSet,
     unique_ptr<RingtoneMetadata> &metadata, const std::string &col)
 {
-    ResultSetDataType dataType = ResultSetDataType::TYPE_NULL;
+    RingtoneResultSetDataType dataType = RingtoneResultSetDataType::DATA_TYPE_NULL;
     RingtoneMetadata::RingtoneMetadataFnPtr requestFunc = nullptr;
     auto itr = metadata->memberFuncMap_.find(col);
     if (itr != metadata->memberFuncMap_.end()) {
@@ -193,24 +190,6 @@ void RingtoneRestore::StartRestore()
     }
 }
 
-bool RingtoneRestore::MoveFileInternal(const string &src, const string &dest)
-{
-    if (RingtoneFileUtils::MoveFile(src, dest)) {
-        return true;
-    }
-
-    if (!RingtoneFileUtils::CopyFileUtil(src, dest)) {
-        RINGTONE_ERR_LOG("copy-file failed, src: %{public}s, err: %{public}s", src.c_str(), strerror(errno));
-        return false;
-    }
-
-    if (!RingtoneFileUtils::DeleteFile(src)) {
-        RINGTONE_ERR_LOG("remove-file failed, filePath: %{public}s, err: %{public}s", src.c_str(), strerror(errno));
-    }
-
-    return true;
-}
-
 void RingtoneRestore::UpdateRestoreFileInfo(FileInfo &info)
 {
     info.displayName = RingtoneFileUtils::GetFileNameFromPath(info.restorePath);
@@ -254,7 +233,7 @@ bool RingtoneRestore::OnPrepare(FileInfo &info, const std::string &destPath)
     }
     info.restorePath = destPath + "/" + fileName;
 
-    if (!MoveFileInternal(srcPath, info.restorePath)) {
+    if (!RingtoneRestoreBase::MoveFile(srcPath, info.restorePath)) {
         return false;
     }
 

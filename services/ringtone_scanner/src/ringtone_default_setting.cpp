@@ -44,9 +44,16 @@ string RingtoneDefaultSetting::GetTonePathByDisplayName(string &name)
     string querySql = "SELECT data FROM ToneFiles WHERE display_name = "s + "\"" + name + "\"";
     settingMgr_->TravelQueryResultSet(querySql, [&](shared_ptr<RingtoneMetadata> &meta) -> bool {
         pathStr = meta->GetData();
-        if (!pathStr.empty()) {
+        if (pathStr.empty()) {
+            pathStr = {};
+            return false;
+        }
+        if (pathStr.find(ROOT_TONE_PRELOAD_PATH_NOAH_PATH) == 0 ||
+            pathStr.find(ROOT_TONE_PRELOAD_PATH_CHINA_PATH) == 0 ||
+            pathStr.find(ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH) == 0) {
             return true;
         }
+        pathStr = {};
         return false;
     });
 

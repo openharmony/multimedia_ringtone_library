@@ -58,7 +58,7 @@ HWTEST_F(RingtoneMetadataExtractorTest, metadataExtractor_Extract_test_001, Test
     unique_ptr<RingtoneMetadata> data = make_unique<RingtoneMetadata>();
     unique_ptr<RingtoneScannerDb> ringtoneScannerDb;
     ringtoneScannerDb->GetFileBasicInfo(ROOT_MEDIA_DIR, data);
-    data->SetMediaType(static_cast<MediaType>(MEDIA_TYPE_AUDIO));
+    data->SetMediaType(static_cast<RingtoneMediaType>(RINGTONE_MEDIA_TYPE_AUDIO));
     int32_t ret = RingtoneMetadataExtractor::Extract(data);
     EXPECT_EQ(ret, E_AVMETADATA);
 }
@@ -68,7 +68,7 @@ HWTEST_F(RingtoneMetadataExtractorTest, metadataExtractor_Extract_test_002, Test
     unique_ptr<RingtoneMetadata> data = make_unique<RingtoneMetadata>();
     unique_ptr<RingtoneScannerDb> ringtoneScannerDb;
     ringtoneScannerDb->GetFileBasicInfo(ROOT_MEDIA_DIR, data);
-    data->SetMediaType(static_cast<MediaType>(MEDIA_TYPE_INVALID));
+    data->SetMediaType(static_cast<RingtoneMediaType>(RINGTONE_MEDIA_TYPE_INVALID));
     int32_t ret = RingtoneMetadataExtractor::Extract(data);
     EXPECT_EQ(ret, E_AVMETADATA);
 }
@@ -79,7 +79,7 @@ HWTEST_F(RingtoneMetadataExtractorTest, metadataExtractor_FillExtractedMetadata_
     unique_ptr<RingtoneScannerDb> ringtoneScannerDb;
     const int modifiedTime = 11;
     ringtoneScannerDb->GetFileBasicInfo(ROOT_MEDIA_DIR, data);
-    data->SetMediaType(static_cast<MediaType>(MEDIA_TYPE_AUDIO));
+    data->SetMediaType(static_cast<RingtoneMediaType>(RINGTONE_MEDIA_TYPE_AUDIO));
     data->SetData(ROOT_MEDIA_DIR);
     data->SetDateModified(static_cast<int64_t>(modifiedTime));
     unordered_map<int32_t, std::string> resultMap;
@@ -95,7 +95,7 @@ HWTEST_F(RingtoneMetadataExtractorTest, metadataExtractor_FillExtractedMetadata_
     unique_ptr<RingtoneScannerDb> ringtoneScannerDb;
     const int modifiedTime = 13;
     ringtoneScannerDb->GetFileBasicInfo(ROOT_MEDIA_DIR, data);
-    data->SetMediaType(static_cast<MediaType>(MEDIA_TYPE_AUDIO));
+    data->SetMediaType(static_cast<RingtoneMediaType>(RINGTONE_MEDIA_TYPE_AUDIO));
     data->SetData(ROOT_MEDIA_DIR);
     data->SetDateModified(static_cast<int64_t>(modifiedTime));
     unordered_map<int32_t, std::string> resultMap;
@@ -110,7 +110,7 @@ HWTEST_F(RingtoneMetadataExtractorTest, metadataExtractor_ExtractAudioMetadata_t
     unique_ptr<RingtoneMetadata> data = make_unique<RingtoneMetadata>();
     unique_ptr<RingtoneScannerDb> ringtoneScannerDb;
     ringtoneScannerDb->GetFileBasicInfo(ROOT_MEDIA_DIR, data);
-    data->SetMediaType(static_cast<MediaType>(MEDIA_TYPE_AUDIO));
+    data->SetMediaType(static_cast<RingtoneMediaType>(RINGTONE_MEDIA_TYPE_AUDIO));
     int32_t ret = RingtoneMetadataExtractor::ExtractAudioMetadata(data);
     EXPECT_EQ(ret, E_AVMETADATA);
     data->SetData(ROOT_MEDIA_DIR);

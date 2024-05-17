@@ -43,10 +43,10 @@ int32_t RingtoneRestoreBase::Init(const string &backupPath)
         return E_FAIL;
     }
     int32_t errCode = 0;
-    string realPath = NativeRdb::RdbSqlUtils::GetDefaultDatabasePath(context->GetDatabaseDir(),
+    string realPath = NativeRdb::RdbSqlUtils::GetDefaultDatabasePath(RINGTONE_LIBRARY_DB_PATH,
         RINGTONE_LIBRARY_DB_NAME, errCode);
     int32_t err = RingtoneRestoreDbUtils::InitDb(localRdb_, RINGTONE_LIBRARY_DB_NAME, realPath,
-        context->GetBundleName(), true);
+        RINGTONE_BUNDLE_NAME, true);
     if (err != E_OK) {
         RINGTONE_ERR_LOG("medialibrary rdb fail, err = %{public}d", err);
         return E_FAIL;
@@ -60,19 +60,22 @@ int32_t RingtoneRestoreBase::Init(const string &backupPath)
     return E_OK;
 }
 
-int32_t RingtoneRestoreBase::MoveFile(const std::string &srcFile, const std::string &dstFile)
+bool RingtoneRestoreBase::MoveFile(const std::string &src, const std::string &dst)
 {
-    if (RingtoneFileUtils::MoveFile(srcFile, dstFile)) {
-        return E_OK;
+    if (RingtoneFileUtils::MoveFile(src, dst)) {
+        return true;
     }
 
-    if (!RingtoneFileUtils::CopyFileUtil(srcFile, dstFile)) {
-        RINGTONE_ERR_LOG("CopyFile failed, filePath: %{private}s, errmsg: %{public}s", srcFile.c_str(),
-            strerror(errno));
-        return E_FAIL;
+    if (!RingtoneFileUtils::CopyFileUtil(src, dst)) {
+        RINGTONE_ERR_LOG("copy-file failed, src: %{public}s, err: %{public}s", src.c_str(), strerror(errno));
+        return false;
     }
-    (void)RingtoneFileUtils::DeleteFile(srcFile);
-    return E_OK;
+
+    if (!RingtoneFileUtils::DeleteFile(src)) {
+        RINGTONE_ERR_LOG("remove-file failed, filePath: %{public}s, err: %{public}s", src.c_str(), strerror(errno));
+    }
+
+    return true;
 }
 
 void RingtoneRestoreBase::CheckSetting(FileInfo &info)
@@ -214,7 +217,7 @@ int32_t RingtoneRestoreBase::MoveDirectory(const std::string &srcDir, const std:
         std::string srcFilePath = dirEntry.path();
         std::string tmpFilePath = srcFilePath;
         std::string dstFilePath = tmpFilePath.replace(0, srcDir.length(), dstDir);
-        if (MoveFile(srcFilePath, dstFilePath) != E_OK) {
+        if (!MoveFile(srcFilePath, dstFilePath)) {
             RINGTONE_ERR_LOG("Move file from %{private}s to %{private}s failed", srcFilePath.c_str(),
                 dstFilePath.c_str());
             return E_FAIL;

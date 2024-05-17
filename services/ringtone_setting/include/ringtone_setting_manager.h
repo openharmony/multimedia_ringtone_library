@@ -26,14 +26,16 @@
 
 namespace OHOS {
 namespace Media {
+#define EXPORT __attribute__ ((visibility ("default")))
 class RingtoneSettingManager final {
 public:
-    RingtoneSettingManager(std::shared_ptr<NativeRdb::RdbStore> rdb);
-    ~RingtoneSettingManager() = default;
-    int32_t CommitSetting(int32_t toneId, std::string &tonePath, int32_t settingType,
+    EXPORT RingtoneSettingManager(std::shared_ptr<NativeRdb::RdbStore> rdb);
+    EXPORT ~RingtoneSettingManager() = default;
+    EXPORT int32_t CommitSetting(int32_t toneId, std::string &tonePath, int32_t settingType,
         int32_t toneType, int32_t sourceType);
-    void FlushSettings();
-    int32_t TravelQueryResultSet(std::string querySql, std::function<bool (std::shared_ptr<RingtoneMetadata> &)> func);
+    EXPORT void FlushSettings();
+    EXPORT int32_t TravelQueryResultSet(std::string querySql,
+        std::function<bool (std::shared_ptr<RingtoneMetadata> &)> func);
 private:
     struct SettingItem {
         int32_t toneId = TONE_ID_DEFAULT;

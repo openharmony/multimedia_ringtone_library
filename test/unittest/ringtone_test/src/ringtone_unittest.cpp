@@ -26,6 +26,7 @@
 #include "ringtone_log.h"
 #include "ringtone_scanner_utils.h"
 #include "ringtone_tracer.h"
+#include "ringtone_type.h"
 
 using namespace std;
 using namespace OHOS;
@@ -56,6 +57,9 @@ void RingtoneUnitTest::SetUpTestCase()
 
     uint64_t tokenId = 0;
     RingtonePermissionUtilsUnitTest::SetAccessTokenPermission("RingtoneUnitTest", perms, tokenId);
+    ASSERT_TRUE(tokenId != 0);
+
+    RingtonePermissionUtilsUnitTest::SetHapPermission("com.ohos.ringtonelibrary.ringtonelibrarydata", tokenId);
     ASSERT_TRUE(tokenId != 0);
 
     auto saManager = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
@@ -233,7 +237,7 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareInsert_test_001, TestSize.Level0)
     tracer.Start("DataShareInsert10Column");
     for (int index = 0; index < NUMBER_OF_TIMES; index++) {
         DataShareValuesBucket values;
-        values.Put(RINGTONE_COLUMN_DATA, static_cast<string>(RINGTONE_LIBRARY_PATH + SLASH_STR +
+        values.Put(RINGTONE_COLUMN_DATA, static_cast<string>(RINGTONE_LIBRARY_PATH + RINGTONE_SLASH_CHAR +
             TEST_INSERT_RINGTONE_LIBRARY + to_string(index) + MTP_FORMAT_OGG));
         values.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
         values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
@@ -266,17 +270,17 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareInsert_test_002, TestSize.Level0)
 
 HWTEST_F(RingtoneUnitTest, medialib_datashareInsert_test_003, TestSize.Level0)
 {
-    Uri uri(DEFAULT_STR);
+    Uri uri(RINGTONE_DEFAULT_STR);
 
     int64_t start = UTCTimeSeconds();
     RingtoneTracer tracer;
     tracer.Start("DataShareInsertColumn");
     DataShareValuesBucket values;
     values.Put(RINGTONE_COLUMN_TONE_ID, TONE_ID_DEFAULT);
-    values.Put(RINGTONE_COLUMN_DATA, static_cast<string>(RINGTONE_LIBRARY_PATH + SLASH_STR +
+    values.Put(RINGTONE_COLUMN_DATA, static_cast<string>(RINGTONE_LIBRARY_PATH + RINGTONE_SLASH_CHAR +
         TEST_INSERT_RINGTONE_LIBRARY + to_string(0) + MTP_FORMAT_OGG));
     values.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
-    values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG); // todo construct by us
+    values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
     values.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
     auto result = g_dataShareHelper->Insert(uri, values);
     EXPECT_EQ(result, E_INVALID_URI);
@@ -296,10 +300,10 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareInsert_test_004, TestSize.Level0)
     RingtoneTracer tracer;
     tracer.Start("DataShareInsertColumn");
     DataShareValuesBucket values;
-    values.Put(RINGTONE_COLUMN_DATA, static_cast<string>(errorRingtoneLibraryPath + SLASH_STR +
+    values.Put(RINGTONE_COLUMN_DATA, static_cast<string>(errorRingtoneLibraryPath + RINGTONE_SLASH_CHAR +
         TEST_INSERT_RINGTONE_LIBRARY + to_string(0) + MTP_FORMAT_OGG));
     values.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
-    values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG); // todo construct by us
+    values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
     values.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
     auto result = g_dataShareHelper->Insert(uri, values);
     EXPECT_EQ(result, E_ERR);
@@ -317,10 +321,10 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareInsert_test_005, TestSize.Level0)
     RingtoneTracer tracer;
     tracer.Start("DataShareInsertColumn");
     DataShareValuesBucket values;
-    values.Put(RINGTONE_COLUMN_DATA, static_cast<string>(RINGTONE_LIBRARY_PATH + SLASH_STR +
+    values.Put(RINGTONE_COLUMN_DATA, static_cast<string>(RINGTONE_LIBRARY_PATH + RINGTONE_SLASH_CHAR +
         TEST_INSERT_RINGTONE_LIBRARY + to_string(0) + MTP_FORMAT_OGG));
     values.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
-    values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG); // todo construct by us
+    values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
     values.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
     auto result = g_dataShareHelper->Insert(uri, values);
     EXPECT_EQ(result, E_INVALID_URI);
@@ -334,10 +338,10 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareUpdate_test_001, TestSize.Level0)
 {
     Uri uri(RINGTONE_PATH_URI);
     DataShareValuesBucket values;
-    values.Put(RINGTONE_COLUMN_DATA, static_cast<string>(RINGTONE_LIBRARY_PATH + SLASH_STR +
+    values.Put(RINGTONE_COLUMN_DATA, static_cast<string>(RINGTONE_LIBRARY_PATH + RINGTONE_SLASH_CHAR +
         TEST_INSERT_RINGTONE_LIBRARY + to_string(0) + MTP_FORMAT_OGG));
     values.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
-    values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG); // todo construct by us
+    values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
     values.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
     auto result = g_dataShareHelper->Insert(uri, values);
     EXPECT_EQ((result > 0), true);
@@ -467,10 +471,10 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareDelete_test_001, TestSize.Level0)
 {
     Uri uri(RINGTONE_PATH_URI);
     DataShareValuesBucket values;
-    values.Put(RINGTONE_COLUMN_DATA, static_cast<string>(RINGTONE_LIBRARY_PATH + SLASH_STR +
+    values.Put(RINGTONE_COLUMN_DATA, static_cast<string>(RINGTONE_LIBRARY_PATH + RINGTONE_SLASH_CHAR +
         TEST_INSERT_RINGTONE_LIBRARY + to_string(0) + MTP_FORMAT_OGG));
     values.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
-    values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG); // todo construct by us
+    values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
     values.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
     auto result = g_dataShareHelper->Insert(uri, values);
     EXPECT_EQ((result > 0), true);
@@ -496,7 +500,7 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareDelete_test_002, TestSize.Level0)
 
 HWTEST_F(RingtoneUnitTest, medialib_datashareDelete_test_003, TestSize.Level0)
 {
-    Uri uri(DEFAULT_STR);
+    Uri uri(RINGTONE_DEFAULT_STR);
 
     DataSharePredicates predicates;
 
@@ -506,7 +510,7 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareDelete_test_003, TestSize.Level0)
 
 HWTEST_F(RingtoneUnitTest, medialib_datashareDelete_test_004, TestSize.Level0)
 {
-    Uri uri(DEFAULT_STR);
+    Uri uri(RINGTONE_DEFAULT_STR);
 
     DataSharePredicates predicates;
     vector<string> selectionArgs = { ZERO };
@@ -534,10 +538,10 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareOpenFile_test_001, TestSize.Level0)
 {
     Uri uri(RINGTONE_PATH_URI);
     DataShareValuesBucket values;
-    values.Put(RINGTONE_COLUMN_DATA, static_cast<string>(RINGTONE_LIBRARY_PATH + SLASH_STR +
+    values.Put(RINGTONE_COLUMN_DATA, static_cast<string>(RINGTONE_LIBRARY_PATH + RINGTONE_SLASH_CHAR +
         TEST_INSERT_RINGTONE_LIBRARY + to_string(0) + MTP_FORMAT_OGG));
     values.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
-    values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG); // todo construct by us
+    values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
     values.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
     auto result = g_dataShareHelper->Insert(uri, values);
     EXPECT_EQ((result > 0), true);
@@ -553,8 +557,8 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareOpenFile_test_001, TestSize.Level0)
     auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
     cout << "query count = " << to_string(results->GetCount()) << endl;
     unique_ptr<RingtoneAsset> ringtoneAsset = results->GetFirstObject();
-    if (ringtoneAsset != nullptr && ringtoneAsset->GetPath() != DEFAULT_STR) {
-        string uriStr = RINGTONE_PATH_URI + SLASH_STR + to_string(ringtoneAsset->GetId());
+    if (ringtoneAsset != nullptr && ringtoneAsset->GetPath() != RINGTONE_DEFAULT_STR) {
+        string uriStr = RINGTONE_PATH_URI + RINGTONE_SLASH_CHAR + to_string(ringtoneAsset->GetId());
         Uri ofUri(uriStr);
         string mode = RINGTONE_FILEMODE_READWRITE;
         auto fd = g_dataShareHelper->OpenFile(ofUri, mode);
@@ -580,7 +584,7 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareOpenFile_test_002, TestSize.Level0)
 
 HWTEST_F(RingtoneUnitTest, medialib_datashareOpenFile_test_003, TestSize.Level0)
 {
-    const string uriStr = RINGTONE_PATH_URI + SLASH_STR + "1";
+    const string uriStr = RINGTONE_PATH_URI + RINGTONE_SLASH_CHAR + "1";
     Uri uri(uriStr);
     string mode = RINGTONE_FILEMODE_READWRITE;
 
@@ -613,6 +617,243 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareOpenFile_test_005, TestSize.Level0)
     if (fd >= 0) {
         close(fd);
     }
+}
+
+
+HWTEST_F(RingtoneUnitTest, medialib_ringtoneRead_test_001, TestSize.Level0)
+{
+    Uri uri(RINGTONE_PATH_URI);
+    DataSharePredicates predicates;
+
+    auto result = g_dataShareHelper->Delete(uri, predicates);
+    EXPECT_EQ((result > 0), true);
+    DataShareValuesBucket values;
+    values.Put(RINGTONE_COLUMN_DATA, static_cast<string>("/storage/media/local/files/Ringtone" + SLASH_STR +
+        TEST_INSERT_RINGTONE_LIBRARY + to_string(0) + MTP_FORMAT_OGG));
+    values.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
+    values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
+    values.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
+    values.Put(RINGTONE_COLUMN_SOURCE_TYPE, static_cast<int>(2));
+    result = g_dataShareHelper->Insert(uri, values);
+    cout << "Insert result=" << result << endl;
+    EXPECT_EQ((result > 0), true);
+
+    int errCode = 0;
+    DatashareBusinessError businessError;
+    DataSharePredicates queryPredicates;
+    vector<string> columns = { { RINGTONE_COLUMN_TONE_ID }, { RINGTONE_COLUMN_DATA }, {RINGTONE_COLUMN_SOURCE_TYPE} };
+    auto resultSet = g_dataShareHelper->Query(uri, queryPredicates, columns, &businessError);
+    errCode = businessError.GetCode();
+    cout << "Query errCode=" << errCode << endl;
+
+    auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
+    cout << "query count = " << to_string(results->GetCount()) << endl;
+    unique_ptr<RingtoneAsset> ringtoneAsset = results->GetLastObject();
+    cout << "GetSourceType()                    = " << to_string(ringtoneAsset->GetSourceType()) << endl;
+}
+
+HWTEST_F(RingtoneUnitTest, medialib_ringtoneRead_test_002, TestSize.Level0)
+{
+    Uri uri(RINGTONE_PATH_URI);
+    DataSharePredicates predicates;
+
+    auto result = g_dataShareHelper->Delete(uri, predicates);
+    EXPECT_EQ((result > 0), true);
+    DataShareValuesBucket values;
+    values.Put(RINGTONE_COLUMN_DATA, static_cast<string>("/storage/cloud/files/Ringtone" + SLASH_STR +
+        TEST_INSERT_RINGTONE_LIBRARY + to_string(0) + MTP_FORMAT_OGG));
+    values.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
+    values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
+    values.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
+    values.Put(RINGTONE_COLUMN_SOURCE_TYPE, static_cast<int>(1));
+    result = g_dataShareHelper->Insert(uri, values);
+    cout << "Insert result=" << result << endl;
+    EXPECT_EQ((result > 0), true);
+
+    int errCode = 0;
+    DatashareBusinessError businessError;
+    DataSharePredicates queryPredicates;
+    vector<string> columns = { { RINGTONE_COLUMN_TONE_ID }, { RINGTONE_COLUMN_DATA }, {RINGTONE_COLUMN_SOURCE_TYPE} };
+    auto resultSet = g_dataShareHelper->Query(uri, queryPredicates, columns, &businessError);
+    errCode = businessError.GetCode();
+    cout << "Query errCode=" << errCode << endl;
+
+    auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
+    cout << "query count = " << to_string(results->GetCount()) << endl;
+    unique_ptr<RingtoneAsset> ringtoneAsset = results->GetLastObject();
+    cout << "GetSourceType()                    = " << to_string(ringtoneAsset->GetSourceType()) << endl;
+}
+
+HWTEST_F(RingtoneUnitTest, medialib_ringtoneRead_test_003, TestSize.Level0)
+{
+    Uri uri(RINGTONE_PATH_URI);
+    DataSharePredicates predicates;
+
+    auto result = g_dataShareHelper->Delete(uri, predicates);
+    EXPECT_EQ((result > 0), true);
+    DataShareValuesBucket values;
+    values.Put(RINGTONE_COLUMN_DATA, static_cast<string>("/storage/media/local/files/Ringtone" + SLASH_STR +
+        TEST_INSERT_RINGTONE_LIBRARY + to_string(0) + MTP_FORMAT_OGG));
+    values.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
+    values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
+    values.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
+    values.Put(RINGTONE_COLUMN_SOURCE_TYPE, static_cast<int>(2));
+    result = g_dataShareHelper->Insert(uri, values);
+    cout << "Insert result=" << result << endl;
+    EXPECT_EQ((result > 0), true);
+
+    DataShareValuesBucket valuesInsert;
+    valuesInsert.Put(RINGTONE_COLUMN_DATA, static_cast<string>("/storage/cloud/files/Ringtone" + SLASH_STR +
+        TEST_INSERT_RINGTONE_LIBRARY + to_string(1) + MTP_FORMAT_OGG));
+    valuesInsert.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
+    valuesInsert.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
+    valuesInsert.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
+    valuesInsert.Put(RINGTONE_COLUMN_SOURCE_TYPE, static_cast<int>(1));
+    result = g_dataShareHelper->Insert(uri, valuesInsert);
+    cout << "Insert2 result=" << result << endl;
+    EXPECT_EQ((result > 0), true);
+
+    int errCode = 0;
+    DatashareBusinessError businessError;
+    DataSharePredicates queryPredicates;
+    queryPredicates.EqualTo(RINGTONE_COLUMN_SOURCE_TYPE, to_string(2));
+    vector<string> columns = { { RINGTONE_COLUMN_TONE_ID }, { RINGTONE_COLUMN_DATA }, {RINGTONE_COLUMN_SOURCE_TYPE} };
+    auto resultSet = g_dataShareHelper->Query(uri, queryPredicates, columns, &businessError);
+    errCode = businessError.GetCode();
+    cout << "Query errCode=" << errCode << endl;
+
+    auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
+    cout << "query count = " << to_string(results->GetCount()) << endl;
+    unique_ptr<RingtoneAsset> ringtoneAsset = results->GetLastObject();
+    cout << "GetSourceType()                    = " << to_string(ringtoneAsset->GetSourceType()) << endl;
+}
+
+HWTEST_F(RingtoneUnitTest, medialib_ringtoneRead_test_004, TestSize.Level0)
+{
+    Uri uri(RINGTONE_PATH_URI);
+    DataSharePredicates predicates;
+
+    auto result = g_dataShareHelper->Delete(uri, predicates);
+    EXPECT_EQ((result > 0), true);
+    DataShareValuesBucket values;
+    values.Put(RINGTONE_COLUMN_DATA, static_cast<string>("/storage/media/local/files/Ringtone" + SLASH_STR +
+        TEST_INSERT_RINGTONE_LIBRARY + to_string(0) + MTP_FORMAT_OGG));
+    values.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
+    values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
+    values.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
+    values.Put(RINGTONE_COLUMN_SOURCE_TYPE, static_cast<int>(2));
+    result = g_dataShareHelper->Insert(uri, values);
+    cout << "Insert result=" << result << endl;
+    EXPECT_EQ((result > 0), true);
+
+    DataShareValuesBucket valuesInsert;
+    valuesInsert.Put(RINGTONE_COLUMN_DATA, static_cast<string>("/storage/cloud/files/Ringtone" + SLASH_STR +
+        TEST_INSERT_RINGTONE_LIBRARY + to_string(1) + MTP_FORMAT_OGG));
+    valuesInsert.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
+    valuesInsert.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
+    valuesInsert.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
+    valuesInsert.Put(RINGTONE_COLUMN_SOURCE_TYPE, static_cast<int>(1));
+    result = g_dataShareHelper->Insert(uri, valuesInsert);
+    cout << "Insert2 result=" << result << endl;
+    EXPECT_EQ((result > 0), true);
+
+    int errCode = 0;
+    DatashareBusinessError businessError;
+    DataSharePredicates queryPredicates;
+    queryPredicates.EqualTo(RINGTONE_COLUMN_SOURCE_TYPE, to_string(1));
+    vector<string> columns = { { RINGTONE_COLUMN_TONE_ID }, { RINGTONE_COLUMN_DATA }, {RINGTONE_COLUMN_SOURCE_TYPE} };
+    auto resultSet = g_dataShareHelper->Query(uri, queryPredicates, columns, &businessError);
+    errCode = businessError.GetCode();
+    cout << "Query errCode=" << errCode << endl;
+
+    auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
+    cout << "query count = " << to_string(results->GetCount()) << endl;
+    unique_ptr<RingtoneAsset> ringtoneAsset = results->GetLastObject();
+    cout << "GetSourceType()                    = " << to_string(ringtoneAsset->GetSourceType()) << endl;
+}
+
+HWTEST_F(RingtoneUnitTest, medialib_ringtoneRead_test_005, TestSize.Level0)
+{
+    Uri uri(RINGTONE_PATH_URI);
+    DataSharePredicates predicates;
+
+    auto result = g_dataShareHelper->Delete(uri, predicates);
+    cout << "result" << result << endl;
+    EXPECT_EQ((result > 0), true);
+    DataShareValuesBucket values;
+    values.Put(RINGTONE_COLUMN_DATA, static_cast<string>("/storage/media/local/files/Ringtone" + SLASH_STR +
+        TEST_INSERT_RINGTONE_LIBRARY + to_string(0) + MTP_FORMAT_OGG));
+    values.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
+    values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
+    values.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
+    values.Put(RINGTONE_COLUMN_SOURCE_TYPE, static_cast<int>(2));
+    result = g_dataShareHelper->Insert(uri, values);
+    cout << "Insert result=" << result << endl;
+    EXPECT_EQ((result > 0), true);
+
+    int errCode = 0;
+    DatashareBusinessError businessError;
+    DataSharePredicates queryPredicates;
+    queryPredicates.EqualTo(RINGTONE_COLUMN_SOURCE_TYPE, to_string(1));
+    vector<string> columns = { { RINGTONE_COLUMN_TONE_ID }, { RINGTONE_COLUMN_DATA }, {RINGTONE_COLUMN_SOURCE_TYPE} };
+    auto resultSet = g_dataShareHelper->Query(uri, queryPredicates, columns, &businessError);
+    errCode = businessError.GetCode();
+    cout << "Query errCode=" << errCode << endl;
+
+    auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
+    cout << "query count = " << to_string(results->GetCount()) << endl;
+}
+
+HWTEST_F(RingtoneUnitTest, medialib_ringtoneRead_test_006, TestSize.Level0)
+{
+    Uri uri(RINGTONE_PATH_URI);
+    DataSharePredicates predicates;
+
+    auto result = g_dataShareHelper->Delete(uri, predicates);
+    EXPECT_EQ((result > 0), true);
+
+    DataShareValuesBucket valuesInsert;
+    valuesInsert.Put(RINGTONE_COLUMN_DATA, static_cast<string>("/storage/cloud/files/Ringtone" + SLASH_STR +
+        TEST_INSERT_RINGTONE_LIBRARY + to_string(1) + MTP_FORMAT_OGG));
+    valuesInsert.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
+    valuesInsert.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
+    valuesInsert.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
+    valuesInsert.Put(RINGTONE_COLUMN_SOURCE_TYPE, static_cast<int>(1));
+    result = g_dataShareHelper->Insert(uri, valuesInsert);
+    cout << "Insert2 result=" << result << endl;
+    EXPECT_EQ((result > 0), true);
+
+    int errCode = 0;
+    DatashareBusinessError businessError;
+    DataSharePredicates queryPredicates;
+    queryPredicates.EqualTo(RINGTONE_COLUMN_SOURCE_TYPE, to_string(2));
+    vector<string> columns = { { RINGTONE_COLUMN_TONE_ID }, { RINGTONE_COLUMN_DATA }, {RINGTONE_COLUMN_SOURCE_TYPE} };
+    auto resultSet = g_dataShareHelper->Query(uri, queryPredicates, columns, &businessError);
+    errCode = businessError.GetCode();
+    cout << "Query errCode=" << errCode << endl;
+
+    auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
+    cout << "query count = " << to_string(results->GetCount()) << endl;
+}
+
+HWTEST_F(RingtoneUnitTest, medialib_ringtoneRead_test_007, TestSize.Level0)
+{
+    Uri uri(RINGTONE_PATH_URI);
+    DataSharePredicates predicates;
+
+    auto result = g_dataShareHelper->Delete(uri, predicates);
+    EXPECT_EQ((result > 0), true);
+
+    int errCode = 0;
+    DatashareBusinessError businessError;
+    DataSharePredicates queryPredicates;
+    vector<string> columns = { { RINGTONE_COLUMN_TONE_ID }, { RINGTONE_COLUMN_DATA }, {RINGTONE_COLUMN_SOURCE_TYPE} };
+    auto resultSet = g_dataShareHelper->Query(uri, queryPredicates, columns, &businessError);
+    errCode = businessError.GetCode();
+    cout << "Query errCode=" << errCode << endl;
+
+    auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
+    cout << "query count = " << to_string(results->GetCount()) << endl;
 }
 } // namespace Media
 } // namespace OHOS

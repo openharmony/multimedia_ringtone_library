@@ -20,11 +20,12 @@
 
 namespace OHOS {
 namespace Media {
+#define EXPORT __attribute__ ((visibility ("default")))
 class ResultSetUtils {
 public:
     template<typename T>
     static std::variant<int32_t, std::string, int64_t, double> GetValFromColumn(const std::string &columnName,
-        T &resultSet, ResultSetDataType type)
+        T &resultSet, RingtoneResultSetDataType type)
     {
         if (resultSet == nullptr) {
             RINGTONE_ERR_LOG("resultSet is nullptr");
@@ -41,19 +42,19 @@ public:
 
         std::variant<int32_t, std::string, int64_t, double> data;
         switch (type) {
-            case ResultSetDataType::TYPE_STRING: {
+            case RingtoneResultSetDataType::DATA_TYPE_STRING: {
                 data = GetStringValFromColumn(index, resultSet);
                 break;
             }
-            case ResultSetDataType::TYPE_INT32: {
+            case RingtoneResultSetDataType::DATA_TYPE_INT32: {
                 data = GetIntValFromColumn(index, resultSet);
                 break;
             }
-            case ResultSetDataType::TYPE_INT64: {
+            case RingtoneResultSetDataType::DATA_TYPE_INT64: {
                 data = GetLongValFromColumn(index, resultSet);
                 break;
             }
-            case ResultSetDataType::TYPE_DOUBLE: {
+            case RingtoneResultSetDataType::DATA_TYPE_DOUBLE: {
                 data = GetDoubleValFromColumn(index, resultSet);
                 break;
             }
@@ -106,16 +107,16 @@ public:
     }
 
 private:
-    static std::variant<int32_t, std::string, int64_t, double> DefaultVariantVal(ResultSetDataType type)
+    static std::variant<int32_t, std::string, int64_t, double> DefaultVariantVal(RingtoneResultSetDataType type)
     {
         switch (type) {
-            case ResultSetDataType::TYPE_STRING:
+            case RingtoneResultSetDataType::DATA_TYPE_STRING:
                 return std::string();
-            case ResultSetDataType::TYPE_INT32:
+            case RingtoneResultSetDataType::DATA_TYPE_INT32:
                 return 0;
-            case ResultSetDataType::TYPE_INT64:
+            case RingtoneResultSetDataType::DATA_TYPE_INT64:
                 return static_cast<int64_t>(0);
-            case ResultSetDataType::TYPE_DOUBLE:
+            case RingtoneResultSetDataType::DATA_TYPE_DOUBLE:
                 return static_cast<double>(0);
             default:
                 RINGTONE_ERR_LOG("invalid data type %{public}d", type);
@@ -128,17 +129,17 @@ private:
 template<typename ResultSet>
 static inline std::string GetStringVal(const std::string &field, const ResultSet &result)
 {
-    return std::get<std::string>(ResultSetUtils::GetValFromColumn(field, result, TYPE_STRING));
+    return std::get<std::string>(ResultSetUtils::GetValFromColumn(field, result, DATA_TYPE_STRING));
 }
 template<typename ResultSet>
 static inline int32_t GetInt32Val(const std::string &field, const ResultSet &result)
 {
-    return std::get<int32_t>(ResultSetUtils::GetValFromColumn(field, result, TYPE_INT32));
+    return std::get<int32_t>(ResultSetUtils::GetValFromColumn(field, result, DATA_TYPE_INT32));
 }
 template<typename ResultSet>
 static inline int64_t GetInt64Val(const std::string &field, const ResultSet &result)
 {
-    return std::get<int64_t>(ResultSetUtils::GetValFromColumn(field, result, TYPE_INT64));
+    return std::get<int64_t>(ResultSetUtils::GetValFromColumn(field, result, DATA_TYPE_INT64));
 }
 } // namespace Media
 } // namespace  OHOS

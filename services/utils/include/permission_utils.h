@@ -19,19 +19,20 @@
 
 namespace OHOS {
 namespace Media {
+#define EXPORT __attribute__ ((visibility ("default")))
 const std::string PERM_WRITE_RINGTONE = "ohos.permission.WRITE_RINGTONE";
 
 class RingtonePermissionUtils {
 public:
-    static bool CheckCallerPermission(const std::string &permission);
-    static bool CheckCallerPermission(const std::vector<std::string> &permsVec);
-    static bool CheckHasPermission(const std::vector<std::string> &permsVec);
-    static void GetClientBundle(const int uid, std::string &bundleName);
-    static uint32_t GetTokenId();
-    static bool CheckIsSystemAppByUid();
-    static bool IsSystemApp();
-    static bool IsNativeSAApp();
-    static std::string GetPackageNameByBundleName(const std::string &bundleName);
+    EXPORT static bool CheckCallerPermission(const std::string &permission);
+    EXPORT static bool CheckCallerPermission(const std::vector<std::string> &permsVec);
+    EXPORT static bool CheckHasPermission(const std::vector<std::string> &permsVec);
+    EXPORT static void GetClientBundle(const int uid, std::string &bundleName);
+    EXPORT static uint32_t GetTokenId();
+    EXPORT static bool CheckIsSystemAppByUid();
+    EXPORT static bool IsSystemApp();
+    EXPORT static bool IsNativeSAApp();
+    EXPORT static std::string GetPackageNameByBundleName(const std::string &bundleName);
 
 private:
     static sptr<AppExecFwk::IBundleMgr> GetSysBundleManager();

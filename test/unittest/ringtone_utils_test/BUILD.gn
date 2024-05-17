@@ -30,6 +30,7 @@ ohos_unittest("ringtone_utils_unittest") {
     "${RINGTONE_INTERFACES_PATH}/inner_api/native",
     "${RINGTONE_SCANNER_PATH}/include",
     "${RINGTONE_RESTORE_PATH}/include",
+    "${RINGTONE_UTILS_PATH}/include",
   ]
 
   sources = [
@@ -40,7 +41,10 @@ ohos_unittest("ringtone_utils_unittest") {
     "./src/ringtone_privacy_manager_test.cpp",
   ]
 
-  deps = [ "${RINGTONE_ROOT_PATH}/services:ringtone_data_extension" ]
+  deps = [
+    "${RINGTONE_ROOT_PATH}/services:ringtone_data_extension",
+    "${RINGTONE_ROOT_PATH}/services:ringtone_utils",
+  ]
 
   external_deps = [
     "ability_base:want",

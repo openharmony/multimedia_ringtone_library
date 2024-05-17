@@ -87,10 +87,9 @@ HWTEST_F(RingtoneDataManagerUnitTest, dataManager_Insert_Test_001, TestSize.Leve
     Uri uri(RINGTONE_PATH_URI);
     DataShare::DataShareValuesBucket valuesBucket;
     valuesBucket.Put(RINGTONE_COLUMN_DATA,
-        static_cast<string>(RINGTONE_LIBRARY_PATH + SLASH_STR +
+        static_cast<string>(RINGTONE_LIBRARY_PATH + RINGTONE_SLASH_CHAR +
         TEST_INSERT_RINGTONE_LIBRARY + to_string(0) + MTP_FORMAT_OGG));
     valuesBucket.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
-    // todo construct by us
     valuesBucket.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
     valuesBucket.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
     RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::INSERT);
@@ -107,11 +106,11 @@ HWTEST_F(RingtoneDataManagerUnitTest, dataManager_Insert_Test_002, TestSize.Leve
     Uri uri(RINGTONE_PATH_URI);
     DataShare::DataShareValuesBucket valuesBucket;
     valuesBucket.Put(RINGTONE_COLUMN_DATA,
-        static_cast<string>(RINGTONE_LIBRARY_PATH + SLASH_STR +
+        static_cast<string>(RINGTONE_LIBRARY_PATH + RINGTONE_SLASH_CHAR +
         TEST_INSERT_RINGTONE_LIBRARY + to_string(1) + MTP_FORMAT_MP3));
     valuesBucket.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
     valuesBucket.Put(RINGTONE_COLUMN_TONE_TYPE, static_cast<int>(TEST_RINGTONE_COLUMN_TONE_TYPE));
-    valuesBucket.Put(RINGTONE_COLUMN_MIME_TYPE, MP3); // todo construct by us
+    valuesBucket.Put(RINGTONE_COLUMN_MIME_TYPE, MP3);
     RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::INSERT);
     auto dataManager = RingtoneDataManager::GetInstance();
     EXPECT_NE(dataManager, nullptr);
@@ -125,10 +124,10 @@ HWTEST_F(RingtoneDataManagerUnitTest, dataManager_Insert_Test_003, TestSize.Leve
     RINGTONE_INFO_LOG("dataManager_Insert_Test_003::Start");
     Uri uri(RINGTONE_PATH_URI);
     DataShare::DataShareValuesBucket valuesBucket;
-    valuesBucket.Put(RINGTONE_COLUMN_DATA, DEFAULT_STR);
+    valuesBucket.Put(RINGTONE_COLUMN_DATA, RINGTONE_DEFAULT_STR);
     valuesBucket.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
     valuesBucket.Put(RINGTONE_COLUMN_TONE_TYPE, static_cast<int>(TEST_RINGTONE_COLUMN_TONE_TYPE));
-    valuesBucket.Put(RINGTONE_COLUMN_MIME_TYPE, MP3); // todo construct by us
+    valuesBucket.Put(RINGTONE_COLUMN_MIME_TYPE, MP3);
     RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::INSERT);
     auto dataManager = RingtoneDataManager::GetInstance();
     EXPECT_NE(dataManager, nullptr);
@@ -144,10 +143,9 @@ HWTEST_F(RingtoneDataManagerUnitTest, dataManager_Insert_Test_004, TestSize.Leve
     const string errorRingtoneLibraryPath = "/storage/cloud/files/Photo";
     DataShare::DataShareValuesBucket valuesBucket;
     valuesBucket.Put(RINGTONE_COLUMN_DATA,
-        static_cast<string>(errorRingtoneLibraryPath + SLASH_STR +
+        static_cast<string>(errorRingtoneLibraryPath + RINGTONE_SLASH_CHAR +
         TEST_INSERT_RINGTONE_LIBRARY + to_string(0) + MTP_FORMAT_OGG));
     valuesBucket.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
-    // todo construct by us
     valuesBucket.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
     valuesBucket.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
     RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::INSERT);
@@ -377,11 +375,11 @@ HWTEST_F(RingtoneDataManagerUnitTest, dataManager_OpenFile_Test_001, TestSize.Le
     Uri uri(RINGTONE_PATH_URI);
     DataShare::DataShareValuesBucket valuesBucket;
     valuesBucket.Put(RINGTONE_COLUMN_DATA,
-        static_cast<string>(RINGTONE_LIBRARY_PATH + SLASH_STR +
+        static_cast<string>(RINGTONE_LIBRARY_PATH + RINGTONE_SLASH_CHAR +
         TEST_INSERT_RINGTONE_LIBRARY + to_string(1) + MTP_FORMAT_MP3));
     valuesBucket.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
     valuesBucket.Put(RINGTONE_COLUMN_TONE_TYPE, static_cast<int>(TEST_RINGTONE_COLUMN_TONE_TYPE));
-    valuesBucket.Put(RINGTONE_COLUMN_MIME_TYPE, MP3); // todo construct by us
+    valuesBucket.Put(RINGTONE_COLUMN_MIME_TYPE, MP3);
     RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::INSERT);
     auto dataManager = RingtoneDataManager::GetInstance();
     EXPECT_NE(dataManager, nullptr);
@@ -401,8 +399,8 @@ HWTEST_F(RingtoneDataManagerUnitTest, dataManager_OpenFile_Test_001, TestSize.Le
     cout << "query count = " << to_string(results->GetCount()) << endl;
 
     unique_ptr<RingtoneAsset> ringtoneAsset = results->GetFirstObject();
-    if (ringtoneAsset != nullptr && ringtoneAsset->GetPath() != DEFAULT_STR) {
-        string uriStr = RINGTONE_PATH_URI + SLASH_STR + to_string(ringtoneAsset->GetId());
+    if (ringtoneAsset != nullptr && ringtoneAsset->GetPath() != RINGTONE_DEFAULT_STR) {
+        string uriStr = RINGTONE_PATH_URI + RINGTONE_SLASH_CHAR + to_string(ringtoneAsset->GetId());
         Uri ofUri(uriStr);
         RingtoneDataCommand cmdOpen(ofUri, RINGTONE_TABLE, RingtoneOperationType::OPEN);
         auto fd = dataManager->OpenFile(cmdOpen, RINGTONE_FILEMODE_READWRITE);
@@ -433,8 +431,8 @@ HWTEST_F(RingtoneDataManagerUnitTest, dataManager_OpenFile_Test_002, TestSize.Le
     cout << "query count = " << to_string(results->GetCount()) << endl;
 
     unique_ptr<RingtoneAsset> ringtoneAsset = results->GetFirstObject();
-    if (ringtoneAsset != nullptr && ringtoneAsset->GetPath() != DEFAULT_STR) {
-        string uriStr = RINGTONE_PATH_URI + SLASH_STR + to_string(ringtoneAsset->GetId());
+    if (ringtoneAsset != nullptr && ringtoneAsset->GetPath() != RINGTONE_DEFAULT_STR) {
+        string uriStr = RINGTONE_PATH_URI + RINGTONE_SLASH_CHAR + to_string(ringtoneAsset->GetId());
         Uri ofUri(uriStr);
         auto dataManager = RingtoneDataManager::GetInstance();
         EXPECT_NE(dataManager, nullptr);
@@ -452,7 +450,7 @@ HWTEST_F(RingtoneDataManagerUnitTest, dataManager_OpenFile_Test_002, TestSize.Le
 HWTEST_F(RingtoneDataManagerUnitTest, dataManager_OpenFile_Test_003, TestSize.Level0)
 {
     RINGTONE_INFO_LOG("dataManager_OpenFile_Test_003::Start");
-    string uriStr = RINGTONE_PATH_URI + SLASH_STR;
+    string uriStr = RINGTONE_PATH_URI + RINGTONE_SLASH_CHAR;
     Uri ofUri(uriStr);
     auto dataManager = RingtoneDataManager::GetInstance();
     EXPECT_NE(dataManager, nullptr);
@@ -484,7 +482,7 @@ HWTEST_F(RingtoneDataManagerUnitTest, dataManager_OpenFile_Test_004, TestSize.Le
 HWTEST_F(RingtoneDataManagerUnitTest, dataManager_OpenFile_Test_005, TestSize.Level0)
 {
     RINGTONE_INFO_LOG("dataManager_OpenFile_Test_005::Start");
-    Uri ofUri(DEFAULT_STR);
+    Uri ofUri(RINGTONE_DEFAULT_STR);
     auto dataManager = RingtoneDataManager::GetInstance();
     EXPECT_NE(dataManager, nullptr);
     RingtoneDataCommand cmd(ofUri, RINGTONE_TABLE, RingtoneOperationType::OPEN);

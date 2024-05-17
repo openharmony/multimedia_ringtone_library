@@ -22,6 +22,7 @@
 #include "ringtone_mimetype_utils.h"
 #include "ringtone_scanner_utils.h"
 #include "ringtone_unittest_utils.h"
+#include "ringtone_type.h"
 
 using namespace std;
 using namespace OHOS;
@@ -45,7 +46,7 @@ void RingtoneScannerUtilsTest::TearDown(void) {}
 
 HWTEST_F(RingtoneScannerUtilsTest, ringtonelib_IsExists_test_001, TestSize.Level0)
 {
-    bool ret = RingtoneScannerUtils::IsExists(DEFAULT_STR);
+    bool ret = RingtoneScannerUtils::IsExists(RINGTONE_DEFAULT_STR);
     EXPECT_EQ(ret, false);
     const string path = "ringtonelib_IsExists_test_001";
     ret = RingtoneScannerUtils::IsExists(path);
@@ -58,7 +59,7 @@ HWTEST_F(RingtoneScannerUtilsTest, ringtonelib_IsExists_test_001, TestSize.Level
 
 HWTEST_F(RingtoneScannerUtilsTest, ringtonelib_GetFileNameFromUri_test_001, TestSize.Level0)
 {
-    string ret = RingtoneScannerUtils::GetFileNameFromUri(DEFAULT_STR);
+    string ret = RingtoneScannerUtils::GetFileNameFromUri(RINGTONE_DEFAULT_STR);
     EXPECT_EQ(ret, "");
     const string path = "ringtonelib_GetFileNameFromUri_test_001/test";
     ret = RingtoneScannerUtils::GetFileNameFromUri(path);
@@ -70,7 +71,7 @@ HWTEST_F(RingtoneScannerUtilsTest, ringtonelib_GetFileNameFromUri_test_001, Test
 
 HWTEST_F(RingtoneScannerUtilsTest, ringtonelib_GetFileExtension_test_001, TestSize.Level0)
 {
-    string ret = RingtoneScannerUtils::GetFileExtension(DEFAULT_STR);
+    string ret = RingtoneScannerUtils::GetFileExtension(RINGTONE_DEFAULT_STR);
     EXPECT_EQ(ret, "");
     const string path = "ringtonelib_GetFileExtension_test_001.test";
     ret = RingtoneScannerUtils::GetFileExtension(path);
@@ -79,7 +80,7 @@ HWTEST_F(RingtoneScannerUtilsTest, ringtonelib_GetFileExtension_test_001, TestSi
 
 HWTEST_F(RingtoneScannerUtilsTest, ringtonelib_IsFileHidden_test_001, TestSize.Level0)
 {
-    bool ret = RingtoneScannerUtils::IsFileHidden(DEFAULT_STR);
+    bool ret = RingtoneScannerUtils::IsFileHidden(RINGTONE_DEFAULT_STR);
     EXPECT_EQ(ret, false);
     const string path = "ringtonelib_IsFileHidden_test_001/.test";
     ret = RingtoneScannerUtils::IsFileHidden(path);
@@ -88,7 +89,7 @@ HWTEST_F(RingtoneScannerUtilsTest, ringtonelib_IsFileHidden_test_001, TestSize.L
 
 HWTEST_F(RingtoneScannerUtilsTest, ringtonelib_GetParentPath_test_001, TestSize.Level0)
 {
-    string ret = RingtoneScannerUtils::GetParentPath(DEFAULT_STR);
+    string ret = RingtoneScannerUtils::GetParentPath(RINGTONE_DEFAULT_STR);
     EXPECT_EQ(ret, "");
     const string path = "ringtonelib_GetParentPath_test_001/test";
     ret = RingtoneScannerUtils::GetParentPath(path);
@@ -107,7 +108,7 @@ HWTEST_F(RingtoneScannerUtilsTest, ringtonelib_IsDirHidden_test_001, TestSize.Le
     const string path = "ringtonelib_IsDirHidden_test_001/.test";
     bool ret = RingtoneScannerUtils::IsDirHidden(path);
     EXPECT_EQ(ret, true);
-    ret = RingtoneScannerUtils::IsDirHidden(DEFAULT_STR);
+    ret = RingtoneScannerUtils::IsDirHidden(RINGTONE_DEFAULT_STR);
     EXPECT_EQ(ret, false);
 }
 
@@ -116,13 +117,13 @@ HWTEST_F(RingtoneScannerUtilsTest, ringtonelib_IsDirHiddenRecursive_test_001, Te
     const string path = "ringtonelib_IsDirHiddenRecursive_test_001/.test";
     bool ret = RingtoneScannerUtils::IsDirHiddenRecursive(path);
     EXPECT_EQ(ret, true);
-    ret = RingtoneScannerUtils::IsDirHiddenRecursive(DEFAULT_STR);
+    ret = RingtoneScannerUtils::IsDirHiddenRecursive(RINGTONE_DEFAULT_STR);
     EXPECT_EQ(ret, false);
 }
 
 HWTEST_F(RingtoneScannerUtilsTest, ringtonelib_IsDirectory_test_001, TestSize.Level0)
 {
-    bool ret = RingtoneScannerUtils::IsDirectory(DEFAULT_STR);
+    bool ret = RingtoneScannerUtils::IsDirectory(RINGTONE_DEFAULT_STR);
     EXPECT_EQ(ret, false);
     const string path = "ringtonelib_IsDirectory_test_001";
     ret = RingtoneScannerUtils::IsDirectory(path);
@@ -134,7 +135,7 @@ HWTEST_F(RingtoneScannerUtilsTest, ringtonelib_IsDirectory_test_001, TestSize.Le
 
 HWTEST_F(RingtoneScannerUtilsTest, ringtonelib_IsRegularFile_test_001, TestSize.Level0)
 {
-    bool ret = RingtoneScannerUtils::IsRegularFile(DEFAULT_STR);
+    bool ret = RingtoneScannerUtils::IsRegularFile(RINGTONE_DEFAULT_STR);
     EXPECT_EQ(ret, false);
     string path = "ringtonelib_IsRegularFile_test_001";
     ret = RingtoneScannerUtils::IsRegularFile(path);

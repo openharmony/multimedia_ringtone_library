@@ -17,6 +17,7 @@
 #include "ringtone_metadata_extractor.h"
 
 #include <fcntl.h>
+#include <sys/stat.h>
 
 #include "ringtone_file_utils.h"
 #include "ringtone_log.h"

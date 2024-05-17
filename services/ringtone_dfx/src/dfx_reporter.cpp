@@ -49,7 +49,7 @@ void DfxReporter::ReportDfxMessage()
         RingtoneFileUtils::UTCTimeMilliSeconds());
     int64_t presetNum = DfxManager::GetInstance()->RequestTonesCount(SourceType::SOURCE_TYPE_PRESET);
     int64_t customNum = DfxManager::GetInstance()->RequestTonesCount(SourceType::SOURCE_TYPE_CUSTOMISED);
-    RINGTONE_INFO_LOG("presetNum:%{public}lld, customNum:%{public}lld", presetNum, customNum);
+    RINGTONE_INFO_LOG("presetNum:%{public}" PRId64 ", customNum:%{public}" PRId64, presetNum, customNum);
 
     int ret = HiSysEventWrite(
         RINGTONE_LIBRARY,

@@ -264,17 +264,17 @@ variant<int32_t, int64_t, string, double> &RingtoneAsset::GetMemberValue(const s
 
 const string &RingtoneAsset::GetStrMember(const string &name) const
 {
-    return (member_.count(name) > 0) ? get<string>(member_.at(name)) : DEFAULT_STR;
+    return (member_.count(name) > 0) ? get<string>(member_.at(name)) : RINGTONE_DEFAULT_STR;
 }
 
 int32_t RingtoneAsset::GetInt32Member(const string &name) const
 {
-    return (member_.count(name) > 0) ? get<int32_t>(member_.at(name)) : DEFAULT_INT32;
+    return (member_.count(name) > 0) ? get<int32_t>(member_.at(name)) : RINGTONE_DEFAULT_INT32;
 }
 
 int64_t RingtoneAsset::GetInt64Member(const string &name) const
 {
-    return (member_.count(name) > 0) ? get<int64_t>(member_.at(name)) : DEFAULT_INT64;
+    return (member_.count(name) > 0) ? get<int64_t>(member_.at(name)) : RINGTONE_DEFAULT_INT64;
 }
 } // namespace Media
 } // namespace OHOS

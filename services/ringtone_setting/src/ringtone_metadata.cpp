@@ -46,42 +46,47 @@ RingtoneMetadata::RingtoneMetadata()
 
 void RingtoneMetadata::Init()
 {
-    memberFuncMap_[RINGTONE_COLUMN_TONE_ID] = make_pair(ResultSetDataType::TYPE_INT32, &RingtoneMetadata::SetToneId);
-    memberFuncMap_[RINGTONE_COLUMN_DATA] = make_pair(ResultSetDataType::TYPE_STRING, &RingtoneMetadata::SetData);
-    memberFuncMap_[RINGTONE_COLUMN_SIZE] = make_pair(ResultSetDataType::TYPE_INT64, &RingtoneMetadata::SetSize);
-    memberFuncMap_[RINGTONE_COLUMN_DISPLAY_NAME] = make_pair(ResultSetDataType::TYPE_STRING,
+    memberFuncMap_[RINGTONE_COLUMN_TONE_ID] = make_pair(RingtoneResultSetDataType::DATA_TYPE_INT32,
+        &RingtoneMetadata::SetToneId);
+    memberFuncMap_[RINGTONE_COLUMN_DATA] = make_pair(RingtoneResultSetDataType::DATA_TYPE_STRING,
+        &RingtoneMetadata::SetData);
+    memberFuncMap_[RINGTONE_COLUMN_SIZE] = make_pair(RingtoneResultSetDataType::DATA_TYPE_INT64,
+        &RingtoneMetadata::SetSize);
+    memberFuncMap_[RINGTONE_COLUMN_DISPLAY_NAME] = make_pair(RingtoneResultSetDataType::DATA_TYPE_STRING,
         &RingtoneMetadata::SetDisplayName);
-    memberFuncMap_[RINGTONE_COLUMN_TITLE] = make_pair(ResultSetDataType::TYPE_STRING, &RingtoneMetadata::SetTitle);
-    memberFuncMap_[RINGTONE_COLUMN_MEDIA_TYPE] = make_pair(ResultSetDataType::TYPE_INT32,
+    memberFuncMap_[RINGTONE_COLUMN_TITLE] = make_pair(RingtoneResultSetDataType::DATA_TYPE_STRING,
+        &RingtoneMetadata::SetTitle);
+    memberFuncMap_[RINGTONE_COLUMN_MEDIA_TYPE] = make_pair(RingtoneResultSetDataType::DATA_TYPE_INT32,
         &RingtoneMetadata::SetMediaType);
-    memberFuncMap_[RINGTONE_COLUMN_TONE_TYPE] = make_pair(ResultSetDataType::TYPE_INT32,
+    memberFuncMap_[RINGTONE_COLUMN_TONE_TYPE] = make_pair(RingtoneResultSetDataType::DATA_TYPE_INT32,
         &RingtoneMetadata::SetToneType);
-    memberFuncMap_[RINGTONE_COLUMN_MIME_TYPE] = make_pair(ResultSetDataType::TYPE_STRING,
+    memberFuncMap_[RINGTONE_COLUMN_MIME_TYPE] = make_pair(RingtoneResultSetDataType::DATA_TYPE_STRING,
         &RingtoneMetadata::SetMimeType);
-    memberFuncMap_[RINGTONE_COLUMN_SOURCE_TYPE] = make_pair(ResultSetDataType::TYPE_INT32,
+    memberFuncMap_[RINGTONE_COLUMN_SOURCE_TYPE] = make_pair(RingtoneResultSetDataType::DATA_TYPE_INT32,
         &RingtoneMetadata::SetSourceType);
-    memberFuncMap_[RINGTONE_COLUMN_DATE_ADDED] = make_pair(ResultSetDataType::TYPE_INT64,
+    memberFuncMap_[RINGTONE_COLUMN_DATE_ADDED] = make_pair(RingtoneResultSetDataType::DATA_TYPE_INT64,
         &RingtoneMetadata::SetDateAdded);
-    memberFuncMap_[RINGTONE_COLUMN_DATE_MODIFIED] = make_pair(ResultSetDataType::TYPE_INT64,
+    memberFuncMap_[RINGTONE_COLUMN_DATE_MODIFIED] = make_pair(RingtoneResultSetDataType::DATA_TYPE_INT64,
         &RingtoneMetadata::SetDateModified);
-    memberFuncMap_[RINGTONE_COLUMN_DATE_TAKEN] = make_pair(ResultSetDataType::TYPE_INT64,
+    memberFuncMap_[RINGTONE_COLUMN_DATE_TAKEN] = make_pair(RingtoneResultSetDataType::DATA_TYPE_INT64,
         &RingtoneMetadata::SetDateTaken);
-    memberFuncMap_[RINGTONE_COLUMN_DURATION] = make_pair(ResultSetDataType::TYPE_INT32, &RingtoneMetadata::SetDuration);
-    memberFuncMap_[RINGTONE_COLUMN_SHOT_TONE_TYPE] = make_pair(ResultSetDataType::TYPE_INT32,
+    memberFuncMap_[RINGTONE_COLUMN_DURATION] = make_pair(RingtoneResultSetDataType::DATA_TYPE_INT32,
+        &RingtoneMetadata::SetDuration);
+    memberFuncMap_[RINGTONE_COLUMN_SHOT_TONE_TYPE] = make_pair(RingtoneResultSetDataType::DATA_TYPE_INT32,
         &RingtoneMetadata::SetShotToneType);
-    memberFuncMap_[RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE] = make_pair(ResultSetDataType::TYPE_INT32,
+    memberFuncMap_[RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE] = make_pair(RingtoneResultSetDataType::DATA_TYPE_INT32,
         &RingtoneMetadata::SetShotToneSourceType);
-    memberFuncMap_[RINGTONE_COLUMN_NOTIFICATION_TONE_TYPE] = make_pair(ResultSetDataType::TYPE_INT32,
+    memberFuncMap_[RINGTONE_COLUMN_NOTIFICATION_TONE_TYPE] = make_pair(RingtoneResultSetDataType::DATA_TYPE_INT32,
         &RingtoneMetadata::SetNotificationToneType);
-    memberFuncMap_[RINGTONE_COLUMN_NOTIFICATION_TONE_SOURCE_TYPE] = make_pair(ResultSetDataType::TYPE_INT32,
-        &RingtoneMetadata::SetNotificationToneSourceType);
-    memberFuncMap_[RINGTONE_COLUMN_RING_TONE_TYPE] = make_pair(ResultSetDataType::TYPE_INT32,
+    memberFuncMap_[RINGTONE_COLUMN_NOTIFICATION_TONE_SOURCE_TYPE] =
+        make_pair(RingtoneResultSetDataType::DATA_TYPE_INT32, &RingtoneMetadata::SetNotificationToneSourceType);
+    memberFuncMap_[RINGTONE_COLUMN_RING_TONE_TYPE] = make_pair(RingtoneResultSetDataType::DATA_TYPE_INT32,
         &RingtoneMetadata::SetRingToneType);
-    memberFuncMap_[RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE] = make_pair(ResultSetDataType::TYPE_INT32,
+    memberFuncMap_[RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE] = make_pair(RingtoneResultSetDataType::DATA_TYPE_INT32,
         &RingtoneMetadata::SetRingToneSourceType);
-    memberFuncMap_[RINGTONE_COLUMN_ALARM_TONE_TYPE] = make_pair(ResultSetDataType::TYPE_INT32,
+    memberFuncMap_[RINGTONE_COLUMN_ALARM_TONE_TYPE] = make_pair(RingtoneResultSetDataType::DATA_TYPE_INT32,
         &RingtoneMetadata::SetAlarmToneType);
-    memberFuncMap_[RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE] = make_pair(ResultSetDataType::TYPE_INT32,
+    memberFuncMap_[RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE] = make_pair(RingtoneResultSetDataType::DATA_TYPE_INT32,
         &RingtoneMetadata::SetAlarmToneSourceType);
 }
 

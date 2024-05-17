@@ -21,32 +21,32 @@
 namespace OHOS {
 namespace Media {
 using namespace std;
-using ResultTypeMap = unordered_map<string, ResultSetDataType>;
+using ResultTypeMap = unordered_map<string, RingtoneResultSetDataType>;
 
 static const ResultTypeMap &GetResultTypeMap()
 {
     static const ResultTypeMap RESULT_TYPE_MAP = {
-        { RINGTONE_COLUMN_TONE_ID, TYPE_INT32 },
-        { RINGTONE_COLUMN_DATA, TYPE_STRING },
-        { RINGTONE_COLUMN_SIZE, TYPE_INT64 },
-        { RINGTONE_COLUMN_DISPLAY_NAME, TYPE_STRING },
-        { RINGTONE_COLUMN_TITLE, TYPE_STRING },
-        { RINGTONE_COLUMN_MEDIA_TYPE, TYPE_INT32 },
-        { RINGTONE_COLUMN_TONE_TYPE, TYPE_INT32 },
-        { RINGTONE_COLUMN_MIME_TYPE, TYPE_STRING },
-        { RINGTONE_COLUMN_SOURCE_TYPE, TYPE_INT32 },
-        { RINGTONE_COLUMN_DATE_ADDED, TYPE_INT64 },
-        { RINGTONE_COLUMN_DATE_MODIFIED, TYPE_INT64 },
-        { RINGTONE_COLUMN_DATE_TAKEN, TYPE_INT64 },
-        { RINGTONE_COLUMN_DURATION, TYPE_INT32 },
-        { RINGTONE_COLUMN_SHOT_TONE_TYPE, TYPE_INT32 },
-        { RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE, TYPE_INT32 },
-        { RINGTONE_COLUMN_NOTIFICATION_TONE_TYPE, TYPE_INT32 },
-        { RINGTONE_COLUMN_NOTIFICATION_TONE_SOURCE_TYPE, TYPE_INT32 },
-        { RINGTONE_COLUMN_RING_TONE_TYPE, TYPE_INT32 },
-        { RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, TYPE_INT32 },
-        { RINGTONE_COLUMN_ALARM_TONE_TYPE, TYPE_INT32 },
-        { RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE, TYPE_INT32 },
+        { RINGTONE_COLUMN_TONE_ID, DATA_TYPE_INT32 },
+        { RINGTONE_COLUMN_DATA, DATA_TYPE_STRING },
+        { RINGTONE_COLUMN_SIZE, DATA_TYPE_INT64 },
+        { RINGTONE_COLUMN_DISPLAY_NAME, DATA_TYPE_STRING },
+        { RINGTONE_COLUMN_TITLE, DATA_TYPE_STRING },
+        { RINGTONE_COLUMN_MEDIA_TYPE, DATA_TYPE_INT32 },
+        { RINGTONE_COLUMN_TONE_TYPE, DATA_TYPE_INT32 },
+        { RINGTONE_COLUMN_MIME_TYPE, DATA_TYPE_STRING },
+        { RINGTONE_COLUMN_SOURCE_TYPE, DATA_TYPE_INT32 },
+        { RINGTONE_COLUMN_DATE_ADDED, DATA_TYPE_INT64 },
+        { RINGTONE_COLUMN_DATE_MODIFIED, DATA_TYPE_INT64 },
+        { RINGTONE_COLUMN_DATE_TAKEN, DATA_TYPE_INT64 },
+        { RINGTONE_COLUMN_DURATION, DATA_TYPE_INT32 },
+        { RINGTONE_COLUMN_SHOT_TONE_TYPE, DATA_TYPE_INT32 },
+        { RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE, DATA_TYPE_INT32 },
+        { RINGTONE_COLUMN_NOTIFICATION_TONE_TYPE, DATA_TYPE_INT32 },
+        { RINGTONE_COLUMN_NOTIFICATION_TONE_SOURCE_TYPE, DATA_TYPE_INT32 },
+        { RINGTONE_COLUMN_RING_TONE_TYPE, DATA_TYPE_INT32 },
+        { RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, DATA_TYPE_INT32 },
+        { RINGTONE_COLUMN_ALARM_TONE_TYPE, DATA_TYPE_INT32 },
+        { RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE, DATA_TYPE_INT32 },
     };
     return RESULT_TYPE_MAP;
 }
@@ -163,11 +163,11 @@ bool RingtoneFetchResult<T>::IsAtLastRow()
     return retVal;
 }
 
-variant<int32_t, int64_t, string, double> ReturnDefaultOnError(string errMsg, ResultSetDataType dataType)
+variant<int32_t, int64_t, string, double> ReturnDefaultOnError(string errMsg, RingtoneResultSetDataType dataType)
 {
-    if (dataType == TYPE_STRING) {
+    if (dataType == DATA_TYPE_STRING) {
         return "";
-    } else if (dataType == TYPE_INT64) {
+    } else if (dataType == DATA_TYPE_INT64) {
         return static_cast<int64_t>(0);
     } else {
         return 0;
@@ -176,7 +176,7 @@ variant<int32_t, int64_t, string, double> ReturnDefaultOnError(string errMsg, Re
 
 template <class T>
 variant<int32_t, int64_t, string, double> RingtoneFetchResult<T>::GetRowValFromColumn(string columnName,
-    ResultSetDataType dataType, shared_ptr<NativeRdb::ResultSet> &resultSet)
+    RingtoneResultSetDataType dataType, shared_ptr<NativeRdb::ResultSet> &resultSet)
 {
     if ((resultset_ == nullptr) && (resultSet == nullptr)) {
         return ReturnDefaultOnError("Resultset is null", dataType);
@@ -196,7 +196,7 @@ variant<int32_t, int64_t, string, double> RingtoneFetchResult<T>::GetRowValFromC
 
 template <class T>
 variant<int32_t, int64_t, string, double> RingtoneFetchResult<T>::GetValByIndex(int32_t index,
-    ResultSetDataType dataType, shared_ptr<NativeRdb::ResultSet> &resultSet)
+    RingtoneResultSetDataType dataType, shared_ptr<NativeRdb::ResultSet> &resultSet)
 {
     if ((resultset_ == nullptr) && (resultSet == nullptr)) {
         return ReturnDefaultOnError("Resultset is null", dataType);
@@ -208,7 +208,7 @@ variant<int32_t, int64_t, string, double> RingtoneFetchResult<T>::GetValByIndex(
     int status;
     double doubleVal = 0.0;
     switch (dataType) {
-        case TYPE_STRING:
+        case DATA_TYPE_STRING:
             if (resultSet) {
                 status = resultSet->GetString(index, stringVal);
             } else {
@@ -216,7 +216,7 @@ variant<int32_t, int64_t, string, double> RingtoneFetchResult<T>::GetValByIndex(
             }
             cellValue = move(stringVal);
             break;
-        case TYPE_INT32:
+        case DATA_TYPE_INT32:
             if (resultSet) {
                 status = resultSet->GetInt(index, integerVal);
             } else {
@@ -224,7 +224,7 @@ variant<int32_t, int64_t, string, double> RingtoneFetchResult<T>::GetValByIndex(
             }
             cellValue = integerVal;
             break;
-        case TYPE_INT64:
+        case DATA_TYPE_INT64:
             if (resultSet) {
                 status = resultSet->GetLong(index, longVal);
             } else {
@@ -232,7 +232,7 @@ variant<int32_t, int64_t, string, double> RingtoneFetchResult<T>::GetValByIndex(
             }
             cellValue = longVal;
             break;
-        case TYPE_DOUBLE:
+        case DATA_TYPE_DOUBLE:
             if (resultSet) {
                 status = resultSet->GetDouble(index, doubleVal);
             } else {

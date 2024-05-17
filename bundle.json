@@ -34,6 +34,8 @@
           "init",
           "ipc",
           "kv_store",
+          "libxml2",
+          "media_library",
           "napi",
           "player_framework",
           "relational_store",
@@ -64,6 +66,16 @@
                   ]
                 },
                 "name": "//foundation/multimedia/ringtone_library/services:ringtone_data_extension"
+            },
+            {
+              "header": {
+                "header_base": "//foundation/multimedia/ringtone_library/services/ringtone_helper/include",
+                "header_files": [
+                  "ringtone_asset.h",
+                  "ringtone_fetch_result.h"
+                ]
+              },
+              "name": "//foundation/multimedia/ringtone_library/services/ringtone_helper:ringtone_data_helper"
             }
         ],
         "test": [ "//foundation/multimedia/ringtone_library/test/unittest:test" ]
