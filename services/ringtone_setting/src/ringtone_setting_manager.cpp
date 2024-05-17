@@ -91,7 +91,7 @@ int32_t RingtoneSettingManager::CommitSetting(int32_t toneId, string &tonePath, 
     int32_t sourceType)
 {
     auto ret = CommitSettingCompare(settingType, toneType, sourceType);
-    if (!ret) {
+    if (ret != E_OK) {
         return ret;
     }
     SettingItem item = {toneId, settingType, toneType, sourceType};

@@ -39,6 +39,7 @@ ohos_unittest("ringtone_utils_unittest") {
     "./src/ringtone_mimetype_utils_test.cpp",
     "./src/ringtone_permission_utils_test.cpp",
     "./src/ringtone_privacy_manager_test.cpp",
+    "./src/ringtone_props_test.cpp",
   ]
 
   deps = [
@@ -49,13 +50,19 @@ ohos_unittest("ringtone_utils_unittest") {
   external_deps = [
     "ability_base:want",
     "ability_base:zuri",
+    "ability_runtime:ability_context_native",
+    "ability_runtime:ability_manager",
+    "ability_runtime:app_context",
     "access_token:libaccesstoken_sdk",
     "access_token:libprivacy_sdk",
     "access_token:libtokenid_sdk",
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
+    "data_share:datashare_common",
     "hitrace:hitrace_meter",
     "ipc:ipc_single",
+    "napi:ace_napi",
+    "relational_store:native_rdb",
     "samgr:samgr_proxy",
   ]
 

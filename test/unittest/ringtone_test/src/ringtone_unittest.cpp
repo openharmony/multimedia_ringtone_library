@@ -42,13 +42,14 @@ const int S2MS = 1000;
 const int MS2NS = 1000000;
 const string SELECTION = RINGTONE_COLUMN_TONE_ID + " <> ? LIMIT 1, 3 ";
 const int NUMBER_OF_TIMES = 10;
-const string RINGTONE_LIBRARY_PATH = "/storage/media/local/data/com.ohos.ringtonelibrary.ringtonelibrarydata";
+const string RINGTONE_LIBRARY_PATH = "/data";
 const int TEST_RINGTONE_COLUMN_SIZE = 1022;
 const string MTP_FORMAT_OGG = ".ogg"; // OGG audio files
 const string TEST_INSERT_RINGTONE_LIBRARY = "test_insert_ringtone_library";
 const string RAINNING = "rainning";
 const string TITLE_UPDATE = "run";
 const string ZERO = "0";
+const string SLASH_STR = "/";
 
 void RingtoneUnitTest::SetUpTestCase()
 {
@@ -59,7 +60,7 @@ void RingtoneUnitTest::SetUpTestCase()
     RingtonePermissionUtilsUnitTest::SetAccessTokenPermission("RingtoneUnitTest", perms, tokenId);
     ASSERT_TRUE(tokenId != 0);
 
-    RingtonePermissionUtilsUnitTest::SetHapPermission("com.ohos.ringtonelibrary.ringtonelibrarydata", tokenId);
+    RingtonePermissionUtilsUnitTest::SetHapPermission("com.ohos.ringtonelibrary.ringtonelibrarydata", tokenId, true);
     ASSERT_TRUE(tokenId != 0);
 
     auto saManager = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
@@ -78,6 +79,7 @@ void RingtoneUnitTest::TearDownTestCase()
     if (g_dataShareHelper != nullptr) {
         g_dataShareHelper->Release();
     }
+    system("rm -rf /data/local/com.ohos.ringtonelibrary.ringtonelibrarydata");
     RINGTONE_INFO_LOG("TearDownTestCase end");
 }
 
@@ -243,7 +245,6 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareInsert_test_001, TestSize.Level0)
         values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
         values.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
         auto result = g_dataShareHelper->Insert(uri, values);
-        std::cout << "medialib_datashareInsert_test_001  result = " << result << std::endl;
         EXPECT_EQ((result > 0), true);
     }
     tracer.Finish();

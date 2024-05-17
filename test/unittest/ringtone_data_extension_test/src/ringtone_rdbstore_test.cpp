@@ -38,6 +38,13 @@ const std::string CREATE_RINGTONE_TABLE = "CREATE TABLE IF NOT EXISTS " + RINGTO
 
 void RingtoneRdbStorelUnitTest::SetUpTestCase()
 {
+}
+
+void RingtoneRdbStorelUnitTest::TearDownTestCase() {}
+
+// SetUp:Execute before each test case
+void RingtoneRdbStorelUnitTest::SetUp()
+{
     auto stageContext = std::make_shared<AbilityRuntime::ContextImpl>();
     auto abilityContextImpl = std::make_shared<OHOS::AbilityRuntime::AbilityContextImpl>();
     abilityContextImpl->SetStageContext(stageContext);
@@ -45,10 +52,6 @@ void RingtoneRdbStorelUnitTest::SetUpTestCase()
     int32_t ret = g_uniStore->Init();
     EXPECT_EQ(ret, E_OK);
 }
-void RingtoneRdbStorelUnitTest::TearDownTestCase() {}
-
-// SetUp:Execute before each test case
-void RingtoneRdbStorelUnitTest::SetUp() {}
 
 void RingtoneRdbStorelUnitTest::TearDown(void) {}
 
@@ -262,6 +265,29 @@ HWTEST_F(RingtoneRdbStorelUnitTest, rdbStore_QuerySql_test_002, TestSize.Level0)
     g_uniStore->Stop();
     auto queryResultSet = g_uniStore->QuerySql(CREATE_RINGTONE_TABLE);
     EXPECT_EQ(queryResultSet, nullptr);
+}
+
+HWTEST_F(RingtoneRdbStorelUnitTest, dataCallBack_OnCreate_test_001, TestSize.Level0)
+{
+    RingtoneDataCallBack rdbDataCallBack;
+    g_uniStore->Init();
+    auto ret = rdbDataCallBack.OnCreate(*g_uniStore->GetRaw());
+    EXPECT_EQ(ret, E_OK);;
+    int32_t oldVersion = 0;
+    int32_t newVersion = 1;
+    ret = rdbDataCallBack.OnUpgrade(*g_uniStore->GetRaw(), oldVersion, newVersion);
+    EXPECT_EQ(ret, E_OK);
+}
+
+
+HWTEST_F(RingtoneRdbStorelUnitTest, dataCallBack_CreatePreloadFolder_test_001, TestSize.Level0)
+{
+    RingtoneDataCallBack rdbDataCallBack;
+    const string path = "dataCallBack_CreatePreloadFolder_test_001";
+    auto ret = rdbDataCallBack.CreatePreloadFolder(path);
+    EXPECT_EQ((ret > 0), true);
+    ret = rdbDataCallBack.MkdirRecursive(path, path.size() - 1);
+    EXPECT_EQ(ret, E_OK);
 }
 } // namespace Media
 } // namespace OHOS

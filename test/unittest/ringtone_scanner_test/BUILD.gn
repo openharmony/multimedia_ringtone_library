@@ -30,10 +30,13 @@ ohos_unittest("ringtone_scanner_unittest") {
     "${RINGTONE_SERVICES_PATH}/utils/include",
     "${RINGTONE_INTERFACES_PATH}/inner_api/native",
     "${RINGTONE_SCANNER_PATH}/include",
+    "../get_self_permissions/include",
   ]
 
   sources = [
+    "../get_self_permissions/src/get_self_permissions.cpp",
     "../ringtone_unittest_utils/src/ringtone_unittest_utils.cpp",
+    "./src/ringtone_default_settings_test.cpp",
     "./src/ringtone_metadata_extractor_test.cpp",
     "./src/ringtone_scanner_db_test.cpp",
     "./src/ringtone_scanner_test.cpp",
@@ -47,15 +50,20 @@ ohos_unittest("ringtone_scanner_unittest") {
   ]
 
   external_deps = [
+    "ability_base:zuri",
     "ability_runtime:ability_context_native",
     "ability_runtime:ability_manager",
     "ability_runtime:app_context",
+    "access_token:libaccesstoken_sdk",
+    "access_token:libnativetoken",
+    "access_token:libtoken_setproc",
     "c_utils:utils",
     "data_share:datashare_common",
     "data_share:datashare_provider",
     "ipc:ipc_single",
     "napi:ace_napi",
     "player_framework:media_client",
+    "relational_store:native_rdb",
     "relational_store:rdb_data_share_adapter",
   ]
 

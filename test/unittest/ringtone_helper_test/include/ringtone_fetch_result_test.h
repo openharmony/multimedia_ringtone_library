@@ -13,30 +13,20 @@
  * limitations under the License.
  */
 
-#ifndef RINGTONE_PROPS_H
-#define RINGTONE_PROPS_H
+#ifndef RINGTONE_FETCH_RESULT_TEST_H
+#define RINGTONE_FETCH_RESULT_TEST_H
 
-#include "rdb_sql_utils.h"
-#include "rdb_store.h"
+#include <gtest/gtest.h>
 
 namespace OHOS {
 namespace Media {
-#define EXPORT __attribute__ ((visibility ("default")))
-using namespace std;
-using namespace OHOS;
-class RingtoneProps {
+class RingtoneFetchResultTest : public testing::Test {
 public:
-    EXPORT RingtoneProps(shared_ptr<NativeRdb::RdbStore> rdb);
-    EXPORT ~RingtoneProps() = default;
-
-    EXPORT int32_t Init();
-    EXPORT string GetProp(const string &propName, const string &defaultVal);
-    EXPORT bool SetProp(const string &propName, const string &propVal);
-private:
-    EXPORT int32_t GetPropFromResultSet(shared_ptr<NativeRdb::ResultSet> resultSet, string &propVal);
-    shared_ptr<NativeRdb::RdbStore> store_;
+    static void SetUpTestCase();
+    static void TearDownTestCase();
+    void SetUp();
+    void TearDown();
 };
 } // namespace Media
 } // namespace OHOS
-
-#endif // RINGTONE_PROPS_H
+#endif // RINGTONE_FETCH_RESULT_TEST_H

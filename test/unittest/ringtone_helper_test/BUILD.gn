@@ -17,28 +17,24 @@ import("//foundation/multimedia/ringtone_library/ringtone_library.gni")
 group("unittest") {
   testonly = true
 
-  deps = [ ":ringtone_data_extension_unittest" ]
+  deps = [ ":ringtone_helper_unittest" ]
 }
 
-ohos_unittest("ringtone_data_extension_unittest") {
+ohos_unittest("ringtone_helper_unittest") {
   module_out_path = "ringtone_library/ringtonelibraryextention"
 
   include_dirs = [
     "./include",
+    "../ringtone_unittest_utils/include",
     "${RINGTONE_EXTENSION_PATH}/include",
-    "${RINGTONE_SERVICES_PATH}/utils/include",
+    "${RINGTONE_HELPER_PATH}/include",
     "${RINGTONE_INTERFACES_PATH}/inner_api/native",
-    "../get_self_permissions/include",
+    "${RINGTONE_UTILS_PATH}/include",
   ]
 
   sources = [
-    "../get_self_permissions/src/get_self_permissions.cpp",
-    "./src/ringtone_bundle_manager_test.cpp",
-    "./src/ringtone_data_manager_test.cpp",
-    "./src/ringtone_datashare_extension_test.cpp",
-    "./src/ringtone_datashare_stub_impl_test.cpp",
-    "./src/ringtone_rdbstore_test.cpp",
-    "./src/ringtone_subscriber_test.cpp",
+    "./src/ringtone_asset_test.cpp",
+    "./src/ringtone_fetch_result_test.cpp",
   ]
 
   deps = [
@@ -47,27 +43,16 @@ ohos_unittest("ringtone_data_extension_unittest") {
   ]
 
   external_deps = [
-    "ability_base:want",
     "ability_base:zuri",
     "ability_runtime:ability_context_native",
     "ability_runtime:ability_manager",
-    "ability_runtime:abilitykit_native",
     "ability_runtime:app_context",
-    "ability_runtime:appkit_native",
-    "access_token:libaccesstoken_sdk",
-    "access_token:libnativetoken",
-    "access_token:libprivacy_sdk",
-    "access_token:libtoken_setproc",
-    "bundle_framework:appexecfwk_base",
-    "bundle_framework:appexecfwk_core",
     "c_utils:utils",
-    "common_event_service:cesfwk_innerkits",
     "data_share:datashare_common",
-    "data_share:datashare_consumer",
     "data_share:datashare_provider",
     "ipc:ipc_single",
     "napi:ace_napi",
-    "relational_store:native_rdb",
+    "player_framework:media_client",
     "relational_store:rdb_data_share_adapter",
   ]
 

@@ -49,14 +49,14 @@ public:
     const std::string &GetTableName();
     NativeRdb::ValuesBucket &GetValueBucket();
     EXPORT NativeRdb::AbsRdbPredicates *GetAbsRdbPredicates();
-    const std::string &GetBundleName();
-    const std::string &GetResult();
+    EXPORT const std::string &GetBundleName();
+    EXPORT const std::string &GetResult();
 
     EXPORT void SetDataSharePred(const DataShare::DataSharePredicates &pred);
     EXPORT void SetValueBucket(const NativeRdb::ValuesBucket &value);
-    void SetBundleName(const std::string &bundleName);
-    void SetResult(const std::string &result);
-    RingtoneOperationType GetOprnType() const;
+    EXPORT void SetBundleName(const std::string &bundleName);
+    EXPORT void SetResult(const std::string &result);
+    EXPORT RingtoneOperationType GetOprnType() const;
 private:
     static int32_t GetToneIdFromUri(Uri &uri);
 

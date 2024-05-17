@@ -22,16 +22,18 @@
 
 namespace OHOS {
 namespace Media {
+#define EXPORT __attribute__ ((visibility ("default")))
+
 class RingtoneBundleManager {
 public:
     RingtoneBundleManager() = default;
     ~RingtoneBundleManager() = default;
-    static std::shared_ptr<RingtoneBundleManager> GetInstance();
-    std::string GetClientBundleName();
-    void Clear();
+    EXPORT static std::shared_ptr<RingtoneBundleManager> GetInstance();
+    EXPORT std::string GetClientBundleName();
+    EXPORT void Clear();
 
 private:
-    void GetBundleNameByUid(const int32_t uid, std::string &bundleName);
+    EXPORT void GetBundleNameByUid(const int32_t uid, std::string &bundleName);
 
     // BundleMessage is the pair of bundleName and whether bundle is system app
     std::list<std::pair<int32_t, std::string>> cacheList_;
