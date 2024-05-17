@@ -13,6 +13,10 @@
       "value": "description"
     },
     {
+      "name": "RingtoneBackupExtAbility_desc",
+      "value": "description"
+    },
+    {
       "name": "permission_used_stats",
       "value": "Allow the application to access the permission usage records"
     },

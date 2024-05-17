@@ -23,7 +23,7 @@ ohos_shared_library("ringtone_data_helper") {
 
   include_dirs = [
     "${RINGTONE_SCANNER_PATH}/include",
-    "${RINGTONE_BACKUP_PATH}/include",
+    "${RINGTONE_RESTORE_PATH}/include",
     "${RINGTONE_EXTENSION_PATH}/include",
     "${RINGTONE_DFX_PATH}/include",
     "${RINGTONE_SERVICES_PATH}/utils/include",

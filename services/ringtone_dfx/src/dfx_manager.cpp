@@ -22,11 +22,11 @@
 #include "ringtone_log.h"
 #include "ringtone_rdbstore.h"
 
-using namespace std;
-
 namespace OHOS {
 namespace Media {
-RingtoneUnistore *g_dfxUnistore_ = nullptr;
+using namespace std;
+
+shared_ptr<RingtoneUnistore> g_dfxUnistore = nullptr;
 
 shared_ptr<DfxManager> DfxManager::dfxManagerInstance_{nullptr};
 mutex DfxManager::instanceLock_;
@@ -54,9 +54,9 @@ int32_t DfxManager::Init(const shared_ptr<OHOS::AbilityRuntime::Context> &contex
     if (context == nullptr) {
         return E_DB_FAIL;
     }
-    if (g_dfxUnistore_ == nullptr) {
-        g_dfxUnistore_ = RingtoneRdbStore::GetInstance(context);
-        if (g_dfxUnistore_ == nullptr) {
+    if (g_dfxUnistore == nullptr) {
+        g_dfxUnistore = RingtoneRdbStore::GetInstance(context);
+        if (g_dfxUnistore == nullptr) {
             RINGTONE_ERR_LOG("RingtoneDataManager is not initialized");
             return E_DB_FAIL;
         }
@@ -79,7 +79,7 @@ int64_t DfxManager::RequestTonesCount(SourceType type)
     RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::QUERY);
     cmd.GetAbsRdbPredicates()->EqualTo(RINGTONE_COLUMN_SOURCE_TYPE, type);
 
-    auto resultSet = g_dfxUnistore_->Query(cmd, { RINGTONE_COLUMN_TONE_ID, RINGTONE_COLUMN_SOURCE_TYPE });
+    auto resultSet = g_dfxUnistore->Query(cmd, { RINGTONE_COLUMN_TONE_ID, RINGTONE_COLUMN_SOURCE_TYPE });
     if (resultSet == nullptr) {
         RINGTONE_ERR_LOG("Failed to obtain file asset from database");
         return 0;

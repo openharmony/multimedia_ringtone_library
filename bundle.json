@@ -12,7 +12,7 @@
       "subsystem": "multimedia",
       "syscap": [],
       "features": [],
-      "adapted_system_type": [ "standard" ],
+      "adapted_system_type": [ "small", "standard" ],
       "rom": "363.2KB",
       "ram": "348KB",
       "hisysevent_config": [
@@ -47,6 +47,7 @@
           "base_group": [],
           "service_group": [
             "//foundation/multimedia/ringtone_library/services:ringtone_data_extension",
+            "//foundation/multimedia/ringtone_library/services:ringtonerestore",
             "//foundation/multimedia/ringtone_library/services/ringtone_helper:ringtone_data_helper",
             "//foundation/multimedia/ringtone_library/test/unittest/ringtone_scanner:ringtone_test",
             "//foundation/multimedia/ringtone_library/test/unittest/ringtone_scanner:ringtone_scanner_test",

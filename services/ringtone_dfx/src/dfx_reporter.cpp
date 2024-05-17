@@ -23,9 +23,9 @@
 #include "ringtone_file_utils.h"
 #include "ringtone_log.h"
 
-using namespace std;
 namespace OHOS {
 namespace Media {
+using namespace std;
 static constexpr char RINGTONE_LIBRARY[] = "RINGTONELIBRARY";
 
 DfxReporter::DfxReporter()

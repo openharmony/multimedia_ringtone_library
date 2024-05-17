@@ -20,13 +20,13 @@
 #include "ipc_skeleton.h"
 #include "permission_utils.h"
 
-using namespace std;
-
 namespace OHOS {
 namespace Media {
+using namespace std;
 const int CAPACITY = 50;
 shared_ptr<RingtoneBundleManager> RingtoneBundleManager::instance_ = nullptr;
 mutex RingtoneBundleManager::mutex_;
+
 shared_ptr<RingtoneBundleManager> RingtoneBundleManager::GetInstance()
 {
     if (instance_ == nullptr) {

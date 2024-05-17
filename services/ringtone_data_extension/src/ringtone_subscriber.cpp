@@ -19,10 +19,9 @@
 #include "common_event_support.h"
 #include "ringtone_log.h"
 
-using namespace OHOS::AAFwk;
-
 namespace OHOS {
 namespace Media {
+using namespace OHOS::AAFwk;
 const std::vector<std::string> RingtoneSubscriber::events_ = {
     EventFwk::CommonEventSupport::COMMON_EVENT_CHARGING,
     EventFwk::CommonEventSupport::COMMON_EVENT_DISCHARGING,

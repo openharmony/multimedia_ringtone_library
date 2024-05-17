@@ -17,7 +17,7 @@ import("//foundation/multimedia/ringtone_library/ringtone_library.gni")
 config("ringtone_public_config") {
   include_dirs = [
     "${RINGTONE_SCANNER_PATH}/include",
-    "${RINGTONE_BACKUP_PATH}/include",
+    "${RINGTONE_RESTORE_PATH}/include",
     "${RINGTONE_EXTENSION_PATH}/include",
     "${RINGTONE_DFX_PATH}/include",
     "${RINGTONE_SERVICES_PATH}/utils/include",
@@ -50,14 +50,14 @@ ohos_shared_library("ringtone_data_extension") {
   install_enable = true
 
   ringtone_scan_source = [
-    "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_scan_executor.cpp",
-    "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_scanner.cpp",
-    "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_scanner_manager.cpp",
-    "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_scanner_db.cpp",
+    "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_default_setting.cpp",
     "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_metadata.cpp",
     "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_metadata_extractor.cpp",
+    "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_scan_executor.cpp",
+    "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_scanner.cpp",
+    "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_scanner_db.cpp",
+    "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_scanner_manager.cpp",
     "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_scanner_utils.cpp",
-    "${RINGTONE_SERVICES_PATH}/ringtone_scanner/src/ringtone_settings.cpp",
   ]
 
   ringtone_utils_source = [
@@ -74,19 +74,29 @@ ohos_shared_library("ringtone_data_extension") {
   ]
 
   ringtone_extension_sources = [
-    "ringtone_data_extension/src/ringtone_bundle_manager.cpp",
-    "ringtone_data_extension/src/ringtone_data_command.cpp",
-    "ringtone_data_extension/src/ringtone_data_manager.cpp",
-    "ringtone_data_extension/src/ringtone_datashare_extension.cpp",
-    "ringtone_data_extension/src/ringtone_datashare_stub_impl.cpp",
-    "ringtone_data_extension/src/ringtone_rdbstore.cpp",
-    "ringtone_data_extension/src/ringtone_subscriber.cpp",
+    "${RINGTONE_EXTENSION_PATH}/src/ringtone_bundle_manager.cpp",
+    "${RINGTONE_EXTENSION_PATH}/src/ringtone_data_command.cpp",
+    "${RINGTONE_EXTENSION_PATH}/src/ringtone_data_manager.cpp",
+    "${RINGTONE_EXTENSION_PATH}/src/ringtone_datashare_extension.cpp",
+    "${RINGTONE_EXTENSION_PATH}/src/ringtone_datashare_stub_impl.cpp",
+    "${RINGTONE_EXTENSION_PATH}/src/ringtone_rdbstore.cpp",
+    "${RINGTONE_EXTENSION_PATH}/src/ringtone_subscriber.cpp",
+  ]
+
+  ringtone_restore_source = [
+    "${RINGTONE_SERVICES_PATH}/ringtone_restore/src/ringtone_restore_db_utils.cpp",
+    "${RINGTONE_SERVICES_PATH}/ringtone_restore/src/ringtone_rdb_transaction.cpp",
+    "${RINGTONE_SERVICES_PATH}/ringtone_restore/src/ringtone_setting_manager.cpp",
+    "${RINGTONE_SERVICES_PATH}/ringtone_restore/src/ringtone_restore_base.cpp",
+    "${RINGTONE_SERVICES_PATH}/ringtone_restore/src/ringtone_restore.cpp",
+    "${RINGTONE_SERVICES_PATH}/ringtone_restore/src/ringtone_restore_factory.cpp",
   ]
 
   sources = ringtone_extension_sources
   sources += ringtone_scan_source
   sources += ringtone_utils_source
   sources += ringtone_dfx_source
+  sources += ringtone_restore_source
 
   public_configs = [ ":ringtone_public_config" ]
 
@@ -140,6 +150,58 @@ ohos_shared_library("ringtone_data_extension") {
     "-Os",
   ]
 
+  subsystem_name = "multimedia"
+  part_name = "ringtone_library"
+}
+
+ohos_shared_library("ringtonerestore") {
+  include_dirs = [
+    "${RINGTONE_RESTORE_PATH}/include",
+    "${RINGTONE_SERVICES_PATH}/utils/include",
+    "${RINGTONE_INTERFACES_PATH}/inner_api/native",
+  ]
+
+  sources = [
+    "${RINGTONE_RESTORE_PATH}/src/native_module_ohos_ringtone_restore.cpp",
+    "${RINGTONE_RESTORE_PATH}/src/restore_interface.cpp",
+    "${RINGTONE_RESTORE_PATH}/src/ringtone_rdb_transaction.cpp",
+    "${RINGTONE_RESTORE_PATH}/src/ringtone_restore.cpp",
+    "${RINGTONE_RESTORE_PATH}/src/ringtone_restore_base.cpp",
+    "${RINGTONE_RESTORE_PATH}/src/ringtone_restore_db_utils.cpp",
+    "${RINGTONE_RESTORE_PATH}/src/ringtone_restore_factory.cpp",
+    "${RINGTONE_RESTORE_PATH}/src/ringtone_restore_napi.cpp",
+    "${RINGTONE_RESTORE_PATH}/src/ringtone_setting_manager.cpp",
+  ]
+
+  ldflags = [ "-Wl" ]
+
+  deps = [ ":ringtone_data_extension" ]
+
+  external_deps = [
+    "ability_runtime:app_context",
+    "ability_runtime:app_manager",
+    "ability_runtime:extensionkit_native",
+    "ability_runtime:runtime",
+    "c_utils:utils",
+    "data_share:datashare_common",
+    "data_share:datashare_consumer",
+    "data_share:datashare_provider",
+    "hilog:libhilog",
+    "init:libbegetutil",
+    "napi:ace_napi",
+    "relational_store:native_rdb",
+    "relational_store:rdb_data_share_adapter",
+  ]
+
+  defines = []
+
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+
+  relative_install_dir = "module/multimedia"
   subsystem_name = "multimedia"
   part_name = "ringtone_library"
 }

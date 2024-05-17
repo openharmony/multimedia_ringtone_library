@@ -34,7 +34,22 @@
         "description": "$string:DataShareExtAbility_desc",
         "type": "dataShare",
         "uri": "datashare://ringtone",
-        "visible": true
+        "visible": false
+      },
+      {
+        "srcEntrance": "./ets/RingtoneBackupExtAbility/RingtoneBackupExtAbility.ts",
+        "name": "RingtoneBackupExtAbility",
+        "icon": "$media:icon",
+        "srcLanguage": "ets",
+        "description": "$string:RingtoneBackupExtAbility_desc",
+        "type": "backup",
+        "visible": false,
+        "metadata": [
+          {
+            "name": "ohos.extension.backup",
+            "resource": "$profile:backup_config"
+          }
+        ]
       }
     ],
     "requestPermissions": [

@@ -16,6 +16,7 @@
 #define RESULT_SET_UTILS_H
 
 #include "ringtone_log.h"
+#include "ringtone_type.h"
 
 namespace OHOS {
 namespace Media {

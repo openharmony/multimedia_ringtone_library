@@ -17,6 +17,7 @@
 #include "ringtone_datashare_extension.h"
 
 #include "app_mgr_client.h"
+#include "ringtone_restore_factory.h"
 #include "datashare_ext_ability_context.h"
 #include "dfx_manager.h"
 #include "parameter.h"
@@ -24,24 +25,24 @@
 #include "ringtone_data_manager.h"
 #include "ringtone_datashare_stub_impl.h"
 #include "ringtone_log.h"
+#include "ringtone_restore_type.h"
 #include "ringtone_scanner_manager.h"
 #include "runtime.h"
 #include "singleton.h"
 
-
+namespace OHOS {
+namespace AbilityRuntime {
 using namespace std;
 using namespace OHOS::AppExecFwk;
 using namespace OHOS::NativeRdb;
 using namespace OHOS::Media;
 using namespace OHOS::DataShare;
 
-namespace OHOS {
-namespace AbilityRuntime {
-using namespace OHOS::AppExecFwk;
 const char RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY[] = "ringtone.scanner.completed";
 const char RINGTONE_PARAMETER_SCANNER_COMPLETED_TRUE[] = "1";
 const char RINGTONE_PARAMETER_SCANNER_COMPLETED_FALSE[] = "0";
 const int32_t SYSPARA_SIZE = 64;
+const string RINGTONE_SINGLE_CLONE_BACKUP_PATH = "/storage/media/local/files/Backup";
 
 RingtoneDataShareExtension *RingtoneDataShareExtension::Create(const unique_ptr<Runtime> &runtime)
 {
@@ -84,7 +85,7 @@ void RingtoneDataShareExtension::OnStart(const AAFwk::Want &want)
         return;
     }
     int32_t ret = dataManager->Init(context);
-    if (ret != E_OK) {
+    if (ret != Media::E_OK) {
         RINGTONE_ERR_LOG("Failed to init RingtoneData Mgr");
         DelayedSingleton<AppExecFwk::AppMgrClient>::GetInstance()->KillApplicationSelf();
         return;
@@ -101,6 +102,14 @@ void RingtoneDataShareExtension::OnStart(const AAFwk::Want &want)
     if (!isCompleted) {
         RingtoneScannerManager::GetInstance()->Start(false);
         SetParameter(RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY, RINGTONE_PARAMETER_SCANNER_COMPLETED_TRUE);
+    }
+
+    // ringtone backup restore
+    auto restore = RingtoneRestoreFactory::CreateObj(RESTORE_SCENE_TYPE_SINGLE_CLONE);
+    if ((restore != nullptr) && (restore->Init(RINGTONE_SINGLE_CLONE_BACKUP_PATH)) == Media::E_OK) {
+        restore->StartRestore();
+    } else {
+        RINGTONE_ERR_LOG("ringtone-restore failed on init");
     }
     RINGTONE_INFO_LOG("end.");
 }
@@ -148,7 +157,7 @@ static int32_t UriValidCheck(const Uri &uri)
         RINGTONE_ERR_LOG("error: invalid uri!");
         return E_INVALID_URI;
     }
-    return E_OK;
+    return Media::E_OK;
 }
 
 static const std::vector<string> g_ringToneTableFields = {
@@ -219,7 +228,7 @@ int RingtoneDataShareExtension::Insert(const Uri &uri, const DataShareValuesBuck
     DumpDataShareValueBucket(g_ringToneTableFields, value);
 
     int err = UriValidCheck(uri);
-    if (err != E_OK) {
+    if (err != Media::E_OK) {
         return err;
     }
     RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::INSERT);
@@ -240,7 +249,7 @@ int RingtoneDataShareExtension::Update(const Uri &uri, const DataSharePredicates
     RINGTONE_DEBUG_LOG("WhereClause=%{public}s", predicates.GetWhereClause().c_str());
 
     int err = UriValidCheck(uri);
-    if (err != E_OK) {
+    if (err != Media::E_OK) {
         return err;
     }
     RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::UPDATE);
@@ -258,7 +267,7 @@ int RingtoneDataShareExtension::Delete(const Uri &uri, const DataSharePredicates
     RINGTONE_DEBUG_LOG("entry, uri=%{public}s", uri.ToString().c_str());
 
     int err = UriValidCheck(uri);
-    if (err != E_OK) {
+    if (err != Media::E_OK) {
         return err;
     }
     RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::DELETE);
@@ -276,7 +285,7 @@ shared_ptr<DataShareResultSet> RingtoneDataShareExtension::Query(const Uri &uri,
 {
     RINGTONE_DEBUG_LOG("entry, uri=%{public}s", uri.ToString().c_str());
     int err = UriValidCheck(uri);
-    if (err != E_OK) {
+    if (err != Media::E_OK) {
         return nullptr;
     }
     RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::QUERY);
@@ -304,7 +313,7 @@ int RingtoneDataShareExtension::OpenFile(const Uri &uri, const string &mode)
         uri.ToString().c_str(), mode.c_str());
 
     int err = UriValidCheck(uri);
-    if (err != E_OK) {
+    if (err != Media::E_OK) {
         return err;
     }
     RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::OPEN);

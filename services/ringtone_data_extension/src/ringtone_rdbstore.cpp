@@ -23,9 +23,9 @@
 #include "ringtone_log.h"
 #include "ringtone_tracer.h"
 
+namespace OHOS::Media {
 using namespace std;
 using namespace OHOS::NativeRdb;
-namespace OHOS::Media {
 static const mode_t MODE_RWX_USR_GRP = 02771;
 const std::string CREATE_RINGTONE_TABLE = "CREATE TABLE IF NOT EXISTS " + RINGTONE_TABLE + "(" +
     RINGTONE_COLUMN_TONE_ID                       + " INTEGER  PRIMARY KEY AUTOINCREMENT, " +
@@ -112,7 +112,8 @@ int32_t RingtoneDataCallBack::CreatePreloadFolder(const string &path)
 int32_t RingtoneDataCallBack::PrepareDir()
 {
     static const vector<string> userPreloadDirs = {
-        { RINGTONE_CUSTOMIZED_ALARM }, { RINGTONE_CUSTOMIZED_RINGTONE }, { RINGTONE_CUSTOMIZED_NOTIFICATIONS }
+        { RINGTONE_CUSTOMIZED_ALARM_PATH }, { RINGTONE_CUSTOMIZED_RINGTONE_PATH },
+        { RINGTONE_CUSTOMIZED_NOTIFICATIONS_PATH }
     };
 
     for (const auto &dir: userPreloadDirs) {
@@ -155,20 +156,20 @@ int32_t RingtoneDataCallBack::OnUpgrade(RdbStore &store, int32_t oldVersion, int
 
     return NativeRdb::E_OK;
 }
-RingtoneUnistore *RingtoneRdbStore::GetInstance(const std::shared_ptr<OHOS::AbilityRuntime::Context> &context)
+shared_ptr<RingtoneUnistore> RingtoneRdbStore::GetInstance(
+    const std::shared_ptr<OHOS::AbilityRuntime::Context> &context)
 {
-    static RingtoneRdbStore *instance = nullptr;
+    static shared_ptr<RingtoneRdbStore> instance = nullptr;
     if (instance == nullptr && context == nullptr) {
         RINGTONE_ERR_LOG("RingtoneRdbStore is not initialized");
         return nullptr;
     }
     if (instance == nullptr) {
-        instance = new RingtoneRdbStore(context);
+        instance = make_shared<RingtoneRdbStore>(context);
         if (instance->Init() != 0) {
             RINGTONE_ERR_LOG("init RingtoneRdbStore failed");
-            delete instance;
             instance = nullptr;
-            return nullptr;
+            return instance;
         }
     }
     return instance;
@@ -181,7 +182,7 @@ RingtoneRdbStore::RingtoneRdbStore(const shared_ptr<OHOS::AbilityRuntime::Contex
         return;
     }
     string databaseDir = context->GetDatabaseDir();
-    string name = RINGTONE_COLUMN_DATA_ABILITY_DB_NAME;
+    string name = RINGTONE_LIBRARY_DB_NAME;
     int32_t errCode = 0;
     string realPath = RdbSqlUtils::GetDefaultDatabasePath(databaseDir, name, errCode);
     config_.SetName(move(name));

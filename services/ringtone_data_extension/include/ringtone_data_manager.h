@@ -23,7 +23,6 @@
 #include "ringtone_datashare_extension.h"
 
 #define EXPORT __attribute__ ((visibility ("default")))
-
 namespace OHOS {
 namespace AbilityRuntime {
 class RingtoneDataShareExtension;

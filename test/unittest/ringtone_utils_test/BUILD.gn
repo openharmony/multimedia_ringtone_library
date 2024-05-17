@@ -29,7 +29,7 @@ ohos_unittest("ringtone_utils_unittest") {
     "${RINGTONE_SERVICES_PATH}/utils/include",
     "${RINGTONE_INTERFACES_PATH}/inner_api/native",
     "${RINGTONE_SCANNER_PATH}/include",
-    "${RINGTONE_BACKUP_PATH}/include",
+    "${RINGTONE_RESTORE_PATH}/include",
   ]
 
   sources = [
