@@ -29,15 +29,15 @@ namespace Media {
 #define EXPORT __attribute__ ((visibility ("default")))
 class RingtoneDefaultSetting {
 public:
-    static std::unique_ptr<RingtoneDefaultSetting> GetObj(std::shared_ptr<NativeRdb::RdbStore> &rdb);
-    RingtoneDefaultSetting(std::shared_ptr<NativeRdb::RdbStore> &rdb);
+    EXPORT static std::unique_ptr<RingtoneDefaultSetting> GetObj(std::shared_ptr<NativeRdb::RdbStore> &rdb);
+    EXPORT RingtoneDefaultSetting(std::shared_ptr<NativeRdb::RdbStore> &rdb);
     ~RingtoneDefaultSetting() = default;
-    void Update();
+    EXPORT void Update();
 private:
-    void ShotToneDefaultSettings();
-    void NotificationToneDefaultSettings();
-    void RingToneDefaultSettings();
-    std::string GetTonePathByDisplayName(std::string &name);
+    EXPORT void ShotToneDefaultSettings();
+    EXPORT void NotificationToneDefaultSettings();
+    EXPORT void RingToneDefaultSettings();
+    EXPORT std::string GetTonePathByDisplayName(std::string &name);
 
     std::unique_ptr<RingtoneSettingManager> settingMgr_ = nullptr;
 };

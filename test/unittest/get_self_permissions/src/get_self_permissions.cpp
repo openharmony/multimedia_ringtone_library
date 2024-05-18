@@ -62,19 +62,20 @@ void RingtonePermissionUtilsUnitTest::SetAccessTokenPermission(const std::string
     }
 }
 
-int32_t RingtonePermissionUtilsUnitTest::SetHapPermission(const std::string &bundleName, const int32_t userId)
+int32_t RingtonePermissionUtilsUnitTest::SetHapPermission(const std::string &bundleName,
+    const int32_t userId, bool isSystem)
 {
     HapInfoParams info = {
         .userID = userId,
         .bundleName = bundleName,
         .instIndex = 0,
         .appIDDesc = bundleName,
-        .isSystemApp = true
+        .isSystemApp = isSystem
     };
 
     HapPolicyParams policy = {
         .apl = APL_SYSTEM_BASIC,
-        .domain = "test.domain.medialibrary",
+        .domain = "test.domain.ringtonelibrary",
         .permList = { },
         .permStateList = {
             {

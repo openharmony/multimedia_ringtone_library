@@ -130,7 +130,8 @@ public:
      */
     EXPORT int OpenFile(const Uri &uri, const std::string &mode) override;
 private:
-    static void DumpDataShareValueBucket(const std::vector<std::string> &tabFields, const DataShareValuesBucket &value);
+    EXPORT static void DumpDataShareValueBucket(const std::vector<std::string> &tabFields,
+        const DataShareValuesBucket &value);
     Runtime &runtime_;
 };
 } // namespace AbilityRuntime

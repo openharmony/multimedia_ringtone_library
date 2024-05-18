@@ -53,13 +53,15 @@ private:
 
 class RingtoneDataCallBack : public NativeRdb::RdbOpenCallback {
 public:
-    int32_t OnCreate(NativeRdb::RdbStore &rdbStore) override;
-    int32_t OnUpgrade(NativeRdb::RdbStore &rdbStore, int32_t oldVersion, int32_t newVersion) override;
+    EXPORT RingtoneDataCallBack();
+    EXPORT ~RingtoneDataCallBack();
+    EXPORT int32_t OnCreate(NativeRdb::RdbStore &rdbStore) override;
+    EXPORT int32_t OnUpgrade(NativeRdb::RdbStore &rdbStore, int32_t oldVersion, int32_t newVersion) override;
 private:
     static int32_t InitSql(NativeRdb::RdbStore &store);
     static int32_t PrepareDir();
-    static int32_t CreatePreloadFolder(const std::string &path);
-    static int32_t MkdirRecursive(const std::string &path, size_t start);
+    EXPORT static int32_t CreatePreloadFolder(const std::string &path);
+    EXPORT static int32_t MkdirRecursive(const std::string &path, size_t start);
 };
 } // namespace Media
 } // namespace OHOS

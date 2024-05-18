@@ -285,6 +285,23 @@ ohos_shared_library("ringtone_setting") {
 
   public_configs = [ ":ringtone_public_visible_config" ]
 
+  ldflags = [ "-Wl,--gc-sections" ]
+
+  cflags = [
+    "-Wall",
+    "-Werror",
+    "-fvisibility=hidden",
+    "-fdata-sections",
+    "-ffunction-sections",
+    "-Wno-unused-but-set-variable",
+    "-Os",
+  ]
+
+  cflags_cc = [
+    "-fvisibility-inlines-hidden",
+    "-Os",
+  ]
+
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",

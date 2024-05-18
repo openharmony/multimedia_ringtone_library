@@ -89,7 +89,8 @@ ohos_unittest("ringtone_dualfw_restore_unittest") {
     debug = false
   }
 
-  resource_config_file = "${RINGTONE_ROOT_PATH}/test/unittest/ringtone_dualfw_restore_test/resources/ohos_test.xml"
+  resource_config_file =
+      "${RINGTONE_ROOT_PATH}/test/unittest/resources/ohos_test.xml"
 
   if (is_standard_system) {
     external_deps += [ "hilog:libhilog" ]

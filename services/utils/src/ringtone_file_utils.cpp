@@ -111,7 +111,7 @@ bool RingtoneFileUtils::IsSameFile(const string &srcPath, const string &dstPath)
         return false;
     }
     if (srcStatInfo.st_size != dstStatInfo.st_size) { /* file size */
-        RINGTONE_INFO_LOG("Size differs,srcStatInfo.st_size != dstStatInfo.st_size");
+        RINGTONE_INFO_LOG("Size differs, srcStatInfo.st_size != dstStatInfo.st_size");
         return false;
     }
 

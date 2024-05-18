@@ -57,6 +57,15 @@ static const vector<string> g_initSqls = {
     CREATE_RINGTONE_TABLE,
 };
 
+RingtoneDataCallBack::RingtoneDataCallBack(void)
+{
+}
+
+RingtoneDataCallBack::~RingtoneDataCallBack(void)
+{
+}
+
+
 int32_t RingtoneDataCallBack::MkdirRecursive(const string &path, size_t start)
 {
     RINGTONE_DEBUG_LOG("start pos %{public}zu", start);
@@ -65,7 +74,7 @@ int32_t RingtoneDataCallBack::MkdirRecursive(const string &path, size_t start)
     string subDir = "";
     if (end == std::string::npos) {
         if (start + 1 == path.size()) {
-            RINGTONE_DEBUG_LOG("path size=%d", path.size());
+            RINGTONE_DEBUG_LOG("path size=%zu", path.size());
         } else {
             subDir = path.substr(start + 1, path.size() - start - 1);
         }
@@ -157,6 +166,7 @@ int32_t RingtoneDataCallBack::OnUpgrade(NativeRdb::RdbStore &store, int32_t oldV
 
     return NativeRdb::E_OK;
 }
+
 shared_ptr<RingtoneUnistore> RingtoneRdbStore::GetInstance(
     const std::shared_ptr<OHOS::AbilityRuntime::Context> &context)
 {

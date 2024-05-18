@@ -83,6 +83,8 @@ HWTEST_F(RingtonePermissionUtilsTest, ringtonePermissionUtils_IsSystemApp_test_0
 {
     bool ret = RingtonePermissionUtils::IsSystemApp();
     EXPECT_EQ(ret, false);
+    ret = RingtonePermissionUtils::IsNativeSAApp();
+    EXPECT_EQ(ret, false);
 }
 
 HWTEST_F(RingtonePermissionUtilsTest, ringtonePermissionUtils_CheckIsSystemAppByUid_test_001, TestSize.Level0)

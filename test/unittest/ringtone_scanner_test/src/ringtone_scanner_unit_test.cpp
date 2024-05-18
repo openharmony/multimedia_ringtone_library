@@ -28,7 +28,7 @@ using namespace testing::ext;
 namespace OHOS {
 namespace Media {
 namespace {
-    shared_ptr<RingtoneScannerManager> ringtoneScannerManager = nullptr;
+    shared_ptr<RingtoneScannerManager> g_ringtoneScannerManager = nullptr;
 } // namespace
 
 
@@ -36,7 +36,7 @@ void RingtoneScannerUnitTest::SetUpTestCase()
 {
     RingtoneUnitTestUtils::Init();
 
-    ringtoneScannerManager = RingtoneScannerManager::GetInstance();
+    g_ringtoneScannerManager = RingtoneScannerManager::GetInstance();
 }
 
 void RingtoneScannerUnitTest::TearDownTestCase() {}
@@ -55,13 +55,13 @@ void RingtoneScannerUnitTest::TearDown(void)
 
 HWTEST_F(RingtoneScannerUnitTest,  scannerManager_ScanDir_test_001, TestSize.Level0)
 {
-    if (ringtoneScannerManager == nullptr) {
+    if (g_ringtoneScannerManager == nullptr) {
         RINGTONE_ERR_LOG("RingtoneScannerManager invalid");
         exit(1);
     }
 
     auto scannerCallback = make_shared<TestRingtoneScannerCallback>();
-    int result = ringtoneScannerManager->ScanDir(ROOT_MEDIA_DIR, scannerCallback);
+    int result = g_ringtoneScannerManager->ScanDir(ROOT_MEDIA_DIR, scannerCallback);
     EXPECT_EQ(result, E_OK);
 
     if (result == 0) {
@@ -70,10 +70,24 @@ HWTEST_F(RingtoneScannerUnitTest,  scannerManager_ScanDir_test_001, TestSize.Lev
     }
 }
 
+
+HWTEST_F(RingtoneScannerUnitTest,  scannerManager_ScanDir_test_002, TestSize.Level0)
+{
+    if (g_ringtoneScannerManager == nullptr) {
+        RINGTONE_ERR_LOG("RingtoneScannerManager invalid");
+        exit(1);
+    }
+
+    const string path = "Ringtone/Scanner_ringtone.ogg";
+    auto scannerCallback = make_shared<TestRingtoneScannerCallback>();
+    int result = g_ringtoneScannerManager->ScanDir(path, scannerCallback);
+    EXPECT_EQ(result, E_INVALID_PATH);
+}
+
 HWTEST_F(RingtoneScannerUnitTest,  scannerManager_ScanOgg_test_001, TestSize.Level0)
 {
-    if (ringtoneScannerManager == nullptr) {
-        RINGTONE_ERR_LOG("ringtoneScannerManager invalid");
+    if (g_ringtoneScannerManager == nullptr) {
+        RINGTONE_ERR_LOG("g_ringtoneScannerManager invalid");
         exit(1);
     }
 
@@ -81,7 +95,7 @@ HWTEST_F(RingtoneScannerUnitTest,  scannerManager_ScanOgg_test_001, TestSize.Lev
     EXPECT_EQ(RingtoneUnitTestUtils::CreateFileFS(path), true);
 
     auto scannerCallback = make_shared<TestRingtoneScannerCallback>();
-    int result = ringtoneScannerManager->ScanFile(path, scannerCallback);
+    int result = g_ringtoneScannerManager->ScanFile(path, scannerCallback);
     EXPECT_EQ(result, E_OK);
 
     if (result == 0) {
@@ -92,7 +106,7 @@ HWTEST_F(RingtoneScannerUnitTest,  scannerManager_ScanOgg_test_001, TestSize.Lev
 
 HWTEST_F(RingtoneScannerUnitTest, scannerManager_ScanHiddenFile_Test_001, TestSize.Level0)
 {
-    if (ringtoneScannerManager == nullptr) {
+    if (g_ringtoneScannerManager == nullptr) {
         RINGTONE_ERR_LOG("RingtoneScannerManager invalid");
         exit(1);
     }
@@ -101,7 +115,7 @@ HWTEST_F(RingtoneScannerUnitTest, scannerManager_ScanHiddenFile_Test_001, TestSi
     EXPECT_EQ(RingtoneUnitTestUtils::CreateFileFS(path), true);
 
     auto scannerCallback = make_shared<TestRingtoneScannerCallback>();
-    int result = ringtoneScannerManager->ScanFile(path, scannerCallback);
+    int result = g_ringtoneScannerManager->ScanFile(path, scannerCallback);
     EXPECT_EQ(result, E_OK);
 
     if (result == 0) {
@@ -112,7 +126,7 @@ HWTEST_F(RingtoneScannerUnitTest, scannerManager_ScanHiddenFile_Test_001, TestSi
 
 HWTEST_F(RingtoneScannerUnitTest,  scannerManager_ScanDir_CanonicalPathtest_001, TestSize.Level0)
 {
-    if (ringtoneScannerManager == nullptr) {
+    if (g_ringtoneScannerManager == nullptr) {
         RINGTONE_ERR_LOG("RingtoneScannerManager invalid");
         exit(1);
     }
@@ -120,7 +134,7 @@ HWTEST_F(RingtoneScannerUnitTest,  scannerManager_ScanDir_CanonicalPathtest_001,
     const string path = ROOT_MEDIA_DIR + "../files";
 
     auto scannerCallback = make_shared<TestRingtoneScannerCallback>();
-    int result = ringtoneScannerManager->ScanDir(path, scannerCallback);
+    int result = g_ringtoneScannerManager->ScanDir(path, scannerCallback);
     EXPECT_EQ(result, E_OK);
 
     if (result == 0) {
@@ -131,7 +145,7 @@ HWTEST_F(RingtoneScannerUnitTest,  scannerManager_ScanDir_CanonicalPathtest_001,
 
 HWTEST_F(RingtoneScannerUnitTest,  scannerManager_ScanFile_CanonicalPathtest_001, TestSize.Level0)
 {
-    if (ringtoneScannerManager == nullptr) {
+    if (g_ringtoneScannerManager == nullptr) {
         RINGTONE_ERR_LOG("RingtoneScannerManager invalid");
         exit(1);
     }
@@ -140,13 +154,113 @@ HWTEST_F(RingtoneScannerUnitTest,  scannerManager_ScanFile_CanonicalPathtest_001
     EXPECT_EQ(RingtoneUnitTestUtils::CreateFileFS(path), true);
 
     auto scannerCallback = make_shared<TestRingtoneScannerCallback>();
-    int result = ringtoneScannerManager->ScanFile(path, scannerCallback);
+    int result = g_ringtoneScannerManager->ScanFile(path, scannerCallback);
     EXPECT_EQ(result, E_OK);
 
     if (result == 0) {
         RingtoneUnitTestUtils::WaitForCallback(scannerCallback);
         EXPECT_EQ(scannerCallback->status_, E_OK);
     }
+}
+
+HWTEST_F(RingtoneScannerUnitTest,  scannerManager_Strat_test_001, TestSize.Level0)
+{
+    if (g_ringtoneScannerManager == nullptr) {
+        RINGTONE_ERR_LOG("g_ringtoneScannerManager invalid");
+        exit(1);
+    }
+
+    RingtoneScannerManager::GetInstance();
+    g_ringtoneScannerManager->Start(true);
+    g_ringtoneScannerManager->Start(false);
+    g_ringtoneScannerManager->Stop();
+}
+
+HWTEST_F(RingtoneScannerUnitTest,  scannerManager_ScanFile_test_001, TestSize.Level0)
+{
+    if (g_ringtoneScannerManager == nullptr) {
+        RINGTONE_ERR_LOG("g_ringtoneScannerManager invalid");
+        exit(1);
+    }
+
+    const string path = "files/Ringtone/Canonical1.ogg";
+
+    auto scannerCallback = make_shared<TestRingtoneScannerCallback>();
+    int result = g_ringtoneScannerManager->ScanFile(path, scannerCallback);
+    EXPECT_EQ(result, E_INVALID_PATH);
+}
+
+HWTEST_F(RingtoneScannerUnitTest,  scannerManager_ScanFileSync_CanonicalPathtest_001, TestSize.Level0)
+{
+    if (g_ringtoneScannerManager == nullptr) {
+        RINGTONE_ERR_LOG("RingtoneScannerManager invalid");
+        exit(1);
+    }
+
+    const string path = ROOT_MEDIA_DIR + "../files/Ringtone/Canonical1.ogg";
+    EXPECT_EQ(RingtoneUnitTestUtils::CreateFileFS(path), true);
+
+    auto scannerCallback = make_shared<TestRingtoneScannerCallback>();
+    int result = g_ringtoneScannerManager->ScanFileSync(path, scannerCallback, true);
+    EXPECT_EQ(result, E_OK);
+
+    if (result == 0) {
+        RingtoneUnitTestUtils::WaitForCallback(scannerCallback);
+        EXPECT_EQ(scannerCallback->status_, E_OK);
+    }
+}
+
+HWTEST_F(RingtoneScannerUnitTest,  scannerManager_ScanFileSync_CanonicalPathtest_002, TestSize.Level0)
+{
+    if (g_ringtoneScannerManager == nullptr) {
+        RINGTONE_ERR_LOG("RingtoneScannerManager invalid");
+        exit(1);
+    }
+
+    const string path = ROOT_MEDIA_DIR + "../files/Ringtone/Canonical1.ogg";
+    EXPECT_EQ(RingtoneUnitTestUtils::CreateFileFS(path), true);
+
+    auto scannerCallback = make_shared<TestRingtoneScannerCallback>();
+    int result = g_ringtoneScannerManager->ScanFileSync(path, scannerCallback, false);
+    EXPECT_EQ(result, E_OK);
+
+    if (result == 0) {
+        RingtoneUnitTestUtils::WaitForCallback(scannerCallback);
+        EXPECT_EQ(scannerCallback->status_, E_OK);
+    }
+}
+
+HWTEST_F(RingtoneScannerUnitTest,  scannerManager_ScanDirSync_CanonicalPathtest_001, TestSize.Level0)
+{
+    if (g_ringtoneScannerManager == nullptr) {
+        RINGTONE_ERR_LOG("RingtoneScannerManager invalid");
+        exit(1);
+    }
+
+    const string path = ROOT_MEDIA_DIR + "../files";
+
+    auto scannerCallback = make_shared<TestRingtoneScannerCallback>();
+    int result = g_ringtoneScannerManager->ScanDirSync(path, scannerCallback);
+    EXPECT_EQ(result, E_OK);
+
+    if (result == 0) {
+        RingtoneUnitTestUtils::WaitForCallback(scannerCallback);
+        EXPECT_EQ(scannerCallback->status_, E_OK);
+    }
+}
+
+HWTEST_F(RingtoneScannerUnitTest,  scannerManager_ScanDirSync_CanonicalPathtest_002, TestSize.Level0)
+{
+    if (g_ringtoneScannerManager == nullptr) {
+        RINGTONE_ERR_LOG("RingtoneScannerManager invalid");
+        exit(1);
+    }
+
+    const string path = "files/Ringtone/Canonical.ogg";
+
+    auto scannerCallback = make_shared<TestRingtoneScannerCallback>();
+    int result = g_ringtoneScannerManager->ScanDirSync(path, scannerCallback);
+    EXPECT_EQ(result, E_INVALID_PATH);
 }
 } // namespace Media
 } // namespace OHOS

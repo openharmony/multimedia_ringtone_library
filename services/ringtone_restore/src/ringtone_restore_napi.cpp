@@ -20,7 +20,6 @@
 #include "ringtone_db_const.h"
 #include "ringtone_errno.h"
 #include "ringtone_log.h"
-#include "ringtone_napi_utils.h"
 #include "ringtone_props.h"
 #include "ringtone_restore_factory.h"
 #include "ringtone_restore_type.h"
@@ -29,6 +28,9 @@
 
 namespace OHOS {
 namespace Media {
+const std::string UPGRADE_COMPLETE_PROP = "upgrade_complete_prop";
+const std::string UPGRADE_COMPLETE_VAL_FALSE = "false";
+const std::string UPGRADE_COMPLETE_VAL_TRUE = "true";
 napi_value RingtoneRestoreNapi::Init(napi_env env, napi_value exports)
 {
     RINGTONE_INFO_LOG("Init");

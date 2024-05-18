@@ -34,33 +34,40 @@ sptr<AppExecFwk::IBundleMgr> RingtonePermissionUtils::bundleManager_ = nullptr;
 mutex RingtonePermissionUtils::bundleManagerMutex_;
 sptr<AppExecFwk::IBundleMgr> RingtonePermissionUtils::GetSysBundleManager()
 {
+    RINGTONE_ERR_LOG("ldl GetSysBundleManager 0000000000000000000000000000.");
     if (bundleManager_ != nullptr) {
+        RINGTONE_ERR_LOG("ldl GetSysBundleManager 11111111111111111111111111.");
         return bundleManager_;
     }
 
     lock_guard<mutex> lock(bundleManagerMutex_);
     if (bundleManager_ != nullptr) {
+        RINGTONE_ERR_LOG("ldl GetSysBundleManager 2222222222222222222222222222222.");
         return bundleManager_;
     }
 
     auto systemAbilityManager = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (systemAbilityManager == nullptr) {
+        RINGTONE_ERR_LOG("ldl GetSysBundleManager 3333333333333333333333333.");
         RINGTONE_ERR_LOG("Failed to get SystemAbilityManager.");
         return nullptr;
     }
 
     auto bundleObj = systemAbilityManager->GetSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID);
     if (bundleObj == nullptr) {
+        RINGTONE_ERR_LOG("ldl GetSysBundleManager 444444444444444444444444444.");
         RINGTONE_ERR_LOG("Remote object is nullptr.");
         return nullptr;
     }
 
     auto bundleManager = iface_cast<AppExecFwk::IBundleMgr>(bundleObj);
     if (bundleManager == nullptr) {
+        RINGTONE_ERR_LOG("ldl GetSysBundleManager 55555555555555555555555555555555555.");
         RINGTONE_ERR_LOG("Failed to iface_cast");
         return nullptr;
     }
     bundleManager_ = bundleManager;
+    RINGTONE_ERR_LOG("ldl GetSysBundleManager 66666666666666666666666666666666.");
 
     return bundleManager_;
 }

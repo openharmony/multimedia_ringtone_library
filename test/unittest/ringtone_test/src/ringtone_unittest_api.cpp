@@ -16,6 +16,7 @@
 #include "ringtone_unittest_api.h"
 
 #include "datashare_helper.h"
+#include "get_self_permissions.h"
 #include "iservice_registry.h"
 #include "ringtone_asset.h"
 #include "ringtone_db_const.h"
@@ -42,6 +43,11 @@ const string ZERO = "0";
 
 void RingtoneUnitApiTest::SetUpTestCase()
 {
+    uint64_t tokenId = 0;
+    auto ret = RingtonePermissionUtilsUnitTest::SetHapPermission("com.ohos.ringtonelibrary.ringtonelibrarydata",
+        tokenId, false);
+    EXPECT_EQ(ret, E_SUCCESS);
+
     auto saManager = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     ASSERT_TRUE(saManager != nullptr);
 

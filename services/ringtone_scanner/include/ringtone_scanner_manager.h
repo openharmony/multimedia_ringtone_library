@@ -28,11 +28,11 @@ public:
     RingtoneScannerManager() = default;
     EXPORT virtual ~RingtoneScannerManager() = default;
 
-    void Start(bool isSync = true);
-    void Stop();
+    EXPORT void Start(bool isSync = true);
+    EXPORT void Stop();
 
     EXPORT int32_t ScanFile(const std::string &path, const std::shared_ptr<IRingtoneScannerCallback> &callback);
-    int32_t ScanFileSync(const std::string &path, const std::shared_ptr<IRingtoneScannerCallback> &callback,
+    EXPORT int32_t ScanFileSync(const std::string &path, const std::shared_ptr<IRingtoneScannerCallback> &callback,
         bool isForceScan = false);
     EXPORT int32_t ScanDir(const std::string &path, const std::shared_ptr<IRingtoneScannerCallback> &callback);
     EXPORT int32_t ScanDirSync(const std::string &path, const std::shared_ptr<IRingtoneScannerCallback> &callback);

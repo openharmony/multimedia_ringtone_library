@@ -73,6 +73,11 @@ HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_OpenFile_Test_001, TestSize.Le
     const string path = "/storage/media/100";
     auto ret = RingtoneFileUtils::OpenFile(path, RINGTONE_FILEMODE_WRITEONLY);
     ASSERT_EQ(ret, E_INVALID_PATH);
+    ret = RingtoneFileUtils::OpenFile(path, "v");
+    ASSERT_EQ(ret, E_INVALID_PATH);
+    const string filePath("a", 5200);
+    ret = RingtoneFileUtils::OpenFile(filePath, RINGTONE_FILEMODE_WRITEONLY);
+    ASSERT_EQ(ret, E_INVALID_PATH);
 }
 
 HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_MilliSecond_Test_001, TestSize.Level0)
@@ -111,8 +116,10 @@ HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_CreateFile_Test_001, TestSize.
 
 HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_CreateFile_Test_002, TestSize.Level0)
 {
-    const string filePath = DEFAULT_STR;
+    string filePath = DEFAULT_STR;
     EXPECT_EQ(RingtoneFileUtils::CreateFile(filePath), E_VIOLATION_PARAMETERS);
+    filePath = "/data/local/tmp/test/createfile_002.wav";
+    EXPECT_EQ(RingtoneFileUtils::CreateFile(filePath), E_INVALID_PATH);
 }
 
 HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_CreateFile_Test_003, TestSize.Level0)
@@ -126,6 +133,99 @@ HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_CreateFile_Test_004, TestSize.
 {
     const string filePath = "/data/local/tmp/test/test/test/test/createfile_004.ogg";
     EXPECT_EQ(RingtoneFileUtils::CreateFile(filePath), E_ERR);
+}
+
+HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_GetFileNameFromPath_Test_001, TestSize.Level0)
+{
+    string filePath = "/ringtoneFileUtils_GetFileNameFromPath_Test_001/createfile_001.ogg";
+    auto ret = RingtoneFileUtils::GetFileNameFromPath(filePath);
+    EXPECT_EQ(ret, "createfile_001.ogg");
+    filePath = "/";
+    ret = RingtoneFileUtils::GetFileNameFromPath(filePath);
+    EXPECT_EQ(ret, "");
+    filePath = "";
+    ret = RingtoneFileUtils::GetFileNameFromPath(filePath);
+    EXPECT_EQ(ret, "");
+}
+
+HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_GetBaseNameFromPath_Test_001, TestSize.Level0)
+{
+    string filePath = "data/createfile_001.";
+    auto ret = RingtoneFileUtils::GetBaseNameFromPath(filePath);
+    EXPECT_EQ(ret, "createfile_001");
+    filePath = "createfile_001./";
+    ret = RingtoneFileUtils::GetBaseNameFromPath(filePath);
+    EXPECT_EQ(ret, "");
+}
+
+HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_IsSameFile_Test_001, TestSize.Level0)
+{
+    const string srcPath = "/data/local/tmp/test/createfile_Test_001.ogg";
+    const string dstPath = "/data/local/tmp/test/createfile_Test_001.ogg";
+    auto ret = RingtoneFileUtils::IsSameFile(srcPath, dstPath);
+    EXPECT_EQ(ret, false);
+    EXPECT_EQ(RingtoneFileUtils::CreateFile(srcPath), E_SUCCESS);
+    ret = RingtoneFileUtils::IsSameFile(srcPath, dstPath);
+    EXPECT_EQ(ret, true);
+}
+
+HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_RemoveDirectory_Test_001, TestSize.Level0)
+{
+    const string filePath = "/data/local/tmp/test/createfile_003.ogg";
+    EXPECT_EQ(RingtoneFileUtils::CreateFile(filePath), E_SUCCESS);
+    auto ret = RingtoneFileUtils::RemoveDirectory(filePath);
+    EXPECT_EQ(ret, E_SUCCESS);
+}
+
+HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_Mkdir_Test_001, TestSize.Level0)
+{
+    const string path = "ringtoneFileUtils_RemoveDirectory_Test_001";
+    std::shared_ptr<int> errCodePtr;
+    auto ret = RingtoneFileUtils::Mkdir(path);
+    EXPECT_EQ(ret, true);
+}
+
+HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_IsDirectory_Test_001, TestSize.Level0)
+{
+    const string path = "ringtoneFileUtils_RemoveDirectory_Test_001";
+    std::shared_ptr<int> errCodePtr;
+    auto ret = RingtoneFileUtils::IsDirectory(path, errCodePtr);
+    EXPECT_EQ(ret, true);
+    const string pathDir = "/data/ringtone/ringtoneFileUtils_RemoveDirectory_Test_001";
+    ret = RingtoneFileUtils::IsDirectory(pathDir, errCodePtr);
+    EXPECT_EQ(ret, false);
+    std::shared_ptr<int> errCode = std::make_shared<int>(1);
+    ret = RingtoneFileUtils::IsDirectory(pathDir, errCode);
+    EXPECT_EQ(ret, false);
+}
+
+HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_CreateDirectory_Test_001, TestSize.Level0)
+{
+    const string path = "ringtoneFileUtils_RemoveDirectory_Test_001";
+    std::shared_ptr<int> errCodePtr;
+    auto ret = RingtoneFileUtils::CreateDirectory(path, errCodePtr);
+    EXPECT_EQ(ret, true);
+    string dirPath = "/data/test/isdirempty_002";
+    string subPath = dirPath + "/isdirempty_002";
+    EXPECT_EQ(RingtoneFileUtils::CreateDirectory(subPath), true);
+}
+
+HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_MoveFile_Test_001, TestSize.Level0)
+{
+    string oldPath = "/data/local/tmp/test/movefile_001.ogg";
+    string newPath = "/data/local/tmp/test/movefile_001_move.ogg";
+    EXPECT_EQ(RingtoneFileUtils::CreateFile(oldPath), E_SUCCESS);
+    EXPECT_EQ(RingtoneFileUtils::MoveFile(oldPath, newPath), true);
+}
+
+HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_CopyFileUtil_Test_001, TestSize.Level0)
+{
+    string oldPath = "/data/local/tmp/test/movefile_001.ogg";
+    string newPath = "/data/local/tmp/test/movefile_001_move.ogg";
+    EXPECT_EQ(RingtoneFileUtils::CreateFile(oldPath), E_SUCCESS);
+    EXPECT_EQ(RingtoneFileUtils::CopyFileUtil(oldPath, newPath), true);
+    const string filePath("a", 5200);
+    RingtoneFileUtils::CopyFileUtil(filePath, newPath);
 }
 } // namespace Media
 } // namespace OHOS

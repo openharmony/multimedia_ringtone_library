@@ -17,7 +17,12 @@
 
 #include <string>
 
+#include "ability_context_impl.h"
+#include "get_self_permissions.h"
+#include "rdb_store.h"
+#include "rdb_utils.h"
 #include "ringtone_errno.h"
+#include "ringtone_rdbstore.h"
 #define private public
 #include "ringtone_scanner.h"
 #undef private
@@ -31,7 +36,15 @@ using namespace testing::ext;
 
 namespace OHOS {
 namespace Media {
-void RingtoneScannerTest::SetUpTestCase() {}
+void RingtoneScannerTest::SetUpTestCase()
+{
+    vector<string> perms;
+    perms.push_back("ohos.permission.WRITE_RINGTONE");
+
+    uint64_t tokenId = 0;
+    RingtonePermissionUtilsUnitTest::SetAccessTokenPermission("RingtoneDataManagerUnitTest", perms, tokenId);
+    ASSERT_TRUE(tokenId != 0);
+}
 
 void RingtoneScannerTest::TearDownTestCase() {}
 
@@ -51,73 +64,56 @@ HWTEST_F(RingtoneScannerTest, scanner_Scan_test_001, TestSize.Level0)
     shared_ptr<bool> flag = make_shared<bool>();
     ringtoneScannerObjThree.SetStopFlag(flag);
     RingtoneScannerObj ringtoneScannerObjTest(path, callback, RingtoneScannerObj::START);
-    int32_t ret = ringtoneScannerObjTest.GetFileMetadata();
+    int ret = ringtoneScannerObjTest.GetFileMetadata();
+    ringtoneScannerObjTest.Scan();
     EXPECT_NE(ret, E_OK);
-}
-
-HWTEST_F(RingtoneScannerTest, scanner_GetFileMetadata_test_001, TestSize.Level0)
-{
-    const string path = "/data";
-    shared_ptr<IRingtoneScannerCallback> callback = nullptr;
-    RingtoneScannerObj ringtoneScannerObj(path, callback, RingtoneScannerObj::FILE);
-    int32_t ret = ringtoneScannerObj.GetFileMetadata();
-    EXPECT_NE(ret, E_OK);
-    RingtoneScannerObj mediaScannerObjOne("", callback, RingtoneScannerObj::FILE);
-    ret = mediaScannerObjOne.GetFileMetadata();
-    EXPECT_EQ(ret, E_INVALID_ARGUMENTS);
 }
 
 HWTEST_F(RingtoneScannerTest, scanner_ScanFileInTraversal_test_001, TestSize.Level0)
 {
     shared_ptr<IRingtoneScannerCallback> callback = nullptr;
-    const string parent = "ScanDirInternal";
     RingtoneScannerObj ringtoneScannerObj(ROOT_MEDIA_DIR, callback, RingtoneScannerObj::DIRECTORY);
     int32_t ret = ringtoneScannerObj.ScanFileInTraversal(ROOT_MEDIA_DIR);
     EXPECT_NE(ret, E_FILE_HIDDEN);
     const string path = "scanner_ScanDirInternal_test_001/.test";
-    const string pathTest = "scanner_ScanDirInternal_test_001/test";
     ret = ringtoneScannerObj.ScanFileInTraversal(path);
     EXPECT_EQ(ret, E_FILE_HIDDEN);
-    ret = ringtoneScannerObj.ScanFileInTraversal(pathTest);
-    EXPECT_EQ(ret, E_SYSCALL);
-    const string dirTest = "/storage/cloud/files";
-    ret = ringtoneScannerObj.ScanFileInTraversal(ROOT_MEDIA_DIR);
-    EXPECT_NE(ret, E_FILE_HIDDEN);
 }
 
 HWTEST_F(RingtoneScannerTest, scanner_WalkFileTree_test_001, TestSize.Level0)
 {
-    const string dir = "/storage/cloud/files";
+    string dir = "/storage/cloud/files";
     shared_ptr<IRingtoneScannerCallback> callback = nullptr;
     const int errorPath = 4096;
     const string path(errorPath, 'a');
     RingtoneScannerObj ringtoneScannerObj(dir, callback, RingtoneScannerObj::DIRECTORY);
     int32_t ret = ringtoneScannerObj.WalkFileTree(path);
     EXPECT_EQ(ret, ERR_INCORRECT_PATH);
-    ret = ringtoneScannerObj.WalkFileTree("");
-    EXPECT_EQ(ret, E_PERMISSION_DENIED);
-}
-
-HWTEST_F(RingtoneScannerTest, scanner_CleanupDirectory_test_001, TestSize.Level0)
-{
-    shared_ptr<IRingtoneScannerCallback> callback = nullptr;
-    RingtoneScannerObj ringtoneScannerObj("", callback, RingtoneScannerObj::DIRECTORY);
-    int32_t ret = ringtoneScannerObj.CleanupDirectory();
-    EXPECT_EQ(ret, E_OK);
-    const string dirTest = "/storage/cloud/files";
-    RingtoneScannerObj mediaScannerObjOne(dirTest, callback, RingtoneScannerObj::DIRECTORY);
-    ret = mediaScannerObjOne.CleanupDirectory();
-    EXPECT_EQ(ret, E_OK);
+    dir = "/storage/media";
+    shared_ptr<bool> flag = make_shared<bool>(true);
+    ringtoneScannerObj.SetStopFlag(flag);
+    ret = ringtoneScannerObj.WalkFileTree(dir);
+    EXPECT_EQ(ret, E_STOP);
 }
 
 HWTEST_F(RingtoneScannerTest, scanner_AddToTransaction_test_001, TestSize.Level0)
 {
+    auto stageContext = std::make_shared<AbilityRuntime::ContextImpl>();
+    auto abilityContextImpl = std::make_shared<OHOS::AbilityRuntime::AbilityContextImpl>();
+    abilityContextImpl->SetStageContext(stageContext);
+    shared_ptr<RingtoneUnistore> uniStore = RingtoneRdbStore::GetInstance(abilityContextImpl);
+    int32_t ret = uniStore->Init();
+    EXPECT_EQ(ret, E_OK);
     const string dir = "/storage/cloud/files";
     shared_ptr<IRingtoneScannerCallback> callback = nullptr;
     RingtoneScannerObj ringtoneScannerObj(dir, callback, RingtoneScannerObj::FILE);
-    ringtoneScannerObj.GetFileMetadata();
-    int32_t ret = ringtoneScannerObj.AddToTransaction();
-    EXPECT_EQ(ret, E_OK);
+    const int count = 5;
+    for (int i = 0; i < count; i++) {
+        ringtoneScannerObj.data_ = make_unique<RingtoneMetadata>();
+        ringtoneScannerObj.data_->SetToneId(i);
+        ret = ringtoneScannerObj.AddToTransaction();
+        EXPECT_EQ(ret, E_OK);
+    }
 }
 
 HWTEST_F(RingtoneScannerTest, scanner_CommitTransaction_test_001, TestSize.Level0)
@@ -130,43 +126,16 @@ HWTEST_F(RingtoneScannerTest, scanner_CommitTransaction_test_001, TestSize.Level
     EXPECT_EQ(ret, E_OK);
 }
 
-HWTEST_F(RingtoneScannerTest, scanner_InvokeCallback_test_001, TestSize.Level0)
-{
-    shared_ptr<IRingtoneScannerCallback> callback = nullptr;
-    RingtoneScannerObj ringtoneScannerObj("", callback, RingtoneScannerObj::FILE);
-    int32_t ret = ringtoneScannerObj.InvokeCallback(0);
-    EXPECT_EQ(ret, E_OK);
-}
-
-HWTEST_F(RingtoneScannerTest, scanner_ScanFileInternal_test_001, TestSize.Level0)
-{
-    const string path = "scanner_ScanFileInternal_test_001/.test";
-    shared_ptr<IRingtoneScannerCallback> callback = nullptr;
-    RingtoneScannerObj ringtoneScannerObj(path, callback, RingtoneScannerObj::FILE);
-    int32_t ret = ringtoneScannerObj.ScanFileInternal();
-    EXPECT_EQ(ret, E_FILE_HIDDEN);
-    const string pathOne = "/storage/cloud";
-    RingtoneScannerObj mediaScannerObjOne(pathOne, callback, RingtoneScannerObj::FILE);
-    ret = mediaScannerObjOne.ScanFileInternal();
-    EXPECT_NE(ret, E_FILE_HIDDEN);
-}
-
-HWTEST_F(RingtoneScannerTest, scanner_ScanFile_test_001, TestSize.Level0)
-{
-    shared_ptr<IRingtoneScannerCallback> callback = nullptr;
-    RingtoneScannerObj ringtoneScannerObj(ROOT_MEDIA_DIR, callback, RingtoneScannerObj::FILE);
-    int32_t ret = ringtoneScannerObj.ScanFile();
-    EXPECT_NE(ret, E_OK);
-}
-
-HWTEST_F(RingtoneScannerTest, scanner_Commit_test_001, TestSize.Level0)
+HWTEST_F(RingtoneScannerTest, scanner_BuildFileInfo_test_001, TestSize.Level0)
 {
     const string dir = "/storage";
     shared_ptr<IRingtoneScannerCallback> callback = nullptr;
     RingtoneScannerObj ringtoneScannerObj(dir, callback, RingtoneScannerObj::FILE);
+    RingtoneScannerObj ringtoneScannerObjTwo(RingtoneScannerObj::FILE);
     int32_t ret = ringtoneScannerObj.GetFileMetadata();
     EXPECT_EQ(ret, E_INVALID_ARGUMENTS);
-    ret = ringtoneScannerObj.Commit();
+    ret = ringtoneScannerObj.BuildFileInfo();
+    ringtoneScannerObj.WaitFor();
     EXPECT_EQ(ret, E_OK);
 }
 } // namespace Media

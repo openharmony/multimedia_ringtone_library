@@ -53,10 +53,6 @@ void RingtoneDataManagerUnitTest::SetUpTestCase()
     CHECK_AND_RETURN_LOG(ret == E_OK, "InitMediaLibraryMgr failed, ret: %{public}d", ret);
 
     vector<string> perms;
-    perms.push_back("ohos.permission.READ_MEDIA");
-    perms.push_back("ohos.permission.WRITE_MEDIA");
-    perms.push_back("ohos.permission.FILE_ACCESS_MANAGER");
-    perms.push_back("ohos.permission.GET_BUNDLE_INFO_PRIVILEGED");
     perms.push_back("ohos.permission.WRITE_RINGTONE");
 
     uint64_t tokenId = 0;
