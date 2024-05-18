@@ -72,7 +72,7 @@ HWTEST_F(RingtoneDataShareStubImplUnitTest, dataShareStubImpl_GetFileTypes_test_
     const std::unique_ptr<AbilityRuntime::Runtime> runtime;
 
     napi_env env = nullptr;
-    auto dataShareExtension = AbilityRuntime::RingtoneDataShareExtension::Create(runtime)
+    auto dataShareExtension = AbilityRuntime::RingtoneDataShareExtension::Create(runtime);
     shared_ptr<DataShare::RingtoneDataShareExtension> extension(dataShareExtension);
     sptr<DataShare::RingtoneDataShareStubImpl> ringtoneDataShareStubImpl =
         new DataShare::RingtoneDataShareStubImpl(extension, env);
@@ -92,7 +92,7 @@ HWTEST_F(RingtoneDataShareStubImplUnitTest, dataShareStubImpl_OpenFile_test_001,
     const std::unique_ptr<AbilityRuntime::Runtime> runtime;
 
     napi_env env = nullptr;
-    auto dataShareExtension = AbilityRuntime::RingtoneDataShareExtension::Create(runtime)
+    auto dataShareExtension = AbilityRuntime::RingtoneDataShareExtension::Create(runtime);
     shared_ptr<DataShare::RingtoneDataShareExtension> extension(dataShareExtension);
     sptr<DataShare::RingtoneDataShareStubImpl> ringtoneDataShareStubImpl =
         new DataShare::RingtoneDataShareStubImpl(extension, env);
@@ -111,7 +111,7 @@ HWTEST_F(RingtoneDataShareStubImplUnitTest, dataShareStubImpl_OpenRawFile_test_0
     const std::unique_ptr<AbilityRuntime::Runtime> runtime;
 
     napi_env env = nullptr;
-    auto dataShareExtension = AbilityRuntime::RingtoneDataShareExtension::Create(runtime)
+    auto dataShareExtension = AbilityRuntime::RingtoneDataShareExtension::Create(runtime);
     shared_ptr<DataShare::RingtoneDataShareExtension> extension(dataShareExtension);
     sptr<DataShare::RingtoneDataShareStubImpl> ringtoneDataShareStubImpl =
         new DataShare::RingtoneDataShareStubImpl(extension, env);
@@ -130,7 +130,7 @@ HWTEST_F(RingtoneDataShareStubImplUnitTest, dataShareStubImpl_Insert_test_001, T
     const std::unique_ptr<AbilityRuntime::Runtime> runtime;
 
     napi_env env = nullptr;
-    auto dataShareExtension = AbilityRuntime::RingtoneDataShareExtension::Create(runtime)
+    auto dataShareExtension = AbilityRuntime::RingtoneDataShareExtension::Create(runtime);
     shared_ptr<DataShare::RingtoneDataShareExtension> extension(dataShareExtension);
     sptr<DataShare::RingtoneDataShareStubImpl> ringtoneDataShareStubImpl =
         new DataShare::RingtoneDataShareStubImpl(extension, env);
@@ -149,7 +149,7 @@ HWTEST_F(RingtoneDataShareStubImplUnitTest, dataShareStubImpl_InsertExt_test_001
     const std::unique_ptr<AbilityRuntime::Runtime> runtime;
 
     napi_env env = nullptr;
-    auto dataShareExtension = AbilityRuntime::RingtoneDataShareExtension::Create(runtime)
+    auto dataShareExtension = AbilityRuntime::RingtoneDataShareExtension::Create(runtime);
     shared_ptr<DataShare::RingtoneDataShareExtension> extension(dataShareExtension);
     sptr<DataShare::RingtoneDataShareStubImpl> ringtoneDataShareStubImpl =
         new DataShare::RingtoneDataShareStubImpl(extension, env);
@@ -169,7 +169,7 @@ HWTEST_F(RingtoneDataShareStubImplUnitTest, dataShareStubImpl_Update_test_001, T
     const std::unique_ptr<AbilityRuntime::Runtime> runtime;
 
     napi_env env = nullptr;
-    auto dataShareExtension = AbilityRuntime::RingtoneDataShareExtension::Create(runtime)
+    auto dataShareExtension = AbilityRuntime::RingtoneDataShareExtension::Create(runtime);
     shared_ptr<DataShare::RingtoneDataShareExtension> extension(dataShareExtension);
     sptr<DataShare::RingtoneDataShareStubImpl> ringtoneDataShareStubImpl =
         new DataShare::RingtoneDataShareStubImpl(extension, env);
@@ -189,7 +189,7 @@ HWTEST_F(RingtoneDataShareStubImplUnitTest, dataShareStubImpl_Delete_test_001, T
     const std::unique_ptr<AbilityRuntime::Runtime> runtime;
 
     napi_env env = nullptr;
-    auto dataShareExtension = AbilityRuntime::RingtoneDataShareExtension::Create(runtime)
+    auto dataShareExtension = AbilityRuntime::RingtoneDataShareExtension::Create(runtime);
     shared_ptr<DataShare::RingtoneDataShareExtension> extension(dataShareExtension);
     sptr<DataShare::RingtoneDataShareStubImpl> ringtoneDataShareStubImpl =
         new DataShare::RingtoneDataShareStubImpl(extension, env);
@@ -208,7 +208,7 @@ HWTEST_F(RingtoneDataShareStubImplUnitTest, dataShareStubImpl_Query_test_001, Te
     const std::unique_ptr<AbilityRuntime::Runtime> runtime;
 
     napi_env env = nullptr;
-    auto dataShareExtension = AbilityRuntime::RingtoneDataShareExtension::Create(runtime)
+    auto dataShareExtension = AbilityRuntime::RingtoneDataShareExtension::Create(runtime);
     shared_ptr<DataShare::RingtoneDataShareExtension> extension(dataShareExtension);
     sptr<DataShare::RingtoneDataShareStubImpl> ringtoneDataShareStubImpl =
         new DataShare::RingtoneDataShareStubImpl(extension, env);
@@ -229,7 +229,7 @@ HWTEST_F(RingtoneDataShareStubImplUnitTest, dataShareStubImpl_BatchInsert_test_0
     const std::unique_ptr<AbilityRuntime::Runtime> runtime;
 
     napi_env env = nullptr;
-    auto dataShareExtension = AbilityRuntime::RingtoneDataShareExtension::Create(runtime)
+    auto dataShareExtension = AbilityRuntime::RingtoneDataShareExtension::Create(runtime);
     shared_ptr<DataShare::RingtoneDataShareExtension> extension(dataShareExtension);
     sptr<DataShare::RingtoneDataShareStubImpl> ringtoneDataShareStubImpl =
         new DataShare::RingtoneDataShareStubImpl(extension, env);
@@ -248,7 +248,7 @@ HWTEST_F(RingtoneDataShareStubImplUnitTest, dataShareStubImpl_RegisterObserver_t
     const std::unique_ptr<AbilityRuntime::Runtime> runtime;
 
     napi_env env = nullptr;
-    auto dataShareExtension = AbilityRuntime::RingtoneDataShareExtension::Create(runtime)
+    auto dataShareExtension = AbilityRuntime::RingtoneDataShareExtension::Create(runtime);
     shared_ptr<DataShare::RingtoneDataShareExtension> extension(dataShareExtension);
     sptr<DataShare::RingtoneDataShareStubImpl> ringtoneDataShareStubImpl =
         new DataShare::RingtoneDataShareStubImpl(extension, env);
@@ -267,7 +267,7 @@ HWTEST_F(RingtoneDataShareStubImplUnitTest, dataShareStubImpl_UnregisterObserver
     const std::unique_ptr<AbilityRuntime::Runtime> runtime;
 
     napi_env env = nullptr;
-    auto dataShareExtension = AbilityRuntime::RingtoneDataShareExtension::Create(runtime)
+    auto dataShareExtension = AbilityRuntime::RingtoneDataShareExtension::Create(runtime);
     shared_ptr<DataShare::RingtoneDataShareExtension> extension(dataShareExtension);
     sptr<DataShare::RingtoneDataShareStubImpl> ringtoneDataShareStubImpl =
         new DataShare::RingtoneDataShareStubImpl(extension, env);
@@ -286,7 +286,7 @@ HWTEST_F(RingtoneDataShareStubImplUnitTest, dataShareStubImpl_NotifyChange_test_
     const std::unique_ptr<AbilityRuntime::Runtime> runtime;
 
     napi_env env = nullptr;
-    auto dataShareExtension = AbilityRuntime::RingtoneDataShareExtension::Create(runtime)
+    auto dataShareExtension = AbilityRuntime::RingtoneDataShareExtension::Create(runtime);
     shared_ptr<DataShare::RingtoneDataShareExtension> extension(dataShareExtension);
     sptr<DataShare::RingtoneDataShareStubImpl> ringtoneDataShareStubImpl =
         new DataShare::RingtoneDataShareStubImpl(extension, env);
@@ -304,7 +304,7 @@ HWTEST_F(RingtoneDataShareStubImplUnitTest, dataShareStubImpl_NormalizeUri_test_
     const std::unique_ptr<AbilityRuntime::Runtime> runtime;
 
     napi_env env = nullptr;
-    auto dataShareExtension = AbilityRuntime::RingtoneDataShareExtension::Create(runtime)
+    auto dataShareExtension = AbilityRuntime::RingtoneDataShareExtension::Create(runtime);
     shared_ptr<DataShare::RingtoneDataShareExtension> extension(dataShareExtension);
     sptr<DataShare::RingtoneDataShareStubImpl> ringtoneDataShareStubImpl =
         new DataShare::RingtoneDataShareStubImpl(extension, env);
@@ -323,7 +323,7 @@ HWTEST_F(RingtoneDataShareStubImplUnitTest, dataShareStubImpl_DenormalizeUri_tes
     const std::unique_ptr<AbilityRuntime::Runtime> runtime;
 
     napi_env env = nullptr;
-    auto dataShareExtension = AbilityRuntime::RingtoneDataShareExtension::Create(runtime)
+    auto dataShareExtension = AbilityRuntime::RingtoneDataShareExtension::Create(runtime);
     shared_ptr<DataShare::RingtoneDataShareExtension> extension(dataShareExtension);
     sptr<DataShare::RingtoneDataShareStubImpl> ringtoneDataShareStubImpl =
         new DataShare::RingtoneDataShareStubImpl(extension, env);
@@ -342,7 +342,7 @@ HWTEST_F(RingtoneDataShareStubImplUnitTest, dataShareStubImpl_GetType_test_001, 
     const std::unique_ptr<AbilityRuntime::Runtime> runtime;
 
     napi_env env = nullptr;
-    auto dataShareExtension = AbilityRuntime::RingtoneDataShareExtension::Create(runtime)
+    auto dataShareExtension = AbilityRuntime::RingtoneDataShareExtension::Create(runtime);
     shared_ptr<DataShare::RingtoneDataShareExtension> extension(dataShareExtension);
     sptr<DataShare::RingtoneDataShareStubImpl> ringtoneDataShareStubImpl =
         new DataShare::RingtoneDataShareStubImpl(extension, env);
