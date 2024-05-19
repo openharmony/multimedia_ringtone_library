@@ -26,14 +26,14 @@ const std::string RINGTONE_BUNDLE_NAME = "com.ohos.ringtonelibrary.ringtonelibra
 const std::string RINGTONE_URI_SCHEME       = "datashare";
 const std::string RINGTONE_URI_AUTHORITY    = "ringtone";
 const std::string RINGTONE_URI_PATH         = "ringtone";
-const std::string RINGTONE_URI = RINGTONE_URI_SCHEME + ":///" + RINGTONE_URI_AUTHORITY;
-const std::string RINGTONE_PATH_URI = RINGTONE_URI_SCHEME + ":///" + RINGTONE_URI_AUTHORITY + "/" + RINGTONE_URI_PATH;
+const std::string RINGTONE_URI              = RINGTONE_URI_SCHEME + ":///" + RINGTONE_URI_AUTHORITY;
+const std::string RINGTONE_PATH_URI         = RINGTONE_URI + "/" + RINGTONE_URI_PATH;
 
 // ringtone user customized tones file location
-const std::string RINGTONE_CUSTOMIZED_ALARM_PATH = "/storage/media/local/files/Ringtone/alarms";
-const std::string RINGTONE_CUSTOMIZED_RINGTONE_PATH = "/storage/media/local/files/Ringtone/ringtones";
-const std::string RINGTONE_CUSTOMIZED_NOTIFICATIONS_PATH = "/storage/media/local/files/Ringtone/notifications";
-const std::string RINGTONE_CUSTOMIZED_BASE_PATH = "/storage/media/local/files";
+const std::string RINGTONE_CUSTOMIZED_BASE_PATH          = "/data/storage/el2/base";
+const std::string RINGTONE_CUSTOMIZED_ALARM_PATH         = RINGTONE_CUSTOMIZED_BASE_PATH + "/Ringtone/alarms";
+const std::string RINGTONE_CUSTOMIZED_RINGTONE_PATH      = RINGTONE_CUSTOMIZED_BASE_PATH + "/Ringtone/ringtones";
+const std::string RINGTONE_CUSTOMIZED_NOTIFICATIONS_PATH = RINGTONE_CUSTOMIZED_BASE_PATH + "/Ringtone/notifications";
 
 // ringtone preload pathes
 const std::string ROOT_TONE_PRELOAD_PATH_NOAH_PATH = "/sys_prod/resource/media/audio";
@@ -50,7 +50,7 @@ const std::string RINGTONE_LIBRARY_DB_NAME = "ringtone_library.db";
 const int32_t RINGTONE_RDB_VERSION = 1;
 
 // RingtoneProps table name
-const std::string PROPERTIES_TABLE                                   = "RingtoneProps";
+const std::string PROPERTIES_TABLE                              = "RingtoneProps";
 // RingtoneProps table column name
 const std::string RINGTONEPROPS_COLUMN_ID                       = "id";
 const std::string RINGTONEPROPS_COLUMN_NAME                     = "name";

@@ -50,7 +50,10 @@
           "service_group": [
             "//foundation/multimedia/ringtone_library/services:ringtone_data_extension",
             "//foundation/multimedia/ringtone_library/services:ringtonerestore",
-            "//foundation/multimedia/ringtone_library/services/ringtone_helper:ringtone_data_helper"
+            "//foundation/multimedia/ringtone_library/services/ringtone_helper:ringtone_data_helper",
+            "//foundation/multimedia/ringtone_library/test/unittest/ringtone_scanner:ringtone_test",
+            "//foundation/multimedia/ringtone_library/test/unittest/ringtone_scanner:ringtone_scanner_test",
+            "//foundation/multimedia/ringtone_library/test/unittest/ringtone_scanner:ringtone_read_test"
           ]
         },
         "inner_kits": [

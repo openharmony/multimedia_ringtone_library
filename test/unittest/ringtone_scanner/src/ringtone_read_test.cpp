@@ -37,7 +37,7 @@ namespace OHOS {
 namespace Media {
 namespace {
 constexpr int STORAGE_MANAGER_MANAGER_ID = 5003;
-static const string RINGTONE_LIBRARY_PATH = "/storage/media/local/data/com.ohos.ringtonelibrary.ringtonelibrarydata";
+static const string RINGTONE_LIBRARY_PATH = "/data/storage/el2/base/files";
 std::shared_ptr<DataShare::DataShareHelper> g_dataShareHelper = nullptr;
 } // namespace
 } // namespace Media
@@ -177,6 +177,6 @@ int32_t main()
         return E_ERR;
     }
 
-    system("rm -rf /storage/media/100/local/data/com.ohos.ringtonelibrary.ringtonelibrarydata/*");
+    system("rm -rf /data/storage/el2/base/files/*");
     return 0;
 }
