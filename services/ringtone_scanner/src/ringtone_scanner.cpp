@@ -31,17 +31,7 @@ using namespace std;
 using namespace OHOS::AppExecFwk;
 using namespace OHOS::DataShare;
 static const int32_t SCANNER_WAIT_FOR_TIMEOUT = 10000; // ms
-#ifndef OHOS_LOCAL_DEBUG_DISABLE
-// liuxk just for debug
-static const std::string LOCAL_DIR = "/data/storage/el2/base/preload_data";
-#endif
 static std::unordered_map<std::string, std::pair<int32_t, int32_t>> g_typeMap = {
-#ifndef OHOS_LOCAL_DEBUG_DISABLE
-    // liuxk just for debug
-    {LOCAL_DIR + "/alarms", {SOURCE_TYPE_CUSTOMISED, TONE_TYPE_ALARM}},
-    {LOCAL_DIR + "/ringtones", {SOURCE_TYPE_PRESET, TONE_TYPE_RINGTONE}},
-    {LOCAL_DIR + "/notifications", {SOURCE_TYPE_CUSTOMISED, TONE_TYPE_NOTIFICATION}},
-#endif
     // customized tones map
     {RINGTONE_CUSTOMIZED_ALARM_PATH, {SOURCE_TYPE_CUSTOMISED, TONE_TYPE_ALARM}},
     {RINGTONE_CUSTOMIZED_RINGTONE_PATH, {SOURCE_TYPE_CUSTOMISED, TONE_TYPE_RINGTONE}},
