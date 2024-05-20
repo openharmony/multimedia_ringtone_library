@@ -43,23 +43,27 @@ private:
         int32_t toneType = TONE_TYPE_DEFAULT;
         int32_t sourceType = SOURCE_TYPE_DEFAULT;
     };
-    int32_t CommitSettingCompare(int32_t settingType, int32_t toneType, int32_t sourceType);
-    void TravelSettings(std::function<int32_t (std::string &, SettingItem &)> func);
-    int32_t PopulateMetadata(const std::shared_ptr<NativeRdb::ResultSet> &resultSet,
+    EXPORT int32_t CommitSettingCompare(int32_t settingType, int32_t toneType, int32_t sourceType);
+    EXPORT void TravelSettings(std::function<int32_t (std::string &, SettingItem &)> func);
+    EXPORT int32_t PopulateMetadata(const std::shared_ptr<NativeRdb::ResultSet> &resultSet,
         std::unique_ptr<RingtoneMetadata> &metaData);
-    int32_t GetMetaDataFromResultSet(std::shared_ptr<NativeRdb::ResultSet> resultSet,
+    EXPORT int32_t GetMetaDataFromResultSet(std::shared_ptr<NativeRdb::ResultSet> resultSet,
         std::vector<std::shared_ptr<RingtoneMetadata>> &metaDatas);
-    int32_t CleanupSettingFromRdb(int32_t settingType, int32_t toneType, int32_t sourceType);
-    int32_t UpdateSettingsWithTonePath(std::string &tonePath, int32_t settingType, int32_t toneType);
-    int32_t UpdateSettingsWithToneId(int32_t settingType, int32_t toneId, int32_t toneType);
-    int32_t CleanupSetting(int32_t settingType, int32_t toneType, int32_t sourceType);
-    void ExtractMetaFromColumn(const std::shared_ptr<NativeRdb::ResultSet> &resultSet,
+    EXPORT int32_t CleanupSettingFromRdb(int32_t settingType, int32_t toneType, int32_t sourceType);
+    EXPORT int32_t UpdateSettingsWithTonePath(std::string &tonePath, int32_t settingType, int32_t toneType);
+    EXPORT int32_t UpdateSettingsWithToneId(int32_t settingType, int32_t toneId, int32_t toneType);
+    EXPORT int32_t CleanupSetting(int32_t settingType, int32_t toneType, int32_t sourceType);
+    EXPORT void ExtractMetaFromColumn(const std::shared_ptr<NativeRdb::ResultSet> &resultSet,
         std::unique_ptr<RingtoneMetadata> &metadata, const std::string &col);
-    int32_t UpdateSettingsByPath(std::string &tonePath, int32_t settingType, int32_t toneType, int32_t sourceType);
-    int32_t UpdateShotSetting(std::shared_ptr<RingtoneMetadata> &meta, int32_t toneType, int32_t sourceType);
-    int32_t UpdateRingtoneSetting(std::shared_ptr<RingtoneMetadata> &meta, int32_t toneType, int32_t sourceType);
-    int32_t UpdateNotificationSetting(std::shared_ptr<RingtoneMetadata> &meta, int32_t toneType, int32_t sourceType);
-    int32_t UpdateAlarmSetting(std::shared_ptr<RingtoneMetadata> &meta, int32_t toneType, int32_t sourceType);
+    EXPORT int32_t UpdateSettingsByPath(std::string &tonePath, int32_t settingType, int32_t toneType,
+        int32_t sourceType);
+    EXPORT int32_t UpdateShotSetting(std::shared_ptr<RingtoneMetadata> &meta, int32_t toneType,
+        int32_t sourceType);
+    EXPORT int32_t UpdateRingtoneSetting(std::shared_ptr<RingtoneMetadata> &meta, int32_t toneType,
+        int32_t sourceType);
+    EXPORT int32_t UpdateNotificationSetting(std::shared_ptr<RingtoneMetadata> &meta, int32_t toneType,
+        int32_t sourceType);
+    EXPORT int32_t UpdateAlarmSetting(std::shared_ptr<RingtoneMetadata> &meta, int32_t toneType, int32_t sourceType);
 private:
     std::shared_ptr<NativeRdb::RdbStore> ringtoneRdb_ = nullptr;
     std::unordered_multimap<std::string, SettingItem> settings_ = {};
