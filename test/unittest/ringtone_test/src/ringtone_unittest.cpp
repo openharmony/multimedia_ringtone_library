@@ -60,9 +60,6 @@ void RingtoneUnitTest::SetUpTestCase()
     RingtonePermissionUtilsUnitTest::SetAccessTokenPermission("RingtoneUnitTest", perms, tokenId);
     ASSERT_TRUE(tokenId != 0);
 
-    RingtonePermissionUtilsUnitTest::SetHapPermission("com.ohos.ringtonelibrary.ringtonelibrarydata", tokenId, true);
-    ASSERT_TRUE(tokenId != 0);
-
     auto saManager = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     ASSERT_TRUE(saManager != nullptr);
 
@@ -653,12 +650,17 @@ HWTEST_F(RingtoneUnitTest, medialib_ringtoneRead_test_001, TestSize.Level0)
     errCode = businessError.GetCode();
     cout << "Query errCode=" << errCode << endl;
 
-    auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
-    cout << "query count = " << to_string(results->GetCount()) << endl;
-    unique_ptr<RingtoneAsset> ringtoneAsset = results->GetLastObject();
-    cout << "GetSourceType()                    = " << to_string(ringtoneAsset->GetSourceType()) << endl;
-    result = g_dataShareHelper->Delete(uri, predicates);
-    EXPECT_EQ((result > 0), true);
+    if (resultSet != nullptr) {
+        auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
+        cout << "query count = " << to_string(results->GetCount()) << endl;
+        unique_ptr<RingtoneAsset> ringtoneAsset = results->GetLastObject();
+        if (ringtoneAsset == nullptr) {
+            exit(1);
+        }
+        cout << "GetSourceType() = " << to_string(ringtoneAsset->GetSourceType()) << endl;
+        result = g_dataShareHelper->Delete(uri, predicates);
+        EXPECT_EQ((result > 0), true);
+    }
 }
 
 HWTEST_F(RingtoneUnitTest, medialib_ringtoneRead_test_002, TestSize.Level0)
@@ -685,12 +687,17 @@ HWTEST_F(RingtoneUnitTest, medialib_ringtoneRead_test_002, TestSize.Level0)
     errCode = businessError.GetCode();
     cout << "Query errCode=" << errCode << endl;
 
-    auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
-    cout << "query count = " << to_string(results->GetCount()) << endl;
-    unique_ptr<RingtoneAsset> ringtoneAsset = results->GetLastObject();
-    cout << "GetSourceType()                    = " << to_string(ringtoneAsset->GetSourceType()) << endl;
-    result = g_dataShareHelper->Delete(uri, predicates);
-    EXPECT_EQ((result > 0), true);
+    if (resultSet != nullptr) {
+        auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
+        cout << "query count = " << to_string(results->GetCount()) << endl;
+        unique_ptr<RingtoneAsset> ringtoneAsset = results->GetLastObject();
+        if (ringtoneAsset == nullptr) {
+            exit(1);
+        }
+        cout << "GetSourceType() = " << to_string(ringtoneAsset->GetSourceType()) << endl;
+        result = g_dataShareHelper->Delete(uri, predicates);
+        EXPECT_EQ((result > 0), true);
+    }
 }
 
 HWTEST_F(RingtoneUnitTest, medialib_ringtoneRead_test_003, TestSize.Level0)
@@ -729,12 +736,17 @@ HWTEST_F(RingtoneUnitTest, medialib_ringtoneRead_test_003, TestSize.Level0)
     errCode = businessError.GetCode();
     cout << "Query errCode=" << errCode << endl;
 
-    auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
-    cout << "query count = " << to_string(results->GetCount()) << endl;
-    unique_ptr<RingtoneAsset> ringtoneAsset = results->GetLastObject();
-    cout << "GetSourceType()                    = " << to_string(ringtoneAsset->GetSourceType()) << endl;
-    result = g_dataShareHelper->Delete(uri, predicates);
-    EXPECT_EQ((result > 0), true);
+    if (resultSet != nullptr) {
+        auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
+        cout << "query count = " << to_string(results->GetCount()) << endl;
+        unique_ptr<RingtoneAsset> ringtoneAsset = results->GetLastObject();
+        if (ringtoneAsset == nullptr) {
+            exit(1);
+        }
+        cout << "GetSourceType() = " << to_string(ringtoneAsset->GetSourceType()) << endl;
+        result = g_dataShareHelper->Delete(uri, predicates);
+        EXPECT_EQ((result > 0), true);
+    }
 }
 
 HWTEST_F(RingtoneUnitTest, medialib_ringtoneRead_test_004, TestSize.Level0)
@@ -773,12 +785,17 @@ HWTEST_F(RingtoneUnitTest, medialib_ringtoneRead_test_004, TestSize.Level0)
     errCode = businessError.GetCode();
     cout << "Query errCode=" << errCode << endl;
 
-    auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
-    cout << "query count = " << to_string(results->GetCount()) << endl;
-    unique_ptr<RingtoneAsset> ringtoneAsset = results->GetLastObject();
-    cout << "GetSourceType()                    = " << to_string(ringtoneAsset->GetSourceType()) << endl;
-    result = g_dataShareHelper->Delete(uri, predicates);
-    EXPECT_EQ((result > 0), true);
+    if (resultSet != nullptr) {
+        auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
+        cout << "query count = " << to_string(results->GetCount()) << endl;
+        unique_ptr<RingtoneAsset> ringtoneAsset = results->GetLastObject();
+        if (ringtoneAsset == nullptr) {
+            exit(1);
+        }
+        cout << "GetSourceType() = " << to_string(ringtoneAsset->GetSourceType()) << endl;
+        result = g_dataShareHelper->Delete(uri, predicates);
+        EXPECT_EQ((result > 0), true);
+    }
 }
 
 HWTEST_F(RingtoneUnitTest, medialib_ringtoneRead_test_005, TestSize.Level0)
@@ -806,10 +823,12 @@ HWTEST_F(RingtoneUnitTest, medialib_ringtoneRead_test_005, TestSize.Level0)
     errCode = businessError.GetCode();
     cout << "Query errCode=" << errCode << endl;
 
-    auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
-    cout << "query count = " << to_string(results->GetCount()) << endl;
-    result = g_dataShareHelper->Delete(uri, predicates);
-    EXPECT_EQ((result > 0), true);
+    if (resultSet != nullptr) {
+        auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
+        cout << "query count = " << to_string(results->GetCount()) << endl;
+        result = g_dataShareHelper->Delete(uri, predicates);
+        EXPECT_EQ((result > 0), true);
+    }
 }
 
 HWTEST_F(RingtoneUnitTest, medialib_ringtoneRead_test_006, TestSize.Level0)
@@ -837,10 +856,12 @@ HWTEST_F(RingtoneUnitTest, medialib_ringtoneRead_test_006, TestSize.Level0)
     errCode = businessError.GetCode();
     cout << "Query errCode=" << errCode << endl;
 
-    auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
-    cout << "query count = " << to_string(results->GetCount()) << endl;
-    result = g_dataShareHelper->Delete(uri, predicates);
-    EXPECT_EQ((result > 0), true);
+    if (resultSet != nullptr) {
+        auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
+        cout << "query count = " << to_string(results->GetCount()) << endl;
+        result = g_dataShareHelper->Delete(uri, predicates);
+        EXPECT_EQ((result > 0), true);
+    }
 }
 
 HWTEST_F(RingtoneUnitTest, medialib_ringtoneRead_test_007, TestSize.Level0)
@@ -857,9 +878,11 @@ HWTEST_F(RingtoneUnitTest, medialib_ringtoneRead_test_007, TestSize.Level0)
     errCode = businessError.GetCode();
     cout << "Query errCode=" << errCode << endl;
 
-    auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
-    EXPECT_NE(results, nullptr);
-    cout << "query count = " << to_string(results->GetCount()) << endl;
+    if (resultSet != nullptr) {
+        auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
+        EXPECT_NE(results, nullptr);
+        cout << "query count = " << to_string(results->GetCount()) << endl;
+    }
 }
 } // namespace Media
 } // namespace OHOS

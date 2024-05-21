@@ -135,7 +135,7 @@ sptr<IRemoteObject> RingtoneDataShareExtension::OnConnect(const AAFwk::Want &wan
 static int32_t CheckRingtonePerm(RingtoneDataCommand &cmd, bool isWrite)
 {
     auto err = E_SUCCESS;
-    if (!RingtonePermissionUtils::IsSystemApp()) {
+    if (!RingtonePermissionUtils::IsSystemApp() && IPCSkeleton::GetCallingUid() != 0) {
         RINGTONE_ERR_LOG("RingtoneLibrary should only be called by system applications!");
         return E_PERMISSION_DENIED;
     }

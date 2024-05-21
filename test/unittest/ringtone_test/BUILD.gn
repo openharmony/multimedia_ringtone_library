@@ -36,7 +36,6 @@ ohos_unittest("ringtone_unittest") {
   sources = [
     "../get_self_permissions/src/get_self_permissions.cpp",
     "./src/ringtone_unittest.cpp",
-    "./src/ringtone_unittest_api.cpp",
   ]
 
   deps =

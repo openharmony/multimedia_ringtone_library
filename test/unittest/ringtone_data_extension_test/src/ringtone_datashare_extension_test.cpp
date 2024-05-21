@@ -45,8 +45,6 @@ void RingtoneDataShareExtensionTest::SetUpTestCase()
     uint64_t tokenId = 0;
     RingtonePermissionUtilsUnitTest::SetAccessTokenPermission("RingtoneDataManagerUnitTest", perms, tokenId);
     ASSERT_TRUE(tokenId != 0);
-    RingtonePermissionUtilsUnitTest::SetHapPermission("com.ohos.ringtonelibrary.ringtonelibrarydata", tokenId, true);
-    ASSERT_TRUE(tokenId != 0);
 }
 void RingtoneDataShareExtensionTest::TearDownTestCase() {}
 
@@ -61,7 +59,7 @@ HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_OnConnect_test_001, 
     AbilityRuntime::RingtoneDataShareExtension *mediaDataShare;
     AbilityRuntime::DataShareExtAbility::Create(runtime);
     mediaDataShare = AbilityRuntime::RingtoneDataShareExtension::Create(runtime);
-    EXPECT_EQ(mediaDataShare != nullptr, true);
+    ASSERT_TRUE(mediaDataShare != nullptr);
 
     std::shared_ptr<AppExecFwk::AbilityLocalRecord> record = nullptr;
     const std::shared_ptr<AppExecFwk::OHOSApplication> application = nullptr;
