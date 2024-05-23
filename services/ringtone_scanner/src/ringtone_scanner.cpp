@@ -125,9 +125,15 @@ void RingtoneScannerObj::Scan()
 int32_t RingtoneScannerObj::BootScan()
 {
     static const std::vector<std::string> preloadDirs = {
-        ROOT_TONE_PRELOAD_PATH_NOAH_PATH,
-        ROOT_TONE_PRELOAD_PATH_CHINA_PATH,
-        ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH,
+        {ROOT_TONE_PRELOAD_PATH_NOAH_PATH + "/alarms"},
+        {ROOT_TONE_PRELOAD_PATH_NOAH_PATH + "/ringtones"},
+        {ROOT_TONE_PRELOAD_PATH_NOAH_PATH + "/notifications"},
+        {ROOT_TONE_PRELOAD_PATH_CHINA_PATH + "/alarms"},
+        {ROOT_TONE_PRELOAD_PATH_CHINA_PATH + "/ringtones"},
+        {ROOT_TONE_PRELOAD_PATH_CHINA_PATH + "/notifications"},
+        {ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH + "/alarms"},
+        {ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH + "/ringtones"},
+        {ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH + "/notifications"}
     };
 
     int64_t scanStart = RingtoneFileUtils::UTCTimeMilliSeconds();

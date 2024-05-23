@@ -66,10 +66,6 @@ static shared_ptr<DataShare::DataShareHelper> CreateDataShareHelper(int32_t syst
 int32_t main()
 {
     vector<string> perms;
-    perms.push_back("ohos.permission.READ_MEDIA");
-    perms.push_back("ohos.permission.WRITE_MEDIA");
-    perms.push_back("ohos.permission.FILE_ACCESS_MANAGER");
-    perms.push_back("ohos.permission.GET_BUNDLE_INFO_PRIVILEGED");
     perms.push_back("ohos.permission.WRITE_RINGTONE");
 
     uint64_t tokenId = 0;
