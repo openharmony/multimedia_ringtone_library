@@ -36,7 +36,7 @@ protected:
     virtual bool OnPrepare(FileInfo &info, const std::string &destPath) override;
     virtual void OnFinished(std::vector<FileInfo> &infos) override;
 private:
-    int32_t ParseDualfwConf(std::string &xml);
+    int32_t ParseDualfwConf(const std::string &xml);
     int32_t DupToneFile(FileInfo &info);
     void UpdateRestoreFileInfo(FileInfo &info);
 private:

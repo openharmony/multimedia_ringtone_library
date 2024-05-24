@@ -24,7 +24,6 @@ const ringtonePath = '/storage/media/local/files/Ringtone/';
 
 const backupBasePath = '/data/storage/el2/backup/restore';
 const backupFilePath = backupBasePath + '/storage/media/local/files/Ringtone/';
-// const backupRingFileRootPath = backupBasePath + '/storage/';
 
 const UPGRADE_RESTORE : number = 0;
 const DUAL_FRAME_CLONE_RESTORE : number = 1;
@@ -87,11 +86,11 @@ export default class RingtoneBackupExtAbility extends BackupExtensionAbility {
       }
     }
     for (let i = 0; i < conflictList.length; i++) {
-      console.log(TAG, `move conflect file from [${conflictList[i].srcFile}] to [${conflictList[i].destFile}]`)
+      console.log(TAG, `move conflect file from [${conflictList[i].srcFile}] to [${conflictList[i].destFile}]`);
       try {
         await this.moveConflictFile(conflictList[i].srcFile, conflictList[i].destFile);
       } catch (err) {
-        console.error(TAG, `MoveConflictFile failed, message = ${err.message}, code = ${err.code}`)
+        console.error(TAG, `MoveConflictFile failed, message = ${err.message}, code = ${err.code}`);
       }
     }
   }
