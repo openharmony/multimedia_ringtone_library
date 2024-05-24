@@ -52,7 +52,7 @@ int32_t RingtoneScannerDb::GetFileBasicInfo(const string &path, unique_ptr<Ringt
     return FillMetadata(resultSet, ptr);
 }
 
-int32_t RingtoneScannerDb::QueryRingtoneRdb(string &whereClause, vector<string> &whereArgs,
+int32_t RingtoneScannerDb::QueryRingtoneRdb(const string &whereClause, vector<string> &whereArgs,
     const vector<string> &columns, shared_ptr<NativeRdb::ResultSet> &resultSet)
 {
     string tableName = RINGTONE_TABLE;
@@ -74,7 +74,7 @@ int32_t RingtoneScannerDb::QueryRingtoneRdb(string &whereClause, vector<string> 
     return E_OK;
 }
 
-int32_t RingtoneScannerDb::UpdateRingtoneRdb(ValuesBucket &values, string &whereClause, vector<string> &whereArgs)
+int32_t RingtoneScannerDb::UpdateRingtoneRdb(ValuesBucket &values, const string &whereClause, vector<string> &whereArgs)
 {
     string tableName = RINGTONE_TABLE;
     auto rawRdb = RingtoneRdbStore::GetInstance()->GetRaw();
