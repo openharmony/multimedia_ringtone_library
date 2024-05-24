@@ -47,7 +47,10 @@ ohos_shared_library("ringtone_data_helper") {
     "-Os",
   ]
 
-  cflags_cc = [ "-Os" ]
+  cflags_cc = [
+    "-fvisibility-inlines-hidden",
+    "-Os",
+  ]
 
   external_deps = [
     "ability_base:zuri",

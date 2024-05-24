@@ -20,7 +20,6 @@
 #include "ringtone_errno.h"
 #include "ringtone_log.h"
 #include "ringtone_mimetype_utils.h"
-#include "ringtone_type.h"
 
 using std::string;
 using namespace testing::ext;

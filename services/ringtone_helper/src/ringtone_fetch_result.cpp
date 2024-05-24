@@ -175,7 +175,7 @@ variant<int32_t, int64_t, string, double> ReturnDefaultOnError(string errMsg, Ri
 }
 
 template <class T>
-variant<int32_t, int64_t, string, double> RingtoneFetchResult<T>::GetRowValFromColumn(string columnName,
+variant<int32_t, int64_t, string, double> RingtoneFetchResult<T>::GetRowValFromColumn(const string &columnName,
     RingtoneResultSetDataType dataType, shared_ptr<NativeRdb::ResultSet> &resultSet)
 {
     if ((resultset_ == nullptr) && (resultSet == nullptr)) {

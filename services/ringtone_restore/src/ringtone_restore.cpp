@@ -212,11 +212,11 @@ bool RingtoneRestore::OnPrepare(FileInfo &info, const std::string &destPath)
     }
 
     string fileName = RingtoneFileUtils::GetFileNameFromPath(info.data);
-    if (fileName.empty() || fileName == "") {
+    if (fileName.empty()) {
         return false;
     }
     string baseName = RingtoneFileUtils::GetBaseNameFromPath(info.data);
-    if (baseName.empty() || baseName == "") {
+    if (baseName.empty()) {
         return false;
     }
     string extensionName = RingtoneFileUtils::GetExtensionFromPath(info.data);

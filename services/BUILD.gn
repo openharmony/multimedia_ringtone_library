@@ -160,6 +160,11 @@ ohos_shared_library("ringtonerestore") {
 
   ldflags = [ "-Wl" ]
 
+  cflags_cc = [
+    "-fvisibility-inlines-hidden",
+    "-Os",
+  ]
+
   deps = [
     ":ringtone_data_extension",
     ":ringtone_setting",
@@ -234,7 +239,10 @@ ohos_shared_library("ringtone_utils") {
     "-Os",
   ]
 
-  cflags_cc = [ "-Os" ]
+  cflags_cc = [
+    "-fvisibility-inlines-hidden",
+    "-Os",
+  ]
 
   external_deps = [
     "ability_base:want",

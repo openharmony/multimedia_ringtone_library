@@ -61,7 +61,7 @@ static std::shared_ptr<DataShare::DataShareHelper> CreateMediaDataShare(int32_t 
     return DataShare::DataShareHelper::Creator(remoteObj, MEDIALIBRARY_DATA_URI);
 }
 
-int32_t RingtoneDualfwRestore::ParseDualfwConf(string &xml)
+int32_t RingtoneDualfwRestore::ParseDualfwConf(const string &xml)
 {
     auto parser = std::make_unique<DualfwConfParser>(xml);
     if (parser == nullptr) {
