@@ -84,6 +84,19 @@ int32_t RingtoneDataManager::Init(const shared_ptr<OHOS::AbilityRuntime::Context
     return E_OK;
 }
 
+int32_t RingtoneDataManager::DeleteRingtoneRowById(int32_t toneId)
+{
+    const string DELETE_SELECTION = RINGTONE_COLUMN_TONE_ID + " = ? ";
+    Uri uri(RINGTONE_PATH_URI);
+    RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::DELETE);
+    DataSharePredicates predicates;
+    vector<string> selectionArgs = { to_string(toneId) };
+    predicates.SetWhereClause(DELETE_SELECTION);
+    predicates.SetWhereArgs(selectionArgs);
+
+    return this->Delete(cmd, predicates, true);
+}
+
 int32_t RingtoneDataManager::Insert(RingtoneDataCommand &cmd, const DataShareValuesBucket &dataShareValue)
 {
     RINGTONE_DEBUG_LOG("start");
@@ -113,12 +126,17 @@ int32_t RingtoneDataManager::Insert(RingtoneDataCommand &cmd, const DataShareVal
 
     auto asset = GetRingtoneAssetFromId(to_string(outRowId));
     if (asset == nullptr) {
-        RINGTONE_ERR_LOG("Failed to get RingtoneAsset");
+        int32_t deleteRet = DeleteRingtoneRowById(outRowId);
+        RINGTONE_ERR_LOG("Failed to get RingtoneAsset, delete row %{public}d from db, return %{public}d",
+            static_cast<int32_t>(outRowId), deleteRet);
         return E_INVALID_VALUES;
     }
 
     auto ret = RingtoneFileUtils::CreateFile(asset->GetPath());
     if (ret != E_SUCCESS) {
+        int32_t deleteRet = DeleteRingtoneRowById(outRowId);
+        RINGTONE_ERR_LOG("Failed to create file, delete row %{public}d from db, return %{public}d",
+            static_cast<int32_t>(outRowId), deleteRet);
         return ret;
     }
 
@@ -153,7 +171,7 @@ int32_t RingtoneDataManager::DeleteFileFromResultSet(std::shared_ptr<NativeRdb::
     return E_SUCCESS;
 }
 
-int32_t RingtoneDataManager::Delete(RingtoneDataCommand &cmd, const DataSharePredicates &predicates)
+int32_t RingtoneDataManager::Delete(RingtoneDataCommand &cmd, const DataSharePredicates &predicates, bool onlyDb)
 {
     RINGTONE_DEBUG_LOG("start");
     shared_lock<shared_mutex> sharedLock(mgrSharedMutex_);
@@ -178,8 +196,9 @@ int32_t RingtoneDataManager::Delete(RingtoneDataCommand &cmd, const DataSharePre
 
     vector<string> columns = {RINGTONE_COLUMN_TONE_ID, RINGTONE_COLUMN_DATA};
     auto absResultSet = g_uniStore->Query(cmd, columns);
-
-    DeleteFileFromResultSet(absResultSet);
+    if (!onlyDb) {
+        DeleteFileFromResultSet(absResultSet);
+    }
 
     int32_t deletedRows = E_HAS_DB_ERROR;
     int32_t ret = g_uniStore->Delete(cmd, deletedRows);
