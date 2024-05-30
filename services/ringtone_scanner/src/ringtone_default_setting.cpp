@@ -144,11 +144,28 @@ void RingtoneDefaultSetting::RingToneDefaultSettings()
     }
 }
 
+void RingtoneDefaultSetting::AlarmToneDefaultSettings()
+{
+    char paramValue[SYSPARA_SIZE] = {0};
+    GetParameter(PARAM_RINGTONE_SETTING_ALARM, "", paramValue, SYSPARA_SIZE);
+
+    if (strcmp(paramValue, "")) {
+        string tonePath = {};
+        string strVal = {paramValue};
+        tonePath = GetTonePathByDisplayName(strVal);
+        if (!tonePath.empty()) {
+            settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_ALARM, ALARM_TONE_TYPE,
+                SOURCE_TYPE_PRESET);
+        }
+    }
+}
+
 void RingtoneDefaultSetting::Update()
 {
     ShotToneDefaultSettings();
     NotificationToneDefaultSettings();
     RingToneDefaultSettings();
+    AlarmToneDefaultSettings();
 
     if (settingMgr_ != nullptr) {
         settingMgr_->FlushSettings();
