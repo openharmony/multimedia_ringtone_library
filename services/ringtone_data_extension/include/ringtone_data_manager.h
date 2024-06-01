@@ -36,7 +36,8 @@ public:
     EXPORT static std::shared_ptr<RingtoneDataManager> GetInstance();
 
     EXPORT int32_t Insert(RingtoneDataCommand &cmd, const DataShare::DataShareValuesBucket &value);
-    EXPORT int32_t Delete(RingtoneDataCommand &cmd, const DataShare::DataSharePredicates &predicates);
+    EXPORT int32_t Delete(RingtoneDataCommand &cmd, const DataShare::DataSharePredicates &predicates,
+        bool onlyDb = false);
     EXPORT int32_t Update(RingtoneDataCommand &cmd, const DataShare::DataShareValuesBucket &value,
         const DataShare::DataSharePredicates &predicates);
     EXPORT std::shared_ptr<DataShare::ResultSetBridge> Query(RingtoneDataCommand &cmd,
@@ -51,6 +52,7 @@ private:
     std::string GetIdFromUri(Uri &uri);
     std::shared_ptr<RingtoneAsset> GetRingtoneAssetFromId(const std::string &id);
     int32_t DeleteFileFromResultSet(std::shared_ptr<NativeRdb::ResultSet> &resultSet);
+    int32_t DeleteRingtoneRowById(int32_t toneId);
     std::shared_mutex mgrSharedMutex_;
     std::shared_ptr<OHOS::AbilityRuntime::Context> context_ = nullptr;
     static std::mutex mutex_;
