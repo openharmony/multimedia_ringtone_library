@@ -30,7 +30,7 @@ const std::string RINGTONE_URI              = RINGTONE_URI_SCHEME + ":///" + RIN
 const std::string RINGTONE_PATH_URI         = RINGTONE_URI + "/" + RINGTONE_URI_PATH;
 
 // ringtone user customized tones file location
-const std::string RINGTONE_CUSTOMIZED_BASE_PATH          = "/data/storage/el2/base";
+const std::string RINGTONE_CUSTOMIZED_BASE_PATH          = "/storage/media/local/files";
 const std::string RINGTONE_CUSTOMIZED_ALARM_PATH         = RINGTONE_CUSTOMIZED_BASE_PATH + "/Ringtone/alarms";
 const std::string RINGTONE_CUSTOMIZED_RINGTONE_PATH      = RINGTONE_CUSTOMIZED_BASE_PATH + "/Ringtone/ringtones";
 const std::string RINGTONE_CUSTOMIZED_NOTIFICATIONS_PATH = RINGTONE_CUSTOMIZED_BASE_PATH + "/Ringtone/notifications";

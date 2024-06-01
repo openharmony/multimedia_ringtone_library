@@ -102,6 +102,17 @@
           ],
           "when": "inuse"
         }
+      },
+      {
+        "name": "ohos.permission.ACCESS_RINGTONE_RESOURCE",
+        "reason": "$string:permission_access_ringtone_resource",
+        "useScene": {
+          "abilities": [
+            "RingtoneBackupExtAbility",
+            "DataShareExtAbility"
+          ],
+          "when": "inuse"
+        }
       }
     ]
   }

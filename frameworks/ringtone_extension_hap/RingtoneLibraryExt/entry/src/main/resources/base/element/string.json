@@ -35,6 +35,10 @@
     {
       "name": "permission_read_audio",
       "value": "Allows access to the audio files in a user directory."
+    },
+    {
+      "name": "permission_access_ringtone_resource",
+      "value": "Allows access to the ringtone files in a user directory."
     }
   ]
 }
