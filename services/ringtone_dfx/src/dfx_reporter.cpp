@@ -26,7 +26,7 @@
 namespace OHOS {
 namespace Media {
 using namespace std;
-static constexpr char RINGTONE_LIBRARY[] = "RINGTONELIBRARY";
+static constexpr char RINGTONE_LIBRARY[] = "RINGTONE_LIBRARY";
 
 DfxReporter::DfxReporter()
 {

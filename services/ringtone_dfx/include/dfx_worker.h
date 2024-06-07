@@ -28,7 +28,6 @@ public:
     ~DfxWorker();
     EXPORT static std::shared_ptr<DfxWorker> GetInstance();
     void Init();
-    EXPORT void End();
 
 private:
     void InitCycleThread();
@@ -36,9 +35,7 @@ private:
 private:
     int64_t lastReportTime_ = 0;
     static std::shared_ptr<DfxWorker> dfxWorkerInstance_;
-    bool isEnd_;
     int32_t longTimeSec_;
-    std::mutex mutex_;
 };
 } // namespace Media
 } // namespace OHOS
