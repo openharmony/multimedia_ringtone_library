@@ -884,5 +884,107 @@ HWTEST_F(RingtoneUnitTest, medialib_ringtoneRead_test_007, TestSize.Level0)
         cout << "query count = " << to_string(results->GetCount()) << endl;
     }
 }
+
+HWTEST_F(RingtoneUnitTest, medialib_querySystemRingtone_test_001, TestSize.Level0)
+{
+    Uri uri(RINGTONE_PATH_URI);
+
+    int errCode = 0;
+    DatashareBusinessError businessError;
+    DataSharePredicates queryPredicates;
+    queryPredicates.EqualTo(RINGTONE_COLUMN_SOURCE_TYPE, to_string(SourceType::SOURCE_TYPE_PRESET));
+    vector<string> columns = { {RINGTONE_COLUMN_SOURCE_TYPE} };
+    auto resultSet = g_dataShareHelper->Query(uri, queryPredicates, columns, &businessError);
+    errCode = businessError.GetCode();
+    cout << "Query errCode=" << errCode << endl;
+
+    if (resultSet != nullptr) {
+        auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
+        EXPECT_NE(results, nullptr);
+        cout << "query count = " << to_string(results->GetCount()) << endl;
+    }
+}
+
+HWTEST_F(RingtoneUnitTest, medialib_queryCustomisedRingtone_test_001, TestSize.Level0)
+{
+    Uri uri(RINGTONE_PATH_URI);
+
+    int errCode = 0;
+    DatashareBusinessError businessError;
+    DataSharePredicates queryPredicates;
+    queryPredicates.EqualTo(RINGTONE_COLUMN_SOURCE_TYPE, to_string(SourceType::SOURCE_TYPE_CUSTOMISED));
+    vector<string> columns = { {RINGTONE_COLUMN_SOURCE_TYPE} };
+    auto resultSet = g_dataShareHelper->Query(uri, queryPredicates, columns, &businessError);
+    errCode = businessError.GetCode();
+    cout << "Query errCode=" << errCode << endl;
+
+    if (resultSet != nullptr) {
+        auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
+        EXPECT_NE(results, nullptr);
+        cout << "query count = " << to_string(results->GetCount()) << endl;
+    }
+}
+
+HWTEST_F(RingtoneUnitTest, medialib_queryAllRingtone_test_001, TestSize.Level0)
+{
+    Uri uri(RINGTONE_PATH_URI);
+
+    int errCode = 0;
+    DatashareBusinessError businessError;
+    DataSharePredicates queryPredicates;
+    vector<string> columns = { {RINGTONE_COLUMN_SOURCE_TYPE} };
+    auto resultSet = g_dataShareHelper->Query(uri, queryPredicates, columns, &businessError);
+    errCode = businessError.GetCode();
+    cout << "Query errCode=" << errCode << endl;
+
+    if (resultSet != nullptr) {
+        auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
+        EXPECT_NE(results, nullptr);
+        cout << "query count = " << to_string(results->GetCount()) << endl;
+    }
+}
+
+HWTEST_F(RingtoneUnitTest, medialib_deleteRingtone_test_001, TestSize.Level0)
+{
+    Uri uri(RINGTONE_PATH_URI);
+    DataShareValuesBucket values;
+    values.Put(RINGTONE_COLUMN_DATA, static_cast<string>(RINGTONE_LIBRARY_PATH + RINGTONE_SLASH_CHAR +
+        TEST_INSERT_RINGTONE_LIBRARY + to_string(0) + MTP_FORMAT_OGG));
+    values.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
+    values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
+    values.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
+    values.Put(RINGTONE_COLUMN_SOURCE_TYPE, static_cast<int>(SourceType::SOURCE_TYPE_CUSTOMISED));
+    auto result = g_dataShareHelper->Insert(uri, values);
+    EXPECT_EQ((result > 0), true);
+
+    int errCode = 0;
+    DatashareBusinessError businessError;
+    DataSharePredicates queryPredicates;
+    queryPredicates.EqualTo(RINGTONE_COLUMN_SOURCE_TYPE, to_string(SourceType::SOURCE_TYPE_CUSTOMISED));
+    vector<string> columns = { { RINGTONE_COLUMN_SOURCE_TYPE } };
+    auto resultSet = g_dataShareHelper->Query(uri, queryPredicates, columns, &businessError);
+    errCode = businessError.GetCode();
+    cout << "Query errCode=" << errCode << endl;
+    if (resultSet != nullptr) {
+        auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
+        EXPECT_NE(results, nullptr);
+        cout << "query count = " << to_string(results->GetCount()) << endl;
+    }
+
+    DataSharePredicates predicates;
+    predicates.SetWhereClause(RINGTONE_COLUMN_SOURCE_TYPE + " = ? ");
+    predicates.SetWhereArgs({ to_string(SourceType::SOURCE_TYPE_CUSTOMISED) });
+    result = g_dataShareHelper->Delete(uri, predicates);
+    EXPECT_EQ((result > 0), true);
+
+    resultSet = g_dataShareHelper->Query(uri, queryPredicates, columns, &businessError);
+    errCode = businessError.GetCode();
+    cout << "Query errCode=" << errCode << endl;
+    if (resultSet != nullptr) {
+        auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
+        EXPECT_NE(results, nullptr);
+        cout << "query count = " << to_string(results->GetCount()) << endl;
+    }
+}
 } // namespace Media
 } // namespace OHOS
