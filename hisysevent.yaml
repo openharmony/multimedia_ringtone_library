@@ -36,7 +36,7 @@
 # DESCRIPTION contains userid，request type.
 # REASON contains errno num, and failed interface.
 
-domain: RINGTONELIBRARY
+domain: RINGTONE_LIBRARY
 
 RINGTONELIB_DFX_MESSAGE:
   __BASE: { type: STATISTIC, level: MINOR, desc: preset and custom ringtone number }

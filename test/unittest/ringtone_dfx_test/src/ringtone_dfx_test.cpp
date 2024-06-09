@@ -46,8 +46,6 @@ void RingtoneDfxTest::SetUpTestCase()
 }
 void RingtoneDfxTest::TearDownTestCase()
 {
-    std::shared_ptr<DfxWorker> dfxWorker = DfxWorker::GetInstance();
-    dfxWorker->End();
 }
 
 // SetUp:Execute before each test case

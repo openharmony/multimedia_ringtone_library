@@ -50,11 +50,11 @@ void DfxWorker::Init()
 {
     RINGTONE_INFO_LOG("init");
     thread(bind(&DfxWorker::InitCycleThread, this)).detach();
-    isEnd_ = false;
 }
 
 void DfxWorker::InitCycleThread()
 {
+    RINGTONE_INFO_LOG("DFX start");
     int32_t errCode;
     shared_ptr<NativePreferences::Preferences> prefs =
         NativePreferences::PreferencesHelper::GetPreferences(DFX_COMMON_XML, errCode);
@@ -63,25 +63,13 @@ void DfxWorker::InitCycleThread()
         return;
     }
     lastReportTime_ = prefs->GetLong(LAST_REPORT_TIME, 0);
-
-    while (true) {
-        lock_guard<mutex> lock(mutex_);
-        if (isEnd_) {
-            break;
-        }
-        if (RingtoneFileUtils::UTCTimeSeconds() - lastReportTime_ > longTimeSec_) {
-            RINGTONE_INFO_LOG("Report Xml");
-            lastReportTime_ = DfxManager::GetInstance()->HandleReportXml();
-            prefs->PutLong(LAST_REPORT_TIME, lastReportTime_);
-            prefs->FlushSync();
-        }
+    if (RingtoneFileUtils::UTCTimeSeconds() - lastReportTime_ > longTimeSec_) {
+        RINGTONE_INFO_LOG("Report Xml");
+        lastReportTime_ = DfxManager::GetInstance()->HandleReportXml();
+        prefs->PutLong(LAST_REPORT_TIME, lastReportTime_);
+        prefs->FlushSync();
     }
-}
-
-void DfxWorker::End()
-{
-    lock_guard<mutex> lock(mutex_);
-    isEnd_ = true;
+    RINGTONE_INFO_LOG("DFX end");
 }
 } // namespace Media
 } // namespace OHOS
