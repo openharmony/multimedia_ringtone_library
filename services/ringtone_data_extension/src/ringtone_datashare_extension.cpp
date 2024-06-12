@@ -24,6 +24,7 @@
 #include "ipc_skeleton.h"
 #include "ringtone_data_manager.h"
 #include "ringtone_datashare_stub_impl.h"
+#include "ringtone_file_utils.h"
 #include "ringtone_log.h"
 #include "ringtone_scanner_manager.h"
 #include "runtime.h"
@@ -42,6 +43,14 @@ const char RINGTONE_PARAMETER_SCANNER_COMPLETED_TRUE[] = "1";
 const char RINGTONE_PARAMETER_SCANNER_COMPLETED_FALSE[] = "0";
 const int32_t SYSPARA_SIZE = 64;
 const string RINGTONE_SINGLE_CLONE_BACKUP_PATH = "/storage/media/local/files/Backup";
+const std::vector<std::string> RINGTONE_OPEN_WRITE_MODE_VECTOR = {
+    { RINGTONE_FILEMODE_WRITEONLY },
+    { RINGTONE_FILEMODE_READWRITE },
+    { RINGTONE_FILEMODE_WRITETRUNCATE },
+    { RINGTONE_FILEMODE_WRITEAPPEND },
+    { RINGTONE_FILEMODE_READWRITETRUNCATE },
+    { RINGTONE_FILEMODE_READWRITEAPPEND },
+};
 
 RingtoneDataShareExtension *RingtoneDataShareExtension::Create(const unique_ptr<Runtime> &runtime)
 {
@@ -135,7 +144,8 @@ sptr<IRemoteObject> RingtoneDataShareExtension::OnConnect(const AAFwk::Want &wan
 static int32_t CheckRingtonePerm(RingtoneDataCommand &cmd, bool isWrite)
 {
     auto err = E_SUCCESS;
-    if (!RingtonePermissionUtils::IsSystemApp() && IPCSkeleton::GetCallingUid() != 0) {
+    if (!RingtonePermissionUtils::IsSystemApp() && IPCSkeleton::GetCallingUid() != 0
+        && !RingtonePermissionUtils::IsNativeSAApp()) {
         RINGTONE_ERR_LOG("RingtoneLibrary should only be called by system applications!");
         return E_PERMISSION_DENIED;
     }
@@ -318,7 +328,12 @@ int RingtoneDataShareExtension::OpenFile(const Uri &uri, const string &mode)
     string unifyMode = mode;
     transform(unifyMode.begin(), unifyMode.end(), unifyMode.begin(), ::tolower);
 
-    err = CheckRingtonePerm(cmd, true);
+    bool isWrite = false;
+    auto iter = find(RINGTONE_OPEN_WRITE_MODE_VECTOR.begin(), RINGTONE_OPEN_WRITE_MODE_VECTOR.end(), unifyMode);
+    if (iter != RINGTONE_OPEN_WRITE_MODE_VECTOR.end()) {
+        isWrite = true;
+    }
+    err = CheckRingtonePerm(cmd, isWrite);
     if (err == E_PERMISSION_DENIED) {
         RINGTONE_ERR_LOG("OpenFile denied, errCode: %{public}d", err);
         return err;
