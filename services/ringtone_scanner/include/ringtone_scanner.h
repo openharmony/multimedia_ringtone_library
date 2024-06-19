@@ -98,7 +98,7 @@ private:
     std::unique_ptr<RingtoneMetadata> data_;
     std::vector<std::unique_ptr<RingtoneMetadata>> dataBuffer_;
     bool isForceScan_ = false;
-    int32_t tonesScannedCount_ = 0;
+    uint32_t tonesScannedCount_ = 0;
     std::mutex scannerLock_;
     std::condition_variable scannerCv_;
 };
