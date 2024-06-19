@@ -19,6 +19,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
+#include "directory_ex.h"
 #include "ringtone_file_utils.h"
 #include "ringtone_log.h"
 #include "ringtone_errno.h"
@@ -99,13 +100,18 @@ int32_t RingtoneMetadataExtractor::ExtractAudioMetadata(std::unique_ptr<Ringtone
         return E_AVMETADATA;
     }
 
-    string filePath = data->GetData();
-    if (filePath.empty()) {
-        RINGTONE_ERR_LOG("AV RingtoneMetadata file path is empty");
+    string absFilePath;
+    if (!PathToRealPath(data->GetData(), absFilePath)) {
+        RINGTONE_ERR_LOG("AV RingtoneMetadata is not real path, file path: %{private}s", data->GetData().c_str());
+        return E_AVMETADATA;
+    }
+    if (absFilePath.empty()) {
+        RINGTONE_ERR_LOG("Failed to obtain the canonical path for source path: %{private}s %{public}d",
+            absFilePath.c_str(), errno);
         return E_AVMETADATA;
     }
 
-    int32_t fd = open(filePath.c_str(), O_RDONLY);
+    int32_t fd = open(absFilePath.c_str(), O_RDONLY);
     if (fd <= 0) {
         RINGTONE_ERR_LOG("Open file descriptor failed, errno = %{public}d", errno);
         return E_SYSCALL;

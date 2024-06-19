@@ -23,6 +23,7 @@
 
 #include "datashare_helper.h"
 #include "datashare_predicates.h"
+#include "directory_ex.h"
 #include "dualfw_conf_parser.h"
 #include "dualfw_sound_setting.h"
 #include "file_asset.h"
@@ -254,7 +255,18 @@ int32_t RingtoneDualfwRestore::DupToneFile(FileInfo &info)
         return E_ERR;
     }
 
-    int32_t dstFd = open(info.restorePath.c_str(), O_WRONLY | O_CREAT, MODE_RWX_USR_GRP);
+    string absFilePath;
+    if (!PathToRealPath(info.restorePath, absFilePath)) {
+        RINGTONE_ERR_LOG("info.restorePath is not real path, file path: %{private}s", info.restorePath.c_str());
+        return E_ERR;
+    }
+    if (absFilePath.empty()) {
+        RINGTONE_ERR_LOG("Failed to obtain the canonical path for source path: %{private}s %{public}d",
+            absFilePath.c_str(), errno);
+        return E_ERR;
+    }
+
+    int32_t dstFd = open(absFilePath.c_str(), O_WRONLY | O_CREAT, MODE_RWX_USR_GRP);
     if (dstFd < 0) {
         RINGTONE_ERR_LOG("Open file failed, errno:%{public}d", errno);
         close(srcFd);
