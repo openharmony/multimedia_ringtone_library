@@ -43,7 +43,7 @@
 namespace OHOS {
 namespace Media {
 using namespace std;
-static const mode_t MODE_RWX_USR_GRP = 02771;
+static const mode_t MODE_RW_USR = 0644;
 constexpr int STORAGE_MANAGER_MANAGER_ID = 5003;
 static const string DUALFW_SOUND_CONF_XML = "setting_system.xml";
 static std::shared_ptr<DataShare::DataShareHelper> CreateMediaDataShare(int32_t systemAbilityId)
@@ -266,7 +266,7 @@ int32_t RingtoneDualfwRestore::DupToneFile(FileInfo &info)
         return E_ERR;
     }
 
-    int32_t dstFd = open(absFilePath.c_str(), O_WRONLY | O_CREAT, MODE_RWX_USR_GRP);
+    int32_t dstFd = open(absFilePath.c_str(), O_WRONLY | O_CREAT, MODE_RW_USR);
     if (dstFd < 0) {
         RINGTONE_ERR_LOG("Open file failed, errno:%{public}d", errno);
         close(srcFd);
