@@ -34,6 +34,7 @@ namespace Media {
 using namespace std;
 static const int32_t OPEN_FDS = 128;
 static const mode_t MODE_RWX_USR_GRP = 02771;
+static const mode_t MODE_RW_USR = 0644;
 const vector<string> EXIF_SUPPORTED_EXTENSION = {
     RINGTONE_CONTAINER_TYPE_MP3,
     RINGTONE_CONTAINER_TYPE_OGG
@@ -308,7 +309,7 @@ bool RingtoneFileUtils::CopyFileUtil(const string &filePath, const string &newPa
         return ret;
     }
 
-    int32_t dest = open(newPath.c_str(), O_WRONLY | O_CREAT, MODE_RWX_USR_GRP);
+    int32_t dest = open(newPath.c_str(), O_WRONLY | O_CREAT, MODE_RW_USR);
     if (dest == -1) {
         RINGTONE_ERR_LOG("Open failed for destination file %{public}d", errno);
         close(source);
