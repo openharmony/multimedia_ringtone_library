@@ -20,6 +20,7 @@ ohos_hap("ringtone_extension_hap") {
     ":RingtoneLibStage_js_assets",
     ":RingtoneLibStage_resources",
   ]
+  publicity_file = "${RINGTONE_ROOT_PATH}/publicity.xml"
   certificate_profile = "${RINGTONE_EXT_HAP_PATH}/signature/ringtonelibrary.p7b"
   shared_libraries = [ "${RINGTONE_SERVICES_PATH}:ringtone_data_extension" ]
   hap_name = "Ringtone_Library_Ext"
