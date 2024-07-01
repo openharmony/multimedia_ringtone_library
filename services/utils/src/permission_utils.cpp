@@ -65,11 +65,6 @@ sptr<AppExecFwk::IBundleMgr> RingtonePermissionUtils::GetSysBundleManager()
     return bundleManager_;
 }
 
-bool inline ShouldAddPermissionRecord(const AccessTokenID &token)
-{
-    return (AccessTokenKit::GetTokenTypeFlag(token) == TOKEN_HAP);
-}
-
 void RingtonePermissionUtils::GetClientBundle(const int uid, string &bundleName)
 {
     bundleManager_ = GetSysBundleManager();
@@ -84,20 +79,6 @@ void RingtonePermissionUtils::GetClientBundle(const int uid, string &bundleName)
     }
 }
 
-void AddPermissionRecord(const AccessTokenID &token, const string &perm, const bool permGranted)
-{
-    if (!ShouldAddPermissionRecord(token)) {
-        return;
-    }
-
-    int result = PrivacyKit::AddPermissionUsedRecord(token, perm, !!permGranted, !permGranted, true);
-    if (result != 0) {
-        /* Failed to add permission used record, not fatal */
-        RINGTONE_WARN_LOG("Failed to add permission used record: %{public}s, permGranted: %{public}d, err: %{public}d",
-            perm.c_str(), permGranted, result);
-    }
-}
-
 bool RingtonePermissionUtils::CheckCallerPermission(const string &permission)
 {
     RingtoneTracer tracer;
@@ -107,11 +88,8 @@ bool RingtonePermissionUtils::CheckCallerPermission(const string &permission)
     int result = AccessTokenKit::VerifyAccessToken(tokenCaller, permission);
     if (result != PermissionState::PERMISSION_GRANTED) {
         RINGTONE_ERR_LOG("Have no media permission: %{public}s", permission.c_str());
-        AddPermissionRecord(tokenCaller, permission, false);
         return false;
     }
-    AddPermissionRecord(tokenCaller, permission, true);
-
     return true;
 }
 
