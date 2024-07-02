@@ -54,36 +54,6 @@
     ],
     "requestPermissions": [
       {
-        "name": "ohos.permission.PERMISSION_USED_STATS",
-        "reason": "$string:permission_used_stats",
-        "usedScene": {
-          "abilities": [
-            "DataShareExtAbility"
-          ],
-          "when": "inuse"
-        }
-      },
-      {
-        "name": "ohos.permission.PROXY_AUTHORIZATION_URI",
-        "reason": "$string:permission_proxy_authorization_uri",
-        "usedScene": {
-          "abilities": [
-            "DataShareExtAbility"
-          ],
-          "when": "inuse"
-        }
-      },
-      {
-        "name": "ohos.permission.GET_BUNDLE_INFO_PRIVILEGED",
-        "reason": "$string:permission_get_bundle_info_privileged",
-        "usedScene": {
-          "abilities": [
-            "DataShareExtAbility"
-          ],
-          "when": "inuse"
-        }
-      },
-      {
         "name": "ohos.permission.READ_AUDIO",
         "reason": "$string:permission_read_audio",
         "usedScene": {
