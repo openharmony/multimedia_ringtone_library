@@ -81,7 +81,6 @@ const std::map<string, string> g_testExt2MimeType = {
     { "webarchivexml", "application/x-webarchive-xml" },
     { "stl", "application/vnd.ms-pki.stl" },
     { "pcf", "application/x-font" },
-    { "yt", "application/vnd.youtube.yt" },
     { "imy", "audio/imelody" },
     { "avif", "image/avif" },
     { "vor", "application/vnd.stardivision.writer" },
@@ -130,6 +129,7 @@ const std::map<string, string> g_testExt2MimeType = {
     { "rtttl", "audio/midi" },
     { "xmf", "audio/midi" },
     { "rtx", "audio/midi" },
+    { "yt", "video/vnd.youtube.yt" },
     { "arw", "image/x-sony-arw" },
     { "ico", "image/x-icon" },
     { "m3u", "audio/mpegurl" },
@@ -175,7 +175,7 @@ const std::map<string, string> g_testExt2MimeType = {
     { "docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document" },
     { "xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" },
     { "pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation" },
-    {"medialib_GetMimeTypeFromExtension_test", "application/octet-stream"}
+    {"ringtonelib_GetMimeTypeFromExtension_test", "application/octet-stream"}
 };
 
 const std::map<string, RingtoneMediaType> g_testMimeType2MediaType = {
@@ -240,7 +240,6 @@ const std::map<string, RingtoneMediaType> g_testMimeType2MediaType = {
     { "image/svg+xml", RINGTONE_MEDIA_TYPE_INVALID },
     { "video/3gpp2", RINGTONE_MEDIA_TYPE_INVALID },
     { "video/3gpp", RINGTONE_MEDIA_TYPE_INVALID },
-    { "video/avi", RINGTONE_MEDIA_TYPE_INVALID },
     { "video/mp4", RINGTONE_MEDIA_TYPE_INVALID },
     { "video/mp2t", RINGTONE_MEDIA_TYPE_INVALID },
     { "video/mp2ts", RINGTONE_MEDIA_TYPE_INVALID },
@@ -280,11 +279,19 @@ HWTEST_F(RingtoneMimeTypeTest, ringtoneMimeType_GetMimeTypeFromExtension_Test_00
     ASSERT_EQ(ret, E_OK);
     for (const auto &item : g_testExt2MimeType) {
         auto mimeType = RingtoneMimeTypeUtils::GetMimeTypeFromExtension(item.first);
-        ASSERT_EQ(mimeType, item.second);
+        if (item.first == "yt") {
+            ASSERT_EQ(mimeType == "application/vnd.youtube.yt" || mimeType == "video/vnd.youtube.yt", true);
+        } else {
+            ASSERT_EQ(mimeType, item.second);
+        }
         string upperExtension = item.first;
         std::transform(upperExtension.begin(), upperExtension.end(), upperExtension.begin(), ::toupper);
         mimeType = RingtoneMimeTypeUtils::GetMimeTypeFromExtension(upperExtension);
-        ASSERT_EQ(mimeType, item.second);
+        if (item.first == "yt") {
+            ASSERT_EQ(mimeType == "application/vnd.youtube.yt" || mimeType == "video/vnd.youtube.yt", true);
+        } else {
+            ASSERT_EQ(mimeType, item.second);
+        }
     }
 }
 

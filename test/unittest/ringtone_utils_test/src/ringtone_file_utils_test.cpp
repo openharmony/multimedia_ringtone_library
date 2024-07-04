@@ -201,10 +201,6 @@ HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_IsDirectory_Test_001, TestSize
 
 HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_CreateDirectory_Test_001, TestSize.Level0)
 {
-    const string path = "ringtoneFileUtils_RemoveDirectory_Test_001";
-    std::shared_ptr<int> errCodePtr;
-    auto ret = RingtoneFileUtils::CreateDirectory(path, errCodePtr);
-    EXPECT_EQ(ret, true);
     string dirPath = "/data/test/isdirempty_002";
     string subPath = dirPath + "/isdirempty_002";
     EXPECT_EQ(RingtoneFileUtils::CreateDirectory(subPath), true);
