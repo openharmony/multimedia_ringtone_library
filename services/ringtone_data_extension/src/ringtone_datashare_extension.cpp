@@ -19,8 +19,10 @@
 #include "app_mgr_client.h"
 #include "datashare_ext_ability_context.h"
 #include "dfx_manager.h"
+#include "dfx_const.h"
 #include "parameter.h"
 #include "permission_utils.h"
+#include "preferences_helper.h"
 #include "ipc_skeleton.h"
 #include "ringtone_data_manager.h"
 #include "ringtone_datashare_stub_impl.h"
@@ -39,9 +41,8 @@ using namespace OHOS::Media;
 using namespace OHOS::DataShare;
 
 const char RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY[] = "ringtone.scanner.completed";
-const char RINGTONE_PARAMETER_SCANNER_COMPLETED_TRUE[] = "1";
-const char RINGTONE_PARAMETER_SCANNER_COMPLETED_FALSE[] = "0";
-const int32_t SYSPARA_SIZE = 64;
+const int RINGTONE_PARAMETER_SCANNER_COMPLETED_TRUE = 1;
+const int RINGTONE_PARAMETER_SCANNER_COMPLETED_FALSE = 0;
 const string RINGTONE_SINGLE_CLONE_BACKUP_PATH = "/storage/media/local/files/Backup";
 const std::vector<std::string> RINGTONE_OPEN_WRITE_MODE_VECTOR = {
     { RINGTONE_FILEMODE_WRITEONLY },
@@ -103,13 +104,18 @@ void RingtoneDataShareExtension::OnStart(const AAFwk::Want &want)
     dfxMgr->Init(context);
 
     // ringtone scan
-    char scanCompletedValue[SYSPARA_SIZE] = {0};
-    GetParameter(RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY, RINGTONE_PARAMETER_SCANNER_COMPLETED_FALSE,
-        scanCompletedValue, SYSPARA_SIZE);
-    int isCompleted = atoi(scanCompletedValue);
+    int32_t errCode;
+    shared_ptr<NativePreferences::Preferences> prefs =
+        NativePreferences::PreferencesHelper::GetPreferences(DFX_COMMON_XML, errCode);
+    if (!prefs) {
+        RINGTONE_ERR_LOG("get preferences error: %{public}d", errCode);
+    }
+    int isCompleted = prefs->GetInt(RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY,
+        RINGTONE_PARAMETER_SCANNER_COMPLETED_FALSE);
     if (!isCompleted) {
         RingtoneScannerManager::GetInstance()->Start(false);
-        SetParameter(RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY, RINGTONE_PARAMETER_SCANNER_COMPLETED_TRUE);
+        prefs->PutInt(RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY, RINGTONE_PARAMETER_SCANNER_COMPLETED_TRUE);
+        prefs->FlushSync();
     }
 
     RINGTONE_INFO_LOG("end.");
