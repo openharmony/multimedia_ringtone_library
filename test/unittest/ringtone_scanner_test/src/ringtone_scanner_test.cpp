@@ -38,6 +38,13 @@ namespace OHOS {
 namespace Media {
 void RingtoneScannerTest::SetUpTestCase()
 {
+    auto stageContext = std::make_shared<AbilityRuntime::ContextImpl>();
+    auto abilityContextImpl = std::make_shared<OHOS::AbilityRuntime::AbilityContextImpl>();
+    abilityContextImpl->SetStageContext(stageContext);
+    shared_ptr<RingtoneUnistore> uniStore = RingtoneRdbStore::GetInstance(abilityContextImpl);
+    int32_t ret = uniStore->Init();
+    EXPECT_EQ(ret, E_OK);
+
     vector<string> perms;
     perms.push_back("ohos.permission.WRITE_RINGTONE");
 
@@ -98,12 +105,6 @@ HWTEST_F(RingtoneScannerTest, scanner_WalkFileTree_test_001, TestSize.Level0)
 
 HWTEST_F(RingtoneScannerTest, scanner_AddToTransaction_test_001, TestSize.Level0)
 {
-    auto stageContext = std::make_shared<AbilityRuntime::ContextImpl>();
-    auto abilityContextImpl = std::make_shared<OHOS::AbilityRuntime::AbilityContextImpl>();
-    abilityContextImpl->SetStageContext(stageContext);
-    shared_ptr<RingtoneUnistore> uniStore = RingtoneRdbStore::GetInstance(abilityContextImpl);
-    int32_t ret = uniStore->Init();
-    EXPECT_EQ(ret, E_OK);
     const string dir = "/storage/cloud/files";
     shared_ptr<IRingtoneScannerCallback> callback = nullptr;
     RingtoneScannerObj ringtoneScannerObj(dir, callback, RingtoneScannerObj::FILE);
@@ -111,7 +112,7 @@ HWTEST_F(RingtoneScannerTest, scanner_AddToTransaction_test_001, TestSize.Level0
     for (int i = 0; i < count; i++) {
         ringtoneScannerObj.data_ = make_unique<RingtoneMetadata>();
         ringtoneScannerObj.data_->SetToneId(i);
-        ret = ringtoneScannerObj.AddToTransaction();
+        auto ret = ringtoneScannerObj.AddToTransaction();
         EXPECT_EQ(ret, E_OK);
     }
 }
