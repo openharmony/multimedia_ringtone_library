@@ -43,6 +43,7 @@ ohos_unittest("ringtone_data_extension_unittest") {
 
   deps = [
     "${RINGTONE_ROOT_PATH}/services:ringtone_data_extension",
+    "${RINGTONE_ROOT_PATH}/services:ringtone_utils",
     "${RINGTONE_ROOT_PATH}/services/ringtone_helper:ringtone_data_helper",
   ]
 

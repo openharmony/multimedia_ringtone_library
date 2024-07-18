@@ -25,6 +25,7 @@
 #include "datashare_predicates.h"
 #include "directory_ex.h"
 #include "dualfw_conf_parser.h"
+#include "dualfw_conf_loader.h"
 #include "dualfw_sound_setting.h"
 #include "file_asset.h"
 #include "fetch_result.h"
@@ -43,9 +44,10 @@
 namespace OHOS {
 namespace Media {
 using namespace std;
-static const mode_t MODE_RW_USR = 0644;
+
 constexpr int STORAGE_MANAGER_MANAGER_ID = 5003;
-static const string DUALFW_SOUND_CONF_XML = "setting_system.xml";
+static const string DUALFW_SOUND_CONF_XML = "backup";
+
 static std::shared_ptr<DataShare::DataShareHelper> CreateMediaDataShare(int32_t systemAbilityId)
 {
     RINGTONE_INFO_LOG("CreateDataShareHelper::CreateFileExtHelper ");
@@ -60,6 +62,27 @@ static std::shared_ptr<DataShare::DataShareHelper> CreateMediaDataShare(int32_t 
         return nullptr;
     }
     return DataShare::DataShareHelper::Creator(remoteObj, MEDIALIBRARY_DATA_URI);
+}
+
+int32_t RingtoneDualfwRestore::LoadDualfwConf()
+{
+    DualfwConfLoader confLoader;
+    if (confLoader.Init() != E_OK) {
+        RINGTONE_ERR_LOG("Failed to initialize DualfwConfLoader.");
+        return E_FAIL;
+    }
+    DualFwConf conf;
+    confLoader.Load(conf, RESTORE_SCENE_TYPE_DUAL_UPGRADE);
+    confLoader.ShowConf(conf);
+
+    dualfwSetting_ = std::make_unique<DualfwSoundSetting>();
+    if (dualfwSetting_ == nullptr) {
+        RINGTONE_ERR_LOG("Create DualfwSoundSetting Failed.");
+        return E_FAIL;
+    }
+
+    dualfwSetting_->ProcessConf(conf);
+    return E_SUCCESS;
 }
 
 int32_t RingtoneDualfwRestore::ParseDualfwConf(const string &xml)
@@ -95,12 +118,6 @@ int32_t RingtoneDualfwRestore::Init(const std::string &backupPath)
         RINGTONE_ERR_LOG("error: backup path is null");
         return E_INVALID_ARGUMENTS;
     }
-    dualfwConf_ = backupPath + "/" + DUALFW_SOUND_CONF_XML;
-
-    if (!RingtoneFileUtils::IsFileExists(dualfwConf_)) {
-        RINGTONE_ERR_LOG("dualfw-conf-xml is not exist, path=%{public}s", dualfwConf_.c_str());
-        return E_FAIL;
-    }
 
     mediaDataShare_ = CreateMediaDataShare(STORAGE_MANAGER_MANAGER_ID);
     if (mediaDataShare_ == nullptr) {
@@ -108,7 +125,7 @@ int32_t RingtoneDualfwRestore::Init(const std::string &backupPath)
         return E_FAIL;
     }
 
-    if (ParseDualfwConf(dualfwConf_) != E_SUCCESS) {
+    if (LoadDualfwConf() != E_SUCCESS) {
         return E_FAIL;
     }
 
@@ -138,6 +155,55 @@ static void MediaUriAppendKeyValue(string &uri, const string &key, const string 
     }
 }
 
+int32_t RingtoneDualfwRestore::QueryRingToneDbForFileInfo(std::shared_ptr<NativeRdb::RdbStore> rdbStore,
+    const DualfwSettingItem &item, FileInfo& info)
+{
+    const std::string displayName = item.toneFileName;
+    if (rdbStore == nullptr) {
+        RINGTONE_ERR_LOG("rdb_ is nullptr, Maybe init failed.");
+        return E_FAIL;
+    }
+    std::string queryCountSql = "SELECT * FROM " + RINGTONE_TABLE +
+        " WHERE " + RINGTONE_COLUMN_DISPLAY_NAME + " = \"" + displayName + "\";";
+    RINGTONE_INFO_LOG("queryCountSql: %{public}s", queryCountSql.c_str());
+
+    auto resultSet = rdbStore->QuerySql(queryCountSql);
+    if (resultSet == nullptr || resultSet->GoToFirstRow() != NativeRdb::E_OK) {
+        return E_FAIL;
+    }
+    auto metaData = std::make_unique<RingtoneMetadata>();
+    if (PopulateMetadata(resultSet, metaData) != E_OK) {
+        return E_FAIL;
+    }
+    info = FileInfo(*metaData);
+    switch (item.settingType) {
+        case TONE_SETTING_TYPE_RINGTONE:
+            info.ringToneSourceType = SOURCE_TYPE_CUSTOMISED;
+            info.toneType = TONE_TYPE_RINGTONE;
+            info.ringToneType = item.toneType;
+            break;
+        case TONE_SETTING_TYPE_ALARM:
+            info.toneType = TONE_TYPE_ALARM;
+            info.alarmToneType = item.toneType;
+            info.alarmToneSourceType = SOURCE_TYPE_CUSTOMISED;
+            break;
+        case TONE_SETTING_TYPE_SHOT:
+            info.toneType = TONE_TYPE_NOTIFICATION;
+            info.shotToneType = item.toneType;
+            info.shotToneSourceType = SOURCE_TYPE_CUSTOMISED;
+            break;
+        case TONE_SETTING_TYPE_NOTIFICATION:
+            info.toneType = TONE_TYPE_NOTIFICATION;
+            info.notificationToneType = item.toneType;
+            info.notificationToneSourceType = SOURCE_TYPE_CUSTOMISED;
+            break;
+        default:
+            return E_FAIL;
+    }
+    info.doInsert = false;
+    return E_OK;
+}
+
 static const string KEY_API_VERSION = "API_VERSION";
 static unique_ptr<FileAsset> QueryMediaFileAsset(std::shared_ptr<DataShare::DataShareHelper> &mediaDataShare,
     DualfwSettingItem &item)
@@ -155,14 +221,16 @@ static unique_ptr<FileAsset> QueryMediaFileAsset(std::shared_ptr<DataShare::Data
     MediaUriAppendKeyValue(queryFileUri, KEY_API_VERSION, to_string(MEDIA_API_VERSION_V10));
     shared_ptr<DataShare::DataShareResultSet> resultSet = nullptr;
     Uri uri(queryFileUri);
+    RINGTONE_INFO_LOG("Querying %{public}s with %{public}s", queryFileUri.c_str(), prefix.c_str());
     resultSet = mediaDataShare->Query(uri, predicates, columns);
     if (resultSet == nullptr) {
-        RINGTONE_INFO_LOG("query resultset is null");
+        RINGTONE_WARN_LOG("query resultset for %{public}s is null", item.toneFileName.c_str());
         return nullptr;
     }
 
     unique_ptr<FetchResult<FileAsset>> fetchFileResult = make_unique<FetchResult<FileAsset>>(move(resultSet));
     if (fetchFileResult->GetCount() < 0) {
+        RINGTONE_WARN_LOG("query resultset for %{public}s is empty", item.toneFileName.c_str());
         return nullptr;
     }
     unique_ptr<FileAsset> fileAsset = fetchFileResult->GetFirstObject();
@@ -223,14 +291,22 @@ void RingtoneDualfwRestore::StartRestore()
         RINGTONE_ERR_LOG("dualfw restrore is not initialized successfully");
         return;
     }
+    RingtoneRestoreBase::StartRestore();
 
     vector<FileInfo> infos = {};
     dualfwSetting_->SettingsTraval([&](DualfwSettingItem &item) -> void {
         auto asset = QueryMediaFileAsset(mediaDataShare_, item);
-        FileInfo info = {0};
+        FileInfo info;
         auto ret = BuildFileInfo(item, asset, info);
+        if (ret != E_SUCCESS) {
+            RINGTONE_INFO_LOG("cannot find %{public}s in media_library, going to look for it in ringtone db",
+                item.toneFileName.c_str());
+            ret = QueryRingToneDbForFileInfo(GetBaseDb(), item, info);
+        }
         if (ret == E_SUCCESS) {
             infos.push_back(info);
+        } else {
+            RINGTONE_INFO_LOG("still cannot find %{public}s", item.toneFileName.c_str());
         }
         RINGTONE_INFO_LOG("***************************************************");
         RINGTONE_INFO_LOG("toneName               = %{public}s", info.data.c_str());
@@ -247,40 +323,29 @@ void RingtoneDualfwRestore::StartRestore()
 
 int32_t RingtoneDualfwRestore::DupToneFile(FileInfo &info)
 {
-    string uriStr = MEDIALIBRARY_DATA_URI + "/" + MEDIA_AUDIOOPRN + "/" + to_string(info.toneId);
+    RINGTONE_INFO_LOG("DupToneFile from %{private}s to %{private}s", info.data.c_str(), info.restorePath.c_str());
+    std::string absDstPath = info.restorePath;
+    RINGTONE_INFO_LOG("converted dst path from %{private}s to realpath %{private}s", info.restorePath.c_str(),
+        absDstPath.c_str());
 
-    Uri openFileUri(uriStr);
-    int32_t srcFd = mediaDataShare_->OpenFile(openFileUri, "r");
-    if (srcFd < 0) {
-        return E_ERR;
-    }
+    std::string absSrcPath = info.data;
+    std::string sub = "cloud";
+    std::string replacement = "media/local";
+    auto found = absSrcPath.find(sub);
+    if (found != string::npos) {
+        absSrcPath.replace(found, sub.size(), replacement);
+        RINGTONE_INFO_LOG("converted src path from %{public}s to realpath %{public}s",
+            info.data.c_str(), absSrcPath.c_str());
 
-    string absFilePath;
-    if (!PathToRealPath(info.restorePath, absFilePath)) {
-        RINGTONE_ERR_LOG("info.restorePath is not real path, file path: %{private}s", info.restorePath.c_str());
-        return E_ERR;
-    }
-    if (absFilePath.empty()) {
-        RINGTONE_ERR_LOG("Failed to obtain the canonical path for source path: %{private}s %{public}d",
-            absFilePath.c_str(), errno);
-        return E_ERR;
-    }
-
-    int32_t dstFd = open(absFilePath.c_str(), O_WRONLY | O_CREAT, MODE_RW_USR);
-    if (dstFd < 0) {
-        RINGTONE_ERR_LOG("Open file failed, errno:%{public}d", errno);
-        close(srcFd);
-        return E_ERR;
-    }
-    struct stat fst {};
-    if (fstat(srcFd, &fst) == 0) {
-        // Copy file content
-        if (sendfile(dstFd, srcFd, nullptr, fst.st_size) <= 0) {
-            RINGTONE_ERR_LOG("copy file failed errno:%{public}d", errno);
+        if (!RingtoneFileUtils::CopyFileUtil(absSrcPath, absDstPath)) {
+            RINGTONE_ERR_LOG("copy-file failed, src: %{public}s, err: %{public}s", absSrcPath.c_str(),
+                strerror(errno));
+            return E_FAIL;
         }
+    } else {
+        RINGTONE_INFO_LOG("no need to copy file.");
+        info.restorePath = absSrcPath;
     }
-    close(srcFd);
-    close(dstFd);
 
     return E_SUCCESS;
 }
@@ -303,33 +368,34 @@ bool RingtoneDualfwRestore::OnPrepare(FileInfo &info, const std::string &dstPath
         return false;
     }
     string fileName = RingtoneFileUtils::GetFileNameFromPath(info.data);
-    if (fileName.empty() || fileName == "") {
+    if (fileName.empty()) {
         RINGTONE_ERR_LOG("src file name is null");
         return false;
     }
     string baseName = RingtoneFileUtils::GetBaseNameFromPath(info.data);
-    if (baseName.empty() || baseName == "") {
+    if (baseName.empty()) {
         RINGTONE_ERR_LOG("src file base name is null");
         return false;
     }
 
     string extensionName = RingtoneFileUtils::GetExtensionFromPath(info.data);
     int32_t repeatCount = 1;
-    while (RingtoneFileUtils::IsFileExists(dstPath + "/" + fileName)) {
+    info.restorePath = dstPath + "/" + fileName;
+    while (RingtoneFileUtils::IsFileExists(info.restorePath)) {
         struct stat dstStatInfo {};
-        string dstName = dstPath + "/" + fileName;
-        if (stat(dstName.c_str(), &dstStatInfo) != 0) {
-            RINGTONE_ERR_LOG("Failed to get file %{private}s StatInfo, err=%{public}d", dstName.c_str(), errno);
+        if (stat(info.restorePath.c_str(), &dstStatInfo) != 0) {
+            RINGTONE_ERR_LOG("Failed to get file %{private}s StatInfo, err=%{public}d",
+                info.restorePath.c_str(), errno);
             return false;
         }
         if (info.size == dstStatInfo.st_size) {
-            RINGTONE_ERR_LOG("samefile: srcPath=%{public}s, dstPath=%{public}s", info.data.c_str(),
-                (dstPath + "/" + fileName).c_str());
+            CheckSetting(info);
+            RINGTONE_ERR_LOG("samefile: srcPath=%{private}s, dstPath=%{private}s", info.data.c_str(),
+                info.restorePath.c_str());
             return false;
         }
-        fileName = baseName + "(" + to_string(repeatCount++) + ")" + "." + extensionName;
+        info.restorePath = dstPath + "/" + baseName + "(" + to_string(repeatCount++) + ")" + "." + extensionName;
     }
-    info.restorePath = dstPath + "/" + fileName;
 
     if (DupToneFile(info) != E_SUCCESS) {
         return false;
@@ -343,6 +409,27 @@ bool RingtoneDualfwRestore::OnPrepare(FileInfo &info, const std::string &dstPath
 void RingtoneDualfwRestore::OnFinished(vector<FileInfo> &infos)
 {
     RINGTONE_ERR_LOG("ringtone dualfw restore finished");
+}
+
+int32_t RingtoneDualfwRestoreClone::LoadDualfwConf()
+{
+    DualfwConfLoader confLoader;
+    if (confLoader.Init() != E_OK) {
+        RINGTONE_ERR_LOG("Failed to initialize DualfwConfLoader.");
+        return E_FAIL;
+    }
+    DualFwConf conf;
+    confLoader.Load(conf, RESTORE_SCENE_TYPE_DUAL_CLONE);
+    confLoader.ShowConf(conf);
+
+    dualfwSetting_ = std::make_unique<DualfwSoundSetting>();
+    if (dualfwSetting_ == nullptr) {
+        RINGTONE_ERR_LOG("Create DualfwSoundSetting Failed.");
+        return E_FAIL;
+    }
+
+    dualfwSetting_->ProcessConf(conf);
+    return E_SUCCESS;
 }
 } // namespace Media
 } // namespace OHOS

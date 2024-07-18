@@ -26,25 +26,31 @@
 
 namespace OHOS {
 namespace Media {
-class RingtoneDualfwRestore final : public RingtoneRestoreBase {
+class RingtoneDualfwRestore : public RingtoneRestoreBase {
 public:
     RingtoneDualfwRestore() = default;
     virtual ~RingtoneDualfwRestore() = default;
     int32_t Init(const std::string &backupPath) override;
     void StartRestore() override;
 protected:
+    std::unique_ptr<DualfwSoundSetting> dualfwSetting_ = nullptr;
+private:
     virtual bool OnPrepare(FileInfo &info, const std::string &destPath) override;
     virtual void OnFinished(std::vector<FileInfo> &infos) override;
-private:
+    virtual int32_t LoadDualfwConf() override;
     int32_t ParseDualfwConf(const std::string &xml);
     int32_t DupToneFile(FileInfo &info);
     void UpdateRestoreFileInfo(FileInfo &info);
-private:
+    int32_t QueryRingToneDbForFileInfo(std::shared_ptr<NativeRdb::RdbStore> rdbStore,
+        const DualfwSettingItem &item, FileInfo& info);
     std::shared_ptr<DataShare::DataShareHelper> mediaDataShare_ = nullptr;
-    std::unique_ptr<DualfwSoundSetting> dualfwSetting_ = nullptr;
     std::string dualfwConf_ = {};
+};
+
+class RingtoneDualfwRestoreClone : public RingtoneDualfwRestore {
+private:
+    virtual int32_t LoadDualfwConf() override;
 };
 } // namespace Media
 } // namespace OHOS
-
 #endif  // RINGTONE_DUALFW_RESTORE_H

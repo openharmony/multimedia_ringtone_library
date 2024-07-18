@@ -38,19 +38,6 @@ public:
         const std::shared_ptr<NativeRdb::RdbStore> &rdbStore, const std::string &tableName);
 };
 
-class RingtoneRdbCallback : public NativeRdb::RdbOpenCallback {
-public:
-    virtual int32_t OnCreate(NativeRdb::RdbStore &rdb) override
-    {
-        return 0;
-    }
-
-    virtual int32_t OnUpgrade(NativeRdb::RdbStore &rdb, int32_t oldVersion,
-        int32_t newVersion) override
-    {
-        return 0;
-    }
-};
 } // namespace Media
 } // namespace OHOS
 

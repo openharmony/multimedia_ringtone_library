@@ -40,4 +40,4 @@ private:
 };
 } // namespace Media
 } // namespace OHOS
-#endif //OHOS_RINGTONE_MIMETYPE_UTILS_H
+#endif // OHOS_RINGTONE_MIMETYPE_UTILS_H

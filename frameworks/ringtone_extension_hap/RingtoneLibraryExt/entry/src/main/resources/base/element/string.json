@@ -17,22 +17,6 @@
       "value": "description"
     },
     {
-      "name": "permission_used_stats",
-      "value": "Allow the application to access the permission usage records"
-    },
-    {
-      "name": "permission_proxy_authorization_uri",
-      "value": "Allow the application proxy to grant URIs"
-    },
-    {
-      "name": "permission_get_bundle_info_privileged",
-      "value": "Allows querying of the app's basic information and other sensitive information"
-    },
-    {
-      "name": "permission_read_media",
-      "value": "Allows an application to read media files from the user’s external storage."
-    },
-    {
       "name": "permission_read_audio",
       "value": "Allows access to the audio files in a user directory."
     },

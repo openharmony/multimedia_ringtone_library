@@ -49,13 +49,6 @@ const std::string RINGTONE_LIBRARY_DB_NAME = "ringtone_library.db";
 // ringtone db version
 const int32_t RINGTONE_RDB_VERSION = 1;
 
-// RingtoneProps table name
-const std::string PROPERTIES_TABLE                              = "RingtoneProps";
-// RingtoneProps table column name
-const std::string RINGTONEPROPS_COLUMN_ID                       = "id";
-const std::string RINGTONEPROPS_COLUMN_NAME                     = "name";
-const std::string RINGTONEPROPS_COLUMN_VALUE                    = "value";
-
 // ringtone table name
 const std::string RINGTONE_TABLE                                = "ToneFiles";
 // ringtone table column name
