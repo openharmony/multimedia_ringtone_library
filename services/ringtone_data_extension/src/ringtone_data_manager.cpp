@@ -147,6 +147,10 @@ int32_t RingtoneDataManager::Insert(RingtoneDataCommand &cmd, const DataShareVal
 int32_t RingtoneDataManager::DeleteFileFromResultSet(std::shared_ptr<NativeRdb::ResultSet> &resultSet)
 {
     auto count = 0;
+    if (resultSet == nullptr) {
+        RINGTONE_ERR_LOG("resultSet is nullptr");
+        return E_ERR;
+    }
     auto ret = resultSet->GetRowCount(count);
     if (ret != NativeRdb::E_OK) {
         RINGTONE_ERR_LOG("get rdbstore failed");
@@ -165,6 +169,10 @@ int32_t RingtoneDataManager::DeleteFileFromResultSet(std::shared_ptr<NativeRdb::
 
     for (auto i = 0; i < count; i++) {
         auto asset = fetchResult->GetObjectFromRdb(resultSet, i);
+        if (asset == nullptr) {
+            RINGTONE_ERR_LOG("asset is nullptr");
+            return E_ERR;
+        }
         RingtoneFileUtils::DeleteFile(asset->GetPath());
     }
 
