@@ -90,6 +90,8 @@ int32_t RingtoneSettingManager::CommitSettingCompare(int32_t settingType, int32_
 int32_t RingtoneSettingManager::CommitSetting(int32_t toneId, const string &tonePath, int32_t settingType,
     int32_t toneType, int32_t sourceType)
 {
+    RINGTONE_INFO_LOG("toneId=%{public}d, tonePath=%{public}s, settingType=%{public}d, toneType=%{public}d,"
+        "sourceType=%{public}d", toneId, tonePath.c_str(), settingType, toneType, sourceType);
     auto ret = CommitSettingCompare(settingType, toneType, sourceType);
     if (ret != E_OK) {
         return ret;

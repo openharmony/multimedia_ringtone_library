@@ -43,7 +43,6 @@ using namespace OHOS::DataShare;
 const char RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY[] = "ringtone.scanner.completed";
 const int RINGTONE_PARAMETER_SCANNER_COMPLETED_TRUE = 1;
 const int RINGTONE_PARAMETER_SCANNER_COMPLETED_FALSE = 0;
-const string RINGTONE_SINGLE_CLONE_BACKUP_PATH = "/storage/media/local/files/Backup";
 const std::vector<std::string> RINGTONE_OPEN_WRITE_MODE_VECTOR = {
     { RINGTONE_FILEMODE_WRITEONLY },
     { RINGTONE_FILEMODE_READWRITE },

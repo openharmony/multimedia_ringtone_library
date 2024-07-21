@@ -32,8 +32,9 @@ std::unique_ptr<RestoreInterface> RingtoneRestoreFactory::CreateObj(RestoreScene
 
     if (type == RESTORE_SCENE_TYPE_SINGLE_CLONE) {
         obj = std::make_unique<RingtoneRestore>();
-    } else if (RESTORE_SCENE_TYPE_DUAL_CLONE || RESTORE_SCENE_TYPE_DUAL_UPGRADE) {
-        // reserve for dual-fw restore
+    } else if (type == RESTORE_SCENE_TYPE_DUAL_CLONE) {
+        obj = std::make_unique<RingtoneDualfwRestoreClone>();
+    } else if (type == RESTORE_SCENE_TYPE_DUAL_UPGRADE) {
         obj = std::make_unique<RingtoneDualfwRestore>();
     } else {
         RINGTONE_ERR_LOG("error: invalid argument");

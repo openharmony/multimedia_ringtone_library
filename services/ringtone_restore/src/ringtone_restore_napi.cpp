@@ -20,7 +20,6 @@
 #include "ringtone_db_const.h"
 #include "ringtone_errno.h"
 #include "ringtone_log.h"
-#include "ringtone_props.h"
 #include "ringtone_restore_factory.h"
 #include "ringtone_restore_type.h"
 
@@ -28,9 +27,7 @@
 
 namespace OHOS {
 namespace Media {
-const std::string UPGRADE_COMPLETE_PROP = "upgrade_complete_prop";
-const std::string UPGRADE_COMPLETE_VAL_FALSE = "false";
-const std::string UPGRADE_COMPLETE_VAL_TRUE = "true";
+using namespace std;
 napi_value RingtoneRestoreNapi::Init(napi_env env, napi_value exports)
 {
     RINGTONE_INFO_LOG("Init");
@@ -87,30 +84,6 @@ static int32_t CheckPermission(void)
     return E_OK;
 }
 
-static int32_t RingtoneDualfwUpgrade(std::unique_ptr<RestoreInterface> &restore, string backupPath)
-{
-    int32_t ret = E_OK;
-    if ((restore != nullptr) && (restore->Init(backupPath)) == Media::E_OK) {
-        RingtoneProps props(restore->GetBaseDb());
-        if (props.Init() != E_OK) {
-            RINGTONE_INFO_LOG("ringtone props table init failed");
-        }
-        std::string upgradeCompleteProp = props.GetProp(UPGRADE_COMPLETE_PROP, UPGRADE_COMPLETE_VAL_FALSE);
-        RINGTONE_INFO_LOG("upgradeCompleteProp=%{public}s", upgradeCompleteProp.c_str());
-        if (upgradeCompleteProp != UPGRADE_COMPLETE_VAL_TRUE) {
-            RINGTONE_INFO_LOG("start dualfw upgrade");
-            restore->StartRestore();
-            props.SetProp(UPGRADE_COMPLETE_PROP, UPGRADE_COMPLETE_VAL_TRUE);
-            RINGTONE_INFO_LOG("dualfw upgrade finished");
-        }
-    } else {
-        RINGTONE_ERR_LOG("ringtone-restore failed on init");
-        ret = E_HAS_DB_ERROR;
-    }
-
-    return ret;
-}
-
 static int32_t RingtoneRestore(std::unique_ptr<RestoreInterface> &restore, string backupPath)
 {
     int32_t ret = E_OK;
@@ -154,17 +127,8 @@ napi_value RingtoneRestoreNapi::JSStartRestore(napi_env env, napi_callback_info 
     RINGTONE_INFO_LOG("backupPath: %{public}s", baseBackupPath.c_str());
 
     auto restore = RingtoneRestoreFactory::CreateObj(RestoreSceneType(scenceCode));
-    switch (scenceCode) {
-        case RESTORE_SCENE_TYPE_SINGLE_CLONE:
-            RingtoneRestore(restore, baseBackupPath);
-            break;
-        case RESTORE_SCENE_TYPE_DUAL_CLONE:
-        case RESTORE_SCENE_TYPE_DUAL_UPGRADE:
-            RingtoneDualfwUpgrade(restore, baseBackupPath);
-            break;
-        default:
-            RINGTONE_ERR_LOG("scense code argument err, scenceCode=%{public}d", scenceCode);
-            break;
+    if (restore != nullptr) {
+        RingtoneRestore(restore, baseBackupPath);
     }
     RINGTONE_INFO_LOG("JSStartRestore end");
     return result;
