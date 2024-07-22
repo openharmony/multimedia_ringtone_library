@@ -108,6 +108,7 @@ void RingtoneRestore::CheckRestoreFileInfos(vector<FileInfo> &infos)
         if (!RingtoneFileUtils::IsFileExists(srcPath)) {
             // 系统铃音不克隆，需要进行设置铃音判断
             if (it->sourceType == SOURCE_TYPE_PRESET) {
+                it->restorePath = it->data;
                 CheckSetting(*it);
             }
             RINGTONE_INFO_LOG("warnning:backup file is not exist, path=%{private}s", srcPath.c_str());
@@ -129,6 +130,7 @@ void RingtoneRestore::StartRestore()
         CheckRestoreFileInfos(infos);
         InsertTones(infos);
     }
+    FlushSettings();
 }
 
 void RingtoneRestore::UpdateRestoreFileInfo(FileInfo &info)
