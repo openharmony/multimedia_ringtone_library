@@ -319,6 +319,7 @@ void RingtoneDualfwRestore::StartRestore()
     if ((!infos.empty()) && (infos.size() != 0)) {
         InsertTones(infos);
     }
+    FlushSettings();
 }
 
 int32_t RingtoneDualfwRestore::DupToneFile(FileInfo &info)

@@ -46,6 +46,7 @@ protected:
         std::unique_ptr<RingtoneMetadata> &metadata, const std::string &col);
     int32_t PopulateMetadata(const std::shared_ptr<NativeRdb::ResultSet> &resultSet,
         std::unique_ptr<RingtoneMetadata> &metaData);
+    virtual void FlushSettings();
 private:
     static std::string GetRestoreDir(const int32_t toneType);
     static NativeRdb::ValuesBucket SetInsertValue(const FileInfo &fileInfo);

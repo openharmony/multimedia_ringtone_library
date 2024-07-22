@@ -182,9 +182,16 @@ void RingtoneRestoreBase::InsertTones(std::vector<FileInfo> &fileInfos)
         return;
     }
 
-    settingMgr_->FlushSettings();
-
     OnFinished(fileInfos);
+}
+
+void RingtoneRestoreBase::FlushSettings()
+{
+    if (settingMgr_ != nullptr) {
+        settingMgr_->FlushSettings();
+    } else {
+        RINGTONE_ERR_LOG("ringtone setting mgr is nullptr");
+    }
 }
 
 int32_t RingtoneRestoreBase::BatchInsert(const std::string &tableName, std::vector<NativeRdb::ValuesBucket> &values,
