@@ -171,7 +171,7 @@ int32_t RingtoneDataManager::DeleteFileFromResultSet(std::shared_ptr<NativeRdb::
         auto asset = fetchResult->GetObjectFromRdb(resultSet, i);
         if (asset == nullptr) {
             RINGTONE_ERR_LOG("asset is nullptr");
-            return E_ERR;
+            continue;
         }
         RingtoneFileUtils::DeleteFile(asset->GetPath());
     }
