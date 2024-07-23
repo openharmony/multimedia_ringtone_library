@@ -72,6 +72,7 @@ ohos_shared_library("ringtone_data_extension") {
     "${RINGTONE_EXTENSION_PATH}/src/ringtone_data_manager.cpp",
     "${RINGTONE_EXTENSION_PATH}/src/ringtone_datashare_extension.cpp",
     "${RINGTONE_EXTENSION_PATH}/src/ringtone_datashare_stub_impl.cpp",
+    "${RINGTONE_EXTENSION_PATH}/src/ringtone_language_manager.cpp",
     "${RINGTONE_EXTENSION_PATH}/src/ringtone_rdbstore.cpp",
     "${RINGTONE_EXTENSION_PATH}/src/ringtone_subscriber.cpp",
   ]
@@ -112,6 +113,7 @@ ohos_shared_library("ringtone_data_extension") {
     "hitrace:hitrace_meter",
     "init:libbegetutil",
     "ipc:ipc_core",
+    "libxml2:libxml2",
     "napi:ace_napi",
     "player_framework:media_client",
     "preferences:native_preferences",

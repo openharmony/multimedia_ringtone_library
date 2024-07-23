@@ -48,7 +48,8 @@ const std::string CREATE_RINGTONE_TABLE = "CREATE TABLE IF NOT EXISTS " + RINGTO
     RINGTONE_COLUMN_RING_TONE_TYPE                + " INT      DEFAULT 0, " +
     RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE         + " INT      DEFAULT 0, " +
     RINGTONE_COLUMN_ALARM_TONE_TYPE               + " INT      DEFAULT 0, " +
-    RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE        + " INT      DEFAULT 0  " + ")";
+    RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE        + " INT      DEFAULT 0, " +
+    RINGTONE_COLUMN_DISPLAY_LANGUAGE_TYPE         + " TEXT                " + ")";
 
 
 static const vector<string> g_initSqls = {
@@ -158,10 +159,38 @@ int32_t RingtoneDataCallBack::OnCreate(NativeRdb::RdbStore &store)
     return NativeRdb::E_OK;
 }
 
+static void ExecSqls(const vector<string> &sqls, NativeRdb::RdbStore &store)
+{
+    int32_t err = NativeRdb::E_OK;
+    for (const auto &sql : sqls) {
+        err = store.ExecuteSql(sql);
+        if (err != NativeRdb::E_OK) {
+            RINGTONE_ERR_LOG("Failed to exec: %{private}s", sql.c_str());
+            continue;
+        }
+    }
+}
+
+static void AddDisplayLanguageColumn(NativeRdb::RdbStore &store)
+{
+    const vector<string> sqls = {
+        "ALTER TABLE " + RINGTONE_TABLE + " ADD COLUMN " + RINGTONE_COLUMN_DISPLAY_LANGUAGE_TYPE + " TEXT",
+    };
+    RINGTONE_INFO_LOG("Add display language column");
+    ExecSqls(sqls, store);
+}
+
+static void UpgradeExtension(NativeRdb::RdbStore &store, int32_t oldVersion)
+{
+    if (oldVersion < VERSION_ADD_DISPLAY_LANGUAGE_COLUMN) {
+        AddDisplayLanguageColumn(store);
+    }
+}
+
 int32_t RingtoneDataCallBack::OnUpgrade(NativeRdb::RdbStore &store, int32_t oldVersion, int32_t newVersion)
 {
-    RINGTONE_DEBUG_LOG("OnUpgrade old:%d, new:%d", oldVersion, newVersion);
-
+    RINGTONE_INFO_LOG("OnUpgrade old:%d, new:%d", oldVersion, newVersion);
+    UpgradeExtension(store, oldVersion);
     return NativeRdb::E_OK;
 }
 } // namespace Media
