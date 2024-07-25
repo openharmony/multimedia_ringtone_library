@@ -103,6 +103,11 @@ HWTEST_F(RingtoneMetadataExtractorTest, metadataExtractor_FillExtractedMetadata_
         { Media::AV_KEY_MIME_TYPE, "a" }, { Media::AV_KEY_TITLE, "a" } };
     RingtoneMetadataExtractor::FillExtractedMetadata(resultMap, data);
     EXPECT_EQ(data->GetTitle(), "a");
+    const string timeKey = "2021-10-1 15:00:00";
+    resultMap = { { Media::AV_KEY_DURATION, "a" }, { Media::AV_KEY_DATE_TIME_FORMAT,  timeKey},
+        { Media::AV_KEY_MIME_TYPE, "a" }, { Media::AV_KEY_TITLE, "a" } };
+    RingtoneMetadataExtractor::FillExtractedMetadata(resultMap, data);
+    EXPECT_EQ(data->GetTitle(), "a");
 }
 
 HWTEST_F(RingtoneMetadataExtractorTest, metadataExtractor_ExtractAudioMetadata_test_001, TestSize.Level0)
@@ -117,6 +122,10 @@ HWTEST_F(RingtoneMetadataExtractorTest, metadataExtractor_ExtractAudioMetadata_t
     ret = RingtoneMetadataExtractor::ExtractAudioMetadata(data);
     EXPECT_NE(ret, E_OK);
     data->SetData("ExtractAudioMetadata");
+    ret = RingtoneMetadataExtractor::ExtractAudioMetadata(data);
+    EXPECT_EQ((ret == E_SYSCALL || ret == E_AVMETADATA), true);
+    const string dataStr = "/storage/media/100/local/files/";
+    data->SetData(dataStr);
     ret = RingtoneMetadataExtractor::ExtractAudioMetadata(data);
     EXPECT_EQ((ret == E_SYSCALL || ret == E_AVMETADATA), true);
 }

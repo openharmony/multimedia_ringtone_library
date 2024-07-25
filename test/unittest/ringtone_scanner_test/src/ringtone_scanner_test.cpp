@@ -70,6 +70,9 @@ HWTEST_F(RingtoneScannerTest, scanner_Scan_test_001, TestSize.Level0)
     ringtoneScannerObjThree.Scan();
     shared_ptr<bool> flag = make_shared<bool>();
     ringtoneScannerObjThree.SetStopFlag(flag);
+    int type = 3;
+    RingtoneScannerObj ringtoneScannerObjTwo(path, callback, static_cast<RingtoneScannerObj::ScanType>(type));
+    ringtoneScannerObjTwo.Scan();
     RingtoneScannerObj ringtoneScannerObjTest(path, callback, RingtoneScannerObj::START);
     int ret = ringtoneScannerObjTest.GetFileMetadata();
     ringtoneScannerObjTest.Scan();
@@ -138,6 +141,18 @@ HWTEST_F(RingtoneScannerTest, scanner_BuildFileInfo_test_001, TestSize.Level0)
     ret = ringtoneScannerObj.BuildFileInfo();
     ringtoneScannerObj.WaitFor();
     EXPECT_EQ(ret, E_OK);
+}
+
+HWTEST_F(RingtoneScannerTest, scanner_ScanDir_test_001, TestSize.Level0)
+{
+    const string dir = "./scanner_ScanDir_test_001";
+    shared_ptr<IRingtoneScannerCallback> callback = nullptr;
+    RingtoneScannerObj ringtoneScannerObj(dir, callback, RingtoneScannerObj::DIRECTORY);
+    int32_t ret = ringtoneScannerObj.ScanDir();
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    ringtoneScannerObj.dir_ = "scanner_ScanDir_test_001/.test";
+    ret = ringtoneScannerObj.ScanDir();
+    EXPECT_EQ(ret, E_DIR_HIDDEN);
 }
 } // namespace Media
 } // namespace OHOS

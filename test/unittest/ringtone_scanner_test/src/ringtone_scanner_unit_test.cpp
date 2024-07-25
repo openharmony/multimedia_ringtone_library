@@ -197,7 +197,7 @@ HWTEST_F(RingtoneScannerUnitTest,  scannerManager_ScanFileSync_CanonicalPathtest
         exit(1);
     }
 
-    const string path = STORAGE_FILES_DIR + "../files/Ringtone/Canonical1.ogg";
+    string path = STORAGE_FILES_DIR + "../files/Ringtone/Canonical1.ogg";
     EXPECT_EQ(RingtoneUnitTestUtils::CreateFileFS(path), true);
 
     auto scannerCallback = make_shared<TestRingtoneScannerCallback>();
@@ -208,6 +208,10 @@ HWTEST_F(RingtoneScannerUnitTest,  scannerManager_ScanFileSync_CanonicalPathtest
         RingtoneUnitTestUtils::WaitForCallback(scannerCallback);
         EXPECT_EQ(scannerCallback->status_, E_OK);
     }
+
+    path = "/storage/cloud/files";
+    result = g_ringtoneScannerManager->ScanFileSync(path, scannerCallback, true);
+    EXPECT_EQ(result, E_INVALID_PATH);
 }
 
 HWTEST_F(RingtoneScannerUnitTest,  scannerManager_ScanFileSync_CanonicalPathtest_002, TestSize.Level0)
@@ -217,7 +221,7 @@ HWTEST_F(RingtoneScannerUnitTest,  scannerManager_ScanFileSync_CanonicalPathtest
         exit(1);
     }
 
-    const string path = STORAGE_FILES_DIR + "../files/Ringtone/Canonical1.ogg";
+    string path = STORAGE_FILES_DIR + "../files/Ringtone/Canonical1.ogg";
     EXPECT_EQ(RingtoneUnitTestUtils::CreateFileFS(path), true);
 
     auto scannerCallback = make_shared<TestRingtoneScannerCallback>();

@@ -26,6 +26,8 @@
 #include "preferences.h"
 #include "preferences_helper.h"
 #include "ringtone_errno.h"
+#include "ringtone_log.h"
+#include "ringtone_rdbstore.h"
 
 using namespace std;
 using namespace OHOS;
@@ -33,16 +35,12 @@ using namespace testing::ext;
 
 namespace OHOS {
 namespace Media {
-
+shared_ptr<OHOS::AbilityRuntime::AbilityContextImpl> abilityContextImpl;
 void RingtoneDfxTest::SetUpTestCase()
 {
     auto stageContext = std::make_shared<AbilityRuntime::ContextImpl>();
-    auto abilityContextImpl = std::make_shared<OHOS::AbilityRuntime::AbilityContextImpl>();
+    abilityContextImpl = std::make_shared<OHOS::AbilityRuntime::AbilityContextImpl>();
     abilityContextImpl->SetStageContext(stageContext);
-    auto dfxMgr = DfxManager::GetInstance();
-    EXPECT_NE(dfxMgr, nullptr);
-    int32_t ret = dfxMgr->Init(abilityContextImpl);
-    EXPECT_EQ(ret, E_OK);
 }
 void RingtoneDfxTest::TearDownTestCase()
 {
@@ -53,13 +51,48 @@ void RingtoneDfxTest::SetUp() {}
 
 void RingtoneDfxTest::TearDown(void) {}
 
-HWTEST_F(RingtoneDfxTest, ringtonelib_dfx_manager_test_001, TestSize.Level0)
+HWTEST_F(RingtoneDfxTest, ringtonelib_dfx_manager_test_0001, TestSize.Level0)
 {
-    int64_t ret = DfxManager::GetInstance()->HandleReportXml();
+    RINGTONE_INFO_LOG("ringtonelib_dfx_manager_test_0001 start");
+    auto dfxMgr = DfxManager::GetInstance();
+    EXPECT_NE(dfxMgr, nullptr);
+    int32_t ret = dfxMgr->Init(nullptr);
+    EXPECT_NE(ret, E_OK);
+    int64_t res = dfxMgr->HandleReportXml();
+    EXPECT_NE(res, 0);
+    ret = dfxMgr->Init(abilityContextImpl);
+    EXPECT_EQ(ret, E_OK);
+    sleep(1);
+    auto dfxMgrTwo = DfxManager::GetInstance();
+    EXPECT_NE(dfxMgrTwo, nullptr);
+    ret = dfxMgrTwo->Init(abilityContextImpl);
+    EXPECT_EQ(ret, E_OK);
+    RINGTONE_INFO_LOG("ringtonelib_dfx_manager_test_0001 end");
+}
+
+HWTEST_F(RingtoneDfxTest, ringtonelib_dfx_manager_test_0002, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("ringtonelib_dfx_manager_test_0002 start");
+    auto dfxMgr = DfxManager::GetInstance();
+    EXPECT_NE(dfxMgr, nullptr);
+    auto result = dfxMgr->Init(abilityContextImpl);
+    EXPECT_EQ(result, E_OK);;
+    auto dfxWorker = DfxWorker::GetInstance();
+    EXPECT_NE(dfxWorker, nullptr);
+    int64_t ret = dfxMgr->HandleReportXml();
     EXPECT_EQ((ret > 0), true);
     std::string bundleName = "test";
-    ret = DfxManager::GetInstance()->RequestTonesCount(SourceType::SOURCE_TYPE_INVALID);
+    ret = dfxMgr->RequestTonesCount(SourceType::SOURCE_TYPE_INVALID);
     EXPECT_EQ(ret, 0);
+    ret = dfxMgr->RequestTonesCount(SourceType::SOURCE_TYPE_PRESET);
+    EXPECT_EQ(ret, 0);
+    ret = dfxMgr->RequestTonesCount(SourceType::SOURCE_TYPE_MAX);
+    EXPECT_EQ(ret, 0);
+    auto dfxStore = RingtoneRdbStore::GetInstance(abilityContextImpl);
+    dfxStore->Stop();
+    ret = dfxMgr->RequestTonesCount(SourceType::SOURCE_TYPE_PRESET);
+    EXPECT_EQ(ret, 0);
+    RINGTONE_INFO_LOG("ringtonelib_dfx_manager_test_0002 end");
 }
 } // namespace Media
 } // namespace OHOS

@@ -375,17 +375,61 @@ HWTEST_F(RingtoneSettingManagerTest, settingMetadata_CleanupSetting_test_003, Te
 HWTEST_F(RingtoneSettingManagerTest, settingMetadata_CommitSetting_test_001, TestSize.Level0)
 {
     std::shared_ptr<RingtoneMetadata> ringtoneMetadata = std::make_shared<RingtoneMetadata>();
-    int32_t settingType = static_cast<int32_t>(ToneSettingType::TONE_SETTING_TYPE_SHOT);
+    int32_t settingType = static_cast<int32_t>(ToneSettingType::TONE_SETTING_TYPE_ALARM);
     int32_t toneType = static_cast<int32_t>(ShotToneType::SHOT_TONE_TYPE_SIM_CARD_BOTH);
     int32_t sourceType = static_cast<int32_t>(SourceType::SOURCE_TYPE_PRESET);
     int32_t toneId = 0;
     string tonePath = "settingMetadata_CommitSetting_test_001";
     auto ret = g_ringtoneSettingManager->CommitSetting(toneId, tonePath, settingType, toneType, sourceType);
+    EXPECT_EQ(ret, E_INVALID_ARGUMENTS);
+    settingType = static_cast<int32_t>(ToneSettingType::TONE_SETTING_TYPE_SHOT);
+    ret = g_ringtoneSettingManager->CommitSetting(toneId, tonePath, settingType, toneType, sourceType);
     EXPECT_EQ(ret, E_OK);
     g_ringtoneSettingManager->FlushSettings();
+    settingType = static_cast<int32_t>(ToneSettingType::TONE_SETTING_TYPE_RINGTONE);
+    ret = g_ringtoneSettingManager->CommitSetting(toneId, tonePath, settingType, toneType, sourceType);
+    EXPECT_EQ(ret, E_OK);
     toneType = static_cast<int32_t>(ShotToneType::SHOT_TONE_TYPE_NOT);
     ret = g_ringtoneSettingManager->CommitSetting(toneId, tonePath, settingType, toneType, sourceType);
     EXPECT_EQ(ret, E_INVALID_ARGUMENTS);
+    settingType = static_cast<int32_t>(ToneSettingType::TONE_SETTING_TYPE_SHOT);
+    toneType = static_cast<int32_t>(ShotToneType::SHOT_TONE_TYPE_SIM_CARD_1);
+    ret = g_ringtoneSettingManager->CommitSetting(toneId, tonePath, settingType, toneType, sourceType);
+    EXPECT_EQ(ret, E_OK);
+    toneType = static_cast<int32_t>(ShotToneType::SHOT_TONE_TYPE_SIM_CARD_2);
+    ret = g_ringtoneSettingManager->CommitSetting(toneId, tonePath, settingType, toneType, sourceType);
+    EXPECT_EQ(ret, E_OK);
+    settingType = static_cast<int32_t>(ToneSettingType::TONE_SETTING_TYPE_RINGTONE);
+    toneType = static_cast<int32_t>(ShotToneType::SHOT_TONE_TYPE_SIM_CARD_1);
+    ret = g_ringtoneSettingManager->CommitSetting(toneId, tonePath, settingType, toneType, sourceType);
+    EXPECT_EQ(ret, E_FAIL);
+    g_ringtoneSettingManager->FlushSettings();
+    toneType = static_cast<int32_t>(ShotToneType::SHOT_TONE_TYPE_SIM_CARD_1);
+    ret = g_ringtoneSettingManager->CommitSetting(toneId, tonePath, settingType, toneType, sourceType);
+    EXPECT_EQ(ret, E_OK);
+    toneType = static_cast<int32_t>(ShotToneType::SHOT_TONE_TYPE_SIM_CARD_2);
+    ret = g_ringtoneSettingManager->CommitSetting(toneId, tonePath, settingType, toneType, sourceType);
+    EXPECT_EQ(ret, E_OK);
+}
+
+HWTEST_F(RingtoneSettingManagerTest, settingMetadata_CommitSettingCompare_test_001, TestSize.Level0)
+{
+    int32_t settingType = static_cast<int32_t>(ToneSettingType::TONE_SETTING_TYPE_ALARM);
+    int32_t toneType = static_cast<int32_t>(ShotToneType::SHOT_TONE_TYPE_SIM_CARD_BOTH);
+    int32_t sourceType = static_cast<int32_t>(SourceType::SOURCE_TYPE_MAX);
+    auto ret = g_ringtoneSettingManager->CommitSettingCompare(settingType, toneType, sourceType);
+    EXPECT_EQ(ret, E_INVALID_ARGUMENTS);
+    sourceType = static_cast<int32_t>(SourceType::SOURCE_TYPE_CUSTOMISED);
+    settingType = static_cast<int32_t>(ToneSettingType::TONE_SETTING_TYPE_INVALID);
+    ret = g_ringtoneSettingManager->CommitSettingCompare(settingType, toneType, sourceType);
+    EXPECT_EQ(ret, E_INVALID_ARGUMENTS);
+    settingType = static_cast<int32_t>(ToneSettingType::TONE_SETTING_TYPE_MAX);
+    ret = g_ringtoneSettingManager->CommitSettingCompare(settingType, toneType, sourceType);
+    EXPECT_EQ(ret, E_INVALID_ARGUMENTS);
+    settingType = static_cast<int32_t>(ToneSettingType::TONE_SETTING_TYPE_NOTIFICATION);
+    toneType = NOTIFICATION_TONE_TYPE;
+    ret = g_ringtoneSettingManager->CommitSettingCompare(settingType, toneType, sourceType);
+    EXPECT_EQ(ret, E_OK);
 }
 } // namespace Media
 } // namespace OHOS
