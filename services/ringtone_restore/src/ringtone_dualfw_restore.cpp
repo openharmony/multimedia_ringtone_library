@@ -20,6 +20,7 @@
 #include <fcntl.h>
 #include <sys/sendfile.h>
 #include <sys/stat.h>
+#include <sstream>
 
 #include "datashare_helper.h"
 #include "datashare_predicates.h"
@@ -30,7 +31,6 @@
 #include "file_asset.h"
 #include "fetch_result.h"
 #include "iservice_registry.h"
-#include "medialibrary_db_const.h"
 #include "result_set_utils.h"
 #include "ringtone_errno.h"
 #include "ringtone_file_utils.h"
@@ -155,134 +155,229 @@ static void MediaUriAppendKeyValue(string &uri, const string &key, const string 
     }
 }
 
-int32_t RingtoneDualfwRestore::QueryRingToneDbForFileInfo(std::shared_ptr<NativeRdb::RdbStore> rdbStore,
-    const DualfwSettingItem &item, FileInfo& info)
+static const string KEY_API_VERSION = "API_VERSION";
+static std::string MakeBatchQueryWhereClause(const std::vector<std::string>& names,
+    const std::string& predicateColumn)
 {
-    const std::string displayName = item.toneFileName;
+    std::stringstream prefixSs;
+    prefixSs << predicateColumn << " in (";
+    bool start = true;
+    for (const auto& name: names) {
+        if (start) {
+            start = false;
+        } else {
+            prefixSs << ",";
+        }
+        prefixSs << "\"" << name << "\"";
+    }
+    prefixSs << ")";
+    return prefixSs.str();
+}
+
+static void AssetToFileInfo(std::shared_ptr<FileInfo> infoPtr, const std::unique_ptr<FileAsset> &asset)
+{
+    infoPtr->toneId = asset->GetId();
+    infoPtr->data = asset->GetPath();
+    infoPtr->size = asset->GetSize();
+    infoPtr->displayName = asset->GetDisplayName();
+    infoPtr->title = asset->GetTitle();
+    infoPtr->mimeType = asset->GetMimeType();
+    infoPtr->mediaType = RINGTONE_MEDIA_TYPE_AUDIO;
+    infoPtr->sourceType = SOURCE_TYPE_CUSTOMISED;
+    infoPtr->dateAdded = asset->GetDateAdded();
+    infoPtr->dateModified = asset->GetDateModified();
+    infoPtr->dateTaken = asset->GetDateTaken();
+    infoPtr->duration = asset->GetDuration();
+}
+
+int32_t RingtoneDualfwRestore::QueryMediaLibForFileInfo(const std::vector<std::string>& names,
+    std::map<std::string, std::shared_ptr<FileInfo>>& infoMap,
+    const std::string& queryFileUriBase, const std::string& predicateColumn)
+{
+    if (mediaDataShare_ == nullptr || names.empty()) {
+        RINGTONE_ERR_LOG("argument errr, return nullptr");
+        return E_ERR;
+    }
+    vector<string> columns;
+    DataShare::DataSharePredicates predicates;
+    string whereClause = MakeBatchQueryWhereClause(names, predicateColumn) + " AND " +
+        MediaColumn::MEDIA_TYPE + "=" + std::to_string(MEDIA_TYPE_AUDIO);
+    RINGTONE_INFO_LOG("Querying media_library where %{public}s", whereClause.c_str());
+    predicates.SetWhereClause(whereClause);
+
+    std::string queryFileUri = queryFileUriBase;
+    MediaUriAppendKeyValue(queryFileUri, KEY_API_VERSION, to_string(MEDIA_API_VERSION_V10));
+    shared_ptr<DataShare::DataShareResultSet> resultSet = nullptr;
+    Uri uri(queryFileUri);
+
+    resultSet = mediaDataShare_->Query(uri, predicates, columns);
+    if (resultSet == nullptr) {
+        RINGTONE_WARN_LOG("resultset for %{public}s is null", whereClause.c_str());
+        return E_FAIL;
+    }
+    int count = 0;
+    resultSet->GetRowCount(count);
+    RINGTONE_INFO_LOG("Querying %{public}s where %{public}s, got %{public}d records",
+        queryFileUri.c_str(), whereClause.c_str(), count);
+
+    if (count <= 0) {
+        RINGTONE_WARN_LOG("resultset for %{public}s is empty", whereClause.c_str());
+        return E_SUCCESS;
+    }
+
+    std::unique_ptr<FetchResult<FileAsset>> fetchFileResult = make_unique<FetchResult<FileAsset>>(
+        move(resultSet));
+
+    for (int i = 0; i<count; i++) {
+        std::unique_ptr<FileAsset> asset = fetchFileResult->GetNextObject();
+        auto infoPtr = std::make_shared<FileInfo>();
+        AssetToFileInfo(infoPtr, asset);
+        if (predicateColumn == MediaColumn::MEDIA_TITLE) {
+            infoMap[asset->GetTitle()] = infoPtr;
+        } else {
+            infoMap[asset->GetDisplayName()] = infoPtr;
+        }
+        RINGTONE_INFO_LOG("new info found in media_lib: %{public}s", infoPtr->toString().c_str()); // debug
+    }
+    return E_SUCCESS;
+}
+
+int32_t RingtoneDualfwRestore::QueryRingToneDbForFileInfo(std::shared_ptr<NativeRdb::RdbStore> rdbStore,
+    const std::vector<std::string>& names, std::map<std::string, std::shared_ptr<FileInfo>>& infoMap,
+    const std::string& predicateColumn)
+{
     if (rdbStore == nullptr) {
         RINGTONE_ERR_LOG("rdb_ is nullptr, Maybe init failed.");
         return E_FAIL;
     }
+    string whereClause = MakeBatchQueryWhereClause(names, predicateColumn);
     std::string queryCountSql = "SELECT * FROM " + RINGTONE_TABLE +
-        " WHERE " + RINGTONE_COLUMN_DISPLAY_NAME + " = \"" + displayName + "\";";
-    RINGTONE_INFO_LOG("queryCountSql: %{public}s", queryCountSql.c_str());
+        " WHERE " + whereClause +  " AND " +
+        RINGTONE_COLUMN_MEDIA_TYPE + "=" + std::to_string(RINGTONE_MEDIA_TYPE_AUDIO) + ";";
+    RINGTONE_INFO_LOG("Querying ringtonedb where %{public}s", whereClause.c_str());
 
     auto resultSet = rdbStore->QuerySql(queryCountSql);
-    if (resultSet == nullptr || resultSet->GoToFirstRow() != NativeRdb::E_OK) {
-        return E_FAIL;
-    }
-    auto metaData = std::make_unique<RingtoneMetadata>();
-    if (PopulateMetadata(resultSet, metaData) != E_OK) {
-        return E_FAIL;
-    }
-    info = FileInfo(*metaData);
-    switch (item.settingType) {
-        case TONE_SETTING_TYPE_RINGTONE:
-            info.ringToneSourceType = SOURCE_TYPE_CUSTOMISED;
-            info.toneType = TONE_TYPE_RINGTONE;
-            info.ringToneType = item.toneType;
-            break;
-        case TONE_SETTING_TYPE_ALARM:
-            info.toneType = TONE_TYPE_ALARM;
-            info.alarmToneType = item.toneType;
-            info.alarmToneSourceType = SOURCE_TYPE_CUSTOMISED;
-            break;
-        case TONE_SETTING_TYPE_SHOT:
-            info.toneType = TONE_TYPE_NOTIFICATION;
-            info.shotToneType = item.toneType;
-            info.shotToneSourceType = SOURCE_TYPE_CUSTOMISED;
-            break;
-        case TONE_SETTING_TYPE_NOTIFICATION:
-            info.toneType = TONE_TYPE_NOTIFICATION;
-            info.notificationToneType = item.toneType;
-            info.notificationToneSourceType = SOURCE_TYPE_CUSTOMISED;
-            break;
-        default:
-            return E_FAIL;
-    }
-    info.doInsert = false;
-    return E_OK;
-}
-
-static const string KEY_API_VERSION = "API_VERSION";
-static unique_ptr<FileAsset> QueryMediaFileAsset(std::shared_ptr<DataShare::DataShareHelper> &mediaDataShare,
-    DualfwSettingItem &item)
-{
-    if (mediaDataShare == nullptr || item.toneFileName.empty() || item.toneFileName == "") {
-        RINGTONE_ERR_LOG("argument errr, return nullptr");
-        return nullptr;
-    }
-
-    vector<string> columns;
-    DataShare::DataSharePredicates predicates;
-    string prefix = MEDIA_DATA_DB_NAME + " = \"" + item.toneFileName + "\"";
-    predicates.SetWhereClause(prefix);
-    string queryFileUri = UFM_QUERY_AUDIO;
-    MediaUriAppendKeyValue(queryFileUri, KEY_API_VERSION, to_string(MEDIA_API_VERSION_V10));
-    shared_ptr<DataShare::DataShareResultSet> resultSet = nullptr;
-    Uri uri(queryFileUri);
-    RINGTONE_INFO_LOG("Querying %{public}s with %{public}s", queryFileUri.c_str(), prefix.c_str());
-    resultSet = mediaDataShare->Query(uri, predicates, columns);
     if (resultSet == nullptr) {
-        RINGTONE_WARN_LOG("query resultset for %{public}s is null", item.toneFileName.c_str());
-        return nullptr;
+        RINGTONE_WARN_LOG("resultset for %{public}s is null", whereClause.c_str());
+        return E_FAIL;
+    }
+    int count = 0;
+    resultSet->GetRowCount(count);
+    RINGTONE_INFO_LOG("Querying ringtonedb where %{public}s, got %{public}d records",
+        whereClause.c_str(), count);
+
+    if (count <= 0) {
+        RINGTONE_WARN_LOG("resultset for %{public}s is empty", whereClause.c_str());
+        return E_SUCCESS;
     }
 
-    unique_ptr<FetchResult<FileAsset>> fetchFileResult = make_unique<FetchResult<FileAsset>>(move(resultSet));
-    if (fetchFileResult->GetCount() < 0) {
-        RINGTONE_WARN_LOG("query resultset for %{public}s is empty", item.toneFileName.c_str());
-        return nullptr;
+    for (int i = 0; i<count; i++) {
+        resultSet->GoToNextRow();
+        auto metaData = std::make_unique<RingtoneMetadata>();
+        if (PopulateMetadata(resultSet, metaData) != E_OK) {
+            return E_FAIL;
+        }
+        auto infoPtr = std::make_shared<FileInfo>(*metaData);
+        infoPtr->doInsert = false;
+        if (predicateColumn == RINGTONE_COLUMN_TITLE) {
+            infoMap[infoPtr->title] = infoPtr;
+        } else {
+            infoMap[infoPtr->displayName] = infoPtr;
+        }
+        
+        RINGTONE_INFO_LOG("new info found in ringtone_lib: %{public}s", infoPtr->toString().c_str()); // debug
     }
-    unique_ptr<FileAsset> fileAsset = fetchFileResult->GetFirstObject();
-
-    return fileAsset;
-}
-
-static int32_t BuildFileInfo(DualfwSettingItem &item, unique_ptr<FileAsset> &asset, FileInfo &info)
-{
-    if (asset == nullptr) {
-        return E_ERR;
-    }
-
-    switch (item.settingType) {
-        case TONE_SETTING_TYPE_ALARM:
-            info.toneType = TONE_TYPE_ALARM;
-            info.alarmToneType = item.toneType;
-            info.alarmToneSourceType = SOURCE_TYPE_CUSTOMISED;
-            break;
-        case TONE_SETTING_TYPE_RINGTONE:
-            info.toneType = TONE_TYPE_RINGTONE;
-            info.ringToneType = item.toneType;
-            info.ringToneSourceType = SOURCE_TYPE_CUSTOMISED;
-            break;
-        case TONE_SETTING_TYPE_SHOT:
-            info.toneType = TONE_TYPE_NOTIFICATION;
-            info.shotToneType = item.toneType;
-            info.shotToneSourceType = SOURCE_TYPE_CUSTOMISED;
-            break;
-        case TONE_SETTING_TYPE_NOTIFICATION:
-            info.toneType = TONE_TYPE_NOTIFICATION;
-            info.notificationToneType = item.toneType;
-            info.notificationToneSourceType = SOURCE_TYPE_CUSTOMISED;
-            break;
-        default:
-            break;
-    }
-
-    info.toneId = asset->GetId();
-    info.data = asset->GetPath();
-    info.size = asset->GetSize();
-    info.displayName = asset->GetDisplayName();
-    info.title = asset->GetTitle();
-    info.mimeType = asset->GetMimeType();
-    info.mediaType = RINGTONE_MEDIA_TYPE_AUDIO;
-    info.sourceType = SOURCE_TYPE_CUSTOMISED;
-    info.dateAdded = asset->GetDateAdded();
-    info.dateModified = asset->GetDateModified();
-    info.dateTaken = asset->GetDateTaken();
-    info.duration = asset->GetDuration();
 
     return E_SUCCESS;
+}
+
+static void AddSettingsToFileInfo(const DualfwSettingItem& setting, FileInfo& info)
+{
+    switch (setting.settingType) {
+        case TONE_SETTING_TYPE_ALARM:
+            info.toneType = TONE_TYPE_ALARM;
+            info.alarmToneType = setting.toneType;
+            info.alarmToneSourceType = SOURCE_TYPE_CUSTOMISED;
+            break;
+        case TONE_SETTING_TYPE_RINGTONE:
+            info.toneType = TONE_TYPE_RINGTONE;
+            info.ringToneType = setting.toneType;
+            info.ringToneSourceType = SOURCE_TYPE_CUSTOMISED;
+            break;
+        case TONE_SETTING_TYPE_SHOT:
+            info.toneType = TONE_TYPE_NOTIFICATION;
+            info.shotToneType = setting.toneType;
+            info.shotToneSourceType = SOURCE_TYPE_CUSTOMISED;
+            break;
+        case TONE_SETTING_TYPE_NOTIFICATION:
+            info.toneType = TONE_TYPE_NOTIFICATION;
+            info.notificationToneType = setting.toneType;
+            info.notificationToneSourceType = SOURCE_TYPE_CUSTOMISED;
+            break;
+        default:
+            break;
+    }
+}
+
+static std::shared_ptr<FileInfo> MergeQueries(const DualfwSettingItem& setting,
+    std::map<std::string, std::shared_ptr<FileInfo>> resultFromMediaByDisplayName,
+    std::map<std::string, std::shared_ptr<FileInfo>> resultFromMediaByTitle,
+    std::map<std::string, std::shared_ptr<FileInfo>> resultFromRingtoneByDisplayName,
+    std::map<std::string, std::shared_ptr<FileInfo>> resultFromRingtoneByTitle,
+    bool& doInsert)
+{
+    std::shared_ptr<FileInfo> infoPtr;
+    doInsert = true;
+    auto keyName = setting.toneFileName;
+    if (resultFromMediaByDisplayName.find(keyName) != resultFromMediaByDisplayName.end()) {
+        infoPtr = resultFromMediaByDisplayName[keyName];
+        RINGTONE_INFO_LOG("found %{public}s in media_lib", keyName.c_str());
+    } else if (resultFromMediaByTitle.find(keyName) != resultFromMediaByTitle.end()) {
+        infoPtr = resultFromMediaByTitle[keyName];
+        RINGTONE_INFO_LOG("found %{public}s in media_lib", keyName.c_str());
+    } else if (resultFromRingtoneByDisplayName.find(keyName) != resultFromRingtoneByDisplayName.end()) {
+        infoPtr = resultFromRingtoneByDisplayName[keyName];
+        RINGTONE_INFO_LOG("found %{public}s in ringtone db", keyName.c_str());
+        doInsert = false;
+    } else if (resultFromRingtoneByTitle.find(keyName) != resultFromRingtoneByTitle.end()) {
+        infoPtr = resultFromRingtoneByTitle[keyName];
+        RINGTONE_INFO_LOG("found %{public}s in ringtone db", keyName.c_str());
+        doInsert = false;
+    } else {
+        RINGTONE_INFO_LOG("failed to find %{public}s", keyName.c_str());
+    }
+    return infoPtr;
+}
+
+std::vector<FileInfo> RingtoneDualfwRestore::BuildFileInfo()
+{
+    std::vector<FileInfo> result;
+    std::vector<std::string> fileNames = dualfwSetting_->GetFileNames();
+    std::map<std::string, std::shared_ptr<FileInfo>> resultFromMediaByDisplayName;
+    std::map<std::string, std::shared_ptr<FileInfo>> resultFromMediaByTitle;
+    std::map<std::string, std::shared_ptr<FileInfo>> resultFromRingtoneByDisplayName;
+    std::map<std::string, std::shared_ptr<FileInfo>> resultFromRingtoneByTitle;
+
+    QueryMediaLibForFileInfo(fileNames, resultFromMediaByDisplayName, UFM_QUERY_AUDIO, "display_name");
+    QueryMediaLibForFileInfo(fileNames, resultFromMediaByTitle, UFM_QUERY_AUDIO, "title");
+    QueryRingToneDbForFileInfo(GetBaseDb(), fileNames, resultFromRingtoneByDisplayName, "display_name");
+    QueryRingToneDbForFileInfo(GetBaseDb(), fileNames, resultFromRingtoneByTitle, "title");
+
+    for (const auto& setting : dualfwSetting_->GetSettings()) {
+        bool doInsert = true;
+        auto infoPtr = MergeQueries(setting, resultFromMediaByDisplayName, resultFromMediaByTitle,
+            resultFromRingtoneByDisplayName, resultFromRingtoneByTitle, doInsert);
+        if (infoPtr == nullptr) {
+            continue;
+        }
+        FileInfo info = *infoPtr;
+        info.doInsert = doInsert;
+        AddSettingsToFileInfo(setting, info);
+        result.push_back(info);
+
+        RINGTONE_INFO_LOG("push back into results -----> %{private}s", info.toString().c_str());
+    }
+    return result;
 }
 
 void RingtoneDualfwRestore::StartRestore()
@@ -293,28 +388,7 @@ void RingtoneDualfwRestore::StartRestore()
     }
     RingtoneRestoreBase::StartRestore();
 
-    vector<FileInfo> infos = {};
-    dualfwSetting_->SettingsTraval([&](DualfwSettingItem &item) -> void {
-        auto asset = QueryMediaFileAsset(mediaDataShare_, item);
-        FileInfo info;
-        auto ret = BuildFileInfo(item, asset, info);
-        if (ret != E_SUCCESS) {
-            RINGTONE_INFO_LOG("cannot find %{public}s in media_library, going to look for it in ringtone db",
-                item.toneFileName.c_str());
-            ret = QueryRingToneDbForFileInfo(GetBaseDb(), item, info);
-        }
-        if (ret == E_SUCCESS) {
-            infos.push_back(info);
-        } else {
-            RINGTONE_INFO_LOG("still cannot find %{public}s", item.toneFileName.c_str());
-        }
-        RINGTONE_INFO_LOG("***************************************************");
-        RINGTONE_INFO_LOG("toneName               = %{public}s", info.data.c_str());
-        RINGTONE_INFO_LOG("settingType            = %{public}d", item.settingType);
-        RINGTONE_INFO_LOG("toneType               = %{public}d", item.toneType);
-        RINGTONE_INFO_LOG("defaultSysSet          = %{public}d", item.defaultSysSet);
-        RINGTONE_INFO_LOG("setFlag                = %{public}d", item.setFlag);
-    });
+    std::vector<FileInfo> infos = BuildFileInfo();
 
     if ((!infos.empty()) && (infos.size() != 0)) {
         InsertTones(infos);

@@ -23,7 +23,7 @@
 
 namespace OHOS {
 namespace Media {
-const std::string ROOT_MEDIA_DIR = "/storage/cloud/files/";
+const std::string STORAGE_FILES_DIR = "/storage/cloud/files/";
 
 class TestRingtoneScannerCallback : public IRingtoneScannerCallback {
 public:

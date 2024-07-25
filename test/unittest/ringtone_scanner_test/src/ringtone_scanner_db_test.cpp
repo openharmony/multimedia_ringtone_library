@@ -96,8 +96,8 @@ HWTEST_F(RingtoneScannerDbTest, scannerDb_InsertMetadata_test_001, TestSize.Leve
     int32_t ret = ringtoneScannerDb.InsertMetadata(metadata, tableName);
     EXPECT_EQ(ret, E_OK);
     struct stat statInfo;
-    metadata.SetData(ROOT_MEDIA_DIR);
-    metadata.SetDisplayName(RingtoneScannerUtils::GetFileNameFromUri(ROOT_MEDIA_DIR));
+    metadata.SetData(STORAGE_FILES_DIR);
+    metadata.SetDisplayName(RingtoneScannerUtils::GetFileNameFromUri(STORAGE_FILES_DIR));
     metadata.SetTitle(RingtoneScannerUtils::GetFileTitle(metadata.GetDisplayName()));
     metadata.SetMediaType(static_cast<RingtoneMediaType>(RINGTONE_MEDIA_TYPE_AUDIO));
     metadata.SetSize(statInfo.st_size);
@@ -140,8 +140,8 @@ HWTEST_F(RingtoneScannerDbTest, scannerDb_GetFileBasicInfo_test_001, TestSize.Le
     RingtoneScannerDb ringtoneScannerDb;
     const string path = "scannerDb_GetFileBasicInfo_test_001";
     unique_ptr<RingtoneMetadata> metadata = make_unique<RingtoneMetadata>();
-    metadata->SetData(ROOT_MEDIA_DIR);
-    metadata->SetDisplayName(RingtoneScannerUtils::GetFileNameFromUri(ROOT_MEDIA_DIR));
+    metadata->SetData(STORAGE_FILES_DIR);
+    metadata->SetDisplayName(RingtoneScannerUtils::GetFileNameFromUri(STORAGE_FILES_DIR));
     metadata->SetTitle(RingtoneScannerUtils::GetFileTitle(metadata->GetDisplayName()));
     metadata->SetMediaType(static_cast<RingtoneMediaType>(RINGTONE_MEDIA_TYPE_AUDIO));
     g_uniStore->Stop();

@@ -79,8 +79,8 @@ HWTEST_F(RingtoneScannerTest, scanner_Scan_test_001, TestSize.Level0)
 HWTEST_F(RingtoneScannerTest, scanner_ScanFileInTraversal_test_001, TestSize.Level0)
 {
     shared_ptr<IRingtoneScannerCallback> callback = nullptr;
-    RingtoneScannerObj ringtoneScannerObj(ROOT_MEDIA_DIR, callback, RingtoneScannerObj::DIRECTORY);
-    int32_t ret = ringtoneScannerObj.ScanFileInTraversal(ROOT_MEDIA_DIR);
+    RingtoneScannerObj ringtoneScannerObj(STORAGE_FILES_DIR, callback, RingtoneScannerObj::DIRECTORY);
+    int32_t ret = ringtoneScannerObj.ScanFileInTraversal(STORAGE_FILES_DIR);
     EXPECT_NE(ret, E_FILE_HIDDEN);
     const string path = "scanner_ScanDirInternal_test_001/.test";
     ret = ringtoneScannerObj.ScanFileInTraversal(path);

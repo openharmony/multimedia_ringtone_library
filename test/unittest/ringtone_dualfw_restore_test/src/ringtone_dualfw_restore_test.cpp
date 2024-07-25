@@ -22,6 +22,7 @@
 #include "ringtone_restore_napi.h"
 #include "ringtone_restore_factory.h"
 #include "ringtone_restore_type.h"
+#include "ringtone_rdb_callbacks.h"
 
 #define private public
 #define protected public
@@ -84,89 +85,24 @@ HWTEST_F(RingtoneDualfwRestoreTest, ringtone_dualfw_restore_test_0002, TestSize.
     RINGTONE_INFO_LOG("ringtone_dualfw_restore_test_0002 end");
 }
 
-static void MediaUriAppendKeyValue(string &uri, const string &key, const string &value)
-{
-    string uriKey = key + '=';
-    if (uri.find(uriKey) != string::npos) {
-        return;
-    }
-
-    char queryMark = (uri.find('?') == string::npos) ? '?' : '&';
-    string append = queryMark + key + '=' + value;
-
-    size_t posJ = uri.find('#');
-    if (posJ == string::npos) {
-        uri += append;
-    } else {
-        uri.insert(posJ, append);
-    }
-}
-
-
-static int32_t checkURI(std::shared_ptr<DataShare::DataShareHelper> dataShareHelper, const std::string & testUri)
-{
-    const std::string MEDIA_DATA_DB_NAME = "display_name";
-    const string KEY_API_VERSION = "API_VERSION";
-    std::vector<string> columns = {};
-    DataShare::DataSharePredicates predicates;
-
-    std::string queryFileUri = testUri;
-    std::cout << queryFileUri << std::endl;
-    MediaUriAppendKeyValue(queryFileUri, KEY_API_VERSION, to_string(MEDIA_API_VERSION_V10));
-    std::cout << queryFileUri << std::endl;
-    std::shared_ptr<DataShare::DataShareResultSet> resultSet = nullptr;
-    Uri uri(queryFileUri);
-    resultSet = dataShareHelper->Query(uri, predicates, columns);
-    if (resultSet == nullptr) {
-        std::cout << "empty resultSet\n";
-        return 0;
-    }
-    int32_t numRows = 0;
-    resultSet->GetRowCount(numRows);
-    std::cout << numRows << " records found." << std::endl;
-    if (numRows == 0) {
-        std::cout << "no record." << std::endl;
-        return 0;
-    }
-
-    std::unique_ptr<FetchResult<FileAsset>> fetchFileResult =
-        std::make_unique<FetchResult<FileAsset>>(move(resultSet));
-    auto cnt = fetchFileResult->GetCount();
-    for (int i = 0; i < cnt; i++) {
-        auto fileAssetPtr = fetchFileResult->GetNextObject(); // GetFirstObject
-        std::cout << fileAssetPtr->GetPath()<< ":" <<  fileAssetPtr->GetDisplayName() <<
-            ":" << fileAssetPtr->GetSize() << std::endl;
-    }
-    return numRows;
-}
-
 HWTEST_F(RingtoneDualfwRestoreTest, ringtone_dualfw_restore_test_0003, TestSize.Level0)
 {
-    constexpr int STORAGE_MANAGER_MANAGER_ID = 5003;
-    const std::string MEDIALIBRARY_DATA_URI = "datashare:///media";
+    NativeRdb::RdbStoreConfig config(RINGTONE_LIBRARY_DB_NAME);
+    config.SetPath("/data/app/el2/100/database/com.ohos.ringtonelibrary.ringtonelibrarydata/rdb/"
+        + RINGTONE_LIBRARY_DB_NAME);
+    config.SetBundleName("xx");
+    config.SetReadConSize(10);
+    config.SetSecurityLevel(NativeRdb::SecurityLevel::S3);
 
-    RINGTONE_INFO_LOG("ringtone_dualfw_restore_test_0003 start");
-    auto saManager = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    if (saManager == nullptr) {
-        RINGTONE_ERR_LOG("CreateFileExtHelper Get system ability mgr failed.");
-        return;
-    }
-    auto remoteObj = saManager->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
-    if (remoteObj == nullptr) {
-        RINGTONE_ERR_LOG("CreateDataShareHelper GetSystemAbility Service Failed.");
-        return;
-    }
-    auto dataShareHelper = DataShare::DataShareHelper::Creator(remoteObj, MEDIALIBRARY_DATA_URI);
-    
-    EXPECT_EQ(checkURI(dataShareHelper, URI_QUERY_AUDIO), 0);
-    EXPECT_EQ(checkURI(dataShareHelper, UFM_QUERY_AUDIO), 0);
-    EXPECT_EQ(checkURI(dataShareHelper, TOOL_QUERY_AUDIO), 2);
-    EXPECT_EQ(checkURI(dataShareHelper, "datashare:///media/mediatool_audio_operation/query"), 2);
-
-    auto restore = RingtoneRestoreFactory::CreateObj(RESTORE_SCENE_TYPE_DUAL_CLONE);
-    restore->Init("/data/storage/el2/base/.backup/restore");
-    restore->StartRestore();
-
+    int32_t err;
+    RingtoneDataCallBack cb;
+    auto rdbStore = NativeRdb::RdbHelper::GetRdbStore(config, RINGTONE_RDB_VERSION, cb, err);
+    std::map<std::string, std::shared_ptr<FileInfo>> resultFromMedia;
+    std::map<std::string, std::shared_ptr<FileInfo>> resultFromRingtone;
+    auto restore = std::make_unique<RingtoneDualfwRestoreClone>();
+    restore->Init("/");
+    restore->QueryMediaLibForFileInfo({"sound.m4a", "common.mp3", "cc"}, resultFromMedia, TOOL_QUERY_AUDIO);
+    restore->QueryRingToneDbForFileInfo(rdbStore, {"Creek.ogg", "Dawn.ogg", "Flourish.ogg"}, resultFromRingtone);
     RINGTONE_INFO_LOG("ringtone_dualfw_restore_test_0003 end");
 }
 } // namespace Media

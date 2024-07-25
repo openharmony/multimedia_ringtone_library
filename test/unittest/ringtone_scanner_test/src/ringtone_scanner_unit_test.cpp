@@ -61,7 +61,7 @@ HWTEST_F(RingtoneScannerUnitTest,  scannerManager_ScanDir_test_001, TestSize.Lev
     }
 
     auto scannerCallback = make_shared<TestRingtoneScannerCallback>();
-    int result = g_ringtoneScannerManager->ScanDir(ROOT_MEDIA_DIR, scannerCallback);
+    int result = g_ringtoneScannerManager->ScanDir(STORAGE_FILES_DIR, scannerCallback);
     EXPECT_EQ(result, E_OK);
 
     if (result == 0) {
@@ -91,7 +91,7 @@ HWTEST_F(RingtoneScannerUnitTest,  scannerManager_ScanOgg_test_001, TestSize.Lev
         exit(1);
     }
 
-    const string path = ROOT_MEDIA_DIR + "Ringtone/Scanner_ringtone.ogg";
+    const string path = STORAGE_FILES_DIR + "Ringtone/Scanner_ringtone.ogg";
     EXPECT_EQ(RingtoneUnitTestUtils::CreateFileFS(path), true);
 
     auto scannerCallback = make_shared<TestRingtoneScannerCallback>();
@@ -111,7 +111,7 @@ HWTEST_F(RingtoneScannerUnitTest, scannerManager_ScanHiddenFile_Test_001, TestSi
         exit(1);
     }
 
-    const string path = ROOT_MEDIA_DIR + "Ringtone/.HiddenFile";
+    const string path = STORAGE_FILES_DIR + "Ringtone/.HiddenFile";
     EXPECT_EQ(RingtoneUnitTestUtils::CreateFileFS(path), true);
 
     auto scannerCallback = make_shared<TestRingtoneScannerCallback>();
@@ -131,7 +131,7 @@ HWTEST_F(RingtoneScannerUnitTest,  scannerManager_ScanDir_CanonicalPathtest_001,
         exit(1);
     }
 
-    const string path = ROOT_MEDIA_DIR + "../files";
+    const string path = STORAGE_FILES_DIR + "../files";
 
     auto scannerCallback = make_shared<TestRingtoneScannerCallback>();
     int result = g_ringtoneScannerManager->ScanDir(path, scannerCallback);
@@ -150,7 +150,7 @@ HWTEST_F(RingtoneScannerUnitTest,  scannerManager_ScanFile_CanonicalPathtest_001
         exit(1);
     }
 
-    const string path = ROOT_MEDIA_DIR + "../files/Ringtone/Canonical1.ogg";
+    const string path = STORAGE_FILES_DIR + "../files/Ringtone/Canonical1.ogg";
     EXPECT_EQ(RingtoneUnitTestUtils::CreateFileFS(path), true);
 
     auto scannerCallback = make_shared<TestRingtoneScannerCallback>();
@@ -197,7 +197,7 @@ HWTEST_F(RingtoneScannerUnitTest,  scannerManager_ScanFileSync_CanonicalPathtest
         exit(1);
     }
 
-    const string path = ROOT_MEDIA_DIR + "../files/Ringtone/Canonical1.ogg";
+    const string path = STORAGE_FILES_DIR + "../files/Ringtone/Canonical1.ogg";
     EXPECT_EQ(RingtoneUnitTestUtils::CreateFileFS(path), true);
 
     auto scannerCallback = make_shared<TestRingtoneScannerCallback>();
@@ -217,7 +217,7 @@ HWTEST_F(RingtoneScannerUnitTest,  scannerManager_ScanFileSync_CanonicalPathtest
         exit(1);
     }
 
-    const string path = ROOT_MEDIA_DIR + "../files/Ringtone/Canonical1.ogg";
+    const string path = STORAGE_FILES_DIR + "../files/Ringtone/Canonical1.ogg";
     EXPECT_EQ(RingtoneUnitTestUtils::CreateFileFS(path), true);
 
     auto scannerCallback = make_shared<TestRingtoneScannerCallback>();
@@ -237,7 +237,7 @@ HWTEST_F(RingtoneScannerUnitTest,  scannerManager_ScanDirSync_CanonicalPathtest_
         exit(1);
     }
 
-    const string path = ROOT_MEDIA_DIR + "../files";
+    const string path = STORAGE_FILES_DIR + "../files";
 
     auto scannerCallback = make_shared<TestRingtoneScannerCallback>();
     int result = g_ringtoneScannerManager->ScanDirSync(path, scannerCallback);
