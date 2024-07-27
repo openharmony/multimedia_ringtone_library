@@ -19,6 +19,7 @@
 #include <functional>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "dualfw_conf_parser.h"
 #include "dualfw_conf_loader.h"
@@ -41,6 +42,8 @@ public:
     int32_t ProcessConfRow(std::unique_ptr<DualFwConfRow> &conf);
     void SettingsTraval(std::function<void (DualfwSettingItem &)> func);
     void ProcessConf(const DualFwConf& conf);
+    std::vector<std::string> GetFileNames() const;
+    std::vector<DualfwSettingItem> GetSettings() const;
 private:
     std::unordered_map<int32_t, DualfwSettingItem> settings_;
 };

@@ -23,11 +23,13 @@
 #include <sstream>
 #include <sys/sendfile.h>
 #include <unistd.h>
+#include <iostream>
 
 #include "directory_ex.h"
 #include "ringtone_errno.h"
 #include "ringtone_log.h"
 #include "ringtone_type.h"
+#include "securec.h"
 
 namespace OHOS {
 namespace Media {
@@ -93,6 +95,7 @@ static string ParseFromUri(const string& path, const string& key)
     if (found != string::npos) {
         sub = sub.substr(0, found);
     }
+    sub = RingtoneFileUtils::UrlDecode(sub);
     RINGTONE_INFO_LOG("parsing uri : %{public}s -> key=%{public}s, value=%{public}s",
         path.c_str(), key.c_str(), sub.c_str());
     return sub;
@@ -103,7 +106,7 @@ string RingtoneFileUtils::GetFileNameFromPathOrUri(const string &path)
     string fileName = {};
     size_t found = path.find("content://");
     if (found == 0) {
-        fileName = ParseFromUri(path, "title") + ".m4a";
+        fileName = ParseFromUri(path, "title"); // Pay attention! It's actually "title".
     } else {
         fileName = GetFileNameFromPath(path);
     }
@@ -401,6 +404,28 @@ string RingtoneFileUtils::StrCreateTimeByMilliseconds(const string &format, int6
     }
     (void)strftime(strTime, sizeof(strTime), format.c_str(), tm);
     return strTime;
+}
+
+static const int URL_DECODE_DOUBLE = 2;
+string RingtoneFileUtils::UrlDecode(const string &src)
+{
+    string ret;
+    char ch;
+    int tmpNum;
+    for (int i = 0; i < src.length(); i++) {
+        if (src[i]=='%') {
+            if (sscanf_s(src.substr(i + 1, URL_DECODE_DOUBLE).c_str(), "%x", &tmpNum) == -1) {
+                RINGTONE_ERR_LOG("Not a valid url: %{private}s", src.c_str());
+                return src;
+            }
+            ch = static_cast<char>(tmpNum);
+            ret += ch;
+            i = i + URL_DECODE_DOUBLE;
+        } else {
+            ret += src[i];
+        }
+    }
+    return ret;
 }
 } // namespace Media
 } // namespace OHOS

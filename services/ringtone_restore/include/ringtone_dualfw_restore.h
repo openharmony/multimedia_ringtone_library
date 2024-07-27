@@ -23,6 +23,7 @@
 #include "ringtone_metadata.h"
 #include "ringtone_restore_base.h"
 #include "ringtone_restore_type.h"
+#include "medialibrary_db_const.h"
 
 namespace OHOS {
 namespace Media {
@@ -41,8 +42,16 @@ private:
     int32_t ParseDualfwConf(const std::string &xml);
     int32_t DupToneFile(FileInfo &info);
     void UpdateRestoreFileInfo(FileInfo &info);
+    std::vector<FileInfo> BuildFileInfo();
+    int32_t QueryMediaLibForFileInfo(const std::vector<std::string>& names,
+        std::map<std::string, std::shared_ptr<FileInfo>>& infoMap,
+        const std::string& queryFileUriBase = UFM_QUERY_AUDIO,
+        const std::string& predicateColumn = MEDIA_DATA_DB_NAME);
     int32_t QueryRingToneDbForFileInfo(std::shared_ptr<NativeRdb::RdbStore> rdbStore,
-        const DualfwSettingItem &item, FileInfo& info);
+        const std::vector<std::string>&, std::map<std::string, std::shared_ptr<FileInfo>>&,
+        const std::string& predicateColumn = MEDIA_DATA_DB_NAME);
+
+private:
     std::shared_ptr<DataShare::DataShareHelper> mediaDataShare_ = nullptr;
     std::string dualfwConf_ = {};
 };

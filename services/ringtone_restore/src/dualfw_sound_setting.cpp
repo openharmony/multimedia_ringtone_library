@@ -94,6 +94,24 @@ void DualfwSoundSetting::SettingsTraval(std::function<void (DualfwSettingItem &)
     }
 }
 
+std::vector<std::string> DualfwSoundSetting::GetFileNames() const
+{
+    std::vector<std::string> fileNames;
+    for (auto setting : settings_) {
+        fileNames.push_back(setting.second.toneFileName);
+    }
+    return fileNames;
+}
+
+std::vector<DualfwSettingItem> DualfwSoundSetting::GetSettings() const
+{
+    std::vector<DualfwSettingItem> settings;
+    for (auto setting : settings_) {
+        settings.push_back(setting.second);
+    }
+    return settings;
+}
+
 int32_t DualfwSoundSetting::ProcessConfRow(std::unique_ptr<DualFwConfRow> &conf)
 {
     int32_t ret = E_SUCCESS;

@@ -67,6 +67,7 @@ public:
     EXPORT static bool Mkdir(const std::string &subStr, std::shared_ptr<int> errCodePtr = nullptr);
     EXPORT static bool IsDirectory(const std::string &dirName, std::shared_ptr<int> errCodePtr = nullptr);
     EXPORT static bool CreateDirectory(const std::string &dirPath, std::shared_ptr<int> errCodePtr = nullptr);
+    EXPORT static std::string UrlDecode(const std::string &url);
 };
 } // namespace Media
 } // namespace OHOS
