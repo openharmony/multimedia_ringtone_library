@@ -27,6 +27,7 @@
 #include "ringtone_data_manager.h"
 #include "ringtone_datashare_stub_impl.h"
 #include "ringtone_file_utils.h"
+#include "ringtone_language_manager.h"
 #include "ringtone_log.h"
 #include "ringtone_scanner_manager.h"
 #include "runtime.h"
@@ -116,7 +117,7 @@ void RingtoneDataShareExtension::OnStart(const AAFwk::Want &want)
         prefs->PutInt(RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY, RINGTONE_PARAMETER_SCANNER_COMPLETED_TRUE);
         prefs->FlushSync();
     }
-
+    RingtoneLanguageManager::GetInstance()->SyncAssetLanguage();
     RINGTONE_INFO_LOG("end.");
 }
 
