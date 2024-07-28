@@ -37,6 +37,7 @@ ohos_unittest("ringtone_data_extension_unittest") {
     "./src/ringtone_data_manager_test.cpp",
     "./src/ringtone_datashare_extension_test.cpp",
     "./src/ringtone_datashare_stub_impl_test.cpp",
+    "./src/ringtone_language_manager_test.cpp",
     "./src/ringtone_rdbstore_test.cpp",
     "./src/ringtone_subscriber_test.cpp",
   ]

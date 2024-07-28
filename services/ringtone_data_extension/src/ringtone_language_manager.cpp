@@ -41,7 +41,8 @@ const int32_t SYSPARA_SIZE = 64;
 const int32_t SYSINIT_TYPE = 1;
 const int32_t UNKNOWN_INDEX = -1;
 const int32_t FIELD_LENGTH = 2;
-const string RINGTONE_MULTILINGUAL_FILE_PATH = "/system/etc/resource/media/audio/ringtone_list_language.xml";
+const string RINGTONE_MULTILINGUAL_FILE_PATH =
+    "/system/variant/phone/base/etc/resource/media/audio/ringtone_list_language.xml";
 
 shared_ptr<RingtoneLanguageManager> RingtoneLanguageManager::instance_ = nullptr;
 mutex RingtoneLanguageManager::mutex_;
