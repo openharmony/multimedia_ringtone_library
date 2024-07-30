@@ -41,6 +41,8 @@ ohos_unittest("ringtone_dfx_unittest") {
     "ability_runtime:ability_manager",
     "ability_runtime:app_context",
     "c_utils:utils",
+    "data_share:datashare_common",
+    "data_share:datashare_provider",
     "ipc:ipc_single",
     "napi:ace_napi",
     "preferences:native_preferences",

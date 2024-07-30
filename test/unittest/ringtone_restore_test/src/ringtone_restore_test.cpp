@@ -46,6 +46,7 @@ namespace Media {
 constexpr int STORAGE_MANAGER_MANAGER_ID = 5003;
 static const int32_t INVALID_QUERY_OFFSET = -1;
 const string TEST_BACKUP_PATH = "/data/test/backup";
+const string TEST_BACKUP_DATA = "/data/local/tmp/test/Adara.ogg";
 const string TEST_BACKUP_DB_PATH = TEST_BACKUP_PATH + "/data/storage/el2/database/rdb/ringtone_library.db";
 const string LOCAL_DB_PATH =
     "/data/app/el2/100/database/com.ohos.ringtonelibrary.ringtonelibrarydata/rdb/ringtone_library.db";
@@ -114,6 +115,13 @@ void QueryInt(shared_ptr<NativeRdb::RdbStore> rdbStore, const string &querySql, 
 
 void RingtoneRestoreTest::SetUpTestCase(void)
 {
+    auto stageContext = std::make_shared<AbilityRuntime::ContextImpl>();
+    auto abilityContextImpl = std::make_shared<OHOS::AbilityRuntime::AbilityContextImpl>();
+    abilityContextImpl->SetStageContext(stageContext);
+    shared_ptr<RingtoneUnistore> rUniStore  = RingtoneRdbStore::GetInstance(abilityContextImpl);
+    int32_t ret = rUniStore->Init();
+    EXPECT_EQ(ret, E_OK);
+
     auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remoteObj = sam->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     g_ringtoneshare = DataShare::DataShareHelper::Creator(remoteObj, "datashare:///ringtone");
@@ -132,6 +140,7 @@ void RingtoneRestoreTest::TearDownTestCase(void)
     g_restoreService->restoreRdb_ = nullptr;
     g_restoreService->settingMgr_ = nullptr;
     NativeRdb::RdbHelper::DeleteRdbStore(TEST_BACKUP_DB_PATH);
+    system("rm -rf /storage/media/local/");
 }
 
 void RingtoneRestoreTest::SetUp()
@@ -181,11 +190,12 @@ HWTEST_F(RingtoneRestoreTest, ringtone_restore_test_0002, TestSize.Level0)
 HWTEST_F(RingtoneRestoreTest, ringtone_restore_test_0003, TestSize.Level0)
 {
     RINGTONE_INFO_LOG("ringtone_restore_test_0003 start");
-    ClearData();
-    auto infos = g_restoreService->QueryFileInfos(INVALID_QUERY_OFFSET);
-    EXPECT_EQ(infos.empty(), false);
-    EXPECT_NE(infos.size(), 0);
-    g_restoreService->backupPath_ = TEST_BACKUP_PATH;
+    std::vector<FileInfo> infos;
+    FileInfo info;
+    info .toneType = ToneType::TONE_TYPE_ALARM;
+    info.data = TEST_BACKUP_DATA;
+    infos.push_back(info);
+    EXPECT_EQ(RingtoneFileUtils::CreateFile(TEST_BACKUP_DATA), E_SUCCESS);
     vector<NativeRdb::ValuesBucket> values = g_restoreService->MakeInsertValues(infos);
     int64_t rowNum = 0;
     int32_t errCode = g_restoreService->BatchInsert(RINGTONE_TABLE, values, rowNum);
@@ -206,15 +216,15 @@ HWTEST_F(RingtoneRestoreTest, ringtone_restore_test_0004, TestSize.Level0)
 HWTEST_F(RingtoneRestoreTest, restore_MoveDirectory_test_0001, TestSize.Level0)
 {
     RINGTONE_INFO_LOG("restore_MoveDirectory_test_0001 start");
+    g_restoreService->backupPath_ = TEST_BACKUP_PATH;
     g_restoreService->StartRestore();
     auto infos = g_restoreService->QueryFileInfos(INVALID_QUERY_OFFSET);
     EXPECT_EQ(infos.empty(), false);
     EXPECT_NE(infos.size(), 0);
     g_restoreService->InsertTones(infos);
-    string oldPath = "/data/local/tmp/test/movefile_001.ogg";
     string srcDir = "/data/local/tmp/test/";
     string dstDir = "/data/local/tmp/testMove/";
-    EXPECT_EQ(RingtoneFileUtils::CreateFile(oldPath), E_SUCCESS);
+    EXPECT_EQ(RingtoneFileUtils::CreateFile(TEST_BACKUP_DATA), E_SUCCESS);
     auto ret = g_restoreService->MoveDirectory(srcDir, dstDir);
     EXPECT_EQ(ret, E_OK);
     RINGTONE_INFO_LOG("restore_MoveDirectory_test_0001 end");
@@ -239,9 +249,8 @@ HWTEST_F(RingtoneRestoreTest, restore_OnPrepare_test_0001, TestSize.Level0)
     FileInfo info;
     info.title = TITLE_DEFAULT;
     g_restoreService->UpdateRestoreFileInfo(info);
-    string oldPath = "/data/local/tmp/test/movefile_001.ogg";
-    EXPECT_EQ(RingtoneFileUtils::CreateFile(oldPath), E_SUCCESS);
-    info.data = oldPath;
+    EXPECT_EQ(RingtoneFileUtils::CreateFile(TEST_BACKUP_DATA), E_SUCCESS);
+    info.data = TEST_BACKUP_DATA;
     vector<FileInfo> infos;
     infos.push_back(info);
     g_restoreService->CheckRestoreFileInfos(infos);
@@ -249,10 +258,10 @@ HWTEST_F(RingtoneRestoreTest, restore_OnPrepare_test_0001, TestSize.Level0)
     bool result = g_restoreService->OnPrepare(info, destPath);
     EXPECT_EQ(result, false);
     info.data = "restore_OnPrepare_test_0001";
-    result = g_restoreService->OnPrepare(info, oldPath);
+    result = g_restoreService->OnPrepare(info, TEST_BACKUP_DATA);
     EXPECT_EQ(result, false);
     info.data = "createfile_001./data";
-    result = g_restoreService->OnPrepare(info, oldPath);
+    result = g_restoreService->OnPrepare(info, TEST_BACKUP_DATA);
     EXPECT_EQ(result, false);
     RINGTONE_INFO_LOG("restore_OnPrepare_test_0001 end");
 }
@@ -265,8 +274,10 @@ HWTEST_F(RingtoneRestoreTest, restore_GetRestoreDir_test_0001, TestSize.Level0)
     EXPECT_EQ(val, E_OK);
     FileInfo fileInfo;
     auto ret = g_restoreService->SetInsertValue(fileInfo);
+    ASSERT_TRUE(ret.Size() == 0);
     fileInfo.restorePath = "restore_MoveDirectory_test_0001";
     ret = g_restoreService->SetInsertValue(fileInfo);
+    ASSERT_TRUE(ret.Size() == 0);
     std::vector<FileInfo> fileInfos;
     g_restoreService->localRdb_ = nullptr;
     g_restoreService->InsertTones(fileInfos);
@@ -312,9 +323,13 @@ HWTEST_F(RingtoneRestoreTest, restore_TransactionCommit_test_0001, TestSize.Leve
     ret = rdbTransaction->BeginTransaction();
     EXPECT_EQ(ret, E_HAS_DB_ERROR);
     rdbTransaction->isInTransaction_.store(false);
+    ret = rdbTransaction->BeginTransaction();
+    EXPECT_EQ(ret, E_HAS_DB_ERROR);
     ret = rdbTransaction->TransactionCommit();
     EXPECT_EQ(ret, E_HAS_DB_ERROR);
     rdbTransaction->isInTransaction_.store(true);
+    ret = rdbTransaction->BeginTransaction();
+    EXPECT_EQ(ret, E_HAS_DB_ERROR);
     rdbTransaction->rdbStore_ = nullptr;
     ret = rdbTransaction->TransactionCommit();
     EXPECT_EQ(ret, E_HAS_DB_ERROR);
@@ -358,6 +373,32 @@ HWTEST_F(RingtoneRestoreTest, restore_JSStartRestore_test_0001, TestSize.Level0)
     ret = RingtoneRestoreFactory::CreateObj(type);
     EXPECT_NE(ret, nullptr);
     RINGTONE_INFO_LOG("ringtone_restore_test_0004 end");
+}
+
+HWTEST_F(RingtoneRestoreTest, ringtone_CheckSetting_test_0003, TestSize.Level0)
+{
+    FileInfo info;
+    info.shotToneType = ShotToneType::SHOT_TONE_TYPE_MAX;
+    info.shotToneSourceType = SourceType::SOURCE_TYPE_INVALID;
+    info.ringToneType = RingToneType::RING_TONE_TYPE_MAX;
+    info.ringToneSourceType = SourceType::SOURCE_TYPE_INVALID;
+    info.notificationToneType = NotificationToneType::NOTIFICATION_TONE_TYPE;
+    info.notificationToneSourceType = SourceType::SOURCE_TYPE_INVALID;
+    info.alarmToneType = AlarmToneType::ALARM_TONE_TYPE;
+    info.alarmToneSourceType = SourceType::SOURCE_TYPE_INVALID;
+    g_restoreService->CheckSetting(info);
+    info.shotToneType = ShotToneType::SHOT_TONE_TYPE_SIM_CARD_1;
+    info.ringToneType = RingToneType::RING_TONE_TYPE_SIM_CARD_1;
+    info.notificationToneSourceType = SourceType::SOURCE_TYPE_CUSTOMISED;
+    info.alarmToneSourceType = SourceType::SOURCE_TYPE_CUSTOMISED;
+    g_restoreService->CheckSetting(info);
+    info.shotToneSourceType = SourceType::SOURCE_TYPE_CUSTOMISED;
+    info.ringToneSourceType = SourceType::SOURCE_TYPE_CUSTOMISED;
+    g_restoreService->CheckSetting(info);
+    vector<NativeRdb::ValuesBucket> values;
+    int64_t rowNum = 0;
+    int32_t errCode = g_restoreService->BatchInsert(RINGTONE_TABLE, values, rowNum);
+    EXPECT_EQ(errCode, Media::E_OK);
 }
 } // namespace Media
 } // namespace OHOS

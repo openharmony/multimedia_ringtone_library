@@ -189,22 +189,25 @@ HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_DumpDataShareValueBu
     const string ringtoneUintType = "uint_type";
     const string ringtoneBoolType = "bool_type";
     const string ringtoneDoubleType = "double_type";
+    const string ringtoneVectorType = "vector_type";
     const int64_t addedTime = 1559276453;
     const double doubleSize = 155.9276457;
     std::vector<string> tabFields;
+    std::vector<uint8_t> ringtoneVec;
+    ringtoneVec.push_back(1);
     tabFields.push_back(ringtoneUintType);
     tabFields.push_back(RINGTONE_COLUMN_DATE_ADDED);
     tabFields.push_back(RINGTONE_COLUMN_MIME_TYPE);
     tabFields.push_back(ringtoneBoolType);
     tabFields.push_back(ringtoneDoubleType);
-    tabFields.push_back(RINGTONE_COLUMN_MEDIA_TYPE);
+    tabFields.push_back(ringtoneVectorType);
     AbilityRuntime::DataShareValuesBucket value;
     value.Put(ringtoneUintType, static_cast<uint8_t>(1));
     value.Put(RINGTONE_COLUMN_DATE_ADDED, static_cast<int64_t>(addedTime));
     value.Put(RINGTONE_COLUMN_MIME_TYPE, static_cast<string>(RINGTONE_CONTAINER_TYPE_OGG));
     value.Put(ringtoneBoolType, static_cast<bool>(true));
     value.Put(ringtoneDoubleType, static_cast<double>(doubleSize));
-    value.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(1));
+    value.Put(ringtoneVectorType, static_cast<std::vector<uint8_t>>(ringtoneVec));
     mediaDataShare->DumpDataShareValueBucket(tabFields, value);
     EXPECT_EQ(mediaDataShare != nullptr, true);
 }
