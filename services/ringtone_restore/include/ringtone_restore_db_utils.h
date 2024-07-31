@@ -36,6 +36,7 @@ public:
         const std::string &querySql);
     static std::unordered_map<std::string, std::string> GetColumnInfoMap(
         const std::shared_ptr<NativeRdb::RdbStore> &rdbStore, const std::string &tableName);
+    static bool GetUserID(int &userId);
 };
 
 } // namespace Media

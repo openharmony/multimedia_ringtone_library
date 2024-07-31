@@ -13,41 +13,43 @@
  * limitations under the License.
  */
 
-#ifndef DUALFW_SOUND_SETTING_H
-#define DUALFW_SOUND_SETTING_H
+#ifndef DUALFWK_SOUND_SETTING_H
+#define DUALFWK_SOUND_SETTING_H
 
 #include <functional>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-#include "dualfw_conf_parser.h"
-#include "dualfw_conf_loader.h"
+#include "dualfwk_conf_parser.h"
+#include "dualfwk_conf_loader.h"
 #include "ringtone_type.h"
 
 namespace OHOS {
 namespace Media {
-struct DualfwSettingItem {
+struct DualFwkSettingItem {
     std::string toneFileName {};
     int32_t settingType {TONE_SETTING_TYPE_INVALID};
     int32_t toneType {0};
     bool defaultSysSet {false};
     bool setFlag {false};
+    bool isTitle {false};
 };
 
-class DualfwSoundSetting {
+class DualFwkSoundSetting {
 public:
-    DualfwSoundSetting();
-    ~DualfwSoundSetting() = default;
-    int32_t ProcessConfRow(std::unique_ptr<DualFwConfRow> &conf);
-    void SettingsTraval(std::function<void (DualfwSettingItem &)> func);
-    void ProcessConf(const DualFwConf& conf);
+    DualFwkSoundSetting();
+    ~DualFwkSoundSetting() = default;
+    int32_t ProcessConfRow(std::unique_ptr<DualFwkConfRow> &conf);
+    void SettingsTraval(std::function<void (DualFwkSettingItem &)> func);
+    void ProcessConf(const DualFwkConf &conf);
     std::vector<std::string> GetFileNames() const;
-    std::vector<DualfwSettingItem> GetSettings() const;
+    std::vector<std::string> GetDisplayNames() const;
+    std::vector<DualFwkSettingItem> GetSettings() const;
 private:
-    std::unordered_map<int32_t, DualfwSettingItem> settings_;
+    std::unordered_map<int32_t, DualFwkSettingItem> settings_;
 };
 
 } // namespace Media
 } // namespace OHOS
-#endif // DUALFW_SOUND_SETTING_H
+#endif // DUALFWK_SOUND_SETTING_H

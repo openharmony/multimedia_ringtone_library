@@ -65,7 +65,7 @@ struct FileInfo {
     bool doInsert {true};
     
     FileInfo() = default;
-    FileInfo(const RingtoneMetadata& meta): toneId(meta.GetToneId()),
+    FileInfo(const RingtoneMetadata &meta): toneId(meta.GetToneId()),
         data(meta.GetData()),
         size(meta.GetSize()),
         displayName(meta.GetDisplayName()),

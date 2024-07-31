@@ -101,14 +101,16 @@ static string ParseFromUri(const string& path, const string& key)
     return sub;
 }
 
-string RingtoneFileUtils::GetFileNameFromPathOrUri(const string &path)
+string RingtoneFileUtils::GetFileNameFromPathOrUri(const string &path, bool &isTitle)
 {
     string fileName = {};
     size_t found = path.find("content://");
     if (found == 0) {
         fileName = ParseFromUri(path, "title"); // Pay attention! It's actually "title".
+        isTitle = true;
     } else {
         fileName = GetFileNameFromPath(path);
+        isTitle = false;
     }
     RINGTONE_INFO_LOG("%{public}s -> %{public}s", path.c_str(), fileName.c_str());
     return fileName;

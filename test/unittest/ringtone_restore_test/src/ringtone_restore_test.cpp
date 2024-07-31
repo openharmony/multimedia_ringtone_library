@@ -22,7 +22,7 @@
 #include "ringtone_restore.h"
 #include "ringtone_restore_base.h"
 #include "ringtone_restore_napi.h"
-#include "ringtone_dualfw_restore.h"
+#include "ringtone_dualfwk_restore.h"
 #undef protected
 #undef private
 #include "ringtone_file_utils.h"

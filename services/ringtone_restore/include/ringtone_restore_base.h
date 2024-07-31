@@ -38,7 +38,7 @@ protected:
     virtual void OnFinished(std::vector<FileInfo> &fileInfos) = 0;
     virtual std::vector<NativeRdb::ValuesBucket> MakeInsertValues(std::vector<FileInfo> &infos);
     virtual void InsertTones(std::vector<FileInfo> &infos);
-    virtual int32_t LoadDualfwConf() { return -1; }
+    virtual int32_t LoadDualFwkConf(const std::string &backupPath) { return -1; }
     virtual void CheckSetting(FileInfo &info);
     static bool MoveFile(const std::string &src, const std::string &dst);
     static int32_t MoveDirectory(const std::string &srcDir, const std::string &dstDir);

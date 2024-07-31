@@ -146,11 +146,11 @@ ohos_shared_library("ringtonerestore") {
   ]
 
   sources = [
-    "${RINGTONE_RESTORE_PATH}/src/dualfw_conf_loader.cpp",
-    "${RINGTONE_RESTORE_PATH}/src/dualfw_conf_parser.cpp",
-    "${RINGTONE_RESTORE_PATH}/src/dualfw_sound_setting.cpp",
+    "${RINGTONE_RESTORE_PATH}/src/dualfwk_conf_loader.cpp",
+    "${RINGTONE_RESTORE_PATH}/src/dualfwk_conf_parser.cpp",
+    "${RINGTONE_RESTORE_PATH}/src/dualfwk_sound_setting.cpp",
     "${RINGTONE_RESTORE_PATH}/src/native_module_ohos_ringtone_restore.cpp",
-    "${RINGTONE_RESTORE_PATH}/src/ringtone_dualfw_restore.cpp",
+    "${RINGTONE_RESTORE_PATH}/src/ringtone_dualfwk_restore.cpp",
     "${RINGTONE_RESTORE_PATH}/src/ringtone_rdb_transaction.cpp",
     "${RINGTONE_RESTORE_PATH}/src/ringtone_restore.cpp",
     "${RINGTONE_RESTORE_PATH}/src/ringtone_restore_base.cpp",
@@ -193,6 +193,7 @@ ohos_shared_library("ringtonerestore") {
     "libxml2:libxml2",
     "media_library:media_library",
     "napi:ace_napi",
+    "os_account:os_account_innerkits",
     "player_framework:media_client",
     "preferences:native_preferences",
     "relational_store:native_rdb",

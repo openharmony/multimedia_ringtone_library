@@ -20,7 +20,7 @@
 #include "ringtone_restore_factory.h"
 
 #include "restore_interface.h"
-#include "ringtone_dualfw_restore.h"
+#include "ringtone_dualfwk_restore.h"
 #include "ringtone_log.h"
 #include "ringtone_restore.h"
 
@@ -33,9 +33,9 @@ std::unique_ptr<RestoreInterface> RingtoneRestoreFactory::CreateObj(RestoreScene
     if (type == RESTORE_SCENE_TYPE_SINGLE_CLONE) {
         obj = std::make_unique<RingtoneRestore>();
     } else if (type == RESTORE_SCENE_TYPE_DUAL_CLONE) {
-        obj = std::make_unique<RingtoneDualfwRestoreClone>();
+        obj = std::make_unique<RingtoneDualFwkRestoreClone>();
     } else if (type == RESTORE_SCENE_TYPE_DUAL_UPGRADE) {
-        obj = std::make_unique<RingtoneDualfwRestore>();
+        obj = std::make_unique<RingtoneDualFwkRestore>();
     } else {
         RINGTONE_ERR_LOG("error: invalid argument");
     }

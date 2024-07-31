@@ -40,7 +40,8 @@
           "player_framework",
           "relational_store",
           "samgr",
-          "preferences"
+          "preferences",
+          "os_account"
         ],
         "third_party": []
       },

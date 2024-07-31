@@ -13,11 +13,11 @@
  * limitations under the License.
  */
 
-#ifndef RINGTONE_DUALFW_RESTORE_H
-#define RINGTONE_DUALFW_RESTORE_H
+#ifndef RINGTONE_DUALFWK_RESTORE_H
+#define RINGTONE_DUALFWK_RESTORE_H
 
 #include "datashare_helper.h"
-#include "dualfw_sound_setting.h"
+#include "dualfwk_sound_setting.h"
 #include "rdb_helper.h"
 #include "result_set.h"
 #include "ringtone_metadata.h"
@@ -27,39 +27,39 @@
 
 namespace OHOS {
 namespace Media {
-class RingtoneDualfwRestore : public RingtoneRestoreBase {
+class RingtoneDualFwkRestore : public RingtoneRestoreBase {
 public:
-    RingtoneDualfwRestore() = default;
-    virtual ~RingtoneDualfwRestore() = default;
+    RingtoneDualFwkRestore() = default;
+    virtual ~RingtoneDualFwkRestore() = default;
     int32_t Init(const std::string &backupPath) override;
     void StartRestore() override;
 protected:
-    std::unique_ptr<DualfwSoundSetting> dualfwSetting_ = nullptr;
+    std::unique_ptr<DualFwkSoundSetting> dualFwkSetting_ = nullptr;
 private:
     virtual bool OnPrepare(FileInfo &info, const std::string &destPath) override;
     virtual void OnFinished(std::vector<FileInfo> &infos) override;
-    virtual int32_t LoadDualfwConf() override;
-    int32_t ParseDualfwConf(const std::string &xml);
+    virtual int32_t LoadDualFwkConf(const std::string &backupPath) override;
+    int32_t ParseDualFwkConf(const std::string &xml);
     int32_t DupToneFile(FileInfo &info);
     void UpdateRestoreFileInfo(FileInfo &info);
     std::vector<FileInfo> BuildFileInfo();
-    int32_t QueryMediaLibForFileInfo(const std::vector<std::string>& names,
-        std::map<std::string, std::shared_ptr<FileInfo>>& infoMap,
-        const std::string& queryFileUriBase = UFM_QUERY_AUDIO,
-        const std::string& predicateColumn = MEDIA_DATA_DB_NAME);
+    int32_t QueryMediaLibForFileInfo(const std::vector<std::string> &names,
+        std::map<std::string, std::shared_ptr<FileInfo>> &infoMap,
+        const std::string &queryFileUriBase = UFM_QUERY_AUDIO,
+        const std::string &predicateColumn = MEDIA_DATA_DB_NAME);
     int32_t QueryRingToneDbForFileInfo(std::shared_ptr<NativeRdb::RdbStore> rdbStore,
-        const std::vector<std::string>&, std::map<std::string, std::shared_ptr<FileInfo>>&,
-        const std::string& predicateColumn = MEDIA_DATA_DB_NAME);
+        const std::vector<std::string> &names, std::map<std::string, std::shared_ptr<FileInfo>> &infoMap,
+        const std::string &predicateColumn = MEDIA_DATA_DB_NAME);
 
 private:
     std::shared_ptr<DataShare::DataShareHelper> mediaDataShare_ = nullptr;
-    std::string dualfwConf_ = {};
+    std::string dualFwkConf_ = {};
 };
 
-class RingtoneDualfwRestoreClone : public RingtoneDualfwRestore {
+class RingtoneDualFwkRestoreClone : public RingtoneDualFwkRestore {
 private:
-    virtual int32_t LoadDualfwConf() override;
+    virtual int32_t LoadDualFwkConf(const std::string &backupPath) override;
 };
 } // namespace Media
 } // namespace OHOS
-#endif  // RINGTONE_DUALFW_RESTORE_H
+#endif  // RINGTONE_DUALFWK_RESTORE_H
