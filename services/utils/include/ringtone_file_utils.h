@@ -68,6 +68,10 @@ public:
     EXPORT static bool IsDirectory(const std::string &dirName, std::shared_ptr<int> errCodePtr = nullptr);
     EXPORT static bool CreateDirectory(const std::string &dirPath, std::shared_ptr<int> errCodePtr = nullptr);
     EXPORT static std::string UrlDecode(const std::string &url);
+    EXPORT static void CreateRingtoneDir();
+    EXPORT static int32_t CreatePreloadFolder(const std::string &path);
+    EXPORT static int32_t MoveDirectory(const std::string &srcDir, const std::string &dstDir);
+    EXPORT static void AccessRingtoneDir();
 };
 } // namespace Media
 } // namespace OHOS

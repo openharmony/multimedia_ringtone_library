@@ -278,16 +278,5 @@ HWTEST_F(RingtoneRdbStorelUnitTest, dataCallBack_OnCreate_test_001, TestSize.Lev
     ret = rdbDataCallBack.OnUpgrade(*g_uniStore->GetRaw(), oldVersion, newVersion);
     EXPECT_EQ(ret, E_OK);
 }
-
-
-HWTEST_F(RingtoneRdbStorelUnitTest, dataCallBack_CreatePreloadFolder_test_001, TestSize.Level0)
-{
-    RingtoneDataCallBack rdbDataCallBack;
-    const string path = "dataCallBack_CreatePreloadFolder_test_001";
-    auto ret = rdbDataCallBack.CreatePreloadFolder(path);
-    EXPECT_EQ((ret > 0), true);
-    ret = rdbDataCallBack.MkdirRecursive(path, path.size() - 1);
-    EXPECT_EQ(ret, E_OK);
-}
 } // namespace Media
 } // namespace OHOS

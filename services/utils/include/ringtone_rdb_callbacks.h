@@ -30,9 +30,6 @@ public:
     EXPORT int32_t OnUpgrade(NativeRdb::RdbStore &rdbStore, int32_t oldVersion, int32_t newVersion) override;
 private:
     static int32_t InitSql(NativeRdb::RdbStore &store);
-    static int32_t PrepareDir();
-    EXPORT static int32_t CreatePreloadFolder(const std::string &path);
-    EXPORT static int32_t MkdirRecursive(const std::string &path, size_t start);
 };
 } // namespace Media
 } // namespace OHOS
