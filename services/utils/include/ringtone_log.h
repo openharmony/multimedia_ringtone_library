@@ -37,11 +37,11 @@
         op(LOG_LABEL, MLOG_TAG ":{%{public}s:%{public}d} " fmt, __FUNCTION__, __LINE__, ##args);  \
     } while (0)
 
-#define RINGTONE_DEBUG_LOG(fmt, ...) RINGTONE_HILOG(OHOS::HiviewDFX::HiLog::Debug, fmt, ##__VA_ARGS__)
-#define RINGTONE_ERR_LOG(fmt, ...) RINGTONE_HILOG(OHOS::HiviewDFX::HiLog::Error, fmt, ##__VA_ARGS__)
-#define RINGTONE_WARN_LOG(fmt, ...) RINGTONE_HILOG(OHOS::HiviewDFX::HiLog::Warn, fmt, ##__VA_ARGS__)
-#define RINGTONE_INFO_LOG(fmt, ...) RINGTONE_HILOG(OHOS::HiviewDFX::HiLog::Info, fmt, ##__VA_ARGS__)
-#define RINGTONE_FATAL_LOG(fmt, ...) RINGTONE_HILOG(OHOS::HiviewDFX::HiLog::Fatal, fmt, ##__VA_ARGS__)
+#define RINGTONE_DEBUG_LOG(fmt, ...) HILOG_IMPL(LOG_CORE, LOG_DEBUG, LOG_DOMAIN, LOG_TAG, fmt, ##__VA_ARGS__)
+#define RINGTONE_ERR_LOG(fmt, ...) HILOG_IMPL(LOG_CORE, LOG_ERROR, LOG_DOMAIN, LOG_TAG, fmt, ##__VA_ARGS__)
+#define RINGTONE_WARN_LOG(fmt, ...) HILOG_IMPL(LOG_CORE, LOG_WARN, LOG_DOMAIN, LOG_TAG, fmt, ##__VA_ARGS__)
+#define RINGTONE_INFO_LOG(fmt, ...) HILOG_IMPL(LOG_CORE, LOG_INFO, LOG_DOMAIN, LOG_TAG, fmt, ##__VA_ARGS__)
+#define RINGTONE_FATAL_LOG(fmt, ...) HILOG_IMPL(LOG_CORE, LOG_FATAL, LOG_DOMAIN, LOG_TAG, fmt, ##__VA_ARGS__)
 
 #define CHECK_AND_RETURN_RET_LOG(cond, ret, fmt, ...)  \
     do {                                               \
