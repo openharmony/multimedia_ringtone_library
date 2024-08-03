@@ -103,20 +103,7 @@ void RingtoneDataShareExtension::OnStart(const AAFwk::Want &want)
     auto dfxMgr = DfxManager::GetInstance();
     dfxMgr->Init(context);
 
-    // ringtone scan
-    int32_t errCode;
-    shared_ptr<NativePreferences::Preferences> prefs =
-        NativePreferences::PreferencesHelper::GetPreferences(DFX_COMMON_XML, errCode);
-    if (!prefs) {
-        RINGTONE_ERR_LOG("get preferences error: %{public}d", errCode);
-    }
-    int isCompleted = prefs->GetInt(RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY,
-        RINGTONE_PARAMETER_SCANNER_COMPLETED_FALSE);
-    if (!isCompleted) {
-        RingtoneScannerManager::GetInstance()->Start(false);
-        prefs->PutInt(RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY, RINGTONE_PARAMETER_SCANNER_COMPLETED_TRUE);
-        prefs->FlushSync();
-    }
+    RingtoneScanner();
     RingtoneLanguageManager::GetInstance()->SyncAssetLanguage();
     RINGTONE_INFO_LOG("end.");
 }
@@ -345,6 +332,26 @@ int RingtoneDataShareExtension::OpenFile(const Uri &uri, const string &mode)
         return err;
     }
     return RingtoneDataManager::GetInstance()->OpenFile(cmd, unifyMode);
+}
+
+void RingtoneDataShareExtension::RingtoneScanner()
+{
+    RingtoneFileUtils::AccessRingtoneDir();
+    // ringtone scan
+    int32_t errCode;
+    shared_ptr<NativePreferences::Preferences> prefs =
+        NativePreferences::PreferencesHelper::GetPreferences(DFX_COMMON_XML, errCode);
+    if (!prefs) {
+        RINGTONE_ERR_LOG("get preferences error: %{public}d", errCode);
+        return;
+    }
+    int isCompleted = prefs->GetInt(RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY,
+        RINGTONE_PARAMETER_SCANNER_COMPLETED_FALSE);
+    if (!isCompleted) {
+        RingtoneScannerManager::GetInstance()->Start(false);
+        prefs->PutInt(RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY, RINGTONE_PARAMETER_SCANNER_COMPLETED_TRUE);
+        prefs->FlushSync();
+    }
 }
 
 static DataShare::DataShareExtAbility *RingtoneDataShareCreator(const unique_ptr<Runtime> &runtime)

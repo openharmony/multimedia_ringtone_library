@@ -26,6 +26,7 @@
 #include <iostream>
 
 #include "directory_ex.h"
+#include "ringtone_db_const.h"
 #include "ringtone_errno.h"
 #include "ringtone_log.h"
 #include "ringtone_type.h"
@@ -426,6 +427,144 @@ string RingtoneFileUtils::UrlDecode(const string &src)
         }
     }
     return ret;
+}
+
+static int32_t MkdirRecursive(const string &path, size_t start)
+{
+    RINGTONE_DEBUG_LOG("start pos %{public}zu", start);
+    size_t end = path.find("/", start + 1);
+
+    string subDir = "";
+    if (end == std::string::npos) {
+        if (start + 1 == path.size()) {
+            RINGTONE_DEBUG_LOG("path size=%zu", path.size());
+        } else {
+            subDir = path.substr(start + 1, path.size() - start - 1);
+        }
+    } else {
+        subDir = path.substr(start + 1, end - start - 1);
+    }
+
+    if (subDir.size() == 0) {
+        return E_SUCCESS;
+    } else {
+        string real = path.substr(0, start + subDir.size() + 1);
+        mode_t mask = umask(0);
+        int result = mkdir(real.c_str(), MODE_RWX_USR_GRP);
+        if (result == 0) {
+            RINGTONE_INFO_LOG("mkdir %{public}s successfully", real.c_str());
+        } else {
+            RINGTONE_INFO_LOG("mkdir %{public}s failed, errno is %{public}d", real.c_str(), errno);
+        }
+        umask(mask);
+    }
+    if (end == std::string::npos) {
+        return E_SUCCESS;
+    }
+
+    return MkdirRecursive(path, end);
+}
+
+int32_t RingtoneFileUtils::CreatePreloadFolder(const string &path)
+{
+    RINGTONE_DEBUG_LOG("start");
+    if (access(path.c_str(), F_OK) == 0) {
+        RINGTONE_INFO_LOG("dir is existing");
+        return E_SUCCESS;
+    }
+
+    auto start = path.find(RINGTONE_CUSTOMIZED_BASE_PATH);
+    if (start == string::npos) {
+        RINGTONE_ERR_LOG("base dir is wrong");
+        return E_ERR;
+    }
+
+    return MkdirRecursive(path, start + RINGTONE_CUSTOMIZED_BASE_PATH.size());
+}
+
+void RingtoneFileUtils::CreateRingtoneDir()
+{
+    static const vector<string> userPreloadDirs = {
+        { RINGTONE_CUSTOMIZED_ALARM_PATH }, { RINGTONE_CUSTOMIZED_RINGTONE_PATH },
+        { RINGTONE_CUSTOMIZED_NOTIFICATIONS_PATH }
+    };
+
+    for (const auto &dir: userPreloadDirs) {
+        if (CreatePreloadFolder(dir) != E_SUCCESS) {
+            RINGTONE_INFO_LOG("scan failed on dir %{public}s", dir.c_str());
+            continue;
+        }
+    }
+}
+
+int32_t RingtoneFileUtils::MoveDirectory(const std::string &srcDir, const std::string &dstDir)
+{
+    if (access(srcDir.c_str(), F_OK) != 0) {
+        RINGTONE_ERR_LOG("access srcDir failed, errno is %{public}d", errno);
+        return E_FAIL;
+    }
+    if (access(dstDir.c_str(), F_OK) != 0) {
+        RINGTONE_ERR_LOG("access dstDir failed, errno is %{public}d", errno);
+        return E_FAIL;
+    }
+    int ret = E_SUCCESS;
+    for (const auto &dirEntry : std::filesystem::directory_iterator{ srcDir }) {
+        std::string srcFilePath = dirEntry.path();
+        std::string tmpFilePath = srcFilePath;
+        std::string dstFilePath = tmpFilePath.replace(0, srcDir.length(), dstDir);
+        if (!MoveFile(srcFilePath, dstFilePath)) {
+            RINGTONE_ERR_LOG("Move file failed, errno is %{public}d", errno);
+            ret = E_FAIL;
+        }
+    }
+    return ret;
+}
+
+void RingtoneFileUtils::AccessRingtoneDir()
+{
+    if (access(RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH.c_str(), F_OK) != 0) {
+        CreateRingtoneDir();
+        return;
+    }
+    struct stat fileStat;
+    if (stat(RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH.c_str(), &fileStat) != 0) {
+        RINGTONE_ERR_LOG("stat dir failed, errno is %{public}d", errno);
+        return;
+    }
+    // 检查组的写权限
+    if ((fileStat.st_mode & S_IWGRP) != 0) {
+        return;
+    }
+    if (IsEmptyFolder(RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH.c_str())) {
+        RINGTONE_ERR_LOG("The directory is empty and lacks group write permission.");
+        if (DeleteFile(RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH.c_str())) {
+            RINGTONE_ERR_LOG("DeleteFile denied, errCode: %{public}d", errno);
+        }
+        CreateRingtoneDir();
+    } else { //rename and move file
+        if (MoveFile(RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH.c_str(),
+            RINGTONE_CUSTOMIZED_BASE_RINGTONETMP_PATH.c_str())) {
+            if (CreatePreloadFolder(RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH.c_str()) != E_SUCCESS) {
+                RINGTONE_ERR_LOG("Create Ringtone dir failed, errno is %{public}d", errno);
+                //restore dir
+                MoveFile(RINGTONE_CUSTOMIZED_BASE_RINGTONETMP_PATH.c_str(),
+                    RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH.c_str());
+                return;
+            }
+            if (MoveDirectory(RINGTONE_CUSTOMIZED_BASE_RINGTONETMP_PATH.c_str(),
+                RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH.c_str()) != E_SUCCESS) {
+                RINGTONE_ERR_LOG("Move dir failed, errno is %{public}d", errno);
+                CreateRingtoneDir();
+                return;
+            }
+            if (DeleteFile(RINGTONE_CUSTOMIZED_BASE_RINGTONETMP_PATH.c_str())) {
+                RINGTONE_ERR_LOG("DeleteFile denied, errCode: %{public}d", errno);
+            }
+        } else {
+            RINGTONE_ERR_LOG("Move Ringtone dir failed, errno is %{public}d", errno);
+        }
+    }
+    return;
 }
 } // namespace Media
 } // namespace OHOS

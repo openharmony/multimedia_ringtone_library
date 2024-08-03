@@ -80,7 +80,7 @@ int32_t RingtoneRestoreBase::Init(const string &backupPath)
 
 void RingtoneRestoreBase::StartRestore()
 {
-    // scan
+    RingtoneFileUtils::AccessRingtoneDir();
     int32_t errCode;
     shared_ptr<NativePreferences::Preferences> prefs =
         NativePreferences::PreferencesHelper::GetPreferences(DFX_COMMON_XML, errCode);
