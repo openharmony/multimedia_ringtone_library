@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef DUALFW_CONF_PARSER_H
-#define DUALFW_CONF_PARSER_H
+#ifndef DUALFWK_CONF_PARSER_H
+#define DUALFWK_CONF_PARSER_H
 
 #include <functional>
 #include <string>
@@ -24,7 +24,7 @@
 
 namespace OHOS {
 namespace Media {
-struct DualFwConfRow {
+struct DualFwkConfRow {
     int32_t id;
     std::string name;
     std::string value;
@@ -34,19 +34,19 @@ struct DualFwConfRow {
     bool preserveInRestore;
 };
 
-class DualfwConfParser {
+class DualFwkConfParser {
 public:
-    DualfwConfParser(const std::string &path);
-    ~DualfwConfParser() {};
+    DualFwkConfParser(const std::string &path);
+    ~DualFwkConfParser() {};
     int32_t Parse();
-    void ConfTraval(std::function<void (std::unique_ptr<DualFwConfRow> &)> func);
+    void ConfTraval(std::function<void (std::unique_ptr<DualFwkConfRow> &)> func);
 private:
     int32_t ParseConf(xmlNodePtr node);
 
     int32_t version_;
     std::string path_;
-    std::vector<std::unique_ptr<DualFwConfRow>> DualFwConfs_ = {};
+    std::vector<std::unique_ptr<DualFwkConfRow>> dualFwkConfs_ = {};
 };
 } // namespace Media
 } // namespace OHOS
-#endif // DUALFW_CONF_PARSER_H
+#endif // DUALFWK_CONF_PARSER_H

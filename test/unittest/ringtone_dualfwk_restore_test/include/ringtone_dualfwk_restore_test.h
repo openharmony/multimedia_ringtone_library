@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef RINGTONELIBRARY_DUALFW_RESTORE_TEST_H
-#define RINGTONELIBRARY_DUALFW_RESTORE_TEST_H
+#ifndef RINGTONELIBRARY_DUALFWK_RESTORE_TEST_H
+#define RINGTONELIBRARY_DUALFWK_RESTORE_TEST_H
 
 #include "gtest/gtest.h"
 #include "rdb_helper.h"
@@ -22,7 +22,7 @@
 
 namespace OHOS {
 namespace Media {
-class RingtoneDualfwRestoreTest : public testing::Test {
+class RingtoneDualFwkRestoreTest : public testing::Test {
 public:
     static void SetUpTestCase(void);
     static void TearDownTestCase(void);
@@ -32,4 +32,4 @@ public:
 } // namespace Media
 } // namespace OHOS
 
-#endif // RINGTONELIBRARY_DUALFW_RESTORE_TEST_H
+#endif // RINGTONELIBRARY_DUALFWK_RESTORE_TEST_H

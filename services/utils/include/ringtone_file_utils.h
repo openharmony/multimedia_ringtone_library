@@ -54,7 +54,7 @@ public:
     EXPORT static std::string SplitByChar(const std::string &str, const char split);
     EXPORT static std::string GetExtensionFromPath(const std::string &path);
     EXPORT static std::string GetFileNameFromPath(const std::string &path);
-    EXPORT static std::string GetFileNameFromPathOrUri(const std::string &path);
+    EXPORT static std::string GetFileNameFromPathOrUri(const std::string &path, bool &isTitle);
     EXPORT static std::string GetBaseNameFromPath(const std::string &path);
     EXPORT static int32_t OpenFile(const std::string &filePath, const std::string &mode);
     EXPORT static int32_t CreateFile(const std::string &filePath);

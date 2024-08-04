@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef DUALFW_CONF_LOADER_H
-#define DUALFW_CONF_LOADER_H
+#ifndef DUALFWK_CONF_LOADER_H
+#define DUALFWK_CONF_LOADER_H
 
 #include <string>
 #include <memory>
@@ -25,7 +25,7 @@
 
 namespace OHOS {
 namespace Media {
-struct DualFwConf {
+struct DualFwkConf {
     int32_t id;
     // 通知铃音
     std::string notificationSoundPath;
@@ -41,17 +41,18 @@ struct DualFwConf {
     std::string messageSub1;
 };
 
-class DualfwConfLoader {
+class DualFwkConfLoader {
 public:
-    DualfwConfLoader();
+    DualFwkConfLoader();
     int32_t Init();
-    ~DualfwConfLoader() {};
-    int32_t Load(DualFwConf& conf, const RestoreSceneType& type);
-    void ShowConf(const DualFwConf& conf);
+    ~DualFwkConfLoader() {};
+    int32_t Load(DualFwkConf &conf, const RestoreSceneType &type, const std::string &backupFile);
+    void ShowConf(const DualFwkConf &conf);
 private:
-    std::string GetConf(const std::string& key);
+    std::string GetConf(const std::string &key);
     std::shared_ptr<DataShare::DataShareHelper> dataShareHelper_;
+    std::string settingsDataUri_;
 };
 } // namespace Media
 } // namespace OHOS
-#endif // DUALFW_CONF_LOADER_H
+#endif // DUALFWK_CONF_LOADER_H

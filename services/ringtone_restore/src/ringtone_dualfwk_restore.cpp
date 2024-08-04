@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
-#define MLOG_TAG "RingtoneDualfwRestore"
+#define MLOG_TAG "RingtoneDualFwkRestore"
 
-#include "ringtone_dualfw_restore.h"
+#include "ringtone_dualfwk_restore.h"
 
 #include <fcntl.h>
 #include <sys/sendfile.h>
@@ -25,9 +25,9 @@
 #include "datashare_helper.h"
 #include "datashare_predicates.h"
 #include "directory_ex.h"
-#include "dualfw_conf_parser.h"
-#include "dualfw_conf_loader.h"
-#include "dualfw_sound_setting.h"
+#include "dualfwk_conf_parser.h"
+#include "dualfwk_conf_loader.h"
+#include "dualfwk_sound_setting.h"
 #include "file_asset.h"
 #include "fetch_result.h"
 #include "iservice_registry.h"
@@ -46,7 +46,7 @@ namespace Media {
 using namespace std;
 
 constexpr int STORAGE_MANAGER_MANAGER_ID = 5003;
-static const string DUALFW_SOUND_CONF_XML = "backup";
+static const string DUALFWK_SOUND_CONF_XML = "backup";
 
 static std::shared_ptr<DataShare::DataShareHelper> CreateMediaDataShare(int32_t systemAbilityId)
 {
@@ -64,54 +64,54 @@ static std::shared_ptr<DataShare::DataShareHelper> CreateMediaDataShare(int32_t 
     return DataShare::DataShareHelper::Creator(remoteObj, MEDIALIBRARY_DATA_URI);
 }
 
-int32_t RingtoneDualfwRestore::LoadDualfwConf()
+int32_t RingtoneDualFwkRestore::LoadDualFwkConf(const std::string &backupPath)
 {
-    DualfwConfLoader confLoader;
+    DualFwkConfLoader confLoader;
     if (confLoader.Init() != E_OK) {
-        RINGTONE_ERR_LOG("Failed to initialize DualfwConfLoader.");
+        RINGTONE_ERR_LOG("Failed to initialize DualFwkConfLoader.");
         return E_FAIL;
     }
-    DualFwConf conf;
-    confLoader.Load(conf, RESTORE_SCENE_TYPE_DUAL_UPGRADE);
+    DualFwkConf conf;
+    confLoader.Load(conf, RESTORE_SCENE_TYPE_DUAL_UPGRADE, backupPath);
     confLoader.ShowConf(conf);
 
-    dualfwSetting_ = std::make_unique<DualfwSoundSetting>();
-    if (dualfwSetting_ == nullptr) {
-        RINGTONE_ERR_LOG("Create DualfwSoundSetting Failed.");
+    dualFwkSetting_ = std::make_unique<DualFwkSoundSetting>();
+    if (dualFwkSetting_ == nullptr) {
+        RINGTONE_ERR_LOG("Create DualFwkSoundSetting Failed.");
         return E_FAIL;
     }
 
-    dualfwSetting_->ProcessConf(conf);
+    dualFwkSetting_->ProcessConf(conf);
     return E_SUCCESS;
 }
 
-int32_t RingtoneDualfwRestore::ParseDualfwConf(const string &xml)
+int32_t RingtoneDualFwkRestore::ParseDualFwkConf(const string &xml)
 {
-    auto parser = std::make_unique<DualfwConfParser>(xml);
+    auto parser = std::make_unique<DualFwkConfParser>(xml);
     if (parser == nullptr) {
-        RINGTONE_ERR_LOG("Create DualfwConfParser Failed.");
+        RINGTONE_ERR_LOG("Create DualFwkConfParser Failed.");
         return E_FAIL;
     }
 
-    dualfwSetting_ = std::make_unique<DualfwSoundSetting>();
-    if (dualfwSetting_ == nullptr) {
-        RINGTONE_ERR_LOG("Create DualfwSoundSetting Failed.");
+    dualFwkSetting_ = std::make_unique<DualFwkSoundSetting>();
+    if (dualFwkSetting_ == nullptr) {
+        RINGTONE_ERR_LOG("Create DualFwkSoundSetting Failed.");
         return E_FAIL;
     }
 
     if (parser->Parse() != E_SUCCESS) {
-        RINGTONE_ERR_LOG("parse dualfw-sound-setting-xml Failed.");
+        RINGTONE_ERR_LOG("parse dualfwk-sound-setting-xml Failed.");
         return E_FAIL;
     }
 
-    parser->ConfTraval([this](std::unique_ptr<DualFwConfRow> &conf) -> void {
-        dualfwSetting_->ProcessConfRow(conf);
+    parser->ConfTraval([this](std::unique_ptr<DualFwkConfRow> &conf) -> void {
+        dualFwkSetting_->ProcessConfRow(conf);
     });
 
     return E_SUCCESS;
 }
 
-int32_t RingtoneDualfwRestore::Init(const std::string &backupPath)
+int32_t RingtoneDualFwkRestore::Init(const std::string &backupPath)
 {
     RINGTONE_INFO_LOG("Init db start");
     if (backupPath.empty()) {
@@ -125,7 +125,7 @@ int32_t RingtoneDualfwRestore::Init(const std::string &backupPath)
         return E_FAIL;
     }
 
-    if (LoadDualfwConf() != E_SUCCESS) {
+    if (LoadDualFwkConf(backupPath + "/" + DUALFWK_SOUND_CONF_XML) != E_SUCCESS) {
         return E_FAIL;
     }
 
@@ -156,8 +156,8 @@ static void MediaUriAppendKeyValue(string &uri, const string &key, const string 
 }
 
 static const string KEY_API_VERSION = "API_VERSION";
-static std::string MakeBatchQueryWhereClause(const std::vector<std::string>& names,
-    const std::string& predicateColumn)
+static std::string MakeBatchQueryWhereClause(const std::vector<std::string> &names,
+    const std::string &predicateColumn)
 {
     std::stringstream prefixSs;
     prefixSs << predicateColumn << " in (";
@@ -190,9 +190,9 @@ static void AssetToFileInfo(std::shared_ptr<FileInfo> infoPtr, const std::unique
     infoPtr->duration = asset->GetDuration();
 }
 
-int32_t RingtoneDualfwRestore::QueryMediaLibForFileInfo(const std::vector<std::string>& names,
-    std::map<std::string, std::shared_ptr<FileInfo>>& infoMap,
-    const std::string& queryFileUriBase, const std::string& predicateColumn)
+int32_t RingtoneDualFwkRestore::QueryMediaLibForFileInfo(const std::vector<std::string> &names,
+    std::map<std::string, std::shared_ptr<FileInfo>> &infoMap,
+    const std::string &queryFileUriBase, const std::string &predicateColumn)
 {
     if (mediaDataShare_ == nullptr || names.empty()) {
         RINGTONE_ERR_LOG("argument errr, return nullptr");
@@ -228,7 +228,7 @@ int32_t RingtoneDualfwRestore::QueryMediaLibForFileInfo(const std::vector<std::s
     std::unique_ptr<FetchResult<FileAsset>> fetchFileResult = make_unique<FetchResult<FileAsset>>(
         move(resultSet));
 
-    for (int i = 0; i<count; i++) {
+    for (int i = 0; i < count; i++) {
         std::unique_ptr<FileAsset> asset = fetchFileResult->GetNextObject();
         auto infoPtr = std::make_shared<FileInfo>();
         AssetToFileInfo(infoPtr, asset);
@@ -242,9 +242,9 @@ int32_t RingtoneDualfwRestore::QueryMediaLibForFileInfo(const std::vector<std::s
     return E_SUCCESS;
 }
 
-int32_t RingtoneDualfwRestore::QueryRingToneDbForFileInfo(std::shared_ptr<NativeRdb::RdbStore> rdbStore,
-    const std::vector<std::string>& names, std::map<std::string, std::shared_ptr<FileInfo>>& infoMap,
-    const std::string& predicateColumn)
+int32_t RingtoneDualFwkRestore::QueryRingToneDbForFileInfo(std::shared_ptr<NativeRdb::RdbStore> rdbStore,
+    const std::vector<std::string> &names, std::map<std::string, std::shared_ptr<FileInfo>> &infoMap,
+    const std::string &predicateColumn)
 {
     if (rdbStore == nullptr) {
         RINGTONE_ERR_LOG("rdb_ is nullptr, Maybe init failed.");
@@ -271,7 +271,7 @@ int32_t RingtoneDualfwRestore::QueryRingToneDbForFileInfo(std::shared_ptr<Native
         return E_SUCCESS;
     }
 
-    for (int i = 0; i<count; i++) {
+    for (int i = 0; i < count; i++) {
         resultSet->GoToNextRow();
         auto metaData = std::make_unique<RingtoneMetadata>();
         if (PopulateMetadata(resultSet, metaData) != E_OK) {
@@ -291,7 +291,7 @@ int32_t RingtoneDualfwRestore::QueryRingToneDbForFileInfo(std::shared_ptr<Native
     return E_SUCCESS;
 }
 
-static void AddSettingsToFileInfo(const DualfwSettingItem& setting, FileInfo& info)
+static void AddSettingsToFileInfo(const DualFwkSettingItem &setting, FileInfo &info)
 {
     switch (setting.settingType) {
         case TONE_SETTING_TYPE_ALARM:
@@ -319,12 +319,11 @@ static void AddSettingsToFileInfo(const DualfwSettingItem& setting, FileInfo& in
     }
 }
 
-static std::shared_ptr<FileInfo> MergeQueries(const DualfwSettingItem& setting,
+static std::shared_ptr<FileInfo> MergeQueries(const DualFwkSettingItem &setting,
     std::map<std::string, std::shared_ptr<FileInfo>> resultFromMediaByDisplayName,
     std::map<std::string, std::shared_ptr<FileInfo>> resultFromMediaByTitle,
     std::map<std::string, std::shared_ptr<FileInfo>> resultFromRingtoneByDisplayName,
-    std::map<std::string, std::shared_ptr<FileInfo>> resultFromRingtoneByTitle,
-    bool& doInsert)
+    bool &doInsert)
 {
     std::shared_ptr<FileInfo> infoPtr;
     doInsert = true;
@@ -339,34 +338,37 @@ static std::shared_ptr<FileInfo> MergeQueries(const DualfwSettingItem& setting,
         infoPtr = resultFromRingtoneByDisplayName[keyName];
         RINGTONE_INFO_LOG("found %{public}s in ringtone db", keyName.c_str());
         doInsert = false;
-    } else if (resultFromRingtoneByTitle.find(keyName) != resultFromRingtoneByTitle.end()) {
-        infoPtr = resultFromRingtoneByTitle[keyName];
-        RINGTONE_INFO_LOG("found %{public}s in ringtone db", keyName.c_str());
-        doInsert = false;
+    } else if (setting.isTitle) {
+        keyName = keyName + ".ogg";
+        if (resultFromRingtoneByDisplayName.find(keyName) != resultFromRingtoneByDisplayName.end()) {
+            infoPtr = resultFromRingtoneByDisplayName[keyName];
+            RINGTONE_INFO_LOG("found %{public}s in ringtone db", keyName.c_str());
+            doInsert = false;
+        }
     } else {
         RINGTONE_INFO_LOG("failed to find %{public}s", keyName.c_str());
     }
     return infoPtr;
 }
 
-std::vector<FileInfo> RingtoneDualfwRestore::BuildFileInfo()
+std::vector<FileInfo> RingtoneDualFwkRestore::BuildFileInfo()
 {
     std::vector<FileInfo> result;
-    std::vector<std::string> fileNames = dualfwSetting_->GetFileNames();
+    std::vector<std::string> fileNames = dualFwkSetting_->GetFileNames();
     std::map<std::string, std::shared_ptr<FileInfo>> resultFromMediaByDisplayName;
     std::map<std::string, std::shared_ptr<FileInfo>> resultFromMediaByTitle;
+
+    std::vector<std::string> displayNames = dualFwkSetting_->GetDisplayNames();
     std::map<std::string, std::shared_ptr<FileInfo>> resultFromRingtoneByDisplayName;
-    std::map<std::string, std::shared_ptr<FileInfo>> resultFromRingtoneByTitle;
 
     QueryMediaLibForFileInfo(fileNames, resultFromMediaByDisplayName, UFM_QUERY_AUDIO, "display_name");
     QueryMediaLibForFileInfo(fileNames, resultFromMediaByTitle, UFM_QUERY_AUDIO, "title");
-    QueryRingToneDbForFileInfo(GetBaseDb(), fileNames, resultFromRingtoneByDisplayName, "display_name");
-    QueryRingToneDbForFileInfo(GetBaseDb(), fileNames, resultFromRingtoneByTitle, "title");
+    QueryRingToneDbForFileInfo(GetBaseDb(), displayNames, resultFromRingtoneByDisplayName, "display_name");
 
-    for (const auto& setting : dualfwSetting_->GetSettings()) {
+    for (const auto& setting : dualFwkSetting_->GetSettings()) {
         bool doInsert = true;
         auto infoPtr = MergeQueries(setting, resultFromMediaByDisplayName, resultFromMediaByTitle,
-            resultFromRingtoneByDisplayName, resultFromRingtoneByTitle, doInsert);
+            resultFromRingtoneByDisplayName, doInsert);
         if (infoPtr == nullptr) {
             continue;
         }
@@ -380,10 +382,10 @@ std::vector<FileInfo> RingtoneDualfwRestore::BuildFileInfo()
     return result;
 }
 
-void RingtoneDualfwRestore::StartRestore()
+void RingtoneDualFwkRestore::StartRestore()
 {
-    if (dualfwSetting_ == nullptr || mediaDataShare_ == nullptr) {
-        RINGTONE_ERR_LOG("dualfw restrore is not initialized successfully");
+    if (dualFwkSetting_ == nullptr || mediaDataShare_ == nullptr) {
+        RINGTONE_ERR_LOG("dualfwk restrore is not initialized successfully");
         return;
     }
     RingtoneRestoreBase::StartRestore();
@@ -396,7 +398,7 @@ void RingtoneDualfwRestore::StartRestore()
     FlushSettings();
 }
 
-int32_t RingtoneDualfwRestore::DupToneFile(FileInfo &info)
+int32_t RingtoneDualFwkRestore::DupToneFile(FileInfo &info)
 {
     RINGTONE_INFO_LOG("DupToneFile from %{private}s to %{private}s", info.data.c_str(), info.restorePath.c_str());
     std::string absDstPath = info.restorePath;
@@ -425,7 +427,7 @@ int32_t RingtoneDualfwRestore::DupToneFile(FileInfo &info)
     return E_SUCCESS;
 }
 
-void RingtoneDualfwRestore::UpdateRestoreFileInfo(FileInfo &info)
+void RingtoneDualFwkRestore::UpdateRestoreFileInfo(FileInfo &info)
 {
     struct stat statInfo;
     if (stat(info.restorePath.c_str(), &statInfo) != 0) {
@@ -436,7 +438,7 @@ void RingtoneDualfwRestore::UpdateRestoreFileInfo(FileInfo &info)
     info.displayName = RingtoneFileUtils::GetFileNameFromPath(info.restorePath);
 }
 
-bool RingtoneDualfwRestore::OnPrepare(FileInfo &info, const std::string &dstPath)
+bool RingtoneDualFwkRestore::OnPrepare(FileInfo &info, const std::string &dstPath)
 {
     if (!RingtoneFileUtils::IsFileExists(dstPath)) {
         RINGTONE_ERR_LOG("dst path is not existing, dst path=%{public}s", dstPath.c_str());
@@ -481,29 +483,29 @@ bool RingtoneDualfwRestore::OnPrepare(FileInfo &info, const std::string &dstPath
     return true;
 }
 
-void RingtoneDualfwRestore::OnFinished(vector<FileInfo> &infos)
+void RingtoneDualFwkRestore::OnFinished(vector<FileInfo> &infos)
 {
-    RINGTONE_ERR_LOG("ringtone dualfw restore finished");
+    RINGTONE_ERR_LOG("ringtone dualfwk restore finished");
 }
 
-int32_t RingtoneDualfwRestoreClone::LoadDualfwConf()
+int32_t RingtoneDualFwkRestoreClone::LoadDualFwkConf(const std::string &backupPath)
 {
-    DualfwConfLoader confLoader;
+    DualFwkConfLoader confLoader;
     if (confLoader.Init() != E_OK) {
-        RINGTONE_ERR_LOG("Failed to initialize DualfwConfLoader.");
+        RINGTONE_ERR_LOG("Failed to initialize DualFwkConfLoader.");
         return E_FAIL;
     }
-    DualFwConf conf;
-    confLoader.Load(conf, RESTORE_SCENE_TYPE_DUAL_CLONE);
+    DualFwkConf conf;
+    confLoader.Load(conf, RESTORE_SCENE_TYPE_DUAL_CLONE, backupPath);
     confLoader.ShowConf(conf);
 
-    dualfwSetting_ = std::make_unique<DualfwSoundSetting>();
-    if (dualfwSetting_ == nullptr) {
-        RINGTONE_ERR_LOG("Create DualfwSoundSetting Failed.");
+    dualFwkSetting_ = std::make_unique<DualFwkSoundSetting>();
+    if (dualFwkSetting_ == nullptr) {
+        RINGTONE_ERR_LOG("Create DualFwkSoundSetting Failed.");
         return E_FAIL;
     }
 
-    dualfwSetting_->ProcessConf(conf);
+    dualFwkSetting_->ProcessConf(conf);
     return E_SUCCESS;
 }
 } // namespace Media

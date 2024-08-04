@@ -20,6 +20,7 @@
 #include "ringtone_errno.h"
 #include "result_set_utils.h"
 #include "ringtone_rdb_callbacks.h"
+#include "os_account_manager.h"
 
 namespace OHOS {
 namespace Media {
@@ -104,6 +105,22 @@ std::unordered_map<std::string, std::string> RingtoneRestoreDbUtils::GetColumnIn
         columnInfoMap[columnName] = columnType;
     }
     return columnInfoMap;
+}
+
+bool RingtoneRestoreDbUtils::GetUserID(int &userId)
+{
+    std::vector<int> activeIds;
+    int ret = AccountSA::OsAccountManager::QueryActiveOsAccountIds(activeIds);
+    if (ret != 0) {
+        RINGTONE_ERR_LOG("QueryActiveOsAccountIds failed ret:%{public}d", ret);
+        return false;
+    }
+    if (activeIds.empty()) {
+        RINGTONE_ERR_LOG("QueryActiveOsAccountIds activeIds empty");
+        return false;
+    }
+    userId = activeIds[0];
+    return true;
 }
 } // namespace Media
 } // namespace OHOS

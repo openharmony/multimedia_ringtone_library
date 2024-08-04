@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include <dualfw_conf_parser.h>
+#include <dualfwk_conf_parser.h>
 
 #include <functional>
 #include <string>
@@ -29,12 +29,12 @@
 
 namespace OHOS {
 namespace Media {
-DualfwConfParser::DualfwConfParser(const std::string &path)
+DualFwkConfParser::DualFwkConfParser(const std::string &path)
     : version_(0), path_(path)
 {
 }
 
-int32_t DualfwConfParser::Parse()
+int32_t DualFwkConfParser::Parse()
 {
     std::unique_ptr<xmlDoc, decltype(&xmlFreeDoc)> docPtr(
         xmlReadFile(path_.c_str(), nullptr, XML_PARSE_NOBLANKS), xmlFreeDoc);
@@ -83,9 +83,9 @@ int32_t DualfwConfParser::Parse()
     return E_SUCCESS;
 }
 
-int32_t DualfwConfParser::ParseConf(xmlNodePtr node)
+int32_t DualFwkConfParser::ParseConf(xmlNodePtr node)
 {
-    auto conf = std::make_unique<DualFwConfRow>();
+    auto conf = std::make_unique<DualFwkConfRow>();
     xmlChar* xmlAttrVal = xmlGetProp(node, BAD_CAST"id");
 
     try {
@@ -128,16 +128,16 @@ int32_t DualfwConfParser::ParseConf(xmlNodePtr node)
         conf->preserveInRestore = (std::string(strVal) == "true" ? true : false);
     }
 
-    DualFwConfs_.push_back(std::move(conf));
+    dualFwkConfs_.push_back(std::move(conf));
 
     return E_SUCCESS;
 }
 
-void DualfwConfParser::ConfTraval(std::function<void (std::unique_ptr<DualFwConfRow> &)> func)
+void DualFwkConfParser::ConfTraval(std::function<void (std::unique_ptr<DualFwkConfRow> &)> func)
 {
-    RINGTONE_INFO_LOG("dualfw confs num: %{public}zu", DualFwConfs_.size());
-    for (size_t i = 0; i < DualFwConfs_.size(); i++) {
-        func(DualFwConfs_[i]);
+    RINGTONE_INFO_LOG("dualfwk confs num: %{public}zu", dualFwkConfs_.size());
+    for (size_t i = 0; i < dualFwkConfs_.size(); i++) {
+        func(dualFwkConfs_[i]);
     }
 }
 } // namespace Media
