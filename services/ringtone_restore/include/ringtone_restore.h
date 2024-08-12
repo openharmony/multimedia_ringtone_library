@@ -28,7 +28,7 @@ public:
     RingtoneRestore() = default;
     virtual ~RingtoneRestore() = default;
     int32_t Init(const std::string &backupPath) override;
-    void StartRestore() override;
+    int32_t StartRestore() override;
 protected:
     virtual bool OnPrepare(FileInfo &info, const std::string &destPath) override;
     virtual void OnFinished(std::vector<FileInfo> &infos) override;

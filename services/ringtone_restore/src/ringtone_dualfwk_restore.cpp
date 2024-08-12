@@ -382,20 +382,24 @@ std::vector<FileInfo> RingtoneDualFwkRestore::BuildFileInfo()
     return result;
 }
 
-void RingtoneDualFwkRestore::StartRestore()
+int32_t RingtoneDualFwkRestore::StartRestore()
 {
     if (dualFwkSetting_ == nullptr || mediaDataShare_ == nullptr) {
         RINGTONE_ERR_LOG("dualfwk restrore is not initialized successfully");
-        return;
+        return E_ERR;
     }
-    RingtoneRestoreBase::StartRestore();
+    auto ret = RingtoneRestoreBase::StartRestore();
+    if (ret != E_OK) {
+        return ret;
+    }
 
     std::vector<FileInfo> infos = BuildFileInfo();
 
     if ((!infos.empty()) && (infos.size() != 0)) {
-        InsertTones(infos);
+        ret = InsertTones(infos);
     }
     FlushSettings();
+    return ret;
 }
 
 int32_t RingtoneDualFwkRestore::DupToneFile(FileInfo &info)

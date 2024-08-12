@@ -78,7 +78,7 @@ int32_t RingtoneRestoreBase::Init(const string &backupPath)
     return E_OK;
 }
 
-void RingtoneRestoreBase::StartRestore()
+int32_t RingtoneRestoreBase::StartRestore()
 {
     RingtoneFileUtils::AccessRingtoneDir();
     int32_t errCode;
@@ -86,7 +86,7 @@ void RingtoneRestoreBase::StartRestore()
         NativePreferences::PreferencesHelper::GetPreferences(DFX_COMMON_XML, errCode);
     if (!prefs) {
         RINGTONE_ERR_LOG("get preferences error: %{public}d", errCode);
-        return;
+        return E_FAIL;
     }
     int isCompleted = prefs->GetInt(RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY,
         RINGTONE_PARAMETER_SCANNER_COMPLETED_FALSE);
@@ -95,6 +95,7 @@ void RingtoneRestoreBase::StartRestore()
         prefs->PutInt(RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY, RINGTONE_PARAMETER_SCANNER_COMPLETED_TRUE);
         prefs->FlushSync();
     }
+    return E_OK;
 }
 
 bool RingtoneRestoreBase::MoveFile(const std::string &src, const std::string &dst)
@@ -165,24 +166,26 @@ void RingtoneRestoreBase::CheckSetting(FileInfo &info)
     }
 }
 
-void RingtoneRestoreBase::InsertTones(std::vector<FileInfo> &fileInfos)
+int32_t RingtoneRestoreBase::InsertTones(std::vector<FileInfo> &fileInfos)
 {
     if (localRdb_ == nullptr) {
         RINGTONE_ERR_LOG("localRdb_ is null");
-        return;
+        return E_FAIL;
     }
     if (fileInfos.empty()) {
         RINGTONE_ERR_LOG("fileInfos are empty");
-        return;
+        return E_FAIL;
     }
     vector<NativeRdb::ValuesBucket> values = MakeInsertValues(fileInfos);
     int64_t rowNum = 0;
     int32_t errCode = BatchInsert(RINGTONE_TABLE, values, rowNum);
     if (errCode != E_OK) {
-        return;
+        RINGTONE_ERR_LOG("fail to batch insert");
+        return errCode;
     }
 
     OnFinished(fileInfos);
+    return E_OK;
 }
 
 void RingtoneRestoreBase::FlushSettings()
