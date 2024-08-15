@@ -18,6 +18,8 @@
 
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
+#include "napi_remote_object.h"
+#include "uv.h"
 
 namespace OHOS {
 namespace Media {
@@ -30,6 +32,7 @@ public:
 
 private:
     static napi_value JSStartRestore(napi_env env, napi_callback_info info);
+    static void UvQueueWork(uv_loop_s *loop, uv_work_t *work);
 };
 } // namespace Media
 } // namespace OHOS

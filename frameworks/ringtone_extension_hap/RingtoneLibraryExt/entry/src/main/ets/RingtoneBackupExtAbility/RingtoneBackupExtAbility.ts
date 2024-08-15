@@ -29,35 +29,58 @@ const RESTORE_SCENE_TYPE_DUAL_CLONE : number = 2;
 const UPGRADE_NAME = '0.0.0.0';
 const DUAL_FRAME_CLONE_NAME = '99.99.99.999';
 
+const ON_RESTORE_COMMON_CODE : string = '0';
+const ON_RESTORE_ERROR_CODE : string = '13500099';
+
+export interface IResultExInfo {
+  resultInfo: [IResultErrorInfo];
+}
+
+export interface IResultErrorInfo {
+  type: string;
+  errorCode: string;
+  errorInfo: string;
+}
+
 export default class RingtoneBackupExtAbility extends BackupExtensionAbility {
   async onBackup() : Promise<void> {
     console.log(TAG, 'onBackup ok.');
   }
 
-  async onRestore(bundleVersion : BundleVersion) : Promise<void> {
-    console.log(TAG, `onRestore ok ${JSON.stringify(bundleVersion)}`);
+  async onRestoreEx(bundleVersion: BundleVersion, restoreInfo: string): Promise<string> {
+    console.log(TAG, `onRestoreEx ok ${JSON.stringify(bundleVersion)}`);
     console.time(TAG + ' RESTORE');
     const backupBasePath = this.context.backupDir + 'restore';
     const backupFilePath = backupBasePath + '/storage/media/local/files/Ringtone/';
-    let srcPath:string;
-    let destPath:string;
+    let srcPath:string = backupFilePath;
+    let destPath:string = ringtonePath;
+    let cloneType:number;
     if (bundleVersion.name.startsWith(UPGRADE_NAME)) {
-      await ringtonerestore.startRestore(RESTORE_SCENE_TYPE_DUAL_UPGRADE, backupBasePath);
-      srcPath = backupFilePath;
-      destPath = ringtonePath;
+      cloneType = RESTORE_SCENE_TYPE_DUAL_UPGRADE;
     } else if (bundleVersion.name === DUAL_FRAME_CLONE_NAME && bundleVersion.code === 0) {
-      await ringtonerestore.startRestore(RESTORE_SCENE_TYPE_DUAL_CLONE, backupBasePath);
-      srcPath = backupFilePath;
-      destPath = ringtonePath;
+      cloneType = RESTORE_SCENE_TYPE_DUAL_CLONE;
     } else {
-      await ringtonerestore.startRestore(RESTORE_SCENE_TYPE_SINGLE_CLONE, backupBasePath);
-      srcPath = backupFilePath;
-      destPath = ringtonePath;
+      cloneType = RESTORE_SCENE_TYPE_SINGLE_CLONE;
     }
+    let restoreResult:number = await ringtonerestore.startRestore(cloneType, backupBasePath);
+    console.log(TAG, `restoreResult:${restoreResult}`);
     console.timeEnd(TAG + ' RESTORE');
     console.time(TAG + ' MOVE REST FILES');
     await this.moveRestFiles(srcPath, destPath);
     console.timeEnd(TAG + ' MOVE REST FILES');
+    let result:boolean = restoreResult === 0;
+    let resultExInfo: IResultExInfo = {
+      resultInfo: [
+        {
+          type: 'ErrorInfo',
+          errorCode: result ? ON_RESTORE_COMMON_CODE : ON_RESTORE_ERROR_CODE, // 如果成功，错误码返回0，如果失败，返回约定的错误码
+          errorInfo: '',
+        }
+      ]
+    };
+    let resultInfo: string = JSON.stringify(resultExInfo);
+    console.log(TAG, `restore end resultInfo:${resultInfo}`);
+    return resultInfo;
   }
 
   private isFileExist(filePath : string) : boolean {

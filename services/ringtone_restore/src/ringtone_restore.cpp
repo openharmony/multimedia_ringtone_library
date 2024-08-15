@@ -119,18 +119,22 @@ void RingtoneRestore::CheckRestoreFileInfos(vector<FileInfo> &infos)
     }
 }
 
-void RingtoneRestore::StartRestore()
+int32_t RingtoneRestore::StartRestore()
 {
     if (restoreRdb_ == nullptr || backupPath_.empty()) {
-        return;
+        return E_FAIL;
     }
-    RingtoneRestoreBase::StartRestore();
+    auto ret = RingtoneRestoreBase::StartRestore();
+    if (ret != E_OK) {
+        return ret;
+    }
     auto infos = QueryFileInfos(INVALID_QUERY_OFFSET);
     if ((!infos.empty()) && (infos.size() != 0)) {
         CheckRestoreFileInfos(infos);
-        InsertTones(infos);
+        ret = InsertTones(infos);
     }
     FlushSettings();
+    return ret;
 }
 
 void RingtoneRestore::UpdateRestoreFileInfo(FileInfo &info)

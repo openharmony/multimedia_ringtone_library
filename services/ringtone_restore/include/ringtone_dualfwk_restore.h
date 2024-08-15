@@ -32,7 +32,7 @@ public:
     RingtoneDualFwkRestore() = default;
     virtual ~RingtoneDualFwkRestore() = default;
     int32_t Init(const std::string &backupPath) override;
-    void StartRestore() override;
+    int32_t StartRestore() override;
 protected:
     std::unique_ptr<DualFwkSoundSetting> dualFwkSetting_ = nullptr;
 private:
