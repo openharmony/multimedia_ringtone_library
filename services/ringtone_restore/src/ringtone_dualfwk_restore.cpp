@@ -39,6 +39,7 @@
 #include "ringtone_restore_base.h"
 #include "ringtone_restore_type.h"
 #include "ringtone_type.h"
+#include "ringtone_utils.h"
 #include "userfile_manager_types.h"
 
 namespace OHOS {
@@ -339,7 +340,7 @@ static std::shared_ptr<FileInfo> MergeQueries(const DualFwkSettingItem &setting,
         RINGTONE_INFO_LOG("found %{public}s in ringtone db", keyName.c_str());
         doInsert = false;
     } else if (setting.isTitle) {
-        keyName = keyName + ".ogg";
+        keyName = RingtoneUtils::ReplaceAll(keyName + ".ogg", " ", "_");
         if (resultFromRingtoneByDisplayName.find(keyName) != resultFromRingtoneByDisplayName.end()) {
             infoPtr = resultFromRingtoneByDisplayName[keyName];
             RINGTONE_INFO_LOG("found %{public}s in ringtone db", keyName.c_str());

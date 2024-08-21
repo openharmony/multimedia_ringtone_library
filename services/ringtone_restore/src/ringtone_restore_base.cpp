@@ -173,8 +173,8 @@ int32_t RingtoneRestoreBase::InsertTones(std::vector<FileInfo> &fileInfos)
         return E_FAIL;
     }
     if (fileInfos.empty()) {
-        RINGTONE_ERR_LOG("fileInfos are empty");
-        return E_FAIL;
+        RINGTONE_ERR_LOG("fileInfos are empty, not need restore");
+        return E_OK;
     }
     vector<NativeRdb::ValuesBucket> values = MakeInsertValues(fileInfos);
     int64_t rowNum = 0;
