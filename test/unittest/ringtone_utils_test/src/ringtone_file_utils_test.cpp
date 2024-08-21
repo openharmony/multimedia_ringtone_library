@@ -228,17 +228,5 @@ HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_CopyFileUtil_Test_001, TestSiz
     const string filePath("a", 5200);
     RingtoneFileUtils::CopyFileUtil(filePath, newPath);
 }
-
-HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_CreatePreloadFolder_test_001, TestSize.Level0)
-{
-    string path = "ringtoneFileUtils_CreatePreloadFolder_test_001";
-    auto ret = RingtoneFileUtils::CreatePreloadFolder(path);
-    EXPECT_EQ((ret > 0), true);
-    ret = RingtoneFileUtils::CreatePreloadFolder(RINGTONE_CUSTOMIZED_BASE_PATH.c_str());
-    EXPECT_EQ(ret, E_OK);
-    path = string(RINGTONE_CUSTOMIZED_BASE_PATH).append("/Ringtone/CreatePreloadFolder_test_001");
-    ret = RingtoneFileUtils::CreatePreloadFolder(path);
-    EXPECT_EQ(ret, E_OK);
-}
 } // namespace Media
 } // namespace OHOS

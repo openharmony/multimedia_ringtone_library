@@ -23,6 +23,7 @@
 #include "ringtone_file_utils.h"
 #include "ringtone_log.h"
 #include "ringtone_type.h"
+#include "ringtone_utils.h"
 
 namespace OHOS {
 namespace Media {
@@ -108,7 +109,8 @@ std::vector<std::string> DualFwkSoundSetting::GetDisplayNames() const
     std::vector<std::string> fileNames;
     for (auto setting : settings_) {
         if (setting.second.isTitle) {
-            fileNames.push_back(setting.second.toneFileName + ".ogg");
+            std::string fileName = RingtoneUtils::ReplaceAll(setting.second.toneFileName + ".ogg", " ", "_");
+            fileNames.push_back(fileName);
         } else {
             fileNames.push_back(setting.second.toneFileName);
         }
