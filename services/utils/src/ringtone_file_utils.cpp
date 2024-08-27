@@ -471,7 +471,7 @@ int32_t RingtoneFileUtils::CreatePreloadFolder(const string &path)
 {
     RINGTONE_DEBUG_LOG("start");
     if (access(path.c_str(), F_OK) == 0) {
-        RINGTONE_INFO_LOG("dir is existing");
+        RINGTONE_DEBUG_LOG("dir is existing");
         return E_SUCCESS;
     }
 

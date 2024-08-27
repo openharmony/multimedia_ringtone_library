@@ -78,7 +78,7 @@ void RingtoneDataShareExtension::Init(const shared_ptr<AbilityLocalRecord> &reco
 
 void RingtoneDataShareExtension::OnStart(const AAFwk::Want &want)
 {
-    RINGTONE_INFO_LOG("begin.");
+    RINGTONE_DEBUG_LOG("begin.");
     Extension::OnStart(want);
     auto context = AbilityRuntime::Context::GetApplicationContext();
     if (context == nullptr) {
@@ -105,23 +105,23 @@ void RingtoneDataShareExtension::OnStart(const AAFwk::Want &want)
 
     RingtoneScanner();
     RingtoneLanguageManager::GetInstance()->SyncAssetLanguage();
-    RINGTONE_INFO_LOG("end.");
+    RINGTONE_DEBUG_LOG("end.");
 }
 
 void RingtoneDataShareExtension::OnStop()
 {
-    RINGTONE_INFO_LOG("begin.");
+    RINGTONE_DEBUG_LOG("begin.");
     auto scannerManager = RingtoneScannerManager::GetInstance();
     if (scannerManager != nullptr) {
         scannerManager->Stop();
     }
     RingtoneDataManager::GetInstance()->ClearRingtoneDataMgr();
-    RINGTONE_INFO_LOG("end.");
+    RINGTONE_DEBUG_LOG("end.");
 }
 
 sptr<IRemoteObject> RingtoneDataShareExtension::OnConnect(const AAFwk::Want &want)
 {
-    RINGTONE_INFO_LOG("begin.");
+    RINGTONE_DEBUG_LOG("begin.");
     Extension::OnConnect(want);
     sptr<RingtoneDataShareStubImpl> remoteObject = new (nothrow) RingtoneDataShareStubImpl(
         static_pointer_cast<RingtoneDataShareExtension>(shared_from_this()),
@@ -130,7 +130,7 @@ sptr<IRemoteObject> RingtoneDataShareExtension::OnConnect(const AAFwk::Want &wan
         RINGTONE_ERR_LOG("No memory allocated for DataShareStubImpl");
         return nullptr;
     }
-    RINGTONE_INFO_LOG("end.");
+    RINGTONE_DEBUG_LOG("end.");
     return remoteObject->AsObject();
 }
 
