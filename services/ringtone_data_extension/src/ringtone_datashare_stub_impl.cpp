@@ -27,7 +27,7 @@ std::shared_ptr<RingtoneDataShareExtension> RingtoneDataShareStubImpl::GetOwner(
 
 std::vector<std::string> RingtoneDataShareStubImpl::GetFileTypes(const Uri &uri, const std::string &mimeTypeFilter)
 {
-    RINGTONE_INFO_LOG("begin.");
+    RINGTONE_DEBUG_LOG("begin.");
     std::vector<std::string> ret;
     auto client = sptr<RingtoneDataShareStubImpl>(this);
     auto extension = client->GetOwner();
@@ -55,7 +55,7 @@ int RingtoneDataShareStubImpl::OpenFile(const Uri &uri, const std::string &mode)
 
 int RingtoneDataShareStubImpl::OpenRawFile(const Uri &uri, const std::string &mode)
 {
-    RINGTONE_INFO_LOG("begin.");
+    RINGTONE_DEBUG_LOG("begin.");
     int ret = -1;
     auto client = sptr<RingtoneDataShareStubImpl>(this);
     auto extension = client->GetOwner();
@@ -135,7 +135,7 @@ std::shared_ptr<DataShareResultSet> RingtoneDataShareStubImpl::Query(const Uri &
 
 std::string RingtoneDataShareStubImpl::GetType(const Uri &uri)
 {
-    RINGTONE_INFO_LOG("begin.");
+    RINGTONE_DEBUG_LOG("begin.");
     std::string ret = "";
     auto client = sptr<RingtoneDataShareStubImpl>(this);
     auto extension = client->GetOwner();
@@ -150,7 +150,7 @@ std::string RingtoneDataShareStubImpl::GetType(const Uri &uri)
 
 int RingtoneDataShareStubImpl::BatchInsert(const Uri &uri, const std::vector<DataShareValuesBucket> &values)
 {
-    RINGTONE_INFO_LOG("begin.");
+    RINGTONE_DEBUG_LOG("begin.");
     int ret = 0;
     auto client = sptr<RingtoneDataShareStubImpl>(this);
     auto extension = client->GetOwner();
@@ -165,7 +165,7 @@ int RingtoneDataShareStubImpl::BatchInsert(const Uri &uri, const std::vector<Dat
 
 bool RingtoneDataShareStubImpl::RegisterObserver(const Uri &uri, const sptr<AAFwk::IDataAbilityObserver> &dataObserver)
 {
-    RINGTONE_INFO_LOG("begin.");
+    RINGTONE_DEBUG_LOG("begin.");
     bool ret = false;
     auto client = sptr<RingtoneDataShareStubImpl>(this);
     auto extension = client->GetOwner();
@@ -181,7 +181,7 @@ bool RingtoneDataShareStubImpl::RegisterObserver(const Uri &uri, const sptr<AAFw
 bool RingtoneDataShareStubImpl::UnregisterObserver(const Uri &uri,
     const sptr<AAFwk::IDataAbilityObserver> &dataObserver)
 {
-    RINGTONE_INFO_LOG("begin.");
+    RINGTONE_DEBUG_LOG("begin.");
     bool ret = false;
     auto client = sptr<RingtoneDataShareStubImpl>(this);
     auto extension = client->GetOwner();
@@ -196,7 +196,7 @@ bool RingtoneDataShareStubImpl::UnregisterObserver(const Uri &uri,
 
 bool RingtoneDataShareStubImpl::NotifyChange(const Uri &uri)
 {
-    RINGTONE_INFO_LOG("begin.");
+    RINGTONE_DEBUG_LOG("begin.");
     bool ret = false;
     auto client = sptr<RingtoneDataShareStubImpl>(this);
     auto extension = client->GetOwner();
@@ -211,7 +211,7 @@ bool RingtoneDataShareStubImpl::NotifyChange(const Uri &uri)
 
 Uri RingtoneDataShareStubImpl::NormalizeUri(const Uri &uri)
 {
-    RINGTONE_INFO_LOG("begin.");
+    RINGTONE_DEBUG_LOG("begin.");
     Uri urivalue("");
     auto client = sptr<RingtoneDataShareStubImpl>(this);
     auto extension = client->GetOwner();
@@ -226,7 +226,7 @@ Uri RingtoneDataShareStubImpl::NormalizeUri(const Uri &uri)
 
 Uri RingtoneDataShareStubImpl::DenormalizeUri(const Uri &uri)
 {
-    RINGTONE_INFO_LOG("begin.");
+    RINGTONE_DEBUG_LOG("begin.");
     Uri urivalue("");
     auto client = sptr<RingtoneDataShareStubImpl>(this);
     auto extension = client->GetOwner();

@@ -90,7 +90,7 @@ const string &RingtoneDataCommand::GetResult()
 static bool IsNumber(const string &str)
 {
     if (str.empty()) {
-        RINGTONE_ERR_LOG("IsNumber input is empty ");
+        RINGTONE_DEBUG_LOG("IsNumber input is empty ");
         return false;
     }
 
