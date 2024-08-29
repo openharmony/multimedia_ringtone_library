@@ -415,7 +415,7 @@ string RingtoneFileUtils::UrlDecode(const string &src)
     string ret;
     char ch;
     int tmpNum;
-    for (int i = 0; i < src.length(); i++) {
+    for (size_t i = 0; i < src.length(); i++) {
         if (src[i]=='%') {
             if (sscanf_s(src.substr(i + 1, URL_DECODE_DOUBLE).c_str(), "%x", &tmpNum) == -1) {
                 RINGTONE_ERR_LOG("Not a valid url: %{private}s", src.c_str());

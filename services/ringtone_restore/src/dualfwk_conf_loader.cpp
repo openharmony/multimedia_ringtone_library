@@ -18,6 +18,7 @@
 
 #include "dualfwk_conf_loader.h"
 #include "ringtone_errno.h"
+#include "ringtone_file_utils.h"
 #include "ringtone_restore_db_utils.h"
 
 namespace OHOS {
@@ -73,6 +74,10 @@ static int32_t ParseBackupFile(const std::string &backupFile, const std::vector<
     std::map<std::string, std::string> &results)
 {
     RINGTONE_INFO_LOG("parse backupfile %{public}s uid=%{public}d", backupFile.c_str(), getuid());
+    if (RingtoneFileUtils::IsFileExists(backupFile)) {
+        RINGTONE_ERR_LOG("the file exists path: %{private}s", backupFile.c_str());
+        return E_FILE_EXIST;
+    }
     std::ifstream fs(backupFile);
     if (!fs.good()) {
         RINGTONE_ERR_LOG("failed to open file %{private}s", backupFile.c_str());
