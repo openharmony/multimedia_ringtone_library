@@ -39,9 +39,7 @@ enum {
 };
 
 static std::shared_ptr<RingtoneUnistore> g_ringtoneUniStore = nullptr;
-const string RINGTONE_MULTILINGUAL_FILE_PATH  =
-    "/system/variant/phone/base/etc/resource/media/audio/ringtone_list_language.xml";
-const std::vector<std::vector<std::string>> metadata = {
+const std::vector<std::vector<std::string>> g_ringtoneMetadata = {
     {"/sys_prod/resource/media/audio/alarms/candy.ogg", "candy.ogg", "糖果", "1", "zh-Hans"},
     {"/sys_prod/resource/media/audio/alarms/spring_outing.ogg", "spring_outing.ogg", "春游", "1", "zh-Hans"},
     {"/sys_prod/resource/media/audio/alarms/maze.ogg", "maze.ogg", "maze", "1", "en-Latn-US"},
@@ -49,7 +47,17 @@ const std::vector<std::vector<std::string>> metadata = {
     {"/sys_prod/resource/media/audio/alarms/brook.ogg", "brook.ogg", "brook", "1", ""},
     {"/sys_prod/resource/media/audio/alarms/kaleidoscope.ogg", "kaleidoscope.ogg", "kaleidoscope", "2", ""},
 };
-const std::map<std::string, std::map<std::string, std::string>> translationResources = {
+const std::vector<std::vector<std::string>> g_vibrationMetadata = {
+    {"/sys_prod/resource/media/haptics/standard/synchronized/ringtones/candy.json", "candy.json", "糖果", "1",
+        "zh-Hans"},
+    {"/sys_prod/resource/media/haptics/gentle/synchronized/ringtones/candy.json", "candy.json", "candy", "2", ""},
+    {"/sys_prod/resource/media/haptics/standard/synchronized/ringtones/maze.json", "maze.json", "maze", "1",
+        "en-Latn-US"},
+    {"/sys_prod/resource/media/haptics/gentle/synchronized/ringtones/maze.json", "maze.json", "maze", "2", ""},
+    {"/sys_prod/resource/media/haptics/standard/non-synchronized/brook.json", "brook.json", "溪流", "1", "zh-Hans"},
+    {"/sys_prod/resource/media/haptics/standard/non-synchronized/didi.json", "didi.json", "didi", "1", "en-Latn-US"},
+};
+const std::map<std::string, std::map<std::string, std::string>> g_translationResource = {
     {
         "zh-Hans", {
             {"candy", "糖果"},
@@ -71,9 +79,11 @@ const std::map<std::string, std::map<std::string, std::string>> translationResou
         }
     }
 };
+
 const string CHINESE_ABBREVIATION = "zh-Hans";
 const string ENGLISH_ABBREVIATION = "en-Latn-US";
-const int32_t LANGUAGE_DIFF_AMOUNT = 3;
+const int32_t RINGTONE_DIFF_AMOUN = 3;
+const int32_t VIBRATION_DIFF_AMOUN = 2;
 
 void InitTestData();
 
@@ -98,12 +108,12 @@ void RingtoneLanguageManagerTest::TearDown(void) {}
 void InitTestData()
 {
     Uri uri(RINGTONE_PATH_URI);
-    RingtoneDataCommand cmdDel(uri, RINGTONE_TABLE, RingtoneOperationType::DELETE);
+    RingtoneDataCommand ringtoneCmdDel(uri, RINGTONE_TABLE, RingtoneOperationType::DELETE);
     int32_t rowId = 0;
-    int32_t ret = g_ringtoneUniStore->Delete(cmdDel, rowId);
+    int32_t ret = g_ringtoneUniStore->Delete(ringtoneCmdDel, rowId);
     EXPECT_EQ(ret, E_OK);
 
-    for (auto &item : metadata) {
+    for (auto &item : g_ringtoneMetadata) {
         RingtoneDataCommand cmdInsert(uri, RINGTONE_TABLE, RingtoneOperationType::INSERT);
         NativeRdb::ValuesBucket values;
         values.Put(RINGTONE_COLUMN_DATA, item[DATA_INDEX]);
@@ -112,6 +122,27 @@ void InitTestData()
         values.Put(RINGTONE_COLUMN_SOURCE_TYPE, stoi(item[SOURCE_TYPE_INDEX]));
         if (!item[DISPLAY_LANGUAGE_TYPE_INDEX].empty()) {
             values.Put(RINGTONE_COLUMN_DISPLAY_LANGUAGE_TYPE, item[DISPLAY_LANGUAGE_TYPE_INDEX]);
+        }
+        cmdInsert.SetValueBucket(values);
+        int64_t rowId = E_HAS_DB_ERROR;
+        int32_t ret = g_ringtoneUniStore->Insert(cmdInsert, rowId);
+        EXPECT_EQ(ret, E_OK);
+    }
+
+    RingtoneDataCommand vibrationCmdDel(uri, VIBRATE_TABLE, RingtoneOperationType::DELETE);
+    rowId = 0;
+    ret = g_ringtoneUniStore->Delete(vibrationCmdDel, rowId);
+    EXPECT_EQ(ret, E_OK);
+
+    for (auto &item : g_vibrationMetadata) {
+        RingtoneDataCommand cmdInsert(uri, VIBRATE_TABLE, RingtoneOperationType::INSERT);
+        NativeRdb::ValuesBucket values;
+        values.Put(VIBRATE_COLUMN_DATA, item[DATA_INDEX]);
+        values.Put(VIBRATE_COLUMN_DISPLAY_NAME, item[DISPLAY_NAME_INDEX]);
+        values.Put(VIBRATE_COLUMN_TITLE, item[TITLE_INDEX]);
+        values.Put(VIBRATE_COLUMN_VIBRATE_TYPE, stoi(item[SOURCE_TYPE_INDEX]));
+        if (!item[DISPLAY_LANGUAGE_TYPE_INDEX].empty()) {
+            values.Put(VIBRATE_COLUMN_DISPLAY_LANGUAGE, item[DISPLAY_LANGUAGE_TYPE_INDEX]);
         }
         cmdInsert.SetValueBucket(values);
         int64_t rowId = E_HAS_DB_ERROR;
@@ -129,7 +160,7 @@ HWTEST_F(RingtoneLanguageManagerTest, languageManager_CheckLanguageTypeByRington
     std::shared_ptr<NativeRdb::ResultSet> resultSet;
     int ret = langMgr->CheckLanguageTypeByRingtone(rowCount, resultSet);
     EXPECT_EQ(ret, E_OK);
-    EXPECT_EQ(rowCount, LANGUAGE_DIFF_AMOUNT);
+    EXPECT_EQ(rowCount, RINGTONE_DIFF_AMOUN);
 }
 
 HWTEST_F(RingtoneLanguageManagerTest, languageManager_CheckLanguageTypeByRingtone_test_002, TestSize.Level0)
@@ -141,7 +172,7 @@ HWTEST_F(RingtoneLanguageManagerTest, languageManager_CheckLanguageTypeByRington
     std::shared_ptr<NativeRdb::ResultSet> resultSet;
     int ret = langMgr->CheckLanguageTypeByRingtone(rowCount, resultSet);
     EXPECT_EQ(ret, E_OK);
-    EXPECT_EQ(rowCount, LANGUAGE_DIFF_AMOUNT);
+    EXPECT_EQ(rowCount, RINGTONE_DIFF_AMOUN);
 }
 
 HWTEST_F(RingtoneLanguageManagerTest, languageManager_ChangeLanguageDataToRingtone_test_001, TestSize.Level0)
@@ -153,9 +184,9 @@ HWTEST_F(RingtoneLanguageManagerTest, languageManager_ChangeLanguageDataToRingto
     std::shared_ptr<NativeRdb::ResultSet> resultSet;
     int32_t ret = langMgr->CheckLanguageTypeByRingtone(rowCount, resultSet);
     EXPECT_EQ(ret, E_OK);
-    EXPECT_EQ(rowCount, LANGUAGE_DIFF_AMOUNT);
+    EXPECT_EQ(rowCount, RINGTONE_DIFF_AMOUN);
 
-    langMgr->ringtoneTranslate_ = translationResources;
+    langMgr->ringtoneTranslate_ = g_translationResource;
     langMgr->ChangeLanguageDataToRingtone(rowCount, resultSet);
 
     ret = langMgr->CheckLanguageTypeByRingtone(rowCount, resultSet);
@@ -172,12 +203,74 @@ HWTEST_F(RingtoneLanguageManagerTest, languageManager_ChangeLanguageDataToRingto
     std::shared_ptr<NativeRdb::ResultSet> resultSet;
     int32_t ret = langMgr->CheckLanguageTypeByRingtone(rowCount, resultSet);
     EXPECT_EQ(ret, E_OK);
-    EXPECT_EQ(rowCount, LANGUAGE_DIFF_AMOUNT);
+    EXPECT_EQ(rowCount, RINGTONE_DIFF_AMOUN);
 
-    langMgr->ringtoneTranslate_ = translationResources;
+    langMgr->ringtoneTranslate_ = g_translationResource;
     langMgr->ChangeLanguageDataToRingtone(rowCount, resultSet);
 
     ret = langMgr->CheckLanguageTypeByRingtone(rowCount, resultSet);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(rowCount, 0);
+}
+
+HWTEST_F(RingtoneLanguageManagerTest, languageManager_CheckLanguageTypeByVibration_test_001, TestSize.Level0)
+{
+    auto langMgr = RingtoneLanguageManager::GetInstance();
+    langMgr->systemLanguage_ = CHINESE_ABBREVIATION;
+
+    int rowCount = 0;
+    std::shared_ptr<NativeRdb::ResultSet> resultSet;
+    int ret = langMgr->CheckLanguageTypeByVibration(rowCount, resultSet);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(rowCount, VIBRATION_DIFF_AMOUN);
+}
+
+HWTEST_F(RingtoneLanguageManagerTest, languageManager_CheckLanguageTypeByVibration_test_002, TestSize.Level0)
+{
+    auto langMgr = RingtoneLanguageManager::GetInstance();
+    langMgr->systemLanguage_ = ENGLISH_ABBREVIATION;
+
+    int rowCount = 0;
+    std::shared_ptr<NativeRdb::ResultSet> resultSet;
+    int ret = langMgr->CheckLanguageTypeByVibration(rowCount, resultSet);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(rowCount, VIBRATION_DIFF_AMOUN);
+}
+
+HWTEST_F(RingtoneLanguageManagerTest, languageManager_ChangeLanguageDataToVibration_test_001, TestSize.Level0)
+{
+    auto langMgr = RingtoneLanguageManager::GetInstance();
+    langMgr->systemLanguage_ = CHINESE_ABBREVIATION;
+
+    int rowCount = 0;
+    std::shared_ptr<NativeRdb::ResultSet> resultSet;
+    int32_t ret = langMgr->CheckLanguageTypeByVibration(rowCount, resultSet);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(rowCount, VIBRATION_DIFF_AMOUN);
+
+    langMgr->vibrationTranslate_ = g_translationResource;
+    langMgr->ChangeLanguageDataToVibration(rowCount, resultSet);
+
+    ret = langMgr->CheckLanguageTypeByVibration(rowCount, resultSet);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(rowCount, 0);
+}
+
+HWTEST_F(RingtoneLanguageManagerTest, languageManager_ChangeLanguageDataToVibration_test_002, TestSize.Level0)
+{
+    auto langMgr = RingtoneLanguageManager::GetInstance();
+    langMgr->systemLanguage_ = ENGLISH_ABBREVIATION;
+
+    int rowCount = 0;
+    std::shared_ptr<NativeRdb::ResultSet> resultSet;
+    int32_t ret = langMgr->CheckLanguageTypeByVibration(rowCount, resultSet);
+    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(rowCount, VIBRATION_DIFF_AMOUN);
+
+    langMgr->vibrationTranslate_ = g_translationResource;
+    langMgr->ChangeLanguageDataToVibration(rowCount, resultSet);
+
+    ret = langMgr->CheckLanguageTypeByVibration(rowCount, resultSet);
     EXPECT_EQ(ret, E_OK);
     EXPECT_EQ(rowCount, 0);
 }

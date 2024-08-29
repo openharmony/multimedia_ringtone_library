@@ -20,6 +20,7 @@
 
 #include "avmetadatahelper.h"
 #include "ringtone_metadata.h"
+#include "vibrate_metadata.h"
 
 namespace OHOS {
 namespace Media {
@@ -27,6 +28,7 @@ namespace Media {
 class RingtoneMetadataExtractor {
 public:
     EXPORT static int32_t Extract(std::unique_ptr<RingtoneMetadata> &data);
+    EXPORT static int32_t Extract(std::unique_ptr<VibrateMetadata> &data);
     EXPORT static int32_t ExtractAudioMetadata(std::unique_ptr<RingtoneMetadata> &data);
 
 private:

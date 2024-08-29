@@ -53,6 +53,12 @@ const std::vector<std::string> RINGTONE_OPEN_WRITE_MODE_VECTOR = {
     { RINGTONE_FILEMODE_READWRITEAPPEND },
 };
 
+std::map<std::string, std::string> VALID_URI_TO_TABLE {
+    {SIMCARD_SETTING_PATH_URI, SIMCARD_SETTING_TABLE},
+    {RINGTONE_PATH_URI, RINGTONE_TABLE},
+    {VIBRATE_PATH_URI, VIBRATE_TABLE}
+};
+
 RingtoneDataShareExtension *RingtoneDataShareExtension::Create(const unique_ptr<Runtime> &runtime)
 {
     return new RingtoneDataShareExtension(static_cast<Runtime&>(*runtime));
@@ -150,14 +156,19 @@ static int32_t CheckRingtonePerm(RingtoneDataCommand &cmd, bool isWrite)
     return err;
 }
 
-static int32_t UriValidCheck(const Uri &uri)
+static int32_t GetValidUriTab(const Uri &uri, string &tab)
 {
     string uriStr = uri.ToString();
-    if (uriStr.compare(0, RINGTONE_PATH_URI.size(), RINGTONE_PATH_URI)) {
-        RINGTONE_ERR_LOG("error: invalid uri!");
-        return E_INVALID_URI;
+
+    for (const auto &pair : VALID_URI_TO_TABLE) {
+        if (uriStr.find(pair.first) != std::string::npos) {
+            tab = pair.second;
+            return Media::E_OK;
+        }
     }
-    return Media::E_OK;
+
+    RINGTONE_INFO_LOG("INVALID uri=%{public}s", uriStr.c_str());
+    return E_INVALID_URI;
 }
 
 static const std::vector<string> g_ringToneTableFields = {
@@ -227,11 +238,13 @@ int RingtoneDataShareExtension::Insert(const Uri &uri, const DataShareValuesBuck
 
     DumpDataShareValueBucket(g_ringToneTableFields, value);
 
-    int err = UriValidCheck(uri);
+    string tab("");
+    int err = GetValidUriTab(uri, tab);
     if (err != Media::E_OK) {
         return err;
     }
-    RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::INSERT);
+
+    RingtoneDataCommand cmd(uri, tab, RingtoneOperationType::INSERT);
     err = CheckRingtonePerm(cmd, true);
     if (err < 0) {
         RINGTONE_ERR_LOG("Check Insert-permission failed, errCode: %{public}d", err);
@@ -248,11 +261,13 @@ int RingtoneDataShareExtension::Update(const Uri &uri, const DataSharePredicates
     RINGTONE_DEBUG_LOG("entry, uri=%{public}s", uri.ToString().c_str());
     RINGTONE_DEBUG_LOG("WhereClause=%{public}s", predicates.GetWhereClause().c_str());
 
-    int err = UriValidCheck(uri);
+    string tab("");
+    int err = GetValidUriTab(uri, tab);
     if (err != Media::E_OK) {
         return err;
     }
-    RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::UPDATE);
+
+    RingtoneDataCommand cmd(uri, tab, RingtoneOperationType::UPDATE);
     err = CheckRingtonePerm(cmd, false);
     if (err < 0) {
         RINGTONE_ERR_LOG("Check Update-permission failed, errCode: %{public}d", err);
@@ -266,11 +281,13 @@ int RingtoneDataShareExtension::Delete(const Uri &uri, const DataSharePredicates
 {
     RINGTONE_DEBUG_LOG("entry, uri=%{public}s", uri.ToString().c_str());
 
-    int err = UriValidCheck(uri);
+    string tab("");
+    int err = GetValidUriTab(uri, tab);
     if (err != Media::E_OK) {
         return err;
     }
-    RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::DELETE);
+
+    RingtoneDataCommand cmd(uri, tab, RingtoneOperationType::DELETE);
     err = CheckRingtonePerm(cmd, true);
     if (err < 0) {
         RINGTONE_ERR_LOG("Check Delete-permission failed, errCode: %{public}d", err);
@@ -284,11 +301,13 @@ shared_ptr<DataShareResultSet> RingtoneDataShareExtension::Query(const Uri &uri,
     const DataSharePredicates &predicates, vector<string> &columns, DatashareBusinessError &businessError)
 {
     RINGTONE_DEBUG_LOG("entry, uri=%{public}s", uri.ToString().c_str());
-    int err = UriValidCheck(uri);
+    string tab("");
+    int err = GetValidUriTab(uri, tab);
     if (err != Media::E_OK) {
         return nullptr;
     }
-    RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::QUERY);
+
+    RingtoneDataCommand cmd(uri, tab, RingtoneOperationType::QUERY);
     err = CheckRingtonePerm(cmd, false);
     if (err < 0) {
         businessError.SetCode(err);
@@ -312,12 +331,13 @@ int RingtoneDataShareExtension::OpenFile(const Uri &uri, const string &mode)
     RINGTONE_DEBUG_LOG("entry, uri=%{public}s, mode=%{public}s",
         uri.ToString().c_str(), mode.c_str());
 
-    int err = UriValidCheck(uri);
+    string tab("");
+    int err = GetValidUriTab(uri, tab);
     if (err != Media::E_OK) {
         return err;
     }
-    RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::OPEN);
 
+    RingtoneDataCommand cmd(uri, tab, RingtoneOperationType::OPEN);
     string unifyMode = mode;
     transform(unifyMode.begin(), unifyMode.end(), unifyMode.begin(), ::tolower);
 

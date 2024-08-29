@@ -51,9 +51,41 @@ const std::string CREATE_RINGTONE_TABLE = "CREATE TABLE IF NOT EXISTS " + RINGTO
     RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE        + " INT      DEFAULT 0, " +
     RINGTONE_COLUMN_DISPLAY_LANGUAGE_TYPE         + " TEXT                " + ")";
 
+const std::string CREATE_SIMCARD_SETTING_TABLE = "CREATE TABLE IF NOT EXISTS " + SIMCARD_SETTING_TABLE + "(" +
+    SIMCARD_SETTING_COLUMN_MODE                   + " INTEGER            ," +
+    SIMCARD_SETTING_COLUMN_RINGTONE_TYPE          + " INTEGER            ," +
+    SIMCARD_SETTING_COLUMN_TONE_FILE              + " TEXT               ," +
+    SIMCARD_SETTING_COLUMN_VIBRATE_FILE           + " TEXT               ," +
+    SIMCARD_SETTING_COLUMN_VIBRATE_MODE           + " INTEGER            ," +
+    SIMCARD_SETTING_COLUMN_RING_MODE              + " INTEGER            ," +
+    " PRIMARY KEY (" + SIMCARD_SETTING_COLUMN_MODE + ", " + SIMCARD_SETTING_COLUMN_RINGTONE_TYPE + "))";
+
+const std::string INIT_SIMCARD_SETTING_TABLE = "INSERT OR IGNORE INTO " + SIMCARD_SETTING_TABLE + " (" +
+    SIMCARD_SETTING_COLUMN_MODE                   + ", " +
+    SIMCARD_SETTING_COLUMN_RINGTONE_TYPE          + ") VALUES (1, 0), (1, 1), (1, 2), (1, 3), \
+                                                        (2, 0), (2, 1), (2, 2), (2, 3),        \
+                                                        (3, 0), (3, 1), (3, 2), (3, 3);";
+
+const std::string CREATE_VIBRATE_TABLE = "CREATE TABLE IF NOT EXISTS " + VIBRATE_TABLE + "(" +
+    VIBRATE_COLUMN_VIBRATE_ID                     + " INTEGER  PRIMARY KEY AUTOINCREMENT, " +
+    VIBRATE_COLUMN_DATA                           + " TEXT              , " +
+    VIBRATE_COLUMN_SIZE                           + " BIGINT   DEFAULT 0, " +
+    VIBRATE_COLUMN_DISPLAY_NAME                   + " TEXT              , " +
+    VIBRATE_COLUMN_TITLE                          + " TEXT              , " +
+    VIBRATE_COLUMN_DISPLAY_LANGUAGE               + " TEXT              , " +
+    VIBRATE_COLUMN_VIBRATE_TYPE                   + " INT      DEFAULT 0, " +
+    VIBRATE_COLUMN_SOURCE_TYPE                    + " INT      DEFAULT 0, " +
+    VIBRATE_COLUMN_DATE_ADDED                     + " BIGINT   DEFAULT 0, " +
+    VIBRATE_COLUMN_DATE_MODIFIED                  + " BIGINT   DEFAULT 0, " +
+    VIBRATE_COLUMN_DATE_TAKEN                     + " BIGINT   DEFAULT 0, " +
+    VIBRATE_COLUMN_PLAY_MODE                      + " INT      DEFAULT 0  " + ")";
+
 
 static const vector<string> g_initSqls = {
     CREATE_RINGTONE_TABLE,
+    CREATE_VIBRATE_TABLE,
+    CREATE_SIMCARD_SETTING_TABLE,
+    INIT_SIMCARD_SETTING_TABLE,
 };
 
 RingtoneDataCallBack::RingtoneDataCallBack(void)
@@ -107,10 +139,24 @@ static void AddDisplayLanguageColumn(NativeRdb::RdbStore &store)
     ExecSqls(sqls, store);
 }
 
+static void AddVibrateTable(NativeRdb::RdbStore &store)
+{
+    const vector<string> sqls = {
+        CREATE_VIBRATE_TABLE,
+        CREATE_SIMCARD_SETTING_TABLE,
+        INIT_SIMCARD_SETTING_TABLE,
+    };
+    RINGTONE_INFO_LOG("Add vibrate table");
+    ExecSqls(sqls, store);
+}
+
 static void UpgradeExtension(NativeRdb::RdbStore &store, int32_t oldVersion)
 {
     if (oldVersion < VERSION_ADD_DISPLAY_LANGUAGE_COLUMN) {
         AddDisplayLanguageColumn(store);
+    }
+    if (oldVersion < VERSION_ADD_VIBRATE_TABLE) {
+        AddVibrateTable(store);
     }
 }
 

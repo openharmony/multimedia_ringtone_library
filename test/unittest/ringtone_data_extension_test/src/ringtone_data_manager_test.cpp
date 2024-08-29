@@ -40,6 +40,8 @@ const string TEST_INSERT_RINGTONE_LIBRARY = "test_insert_ringtone_library";
 const int TEST_RINGTONE_COLUMN_SIZE = 1022;
 const string RAINNING = "rainning";
 const int TEST_RINGTONE_COLUMN_TONE_TYPE = 2;
+const int TEST_VIBRATE_COLUMN_VIBRATE_TYPE = 1;
+const int TEST_VIBRATE_COLUMN_SOURCE_TYPE = 1;
 const string MP3 = "mp3";
 const string ERROR_RINGTONE_TABLE = "ThotoFiles";
 const string SELECT_STR = " < ? ";
@@ -270,6 +272,71 @@ HWTEST_F(RingtoneDataManagerUnitTest, dataManager_Query_Test_005, TestSize.Level
     EXPECT_EQ(results->GetCount() == 0, true);
     cout << "query count = " << to_string(results->GetCount()) << endl;
     RINGTONE_INFO_LOG("dataManager_Query_Test_005::End");
+}
+
+HWTEST_F(RingtoneDataManagerUnitTest, dataManager_Query_Vibrate_Test_001, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("dataManager_Query_Vibrate_Test_001::Start");
+    vector<string> columns;
+    DataShare::DataSharePredicates predicates;
+    const string specialStr = " <> ";
+    const int index = 1;
+    string prefix = VIBRATE_COLUMN_VIBRATE_TYPE + specialStr + to_string(index);
+    predicates.SetWhereClause(prefix);
+    Uri uri(VIBRATE_PATH_URI);
+    int errCode = 0;
+    RingtoneDataCommand cmd(uri, VIBRATE_TABLE, RingtoneOperationType::QUERY);
+    auto dataManager = RingtoneDataManager::GetInstance();
+    EXPECT_NE(dataManager, nullptr);
+    auto queryResultSet = dataManager->Query(cmd, columns, predicates, errCode);
+    EXPECT_NE((queryResultSet == nullptr), true);
+    shared_ptr<AbilityRuntime::DataShareResultSet> resultSet =
+        make_shared<AbilityRuntime::DataShareResultSet>(queryResultSet);
+    auto results = make_unique<RingtoneFetchResult<VibrateAsset>>(move(resultSet));
+    EXPECT_EQ(results->GetCount() >= 0, true);
+    cout << "query count = " << to_string(results->GetCount()) << endl;
+    RINGTONE_INFO_LOG("dataManager_Query_Vibrate_Test_001::End");
+}
+
+HWTEST_F(RingtoneDataManagerUnitTest, dataManager_Query_Vibrate_Test_002, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("dataManager_Query_Vibrate_Test_002::Start");
+    Uri uri(VIBRATE_PATH_URI);
+    int errCode = 0;
+    RingtoneDataCommand cmd(uri, VIBRATE_TABLE, RingtoneOperationType::QUERY);
+    DataShare::DataSharePredicates queryPredicates;
+    queryPredicates.EqualTo(VIBRATE_COLUMN_SOURCE_TYPE, to_string(TEST_VIBRATE_COLUMN_SOURCE_TYPE));
+    vector<string> columns;
+    auto dataManager = RingtoneDataManager::GetInstance();
+    EXPECT_NE(dataManager, nullptr);
+    auto queryResultSet = dataManager->Query(cmd, columns, queryPredicates, errCode);
+    EXPECT_NE((queryResultSet == nullptr), true);
+    shared_ptr<AbilityRuntime::DataShareResultSet> resultSet =
+        make_shared<AbilityRuntime::DataShareResultSet>(queryResultSet);
+    auto results = make_unique<RingtoneFetchResult<VibrateAsset>>(move(resultSet));
+    cout << "query count = " << to_string(results->GetCount()) << endl;
+    RINGTONE_INFO_LOG("dataManager_Query_Vibrate_Test_002::End");
+}
+
+HWTEST_F(RingtoneDataManagerUnitTest, dataManager_Query_Vibrate_Test_003, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("dataManager_Query_Vibrate_Test_003::Start");
+    Uri uri(VIBRATE_PATH_URI);
+    int errCode = 0;
+    RingtoneDataCommand cmd(uri, VIBRATE_TABLE, RingtoneOperationType::QUERY);
+    DataShare::DataSharePredicates queryPredicates;
+    queryPredicates.EqualTo(VIBRATE_COLUMN_VIBRATE_TYPE, to_string(TEST_VIBRATE_COLUMN_VIBRATE_TYPE));
+    vector<string> columns = { { VIBRATE_COLUMN_VIBRATE_ID }, { VIBRATE_COLUMN_DISPLAY_NAME },
+        { VIBRATE_COLUMN_DATA }, { VIBRATE_COLUMN_VIBRATE_TYPE } };
+    auto dataManager = RingtoneDataManager::GetInstance();
+    EXPECT_NE(dataManager, nullptr);
+    auto queryResultSet = dataManager->Query(cmd, columns, queryPredicates, errCode);
+    EXPECT_NE((queryResultSet == nullptr), true);
+    shared_ptr<AbilityRuntime::DataShareResultSet> resultSet =
+        make_shared<AbilityRuntime::DataShareResultSet>(queryResultSet);
+    auto results = make_unique<RingtoneFetchResult<VibrateAsset>>(move(resultSet));
+    cout << "query count = " << to_string(results->GetCount()) << endl;
+    RINGTONE_INFO_LOG("dataManager_Query_Vibrate_Test_003::End");
 }
 
 HWTEST_F(RingtoneDataManagerUnitTest, dataManager_Update_Test_001, TestSize.Level0)

@@ -50,6 +50,7 @@ const string RAINNING = "rainning";
 const string TITLE_UPDATE = "run";
 const string ZERO = "0";
 const string SLASH_STR = "/";
+const string MTP_FORMAT_JSON = ".json"; // OGG audio files
 
 void RingtoneUnitTest::SetUpTestCase()
 {
@@ -985,6 +986,124 @@ HWTEST_F(RingtoneUnitTest, medialib_deleteRingtone_test_001, TestSize.Level0)
         EXPECT_NE(results, nullptr);
         cout << "query count = " << to_string(results->GetCount()) << endl;
     }
+}
+
+HWTEST_F(RingtoneUnitTest, medialib_setVibrateSetting_test_001, TestSize.Level0)
+{
+    Uri uri(SIMCARD_SETTING_PATH_URI);
+
+    int64_t start = UTCTimeSeconds();
+    const int oldMode = 1;
+    RingtoneTracer tracer;
+    tracer.Start("DataShareInsert->SetVibrateSetting");
+
+    DataShareValuesBucket values;
+
+    values.Put(SIMCARD_SETTING_COLUMN_MODE, RING_TONE_TYPE_NOT);
+    values.Put(SIMCARD_SETTING_COLUMN_TONE_FILE, static_cast<string>(RINGTONE_LIBRARY_PATH + RINGTONE_SLASH_CHAR +
+            TEST_INSERT_RINGTONE_LIBRARY + MTP_FORMAT_OGG));
+    values.Put(SIMCARD_SETTING_COLUMN_VIBRATE_FILE, static_cast<string>(RINGTONE_LIBRARY_PATH + RINGTONE_SLASH_CHAR +
+            TEST_INSERT_RINGTONE_LIBRARY + MTP_FORMAT_JSON));
+    values.Put(SIMCARD_SETTING_COLUMN_VIBRATE_MODE, oldMode);
+    auto result = g_dataShareHelper->Insert(uri, values);
+    GTEST_LOG_(INFO)<< "setVibrateSetting -> Insert result=" << result;
+    EXPECT_EQ((result > 0), true);
+
+    tracer.Finish();
+    int64_t end = UTCTimeSeconds();
+    GTEST_LOG_(INFO) << "SetVibrateSetting Cost: " << (double) (end - start) << "ms";
+}
+
+HWTEST_F(RingtoneUnitTest, medialib_updateVibrateSetting_test_001, TestSize.Level0)
+{
+    Uri uri(SIMCARD_SETTING_PATH_URI);
+
+    int64_t start = UTCTimeSeconds();
+    const int newMode = 2;
+    RingtoneTracer tracer;
+    tracer.Start("DataShareInsert->SetVibrateSetting");
+
+    DataSharePredicates predicates;
+    vector<string> selectionArgs = {std::to_string(RING_TONE_TYPE_NOT)};
+    const std::string selection = SIMCARD_SETTING_COLUMN_MODE + " = ? ";
+    predicates.SetWhereClause(selection);
+    predicates.SetWhereArgs(selectionArgs);
+
+    DataShareValuesBucket values;
+    values.Put(SIMCARD_SETTING_COLUMN_MODE, RING_TONE_TYPE_NOT);
+    values.Put(SIMCARD_SETTING_COLUMN_TONE_FILE, static_cast<string>(RINGTONE_LIBRARY_PATH + RINGTONE_SLASH_CHAR +
+            TEST_INSERT_RINGTONE_LIBRARY + MTP_FORMAT_OGG));
+    values.Put(SIMCARD_SETTING_COLUMN_VIBRATE_FILE, static_cast<string>(RINGTONE_LIBRARY_PATH + RINGTONE_SLASH_CHAR +
+            TEST_INSERT_RINGTONE_LIBRARY + MTP_FORMAT_JSON));
+    values.Put(SIMCARD_SETTING_COLUMN_VIBRATE_MODE, newMode);
+    auto result = g_dataShareHelper->Update(uri, predicates, values);
+    GTEST_LOG_(INFO)<< "updateVibrateSetting -> update result=" << result;
+    EXPECT_EQ((result > 0), true);
+
+    tracer.Finish();
+    int64_t end = UTCTimeSeconds();
+    GTEST_LOG_(INFO) << "updateVibrateSetting Cost: " << (double) (end - start) << "ms";
+}
+
+HWTEST_F(RingtoneUnitTest, medialib_GetVibrateSetting_test_001, TestSize.Level0)
+{
+    Uri uri(SIMCARD_SETTING_PATH_URI);
+
+    int64_t start = UTCTimeSeconds();
+    const int newMode = 2;
+    RingtoneTracer tracer;
+    tracer.Start("DataShareInsert->GetVibrateSetting");
+
+    DataSharePredicates predicates;
+    vector<string> selectionArgs = {std::to_string(RING_TONE_TYPE_NOT)};
+    const std::string selection = SIMCARD_SETTING_COLUMN_MODE + " = ? ";
+    predicates.SetWhereClause(selection);
+    predicates.SetWhereArgs(selectionArgs);
+    vector<string> columns {
+        SIMCARD_SETTING_COLUMN_MODE,
+        SIMCARD_SETTING_COLUMN_TONE_FILE,
+        SIMCARD_SETTING_COLUMN_VIBRATE_FILE,
+        SIMCARD_SETTING_COLUMN_VIBRATE_MODE
+    };
+
+    int errCode = 0;
+    DatashareBusinessError businessError;
+    auto resultSet = g_dataShareHelper->Query(uri, predicates, columns, &businessError);
+    errCode = businessError.GetCode();
+    GTEST_LOG_(INFO)<< "GetVibrateSetting -> Query errCode=" << errCode;
+
+    EXPECT_NE(resultSet, nullptr);
+    if (resultSet != nullptr) {
+        auto results = make_unique<RingtoneFetchResult<SimcardSettingAsset>>(move(resultSet));
+        EXPECT_NE(results, nullptr);
+        auto simcardSettingAsset = results->GetFirstObject();
+        EXPECT_EQ(simcardSettingAsset->GetVibrateMode(), newMode);
+    }
+
+    tracer.Finish();
+    int64_t end = UTCTimeSeconds();
+    GTEST_LOG_(INFO) << "GetVibrateSetting Cost: " << (double) (end - start) << "ms";
+}
+
+HWTEST_F(RingtoneUnitTest, medialib_deleteVibrateSetting_test_001, TestSize.Level0)
+{
+    Uri uri(SIMCARD_SETTING_PATH_URI);
+
+    DataSharePredicates predicates;
+    vector<string> selectionArgs = {std::to_string(RING_TONE_TYPE_NOT)};
+    const std::string selection = SIMCARD_SETTING_COLUMN_MODE + " = ? ";
+    predicates.SetWhereClause(selection);
+    predicates.SetWhereArgs(selectionArgs);
+    vector<string> columns {
+        SIMCARD_SETTING_COLUMN_MODE,
+        SIMCARD_SETTING_COLUMN_TONE_FILE,
+        SIMCARD_SETTING_COLUMN_VIBRATE_FILE,
+        SIMCARD_SETTING_COLUMN_VIBRATE_MODE
+    };
+
+    auto ret = g_dataShareHelper->Delete(uri, predicates);
+    GTEST_LOG_(INFO)<< "GetVibrateSetting -> Delete result=" << ret;
+    EXPECT_EQ((ret > 0), true);
 }
 } // namespace Media
 } // namespace OHOS

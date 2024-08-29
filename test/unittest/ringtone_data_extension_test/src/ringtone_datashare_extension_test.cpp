@@ -163,6 +163,25 @@ HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_Query_test_001, Test
     EXPECT_EQ(ret, nullptr);
 }
 
+HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_Query_Vibrate_test_001, TestSize.Level0)
+{
+    const std::unique_ptr<AbilityRuntime::Runtime> runtime;
+    AbilityRuntime::RingtoneDataShareExtension *mediaDataShare;
+    mediaDataShare = AbilityRuntime::RingtoneDataShareExtension::Create(runtime);
+    EXPECT_EQ(mediaDataShare != nullptr, true);
+
+    Uri uri(VIBRATE_PATH_URI);
+    vector<string> columns;
+    const AbilityRuntime::DataSharePredicates predicates;
+    AbilityRuntime::DatashareBusinessError businessError;
+    auto ret = mediaDataShare->Query(uri, predicates, columns, businessError);
+    EXPECT_EQ(ret, nullptr);
+
+    Uri uriError(VIBRATE_URI_PATH);
+    ret = mediaDataShare->Query(uriError, predicates, columns, businessError);
+    EXPECT_EQ(ret, nullptr);
+}
+
 HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_OpenFile_test_001, TestSize.Level0)
 {
     const std::unique_ptr<AbilityRuntime::Runtime> runtime;

@@ -52,10 +52,33 @@ int32_t RingtoneScannerDb::GetFileBasicInfo(const string &path, unique_ptr<Ringt
     return FillMetadata(resultSet, ptr);
 }
 
-int32_t RingtoneScannerDb::QueryRingtoneRdb(const string &whereClause, vector<string> &whereArgs,
-    const vector<string> &columns, shared_ptr<NativeRdb::ResultSet> &resultSet)
+int32_t RingtoneScannerDb::GetVibrateFileBasicInfo(const string &path, unique_ptr<VibrateMetadata> &ptr)
 {
-    string tableName = RINGTONE_TABLE;
+    vector<string> columns = {
+        VIBRATE_COLUMN_VIBRATE_ID, VIBRATE_COLUMN_SIZE, VIBRATE_COLUMN_DATE_MODIFIED, VIBRATE_COLUMN_TITLE,
+        VIBRATE_COLUMN_DATE_ADDED
+    };
+    string whereClause = VIBRATE_COLUMN_DATA + " = ?";
+    vector<string> args = { path };
+
+    Uri uri("");
+    RingtoneDataCommand cmd(uri, VIBRATE_TABLE, RingtoneOperationType::QUERY);
+    cmd.GetAbsRdbPredicates()->SetWhereClause(whereClause);
+    cmd.GetAbsRdbPredicates()->SetWhereArgs(args);
+
+    shared_ptr<NativeRdb::ResultSet> resultSet;
+    int32_t ret = GetFileSet(cmd, columns, resultSet);
+    if (ret != E_OK) {
+        RINGTONE_ERR_LOG("Update operation failed. ret=%{public}d", ret);
+        return E_DB_FAIL;
+    }
+
+    return FillVibrateMetadata(resultSet, ptr);
+}
+
+int32_t RingtoneScannerDb::QueryRingtoneRdb(const string &whereClause, vector<string> &whereArgs,
+    const vector<string> &columns, shared_ptr<NativeRdb::ResultSet> &resultSet, const string &tableName)
+{
     auto rawRdb = RingtoneRdbStore::GetInstance()->GetRaw();
     if (rawRdb == nullptr) {
         RINGTONE_ERR_LOG("get raw rdb failed");
@@ -74,9 +97,9 @@ int32_t RingtoneScannerDb::QueryRingtoneRdb(const string &whereClause, vector<st
     return E_OK;
 }
 
-int32_t RingtoneScannerDb::UpdateRingtoneRdb(ValuesBucket &values, const string &whereClause, vector<string> &whereArgs)
+int32_t RingtoneScannerDb::UpdateRingtoneRdb(ValuesBucket &values, const string &whereClause,
+    vector<string> &whereArgs, const string &tableName)
 {
-    string tableName = RINGTONE_TABLE;
     auto rawRdb = RingtoneRdbStore::GetInstance()->GetRaw();
     if (rawRdb == nullptr) {
         RINGTONE_ERR_LOG("get raw rdb failed");
@@ -108,11 +131,51 @@ int32_t RingtoneScannerDb::FillMetadata(const shared_ptr<NativeRdb::ResultSet> &
     return E_OK;
 }
 
+int32_t RingtoneScannerDb::FillVibrateMetadata(const shared_ptr<NativeRdb::ResultSet> &resultSet,
+    unique_ptr<VibrateMetadata> &ptr)
+{
+    std::vector<std::string> columnNames;
+    int32_t err = resultSet->GetAllColumnNames(columnNames);
+    if (err != NativeRdb::E_OK) {
+        RINGTONE_ERR_LOG("failed to get all column names");
+        return E_RDB;
+    }
+
+    for (const auto &col : columnNames) {
+        ExtractVibrateMetaFromColumn(resultSet, ptr, col);
+    }
+
+    return E_OK;
+}
+
 void RingtoneScannerDb::ExtractMetaFromColumn(const shared_ptr<NativeRdb::ResultSet> &resultSet,
     unique_ptr<RingtoneMetadata> &metadata, const std::string &col)
 {
     RingtoneResultSetDataType dataType = RingtoneResultSetDataType::DATA_TYPE_NULL;
     RingtoneMetadata::RingtoneMetadataFnPtr requestFunc = nullptr;
+    auto itr = metadata->memberFuncMap_.find(col);
+    if (itr != metadata->memberFuncMap_.end()) {
+        dataType = itr->second.first;
+        requestFunc = itr->second.second;
+    } else {
+        RINGTONE_ERR_LOG("invalid column name %{private}s", col.c_str());
+        return;
+    }
+
+    std::variant<int32_t, std::string, int64_t, double> data =
+        ResultSetUtils::GetValFromColumn<const shared_ptr<NativeRdb::ResultSet>>(col, resultSet, dataType);
+
+    // Use the function pointer from map and pass data to fn ptr
+    if (requestFunc != nullptr) {
+        (metadata.get()->*requestFunc)(data);
+    }
+}
+
+void RingtoneScannerDb::ExtractVibrateMetaFromColumn(const shared_ptr<NativeRdb::ResultSet> &resultSet,
+    unique_ptr<VibrateMetadata> &metadata, const std::string &col)
+{
+    RingtoneResultSetDataType dataType = RingtoneResultSetDataType::DATA_TYPE_NULL;
+    VibrateMetadata::VibrateMetadataFnPtr requestFunc = nullptr;
     auto itr = metadata->memberFuncMap_.find(col);
     if (itr != metadata->memberFuncMap_.end()) {
         dataType = itr->second.first;
@@ -185,6 +248,28 @@ static void InsertDateAdded(const RingtoneMetadata &metadata, ValuesBucket &outV
     outValues.PutLong(RINGTONE_COLUMN_DATE_ADDED, dateAdded);
 }
 
+static void InsertVibrateDateAdded(const VibrateMetadata &metadata, ValuesBucket &outValues)
+{
+    int64_t dateAdded = metadata.GetDateAdded();
+    if (dateAdded == 0) {
+        int64_t dateTaken = metadata.GetDateTaken();
+        if (dateTaken == 0) {
+            int64_t dateModified = metadata.GetDateModified();
+            if (dateModified == 0) {
+                dateAdded = RingtoneFileUtils::UTCTimeMilliSeconds();
+                RINGTONE_WARN_LOG("Invalid dateAdded time, use current time instead: %{public}" PRId64, dateAdded);
+            } else {
+                dateAdded = dateModified;
+                RINGTONE_WARN_LOG("Invalid dateAdded time, use dateModified instead: %{public}" PRId64, dateAdded);
+            }
+        } else {
+            dateAdded = dateTaken * MSEC_TO_SEC;
+            RINGTONE_WARN_LOG("Invalid dateAdded time, use dateTaken instead: %{public}" PRId64, dateAdded);
+        }
+    }
+    outValues.PutLong(VIBRATE_COLUMN_DATE_ADDED, dateAdded);
+}
+
 static void SetValuesFromMetaData(const RingtoneMetadata &metadata, ValuesBucket &values, bool isInsert)
 {
     values.PutString(RINGTONE_COLUMN_DATA, metadata.GetData());
@@ -213,6 +298,24 @@ static void SetValuesFromMetaData(const RingtoneMetadata &metadata, ValuesBucket
     }
 }
 
+static void SetValuesFromVibrateMetaData(const VibrateMetadata &metadata, ValuesBucket &values, bool isInsert)
+{
+    values.PutString(VIBRATE_COLUMN_DATA, metadata.GetData());
+    values.PutLong(VIBRATE_COLUMN_SIZE, metadata.GetSize());
+    values.PutString(VIBRATE_COLUMN_DISPLAY_NAME, metadata.GetDisplayName());
+    values.PutString(VIBRATE_COLUMN_TITLE, metadata.GetTitle());
+    values.PutString(VIBRATE_COLUMN_DISPLAY_LANGUAGE, metadata.GetDisplayLanguage());
+    values.PutInt(VIBRATE_COLUMN_VIBRATE_TYPE, metadata.GetVibrateType());
+    values.PutInt(VIBRATE_COLUMN_SOURCE_TYPE, metadata.GetSourceType());
+    values.PutLong(VIBRATE_COLUMN_DATE_MODIFIED, metadata.GetDateModified());
+    values.PutLong(VIBRATE_COLUMN_DATE_TAKEN, metadata.GetDateTaken());
+    values.PutInt(VIBRATE_COLUMN_PLAY_MODE, metadata.GetPlayMode());
+
+    if (isInsert) {
+        InsertVibrateDateAdded(metadata, values);
+    }
+}
+
 int32_t RingtoneScannerDb::UpdateMetadata(const RingtoneMetadata &metadata, string &tableName)
 {
     int32_t updateCount = 0;
@@ -236,29 +339,69 @@ int32_t RingtoneScannerDb::UpdateMetadata(const RingtoneMetadata &metadata, stri
     return updateCount;
 }
 
+int32_t RingtoneScannerDb::UpdateVibrateMetadata(const VibrateMetadata &metadata, string &tableName)
+{
+    int32_t updateCount = 0;
+    ValuesBucket values;
+    string whereClause = VIBRATE_COLUMN_VIBRATE_ID + " = ?";
+    vector<string> whereArgs = { to_string(metadata.GetVibrateId()) };
+
+    SetValuesFromVibrateMetaData(metadata, values, false);
+
+    tableName = VIBRATE_TABLE;
+    auto rawRdb = RingtoneRdbStore::GetInstance()->GetRaw();
+    if (rawRdb == nullptr) {
+        RINGTONE_ERR_LOG("get raw rdb failed");
+        return E_RDB;
+    }
+    int32_t result = rawRdb->Update(updateCount, tableName, values, whereClause, whereArgs);
+    if (result != NativeRdb::E_OK || updateCount <= 0) {
+        RINGTONE_ERR_LOG("Update operation failed. Result %{public}d. Updated %{public}d", result, updateCount);
+        return E_DB_FAIL;
+    }
+    return updateCount;
+}
+
 int32_t RingtoneScannerDb::InsertMetadata(const RingtoneMetadata &metadata, string &tableName)
 {
     ValuesBucket values;
-    SetValuesFromMetaData(metadata, values, true);
-
-    int64_t rowNum = 0;
+    int32_t rowNum = 0;
     tableName = RINGTONE_TABLE;
+
+    SetValuesFromMetaData(metadata, values, true);
     if (!InsertData(values, tableName, rowNum)) {
         return E_DB_FAIL;
     }
-    return static_cast<int32_t>(rowNum);
+
+    return rowNum;
 }
 
-bool RingtoneScannerDb::InsertData(const ValuesBucket values, const string &tableName, int64_t &rowNum)
+int32_t RingtoneScannerDb::InsertVibrateMetadata(const VibrateMetadata &metadata, string &tableName)
+{
+    ValuesBucket values;
+    int32_t rowNum = 0;
+    tableName = VIBRATE_TABLE;
+
+    SetValuesFromVibrateMetaData(metadata, values, true);
+    if (!InsertData(values, tableName, rowNum)) {
+        return E_DB_FAIL;
+    }
+
+    return rowNum;
+}
+
+bool RingtoneScannerDb::InsertData(const ValuesBucket values, const string &tableName, int32_t &rowNum)
 {
     auto rawRdb = RingtoneRdbStore::GetInstance()->GetRaw();
     if (rawRdb == nullptr) {
         RINGTONE_ERR_LOG("get raw rdb failed");
         return E_RDB;
     }
-    int32_t result = rawRdb->Insert(rowNum, tableName, values);
-    if (rowNum <= 0) {
-        RINGTONE_ERR_LOG("Ringtone library Insert functionality is failed, rowNum %{public}ld", (long) rowNum);
+
+    int64_t nRow = static_cast<int64_t>(rowNum);
+    int32_t result = rawRdb->Insert(nRow, tableName, values);
+    if (nRow <= 0) {
+        RINGTONE_ERR_LOG("Ringtone library Insert functionality is failed, rowNum %{public}ld", (long) nRow);
         return false;
     }
 
@@ -266,6 +409,11 @@ bool RingtoneScannerDb::InsertData(const ValuesBucket values, const string &tabl
         RINGTONE_ERR_LOG("Ringtone library Insert functionality is failed, return %{public}d", result);
         return false;
     }
+
+    if (nRow < std::numeric_limits<int32_t>::min() || nRow > std::numeric_limits<int32_t>::max()) {
+        return false;
+    }
+    rowNum = static_cast<int32_t>(nRow);
 
     return true;
 }

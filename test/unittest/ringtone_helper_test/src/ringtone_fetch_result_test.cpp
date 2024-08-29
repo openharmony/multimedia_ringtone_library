@@ -144,7 +144,7 @@ HWTEST_F(RingtoneFetchResultTest, fetchResult_GetObjectFromRdb_test_001, TestSiz
     auto ringtoneObject = g_fetchResult->GetObject();
     EXPECT_NE(ringtoneObject, nullptr);
     shared_ptr<RingtoneFetchResult<RingtoneAsset>> fetchResult = make_shared<RingtoneFetchResult<RingtoneAsset>>();
-    RingtoneAsset *asset = nullptr;
+    unique_ptr<RingtoneAsset> asset = nullptr;
     shared_ptr<NativeRdb::ResultSet> nativeRdbResultSet = nullptr;
     fetchResult->SetRingtoneAsset(asset, nativeRdbResultSet);
     ringtoneAsset = fetchResult->GetObjectFromRdb(resultSet, index);
