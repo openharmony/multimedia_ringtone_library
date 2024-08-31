@@ -79,6 +79,22 @@ HWTEST_F(RingtoneScannerTest, scanner_Scan_test_001, TestSize.Level0)
     EXPECT_NE(ret, E_OK);
 }
 
+HWTEST_F(RingtoneScannerTest, scanner_Scan_Vibrate_test_001, TestSize.Level0)
+{
+    const string path = "/sys_prod/resource/media";
+    shared_ptr<IRingtoneScannerCallback> callback = nullptr;
+    RingtoneScannerObj ringtoneScannerObj(path, callback, RingtoneScannerObj::FILE);
+    ringtoneScannerObj.Scan();
+    RingtoneScannerObj ringtoneScannerObjThree(path, callback, RingtoneScannerObj::DIRECTORY);
+    ringtoneScannerObjThree.Scan();
+    shared_ptr<bool> flag = make_shared<bool>();
+    ringtoneScannerObjThree.SetStopFlag(flag);
+    RingtoneScannerObj ringtoneScannerObjTest(path, callback, RingtoneScannerObj::START);
+    int ret = ringtoneScannerObjTest.GetFileMetadata();
+    ringtoneScannerObjTest.Scan();
+    EXPECT_NE(ret, E_OK);
+}
+
 HWTEST_F(RingtoneScannerTest, scanner_ScanFileInTraversal_test_001, TestSize.Level0)
 {
     shared_ptr<IRingtoneScannerCallback> callback = nullptr;

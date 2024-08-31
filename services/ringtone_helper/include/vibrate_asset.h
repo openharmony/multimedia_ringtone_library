@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef RINGTONE_ASSET_H
-#define RINGTONE_ASSET_H
+#ifndef VIBRATE_ASSET_H
+#define VIBRATE_ASSET_H
 
 #include <mutex>
 #include <string>
@@ -23,10 +23,10 @@ namespace OHOS {
 namespace Media {
 #define EXPORT __attribute__ ((visibility ("default")))
 
-class RingtoneAsset {
+class VibrateAsset {
 public:
-    EXPORT RingtoneAsset();
-    EXPORT virtual ~RingtoneAsset() = default;
+    EXPORT VibrateAsset();
+    EXPORT virtual ~VibrateAsset() = default;
 
     EXPORT int32_t GetId() const;
     EXPORT void SetId(int32_t id);
@@ -43,11 +43,11 @@ public:
     EXPORT const std::string &GetTitle() const;
     EXPORT void SetTitle(const std::string &title);
 
-    EXPORT const std::string &GetMimeType() const;
-    EXPORT void SetMimeType(const std::string &mimeType);
+    EXPORT const std::string &GetDisplayLanguage() const;
+    EXPORT void SetDisplayLanguage(const std::string &displayLanguage);
 
-    EXPORT int32_t GetToneType() const;
-    EXPORT void SetToneType(int32_t toneType);
+    EXPORT int32_t GetVibrateType() const;
+    EXPORT void SetVibrateType(int32_t type);
 
     EXPORT int32_t GetSourceType() const;
     EXPORT void SetSourceType(int32_t type);
@@ -61,36 +61,8 @@ public:
     EXPORT int64_t GetDateTaken() const;
     EXPORT void SetDateTaken(int64_t dateTaken);
 
-    EXPORT int32_t GetDuration() const;
-    EXPORT void SetDuration(int32_t duration);
-
-    EXPORT int32_t GetShottoneType() const;
-    EXPORT void SetShottoneType(int32_t type);
-
-    EXPORT int32_t GetShottoneSourceType() const;
-    EXPORT void SetShottoneSourceType(int32_t type);
-
-    EXPORT int32_t GetNotificationtoneType() const;
-    EXPORT void SetNotificationtoneType(int32_t type);
-
-    EXPORT int32_t GetNotificationtoneSourceType() const;
-    EXPORT void SetNotificationtoneSourceType(int32_t type);
-
-    EXPORT int32_t GetRingtoneType() const;
-    EXPORT void SetRingtoneType(int32_t type);
-
-    EXPORT int32_t GetRingtoneSourceType() const;
-    EXPORT void SetRingtoneSourceType(int32_t type);
-
-    EXPORT int32_t GetAlarmtoneType() const;
-    EXPORT void SetAlarmtoneType(int32_t type);
-
-    EXPORT int32_t GetAlarmtoneSourceType() const;
-    EXPORT void SetAlarmtoneSourceType(int32_t type);
-
-    EXPORT void SetOpenStatus(int32_t fd, int32_t openStatus);
-    EXPORT void RemoveOpenStatus(int32_t fd);
-    EXPORT int32_t GetOpenStatus(int32_t fd);
+    EXPORT void SetPlayMode(int32_t playMode);
+    EXPORT int32_t GetPlayMode() const;
 
     EXPORT std::unordered_map<std::string, std::variant<int32_t, int64_t, std::string, double>> &GetMemberMap();
     EXPORT std::variant<int32_t, int64_t, std::string, double> &GetMemberValue(const std::string &name);
@@ -101,10 +73,8 @@ private:
     int64_t GetInt64Member(const std::string &name) const;
 
     std::unordered_map<std::string, std::variant<int32_t, int64_t, std::string, double>> member_;
-    std::mutex openStatusMapMutex_;
-    std::shared_ptr<std::unordered_map<int32_t, int32_t>> openStatusMap_;
 };
 } // namespace Media
 } // namespace OHOS
 
-#endif  // RINGTONE_ASSET_H
+#endif  // VIBRATE_ASSET_H

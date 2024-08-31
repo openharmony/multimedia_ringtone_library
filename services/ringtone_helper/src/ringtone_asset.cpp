@@ -89,6 +89,16 @@ void RingtoneAsset::SetMimeType(const string &mimeType)
     member_[RINGTONE_COLUMN_MIME_TYPE] = mimeType;
 }
 
+int32_t RingtoneAsset::GetToneType() const
+{
+    return GetInt32Member(RINGTONE_COLUMN_TONE_TYPE);
+}
+
+void RingtoneAsset::SetToneType(int32_t toneType)
+{
+    member_[RINGTONE_COLUMN_TONE_TYPE] = toneType;
+}
+
 int32_t RingtoneAsset::GetSourceType() const
 {
     return GetInt32Member(RINGTONE_COLUMN_SOURCE_TYPE);

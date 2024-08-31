@@ -291,6 +291,7 @@ ohos_shared_library("ringtone_setting") {
   sources = [
     "${RINGTONE_SETTING_PATH}/src/ringtone_metadata.cpp",
     "${RINGTONE_SETTING_PATH}/src/ringtone_setting_manager.cpp",
+    "${RINGTONE_SETTING_PATH}/src/vibrate_metadata.cpp",
   ]
 
   configs = [ "//build/config/compiler:exceptions" ]

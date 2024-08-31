@@ -29,6 +29,9 @@ const std::string RINGTONE_URI_PATH         = "ringtone";
 const std::string RINGTONE_URI              = RINGTONE_URI_SCHEME + ":///" + RINGTONE_URI_AUTHORITY;
 const std::string RINGTONE_PATH_URI         = RINGTONE_URI + "/" + RINGTONE_URI_PATH;
 
+const std::string VIBRATE_URI_PATH          = "vibrate";
+const std::string VIBRATE_PATH_URI          = RINGTONE_URI + "/" + VIBRATE_URI_PATH;
+
 // ringtone user customized tones file location
 const std::string RINGTONE_CUSTOMIZED_BASE_PATH          = "/storage/media/local/files";
 const std::string RINGTONE_CUSTOMIZED_ALARM_PATH         = RINGTONE_CUSTOMIZED_BASE_PATH + "/Ringtone/alarms";
@@ -42,6 +45,12 @@ const std::string ROOT_TONE_PRELOAD_PATH_NOAH_PATH = "/sys_prod/resource/media/a
 const std::string ROOT_TONE_PRELOAD_PATH_CHINA_PATH = "/sys_prod/variant/region_comm/china/resource/media/audio";
 const std::string ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH = "/sys_prod/variant/region_comm/oversea/resource/media/audio";
 
+// vibrate preload pathes
+const std::string ROOT_VIBRATE_PRELOAD_PATH_NOAH_PATH = "/sys_prod/resource/media/haptics";
+const std::string ROOT_VIBRATE_PRELOAD_PATH_CHINA_PATH = "/sys_prod/variant/region_comm/china/resource/media/haptics";
+const std::string ROOT_VIBRATE_PRELOAD_PATH_OVERSEA_PATH =
+    "/sys_prod/variant/region_comm/oversea/resource/media/haptics";
+
 // ringtone DB file path
 const std::string RINGTONE_LIBRARY_DB_PATH = "/data/storage/el2/database";
 
@@ -49,9 +58,10 @@ const std::string RINGTONE_LIBRARY_DB_PATH = "/data/storage/el2/database";
 const std::string RINGTONE_LIBRARY_DB_NAME = "ringtone_library.db";
 
 // ringtone db version
-const int32_t RINGTONE_RDB_VERSION = 2;
+const int32_t RINGTONE_RDB_VERSION = 3;
 enum {
     VERSION_ADD_DISPLAY_LANGUAGE_COLUMN = 2,
+    VERSION_ADD_VIBRATE_TABLE,
 };
 
 // ringtone table name
@@ -79,6 +89,34 @@ const std::string RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE         = "ring_tone_sou
 const std::string RINGTONE_COLUMN_ALARM_TONE_TYPE               = "alarm_tone_type";
 const std::string RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE        = "alarm_tone_source_type";
 const std::string RINGTONE_COLUMN_DISPLAY_LANGUAGE_TYPE         = "display_language_type";
+
+// simcard setting table name
+const std::string SIMCARD_SETTING_TABLE                         = "SimCardSetting";
+const std::string SIMCARD_SETTING_URI_PATH                      = SIMCARD_SETTING_TABLE;
+const std::string SIMCARD_SETTING_PATH_URI                      = RINGTONE_URI + "/" + SIMCARD_SETTING_URI_PATH;
+// simcard setting table column name
+const std::string SIMCARD_SETTING_COLUMN_MODE                   = "mode";
+const std::string SIMCARD_SETTING_COLUMN_TONE_FILE              = "tone_file";
+const std::string SIMCARD_SETTING_COLUMN_RINGTONE_TYPE          = "ringtone_type";
+const std::string SIMCARD_SETTING_COLUMN_VIBRATE_FILE           = "vibrate_file";
+const std::string SIMCARD_SETTING_COLUMN_VIBRATE_MODE           = "vibrate_mode";
+const std::string SIMCARD_SETTING_COLUMN_RING_MODE              = "ring_mode";
+
+// vibrate table name
+const std::string VIBRATE_TABLE                                 = "VibrateFiles";
+// vibrate table column name
+const std::string VIBRATE_COLUMN_VIBRATE_ID                     = "vibrate_id";
+const std::string VIBRATE_COLUMN_DATA                           = "data";
+const std::string VIBRATE_COLUMN_SIZE                           = "size";
+const std::string VIBRATE_COLUMN_DISPLAY_NAME                   = "display_name";
+const std::string VIBRATE_COLUMN_TITLE                          = "title";
+const std::string VIBRATE_COLUMN_DISPLAY_LANGUAGE               = "display_language";
+const std::string VIBRATE_COLUMN_VIBRATE_TYPE                   = "vibrate_type";
+const std::string VIBRATE_COLUMN_SOURCE_TYPE                    = "source_type";
+const std::string VIBRATE_COLUMN_DATE_ADDED                     = "date_added";
+const std::string VIBRATE_COLUMN_DATE_MODIFIED                  = "date_modified";
+const std::string VIBRATE_COLUMN_DATE_TAKEN                     = "date_taken";
+const std::string VIBRATE_COLUMN_PLAY_MODE                      = "play_mode";
 } // namespace Media
 } // namespace OHOS
 
