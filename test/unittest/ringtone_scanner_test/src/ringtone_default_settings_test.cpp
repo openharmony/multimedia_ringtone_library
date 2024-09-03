@@ -15,7 +15,7 @@
 
 #include "ringtone_default_settings_test.h"
 
-#include<memory>
+#include <memory>
 
 #include "ringtone_errno.h"
 #define private public

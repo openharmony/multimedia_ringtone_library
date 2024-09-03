@@ -122,7 +122,6 @@ void RingtoneRestoreNapi::UvQueueWork(uv_loop_s *loop, uv_work_t *work)
         RestoreBlock *block = reinterpret_cast<RestoreBlock *> (work->data);
         if (block == nullptr) {
             RINGTONE_ERR_LOG("Failed to new block");
-            block->resultSet = E_FAIL;
             return;
         }
         auto restore = RingtoneRestoreFactory::CreateObj(RestoreSceneType(block->sceneCode));
