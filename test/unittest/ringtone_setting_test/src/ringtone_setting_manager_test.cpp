@@ -15,7 +15,7 @@
 
 #include "ringtone_setting_manager_test.h"
 
-#include<memory>
+#include <memory>
 
 #include "ability_context_impl.h"
 #include "ringtone_errno.h"
