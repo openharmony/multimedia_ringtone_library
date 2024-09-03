@@ -23,6 +23,9 @@
 #include "ringtone_rdbstore.h"
 #include "ringtone_type.h"
 #include "ringtone_file_utils.h"
+#ifdef USE_CONFIG_POLICY
+#include "config_policy_utils.h"
+#endif
 
 #include <cstring>
 #include <libxml/tree.h>
@@ -41,10 +44,18 @@ const int32_t SYSPARA_SIZE = 64;
 const int32_t SYSINIT_TYPE = 1;
 const int32_t STANDARDVIBRATION = 1;
 const int32_t UNKNOWN_INDEX = -1;
-const string RINGTONE_MULTILINGUAL_FILE_PATH =
+
+#ifdef USE_CONFIG_POLICY
+static constexpr char RINGTONE_MULTILINGUAL_FILE_PATH[] =
+    "etc/resource/media/audio/ringtone_list_language.xml";
+static constexpr char VIBRATION_MULTILINGUAL_FILE_PATH[] =
+    "etc/resource/media/haptics/vibration_list_language.xml";
+#else
+static constexpr char RINGTONE_MULTILINGUAL_FILE_PATH[] =
     "/system/variant/phone/base/etc/resource/media/audio/ringtone_list_language.xml";
-const string VIBRATION_MULTILINGUAL_FILE_PATH =
+static constexpr char VIBRATION_MULTILINGUAL_FILE_PATH[] =
     "/system/variant/phone/base/etc/resource/media/haptics/vibration_list_language.xml";
+#endif
 
 shared_ptr<RingtoneLanguageManager> RingtoneLanguageManager::instance_ = nullptr;
 mutex RingtoneLanguageManager::mutex_;
@@ -114,7 +125,18 @@ void RingtoneLanguageManager::UpdateRingtoneLanguage()
     if (rowCount == 0) {
         return;
     }
-    if (!ReadMultilingualResources(RINGTONE_MULTILINGUAL_FILE_PATH, RINGTONE_FILE)) {
+#ifdef USE_CONFIG_POLICY
+    char buf[MAX_PATH_LEN] = {0};
+    char *path = GetOneCfgFile(RINGTONE_MULTILINGUAL_FILE_PATH, buf, MAX_PATH_LEN);
+    if (path == nullptr || *path == '\0') {
+        RINGTONE_ERR_LOG("GetOneCfgFile for %{public}s failed.", RINGTONE_MULTILINGUAL_FILE_PATH);
+        return;
+    }
+#else
+    const char *path = RINGTONE_MULTILINGUAL_FILE_PATH;
+#endif
+
+    if (!ReadMultilingualResources(path, RINGTONE_FILE)) {
         return;
     }
     ChangeLanguageDataToRingtone(rowCount, resultSet);
@@ -133,7 +155,18 @@ void RingtoneLanguageManager::UpdateVibrationLanguage()
     if (rowCount == 0) {
         return;
     }
-    if (!ReadMultilingualResources(VIBRATION_MULTILINGUAL_FILE_PATH, VIBRATION_FILE)) {
+#ifdef USE_CONFIG_POLICY
+    char buf[MAX_PATH_LEN] = {0};
+    char *path = GetOneCfgFile(VIBRATION_MULTILINGUAL_FILE_PATH, buf, MAX_PATH_LEN);
+    if (path == nullptr || *path == '\0') {
+        RINGTONE_ERR_LOG("GetOneCfgFile for %{public}s failed.", VIBRATION_MULTILINGUAL_FILE_PATH);
+        return;
+    }
+#else
+    const char *path = VIBRATION_MULTILINGUAL_FILE_PATH;
+#endif
+
+    if (!ReadMultilingualResources(path, VIBRATION_FILE)) {
         return;
     }
     ChangeLanguageDataToVibration(rowCount, resultSet);
