@@ -28,4 +28,12 @@ RINGTONE_UTILS_PATH = "${RINGTONE_SERVICES_PATH}/utils"
 
 declare_args() {
   ringtone_link_opt = false
+  ringtone_config_policy_enable = true
+
+  if (!defined(global_parts_info) ||
+      defined(global_parts_info.customization_config_policy)) {
+    ringtone_config_policy_enable = true
+  } else {
+    ringtone_config_policy_enable = false
+  }
 }

@@ -134,6 +134,11 @@ ohos_shared_library("ringtone_data_extension") {
     }
   }
 
+  if (ringtone_config_policy_enable) {
+    defines = [ "USE_CONFIG_POLICY" ]
+    external_deps += [ "config_policy:configpolicy_util" ]
+  }
+
   subsystem_name = "multimedia"
   part_name = "ringtone_library"
 }
