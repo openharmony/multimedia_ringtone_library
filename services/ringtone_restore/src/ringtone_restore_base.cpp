@@ -29,6 +29,7 @@
 #include "ringtone_errno.h"
 #include "ringtone_file_utils.h"
 #include "ringtone_log.h"
+#include "ringtone_mimetype_utils.h"
 #include "ringtone_rdb_transaction.h"
 #include "ringtone_rdbstore.h"
 #include "ringtone_scanner_manager.h"
@@ -81,7 +82,11 @@ int32_t RingtoneRestoreBase::Init(const string &backupPath)
 int32_t RingtoneRestoreBase::StartRestore()
 {
     RingtoneFileUtils::AccessRingtoneDir();
-    int32_t errCode;
+    int32_t errCode = RingtoneMimeTypeUtils::InitMimeTypeMap();
+    if (errCode != E_OK) {
+        RINGTONE_ERR_LOG("get mine type map error: %{public}d", errCode);
+        return errCode;
+    }
     shared_ptr<NativePreferences::Preferences> prefs =
         NativePreferences::PreferencesHelper::GetPreferences(DFX_COMMON_XML, errCode);
     if (!prefs) {
