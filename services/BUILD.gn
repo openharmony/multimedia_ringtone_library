@@ -232,6 +232,7 @@ ohos_shared_library("ringtone_utils") {
     "${RINGTONE_UTILS_PATH}/src/ringtone_mimetype_utils.cpp",
     "${RINGTONE_UTILS_PATH}/src/ringtone_privacy_manager.cpp",
     "${RINGTONE_UTILS_PATH}/src/ringtone_rdb_callbacks.cpp",
+    "${RINGTONE_UTILS_PATH}/src/ringtone_utils.cpp",
   ]
 
   public_configs = [ ":ringtone_public_visible_config" ]
@@ -259,6 +260,7 @@ ohos_shared_library("ringtone_utils") {
     "c_utils:utils",
     "hilog:libhilog",
     "hitrace:hitrace_meter",
+    "init:libbegetutil",
     "ipc:ipc_core",
     "relational_store:native_rdb",
     "samgr:samgr_proxy",
