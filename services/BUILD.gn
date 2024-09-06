@@ -22,7 +22,6 @@ config("ringtone_public_config") {
     "${RINGTONE_DFX_PATH}/include",
     "${RINGTONE_UTILS_PATH}/include",
     "${RINGTONE_INTERFACES_PATH}/inner_api/native",
-    "${RINGTONE_HELPER_PATH}/include",
     "${RINGTONE_SETTING_PATH}/include",
   ]
   ldflags = [ "-Wl,--gc-sections" ]

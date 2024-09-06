@@ -68,7 +68,7 @@
             },
             {
               "header": {
-                "header_base": "//foundation/multimedia/ringtone_library/services/ringtone_helper/include",
+                "header_base": "//foundation/multimedia/ringtone_library/interfaces/inner_api/native",
                 "header_files": [
                   "ringtone_asset.h",
                   "ringtone_fetch_result.h",

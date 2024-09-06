@@ -28,7 +28,6 @@ ohos_executable("ringtone_scanner_test") {
       "../get_self_permissions/include",
       "${RINGTONE_SERVICES_PATH}/utils/include",
       "${RINGTONE_INTERFACES_PATH}/inner_api/native",
-      "${RINGTONE_HELPER_PATH}/include",
     ]
 
     sources += [ "../get_self_permissions/src/get_self_permissions.cpp" ]
@@ -86,7 +85,6 @@ ohos_executable("ringtone_test") {
       "../get_self_permissions/include",
       "${RINGTONE_SERVICES_PATH}/utils/include",
       "${RINGTONE_INTERFACES_PATH}/inner_api/native",
-      "${RINGTONE_HELPER_PATH}/include",
     ]
 
     sources += [ "../get_self_permissions/src/get_self_permissions.cpp" ]
@@ -144,7 +142,6 @@ ohos_executable("ringtone_read_test") {
       "../get_self_permissions/include",
       "${RINGTONE_SERVICES_PATH}/utils/include",
       "${RINGTONE_INTERFACES_PATH}/inner_api/native",
-      "${RINGTONE_HELPER_PATH}/include",
     ]
 
     sources += [ "../get_self_permissions/src/get_self_permissions.cpp" ]
