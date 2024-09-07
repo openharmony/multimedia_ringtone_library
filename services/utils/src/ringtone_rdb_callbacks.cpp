@@ -22,6 +22,7 @@
 #include "ringtone_log.h"
 #include "ringtone_db_const.h"
 #include "ringtone_file_utils.h"
+#include "ringtone_utils.h"
 
 namespace OHOS {
 namespace Media {
@@ -49,7 +50,8 @@ const std::string CREATE_RINGTONE_TABLE = "CREATE TABLE IF NOT EXISTS " + RINGTO
     RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE         + " INT      DEFAULT 0, " +
     RINGTONE_COLUMN_ALARM_TONE_TYPE               + " INT      DEFAULT 0, " +
     RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE        + " INT      DEFAULT 0, " +
-    RINGTONE_COLUMN_DISPLAY_LANGUAGE_TYPE         + " TEXT                " + ")";
+    RINGTONE_COLUMN_DISPLAY_LANGUAGE_TYPE         + " TEXT              , " +
+    RINGTONE_COLUMN_DEFAULT_SYSYTEM_TONE_TYPE     + " INT      DEFAULT -1  " + ")";
 
 const std::string CREATE_SIMCARD_SETTING_TABLE = "CREATE TABLE IF NOT EXISTS " + SIMCARD_SETTING_TABLE + "(" +
     SIMCARD_SETTING_COLUMN_MODE                   + " INTEGER            ," +
@@ -150,6 +152,33 @@ static void AddVibrateTable(NativeRdb::RdbStore &store)
     ExecSqls(sqls, store);
 }
 
+static void AddSystemToneTypeColum(NativeRdb::RdbStore &store)
+{
+    const vector<string> sqls = {
+        "ALTER TABLE " + RINGTONE_TABLE + " ADD COLUMN " + RINGTONE_COLUMN_DEFAULT_SYSYTEM_TONE_TYPE
+        + " INT DEFAULT -1",
+    };
+    RINGTONE_INFO_LOG("Add system tone type column");
+    ExecSqls(sqls, store);
+}
+
+static void UpdateSystemToneTypeInfo(NativeRdb::RdbStore &store)
+{
+    RINGTONE_INFO_LOG("Update SystemTone Type begin");
+    auto infos = RingtoneUtils::GetDefaultSystemtoneInfo();
+    for (auto info : infos) {
+        NativeRdb::ValuesBucket values;
+        values.PutInt(RINGTONE_COLUMN_DEFAULT_SYSYTEM_TONE_TYPE, info.second);
+        NativeRdb::AbsRdbPredicates absRdbPredicates(RINGTONE_TABLE);
+        absRdbPredicates.EqualTo(RINGTONE_COLUMN_DISPLAY_NAME, info.first);
+        int32_t changedRows;
+        int32_t result = store.Update(changedRows, values, absRdbPredicates);
+        if (result != E_OK || changedRows <= 0) {
+            RINGTONE_ERR_LOG("Update operation failed. Result %{public}d. Updated %{public}d", result, changedRows);
+        }
+    }
+}
+
 static void UpgradeExtension(NativeRdb::RdbStore &store, int32_t oldVersion)
 {
     if (oldVersion < VERSION_ADD_DISPLAY_LANGUAGE_COLUMN) {
@@ -157,6 +186,10 @@ static void UpgradeExtension(NativeRdb::RdbStore &store, int32_t oldVersion)
     }
     if (oldVersion < VERSION_ADD_VIBRATE_TABLE) {
         AddVibrateTable(store);
+    }
+    if (oldVersion < VERSION_ADD_DEFAULT_SYSYTEM_TONE_TYPE) {
+        AddSystemToneTypeColum(store);
+        UpdateSystemToneTypeInfo(store);
     }
 }
 

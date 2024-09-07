@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include "ringtone_errno.h"
 #define MLOG_TAG "ringtone_Extension"
 
 #include "ringtone_datashare_extension.h"
@@ -232,9 +233,25 @@ void RingtoneDataShareExtension::DumpDataShareValueBucket(const std::vector<stri
     }
 }
 
+static bool CheckColumns(const DataShareValuesBucket &value)
+{
+    bool isValid = false;
+    auto valueObject = value.Get(RINGTONE_COLUMN_DEFAULT_SYSYTEM_TONE_TYPE, isValid);
+    if (isValid) {
+        RINGTONE_INFO_LOG("is Valid Column");
+        return true;
+    }
+    return false;
+}
+
 int RingtoneDataShareExtension::Insert(const Uri &uri, const DataShareValuesBucket &value)
 {
     RINGTONE_DEBUG_LOG("entry, uri=%{public}s", uri.ToString().c_str());
+
+    if (CheckColumns(value)) {
+        RINGTONE_ERR_LOG("Check Columns error");
+        return E_INVALID_VALUES;
+    }
 
     DumpDataShareValueBucket(g_ringToneTableFields, value);
 
@@ -260,6 +277,11 @@ int RingtoneDataShareExtension::Update(const Uri &uri, const DataSharePredicates
 {
     RINGTONE_DEBUG_LOG("entry, uri=%{public}s", uri.ToString().c_str());
     RINGTONE_DEBUG_LOG("WhereClause=%{public}s", predicates.GetWhereClause().c_str());
+
+    if (CheckColumns(value)) {
+        RINGTONE_ERR_LOG("Check Columns error");
+        return E_INVALID_VALUES;
+    }
 
     string tab("");
     int err = GetValidUriTab(uri, tab);

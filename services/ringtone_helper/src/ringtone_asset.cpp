@@ -230,6 +230,16 @@ void RingtoneAsset::SetAlarmtoneSourceType(int32_t type)
     member_[RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE] = type;
 }
 
+int32_t RingtoneAsset::GetDefaultSystemtoneType() const
+{
+    return GetInt32Member(RINGTONE_COLUMN_DEFAULT_SYSYTEM_TONE_TYPE);
+}
+
+void RingtoneAsset::SetDefaultSystemtoneType(int32_t type)
+{
+    member_[RINGTONE_COLUMN_DEFAULT_SYSYTEM_TONE_TYPE] = type;
+}
+
 void RingtoneAsset::SetOpenStatus(int32_t fd, int32_t openStatus)
 {
     lock_guard<mutex> lock(openStatusMapMutex_);
