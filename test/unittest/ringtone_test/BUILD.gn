@@ -30,7 +30,6 @@ ohos_unittest("ringtone_unittest") {
     "${RINGTONE_EXTENSION_PATH}/include",
     "${RINGTONE_SERVICES_PATH}/utils/include",
     "${RINGTONE_INTERFACES_PATH}/inner_api/native",
-    "${RINGTONE_HELPER_PATH}/include",
   ]
 
   sources = [
