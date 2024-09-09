@@ -88,9 +88,6 @@ public:
     EXPORT int32_t GetAlarmtoneSourceType() const;
     EXPORT void SetAlarmtoneSourceType(int32_t type);
 
-    EXPORT int32_t GetDefaultSystemtoneType() const;
-    EXPORT void SetDefaultSystemtoneType(int32_t type);
-
     EXPORT void SetOpenStatus(int32_t fd, int32_t openStatus);
     EXPORT void RemoveOpenStatus(int32_t fd);
     EXPORT int32_t GetOpenStatus(int32_t fd);

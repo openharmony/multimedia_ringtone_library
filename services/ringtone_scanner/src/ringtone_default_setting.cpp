@@ -23,9 +23,6 @@
 #include "ringtone_type.h"
 #include "ringtone_scanner_db.h"
 #include "ringtone_setting_manager.h"
-#include "rdb_helper.h"
-#include "result_set.h"
-#include "ringtone_utils.h"
 
 namespace OHOS {
 namespace Media {
@@ -175,24 +172,7 @@ void RingtoneDefaultSetting::Update()
     } else {
         RINGTONE_ERR_LOG("ringtone setting mgr is nullptr");
     }
-    UpdateDefaultSystemTone();
 }
 
-void RingtoneDefaultSetting::UpdateDefaultSystemTone()
-{
-    RINGTONE_INFO_LOG("setting system tone begin");
-    auto infos = RingtoneUtils::GetDefaultSystemtoneInfo();
-    for (auto info : infos) {
-        NativeRdb::ValuesBucket values;
-        values.PutInt(RINGTONE_COLUMN_DEFAULT_SYSYTEM_TONE_TYPE, info.second);
-        NativeRdb::AbsRdbPredicates absRdbPredicates(RINGTONE_TABLE);
-        absRdbPredicates.EqualTo(RINGTONE_COLUMN_DISPLAY_NAME, info.first);
-        int32_t changedRows;
-        int32_t result = settingMgr_->Update(changedRows, values, absRdbPredicates);
-        if (result != E_OK || changedRows <= 0) {
-            RINGTONE_ERR_LOG("Update operation failed. Result %{public}d. Updated %{public}d", result, changedRows);
-        }
-    }
-}
 } // namespace Media
 } // namespace OHOS

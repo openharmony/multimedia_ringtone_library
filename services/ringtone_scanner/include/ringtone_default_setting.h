@@ -33,7 +33,6 @@ public:
     EXPORT RingtoneDefaultSetting(std::shared_ptr<NativeRdb::RdbStore> &rdb);
     ~RingtoneDefaultSetting() = default;
     EXPORT void Update();
-    EXPORT void UpdateDefaultSystemTone();
 private:
     EXPORT void ShotToneDefaultSettings();
     EXPORT void NotificationToneDefaultSettings();

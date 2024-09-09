@@ -16,8 +16,6 @@
 #ifndef RINGTONE_TYPE_H
 #define RINGTONE_TYPE_H
 
-#include <stdint.h>
-
 namespace OHOS {
 namespace Media {
 
@@ -86,15 +84,6 @@ enum AlarmToneType : int32_t {
     ALARM_TONE_TYPE_NOT = 0, // not set
     ALARM_TONE_TYPE, // alarm tone
     ALARM_TONE_TYPE_MAX
-};
-
-enum DefaultSystemToneType : int32_t {
-    DEFAULT_TONE_SYSTEM_TYPE_INVALID = -1,
-    DEFAULT_RING_TONE_SYSTEM_SIM_CARD_1_TYPE = 1,
-    DEFAULT_RING_TONE_SYSTEM_SIM_CARD_2_TYPE = 2,
-    DEFAULT_SHOT_TONE_SYSTEM_SIM_CARD_1_2_TYPE = 3,
-    DEFAULT_NOTIFICATION_TONE_SYSTEM_TYPE = 6,
-    DEFAULT_ALARM_TONE_SYSTEM_TYPE = 7
 };
 
 // ringtone system default setting
