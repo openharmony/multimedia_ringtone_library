@@ -17,14 +17,22 @@
 #define RINGTONE_UTILS_H
 
 #include <string>
-#include <map>
 
 namespace OHOS {
 namespace Media {
 class RingtoneUtils {
 public:
-    static std::string ReplaceAll(std::string str, const std::string &oldValue, const std::string &newValue);
-    static std::map<std::string, int> GetDefaultSystemtoneInfo();
+    EXPORT static std::string ReplaceAll(std::string str, const std::string &oldValue, const std::string &newValue)
+    {
+        for (std::string::size_type pos(0); pos != std::string::npos; pos += newValue.length()) {
+            if ((pos = str.find(oldValue, pos)) != std::string::npos) {
+                str.replace(pos, oldValue.length(), newValue);
+            } else {
+                break;
+            }
+        }
+        return str;
+    }
 };
 } // namespace Media
 } // namespace OHOS

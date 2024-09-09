@@ -58,11 +58,10 @@ const std::string RINGTONE_LIBRARY_DB_PATH = "/data/storage/el2/database";
 const std::string RINGTONE_LIBRARY_DB_NAME = "ringtone_library.db";
 
 // ringtone db version
-const int32_t RINGTONE_RDB_VERSION = 4;
+const int32_t RINGTONE_RDB_VERSION = 3;
 enum {
     VERSION_ADD_DISPLAY_LANGUAGE_COLUMN = 2,
     VERSION_ADD_VIBRATE_TABLE,
-    VERSION_ADD_DEFAULT_SYSYTEM_TONE_TYPE
 };
 
 // ringtone table name
@@ -90,7 +89,6 @@ const std::string RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE         = "ring_tone_sou
 const std::string RINGTONE_COLUMN_ALARM_TONE_TYPE               = "alarm_tone_type";
 const std::string RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE        = "alarm_tone_source_type";
 const std::string RINGTONE_COLUMN_DISPLAY_LANGUAGE_TYPE         = "display_language_type";
-const std::string RINGTONE_COLUMN_DEFAULT_SYSYTEM_TONE_TYPE     = "default_system_tone_type";
 
 // simcard setting table name
 const std::string SIMCARD_SETTING_TABLE                         = "SimCardSetting";

@@ -36,8 +36,6 @@ public:
     EXPORT void FlushSettings();
     EXPORT int32_t TravelQueryResultSet(const std::string &querySql,
         std::function<bool (std::shared_ptr<RingtoneMetadata> &)> func);
-    EXPORT int32_t Update(int &changedRows, const NativeRdb::ValuesBucket &values,
-        const NativeRdb::AbsRdbPredicates &predicates);
 private:
     struct SettingItem {
         int32_t toneId = TONE_ID_DEFAULT;
