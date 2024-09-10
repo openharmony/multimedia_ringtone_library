@@ -86,6 +86,15 @@ enum AlarmToneType : int32_t {
     ALARM_TONE_TYPE_MAX
 };
 
+enum DefaultSystemToneType : int32_t {
+    DEFAULT_RING_TYPE_SIM_CARD_1 = 1,
+    DEFAULT_RING_TYPE_SIM_CARD_2,
+    DEFAULT_SHOT_TYPE_SIM_CARD_1,
+    DEFAULT_SHOT_TYPE_SIM_CARD_2,
+    DEFAULT_NOTIFICATION_TYPE,
+    DEFAULT_ALARM_TYPE,
+};
+
 // ringtone system default setting
 static const char PARAM_RINGTONE_SETTING_SHOT[] = "const.multimedia.system_tone_sim_card_0";
 static const char PARAM_RINGTONE_SETTING_SHOT2[] = "const.multimedia.system_tone_sim_card_1";

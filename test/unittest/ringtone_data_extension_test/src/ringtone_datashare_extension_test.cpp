@@ -190,11 +190,11 @@ HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_OpenFile_test_001, T
     EXPECT_EQ(mediaDataShare != nullptr, true);
 
     Uri uri(RINGTONE_PATH_URI);
-    auto ret = mediaDataShare->OpenFile(uri, RINGTONE_FILEMODE_READWRITE);
+    auto ret = mediaDataShare->OpenFile(uri, RINGTONE_FILEMODE_READONLY);
     EXPECT_EQ(ret, E_INVALID_VALUES);
 
     Uri uriError(RINGTONE_URI);
-    ret = mediaDataShare->OpenFile(uriError, RINGTONE_FILEMODE_READWRITE);
+    ret = mediaDataShare->OpenFile(uriError, RINGTONE_FILEMODE_READONLY);
     EXPECT_EQ(ret, E_INVALID_URI);
 }
 
