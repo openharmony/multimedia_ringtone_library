@@ -58,10 +58,11 @@ const std::string RINGTONE_LIBRARY_DB_PATH = "/data/storage/el2/database";
 const std::string RINGTONE_LIBRARY_DB_NAME = "ringtone_library.db";
 
 // ringtone db version
-const int32_t RINGTONE_RDB_VERSION = 3;
+const int32_t RINGTONE_RDB_VERSION = 4;
 enum {
     VERSION_ADD_DISPLAY_LANGUAGE_COLUMN = 2,
     VERSION_ADD_VIBRATE_TABLE,
+    VERSION_UPDATE_MIME_TYPE,
 };
 
 // ringtone table name

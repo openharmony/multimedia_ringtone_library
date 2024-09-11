@@ -623,5 +623,18 @@ void RingtoneFileUtils::AccessRingtoneDir()
     }
     return;
 }
+
+string RingtoneFileUtils::GetFileExtension(const string &path)
+{
+    if (!path.empty()) {
+        size_t dotIndex = path.rfind(".");
+        if (dotIndex != string::npos) {
+            return path.substr(dotIndex + 1);
+        }
+    }
+ 
+    RINGTONE_ERR_LOG("Failed to obtain file extension because given pathname is empty");
+    return "";
+}
 } // namespace Media
 } // namespace OHOS
