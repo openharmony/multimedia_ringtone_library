@@ -22,10 +22,14 @@
 #include "ringtone_log.h"
 #include "ringtone_db_const.h"
 #include "ringtone_file_utils.h"
+#include "ringtone_mimetype_utils.h"
+#include "result_set_utils.h"
 
 namespace OHOS {
 namespace Media {
 using namespace std;
+
+const string DEFAULT_MIME_TYPE = "application/octet-stream";
 
 const std::string CREATE_RINGTONE_TABLE = "CREATE TABLE IF NOT EXISTS " + RINGTONE_TABLE + "(" +
     RINGTONE_COLUMN_TONE_ID                       + " INTEGER  PRIMARY KEY AUTOINCREMENT, " +
@@ -150,6 +154,43 @@ static void AddVibrateTable(NativeRdb::RdbStore &store)
     ExecSqls(sqls, store);
 }
 
+static void UpdateMimeType(NativeRdb::RdbStore &store)
+{
+    RINGTONE_INFO_LOG("Update MimeType Begin");
+    RingtoneMimeTypeUtils::InitMimeTypeMap();
+    const string sql = "SELECT * FROM " + RINGTONE_TABLE;
+    auto resultSet = store.QuerySql(sql);
+    if (resultSet == nullptr) {
+        RINGTONE_ERR_LOG("error query sql %{public}s", sql.c_str());
+        return;
+    }
+    while (resultSet->GoToNextRow() == NativeRdb::E_OK) {
+        std::string mimeType = GetStringVal(RINGTONE_COLUMN_MIME_TYPE, resultSet);
+        if (mimeType != DEFAULT_MIME_TYPE) {
+            continue;
+        }
+        string displayName = GetStringVal(RINGTONE_COLUMN_DISPLAY_NAME, resultSet);
+        int32_t toneid = GetInt32Val(RINGTONE_COLUMN_TONE_ID, resultSet);
+        std::string extension = RingtoneFileUtils::GetFileExtension(displayName);
+        mimeType = RingtoneMimeTypeUtils::GetMimeTypeFromExtension(extension);
+        int32_t mime = RingtoneMimeTypeUtils::GetMediaTypeFromMimeType(mimeType);
+        RINGTONE_INFO_LOG("extension: %{public}s, mimeType: %{public}s, toneid: %{public}d mime: %{public}d",
+            extension.c_str(), mimeType.c_str(), toneid, mime);
+ 
+        NativeRdb::ValuesBucket values;
+        values.PutString(RINGTONE_COLUMN_MIME_TYPE, mimeType);
+        values.PutInt(RINGTONE_COLUMN_MEDIA_TYPE, mime);
+        NativeRdb::AbsRdbPredicates absRdbPredicates(RINGTONE_TABLE);
+        absRdbPredicates.EqualTo(RINGTONE_COLUMN_TONE_ID, toneid);
+        int32_t changedRows;
+        int32_t result = store.Update(changedRows, values, absRdbPredicates);
+        if (result != E_OK || changedRows <= 0) {
+            RINGTONE_ERR_LOG("Update operation failed. Result %{public}d. Updated %{public}d", result, changedRows);
+        }
+    }
+    resultSet->Close();
+}
+
 static void UpgradeExtension(NativeRdb::RdbStore &store, int32_t oldVersion)
 {
     if (oldVersion < VERSION_ADD_DISPLAY_LANGUAGE_COLUMN) {
@@ -157,6 +198,9 @@ static void UpgradeExtension(NativeRdb::RdbStore &store, int32_t oldVersion)
     }
     if (oldVersion < VERSION_ADD_VIBRATE_TABLE) {
         AddVibrateTable(store);
+    }
+    if (oldVersion < VERSION_UPDATE_MIME_TYPE) {
+        UpdateMimeType(store);
     }
 }
 
