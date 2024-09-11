@@ -22,9 +22,13 @@ const TAG = 'RingtoneBackupExtAbility';
 
 const ringtonePath = '/storage/media/local/files/Ringtone/';
 
-const RESTORE_SCENE_TYPE_DUAL_UPGRADE : number = 0;
-const RESTORE_SCENE_TYPE_SINGLE_CLONE : number = 1;
-const RESTORE_SCENE_TYPE_DUAL_CLONE : number = 2;
+const backupBasePath = '/data/storage/el2/backup/restore';
+const backupFilePath = backupBasePath + '/storage/media/local/files/Ringtone/';
+// const backupRingFileRootPath = backupBasePath + '/storage/';
+
+const UPGRADE_RESTORE : number = 0;
+const DUAL_FRAME_CLONE_RESTORE : number = 1;
+const CLONE_RESTORE : number = 2;
 
 const UPGRADE_NAME = '0.0.0.0';
 const DUAL_FRAME_CLONE_NAME = '99.99.99.999';
@@ -37,20 +41,18 @@ export default class RingtoneBackupExtAbility extends BackupExtensionAbility {
   async onRestore(bundleVersion : BundleVersion) : Promise<void> {
     console.log(TAG, `onRestore ok ${JSON.stringify(bundleVersion)}`);
     console.time(TAG + ' RESTORE');
-    const backupBasePath = this.context.backupDir + 'restore';
-    const backupFilePath = backupBasePath + '/storage/media/local/files/Ringtone/';
     let srcPath:string;
     let destPath:string;
-    if (bundleVersion.name.startsWith(UPGRADE_NAME)) {
-      await ringtonerestore.startRestore(RESTORE_SCENE_TYPE_DUAL_UPGRADE, backupBasePath);
+    if (bundleVersion.name === UPGRADE_NAME && bundleVersion.code === 0) {
+      await ringtonerestore.startRestore(UPGRADE_RESTORE, backupBasePath);
       srcPath = backupFilePath;
       destPath = ringtonePath;
     } else if (bundleVersion.name === DUAL_FRAME_CLONE_NAME && bundleVersion.code === 0) {
-      await ringtonerestore.startRestore(RESTORE_SCENE_TYPE_DUAL_CLONE, backupBasePath);
+      await ringtonerestore.startRestore(DUAL_FRAME_CLONE_RESTORE, backupBasePath);
       srcPath = backupFilePath;
       destPath = ringtonePath;
     } else {
-      await ringtonerestore.startRestore(RESTORE_SCENE_TYPE_SINGLE_CLONE, backupBasePath);
+      await ringtonerestore.startRestore(CLONE_RESTORE, backupBasePath);
       srcPath = backupFilePath;
       destPath = ringtonePath;
     }

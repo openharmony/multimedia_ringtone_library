@@ -57,7 +57,7 @@ HWTEST_F(RingtoneMetadataExtractorTest, metadataExtractor_Extract_test_001, Test
 {
     unique_ptr<RingtoneMetadata> data = make_unique<RingtoneMetadata>();
     unique_ptr<RingtoneScannerDb> ringtoneScannerDb;
-    ringtoneScannerDb->GetFileBasicInfo(STORAGE_FILES_DIR, data);
+    ringtoneScannerDb->GetFileBasicInfo(ROOT_MEDIA_DIR, data);
     data->SetMediaType(static_cast<RingtoneMediaType>(RINGTONE_MEDIA_TYPE_AUDIO));
     int32_t ret = RingtoneMetadataExtractor::Extract(data);
     EXPECT_EQ(ret, E_AVMETADATA);
@@ -67,7 +67,7 @@ HWTEST_F(RingtoneMetadataExtractorTest, metadataExtractor_Extract_test_002, Test
 {
     unique_ptr<RingtoneMetadata> data = make_unique<RingtoneMetadata>();
     unique_ptr<RingtoneScannerDb> ringtoneScannerDb;
-    ringtoneScannerDb->GetFileBasicInfo(STORAGE_FILES_DIR, data);
+    ringtoneScannerDb->GetFileBasicInfo(ROOT_MEDIA_DIR, data);
     data->SetMediaType(static_cast<RingtoneMediaType>(RINGTONE_MEDIA_TYPE_INVALID));
     int32_t ret = RingtoneMetadataExtractor::Extract(data);
     EXPECT_EQ(ret, E_AVMETADATA);
@@ -78,9 +78,9 @@ HWTEST_F(RingtoneMetadataExtractorTest, metadataExtractor_FillExtractedMetadata_
     unique_ptr<RingtoneMetadata> data = make_unique<RingtoneMetadata>();
     unique_ptr<RingtoneScannerDb> ringtoneScannerDb;
     const int modifiedTime = 11;
-    ringtoneScannerDb->GetFileBasicInfo(STORAGE_FILES_DIR, data);
+    ringtoneScannerDb->GetFileBasicInfo(ROOT_MEDIA_DIR, data);
     data->SetMediaType(static_cast<RingtoneMediaType>(RINGTONE_MEDIA_TYPE_AUDIO));
-    data->SetData(STORAGE_FILES_DIR);
+    data->SetData(ROOT_MEDIA_DIR);
     data->SetDateModified(static_cast<int64_t>(modifiedTime));
     unordered_map<int32_t, std::string> resultMap;
     resultMap = { { Media::AV_KEY_DURATION, "" }, { Media::AV_KEY_DATE_TIME_FORMAT, "" },
@@ -94,17 +94,12 @@ HWTEST_F(RingtoneMetadataExtractorTest, metadataExtractor_FillExtractedMetadata_
     unique_ptr<RingtoneMetadata> data = make_unique<RingtoneMetadata>();
     unique_ptr<RingtoneScannerDb> ringtoneScannerDb;
     const int modifiedTime = 13;
-    ringtoneScannerDb->GetFileBasicInfo(STORAGE_FILES_DIR, data);
+    ringtoneScannerDb->GetFileBasicInfo(ROOT_MEDIA_DIR, data);
     data->SetMediaType(static_cast<RingtoneMediaType>(RINGTONE_MEDIA_TYPE_AUDIO));
-    data->SetData(STORAGE_FILES_DIR);
+    data->SetData(ROOT_MEDIA_DIR);
     data->SetDateModified(static_cast<int64_t>(modifiedTime));
     unordered_map<int32_t, std::string> resultMap;
     resultMap = { { Media::AV_KEY_DURATION, "a" }, { Media::AV_KEY_DATE_TIME_FORMAT, "a" },
-        { Media::AV_KEY_MIME_TYPE, "a" }, { Media::AV_KEY_TITLE, "a" } };
-    RingtoneMetadataExtractor::FillExtractedMetadata(resultMap, data);
-    EXPECT_EQ(data->GetTitle(), "a");
-    const string timeKey = "2021-10-1 15:00:00";
-    resultMap = { { Media::AV_KEY_DURATION, "a" }, { Media::AV_KEY_DATE_TIME_FORMAT,  timeKey},
         { Media::AV_KEY_MIME_TYPE, "a" }, { Media::AV_KEY_TITLE, "a" } };
     RingtoneMetadataExtractor::FillExtractedMetadata(resultMap, data);
     EXPECT_EQ(data->GetTitle(), "a");
@@ -114,18 +109,14 @@ HWTEST_F(RingtoneMetadataExtractorTest, metadataExtractor_ExtractAudioMetadata_t
 {
     unique_ptr<RingtoneMetadata> data = make_unique<RingtoneMetadata>();
     unique_ptr<RingtoneScannerDb> ringtoneScannerDb;
-    ringtoneScannerDb->GetFileBasicInfo(STORAGE_FILES_DIR, data);
+    ringtoneScannerDb->GetFileBasicInfo(ROOT_MEDIA_DIR, data);
     data->SetMediaType(static_cast<RingtoneMediaType>(RINGTONE_MEDIA_TYPE_AUDIO));
     int32_t ret = RingtoneMetadataExtractor::ExtractAudioMetadata(data);
     EXPECT_EQ(ret, E_AVMETADATA);
-    data->SetData(STORAGE_FILES_DIR);
+    data->SetData(ROOT_MEDIA_DIR);
     ret = RingtoneMetadataExtractor::ExtractAudioMetadata(data);
     EXPECT_NE(ret, E_OK);
     data->SetData("ExtractAudioMetadata");
-    ret = RingtoneMetadataExtractor::ExtractAudioMetadata(data);
-    EXPECT_EQ((ret == E_SYSCALL || ret == E_AVMETADATA), true);
-    const string dataStr = "/storage/media/100/local/files/";
-    data->SetData(dataStr);
     ret = RingtoneMetadataExtractor::ExtractAudioMetadata(data);
     EXPECT_EQ((ret == E_SYSCALL || ret == E_AVMETADATA), true);
 }

@@ -75,13 +75,9 @@ HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_OpenFile_Test_001, TestSize.Le
     ASSERT_EQ(ret, E_INVALID_PATH);
     ret = RingtoneFileUtils::OpenFile(path, "v");
     ASSERT_EQ(ret, E_INVALID_PATH);
-    const int32_t count = 5200;
-    string filePath = string(count, 'a') + ".ogg";
+    const string filePath("a", 5200);
     ret = RingtoneFileUtils::OpenFile(filePath, RINGTONE_FILEMODE_WRITEONLY);
-    ASSERT_EQ(ret, E_ERR);
-    filePath = "ringtoneFileUtils_OpenFile_Test_001.ogg";
-    ret = RingtoneFileUtils::OpenFile(filePath, "z");
-    ASSERT_EQ(ret, E_ERR);
+    ASSERT_EQ(ret, E_INVALID_PATH);
 }
 
 HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_MilliSecond_Test_001, TestSize.Level0)

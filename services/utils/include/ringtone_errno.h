@@ -16,9 +16,6 @@
 #ifndef OHOS_RINGTONE_ERRNO_H
 #define OHOS_RINGTONE_ERRNO_H
 
-#include <stdint.h>
-#include <errno.h>
-
 namespace OHOS {
 namespace Media {
 #define RINGTONE_ERR(offset, errCode) (-((offset) + (errCode)))

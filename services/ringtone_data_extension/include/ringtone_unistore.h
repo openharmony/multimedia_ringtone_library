@@ -16,7 +16,7 @@
 #ifndef RINGTONE_UNISTORE_H
 #define RINGTONE_UNISTORE_H
 
-#include "fa_ability_context.h"
+#include "ability_context.h"
 #include "rdb_helper.h"
 #include "ringtone_data_command.h"
 

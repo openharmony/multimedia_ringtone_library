@@ -13,27 +13,30 @@
  * limitations under the License.
  */
 
-#ifndef RINGTONE_RDB_CALLBACKS_H
-#define RINGTONE_RDB_CALLBACKS_H
+#ifndef RINGTONE_PROPS_H
+#define RINGTONE_PROPS_H
 
-#include "rdb_helper.h"
+#include "rdb_sql_utils.h"
+#include "rdb_store.h"
 
 namespace OHOS {
 namespace Media {
 #define EXPORT __attribute__ ((visibility ("default")))
-
-class RingtoneDataCallBack : public NativeRdb::RdbOpenCallback {
+using namespace std;
+using namespace OHOS;
+class RingtoneProps {
 public:
-    EXPORT RingtoneDataCallBack();
-    EXPORT ~RingtoneDataCallBack();
-    EXPORT int32_t OnCreate(NativeRdb::RdbStore &rdbStore) override;
-    EXPORT int32_t OnUpgrade(NativeRdb::RdbStore &rdbStore, int32_t oldVersion, int32_t newVersion) override;
+    EXPORT RingtoneProps(shared_ptr<NativeRdb::RdbStore> rdb);
+    EXPORT ~RingtoneProps() = default;
+
+    EXPORT int32_t Init();
+    EXPORT string GetProp(const string &propName, const string &defaultVal);
+    EXPORT bool SetProp(const string &propName, const string &propVal);
 private:
-    static int32_t InitSql(NativeRdb::RdbStore &store);
-    static int32_t PrepareDir();
-    EXPORT static int32_t CreatePreloadFolder(const std::string &path);
-    EXPORT static int32_t MkdirRecursive(const std::string &path, size_t start);
+    EXPORT int32_t GetPropFromResultSet(shared_ptr<NativeRdb::ResultSet> resultSet, string &propVal);
+    shared_ptr<NativeRdb::RdbStore> store_;
 };
 } // namespace Media
 } // namespace OHOS
-#endif // RINGTONE_RDB_CALLBACKS_H
+
+#endif // RINGTONE_PROPS_H

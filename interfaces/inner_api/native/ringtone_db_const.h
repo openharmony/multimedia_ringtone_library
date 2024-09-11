@@ -47,10 +47,14 @@ const std::string RINGTONE_LIBRARY_DB_PATH = "/data/storage/el2/database";
 const std::string RINGTONE_LIBRARY_DB_NAME = "ringtone_library.db";
 
 // ringtone db version
-const int32_t RINGTONE_RDB_VERSION = 2;
-enum {
-    VERSION_ADD_DISPLAY_LANGUAGE_COLUMN = 2,
-};
+const int32_t RINGTONE_RDB_VERSION = 1;
+
+// RingtoneProps table name
+const std::string PROPERTIES_TABLE                              = "RingtoneProps";
+// RingtoneProps table column name
+const std::string RINGTONEPROPS_COLUMN_ID                       = "id";
+const std::string RINGTONEPROPS_COLUMN_NAME                     = "name";
+const std::string RINGTONEPROPS_COLUMN_VALUE                    = "value";
 
 // ringtone table name
 const std::string RINGTONE_TABLE                                = "ToneFiles";
@@ -76,7 +80,6 @@ const std::string RINGTONE_COLUMN_RING_TONE_TYPE                = "ring_tone_typ
 const std::string RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE         = "ring_tone_source_type";
 const std::string RINGTONE_COLUMN_ALARM_TONE_TYPE               = "alarm_tone_type";
 const std::string RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE        = "alarm_tone_source_type";
-const std::string RINGTONE_COLUMN_DISPLAY_LANGUAGE_TYPE         = "display_language_type";
 } // namespace Media
 } // namespace OHOS
 

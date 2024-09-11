@@ -55,8 +55,8 @@ HWTEST_F(RingtoneDefaultSettingsTest, settings_ShotToneDefaultSettings_001, Test
     EXPECT_EQ(ret, E_OK);
     auto rawRdb = uniStore->GetRaw();
     std::unique_ptr<RingtoneDefaultSetting> defaultSetting = RingtoneDefaultSetting::GetObj(rawRdb);
-    system("param set const.multimedia.system_tone_sim_card_1 Betelgeuse.ogg");
-    system("param set const.multimedia.system_tone_sim_card_0 Bellatrix.ogg");
+    system("param set persist.ringtone.setting.shot2 Betelgeuse.ogg");
+    system("param set persist.ringtone.setting.shot Bellatrix.ogg");
     defaultSetting->ShotToneDefaultSettings();
     Uri uri(RINGTONE_PATH_URI);
     RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::INSERT);
@@ -74,8 +74,8 @@ HWTEST_F(RingtoneDefaultSettingsTest, settings_ShotToneDefaultSettings_001, Test
     ret = uniStore->Insert(cmd, rowId);
     EXPECT_EQ(ret, E_OK);
     defaultSetting->ShotToneDefaultSettings();
-    system("param set const.multimedia.system_tone_sim_card_1 \"\"");
-    system("param set const.multimedia.system_tone_sim_card_0 \"\"");
+    system("param set persist.ringtone.setting.shot2 \"\"");
+    system("param set persist.ringtone.setting.shot \"\"");
     defaultSetting->ShotToneDefaultSettings();
 }
 
@@ -89,7 +89,7 @@ HWTEST_F(RingtoneDefaultSettingsTest, settings_NotificationToneDefaultSettings_0
     EXPECT_EQ(ret, E_OK);
     auto rawRdb = uniStore->GetRaw();
     std::unique_ptr<RingtoneDefaultSetting> defaultSetting = RingtoneDefaultSetting::GetObj(rawRdb);
-    system("param set const.multimedia.notification_tone Bellatrix.ogg");
+    system("param set persist.ringtone.setting.notification Bellatrix.ogg");
     defaultSetting->NotificationToneDefaultSettings();
     Uri uri(RINGTONE_PATH_URI);
     RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::INSERT);
@@ -107,7 +107,7 @@ HWTEST_F(RingtoneDefaultSettingsTest, settings_NotificationToneDefaultSettings_0
     ret = uniStore->Insert(cmd, rowId);
     EXPECT_EQ(ret, E_OK);
     defaultSetting->NotificationToneDefaultSettings();
-    system("param set const.multimedia.notification_tone \"\"");
+    system("param set persist.ringtone.setting.notification \"\"");
     defaultSetting->NotificationToneDefaultSettings();
 }
 
@@ -121,8 +121,8 @@ HWTEST_F(RingtoneDefaultSettingsTest, settings_RingToneDefaultSettings_001, Test
     EXPECT_EQ(ret, E_OK);
     auto rawRdb = uniStore->GetRaw();
     std::unique_ptr<RingtoneDefaultSetting> defaultSetting = RingtoneDefaultSetting::GetObj(rawRdb);
-    system("param set const.multimedia.ringtone_sim_card_1 test_name");
-    system("param set const.multimedia.ringtone_sim_card_0 test_name");
+    system("param set persist.ringtone.setting.ringtone2 test_name");
+    system("param set persist.ringtone.setting.ringtone test_name");
     defaultSetting->RingToneDefaultSettings();
     Uri uri(RINGTONE_PATH_URI);
     RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::INSERT);
@@ -140,8 +140,8 @@ HWTEST_F(RingtoneDefaultSettingsTest, settings_RingToneDefaultSettings_001, Test
     ret = uniStore->Insert(cmd, rowId);
     EXPECT_EQ(ret, E_OK);
     defaultSetting->RingToneDefaultSettings();
-    system("param set const.multimedia.ringtone_sim_card_1 \"\"");
-    system("param set const.multimedia.ringtone_sim_card_0 \"\"");
+    system("param set persist.ringtone.setting.ringtone2 \"\"");
+    system("param set persist.ringtone.setting.ringtone \"\"");
     defaultSetting->RingToneDefaultSettings();
 }
 
@@ -171,38 +171,6 @@ HWTEST_F(RingtoneDefaultSettingsTest, settings_GetTonePathByDisplayName_001, Tes
     auto rawRdb = uniStore->GetRaw();
     std::unique_ptr<RingtoneDefaultSetting> defaultSetting = RingtoneDefaultSetting::GetObj(rawRdb);
     defaultSetting->GetTonePathByDisplayName(name);
-}
-
-HWTEST_F(RingtoneDefaultSettingsTest, settings_AlarmToneDefaultSettings_001, TestSize.Level0)
-{
-    auto stageContext = std::make_shared<AbilityRuntime::ContextImpl>();
-    auto abilityContextImpl = std::make_shared<OHOS::AbilityRuntime::AbilityContextImpl>();
-    abilityContextImpl->SetStageContext(stageContext);
-    shared_ptr<RingtoneUnistore> uniStore = RingtoneRdbStore::GetInstance(abilityContextImpl);
-    int32_t ret = uniStore->Init();
-    EXPECT_EQ(ret, E_OK);
-    auto rawRdb = uniStore->GetRaw();
-    std::unique_ptr<RingtoneDefaultSetting> defaultSetting = RingtoneDefaultSetting::GetObj(rawRdb);
-    system("param set const.multimedia.alarm_tone test_name");
-    defaultSetting->AlarmToneDefaultSettings();
-    Uri uri(RINGTONE_PATH_URI);
-    RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::INSERT);
-    NativeRdb::ValuesBucket values;
-    const string name = "test_name";
-    values.PutString(RINGTONE_COLUMN_DISPLAY_NAME, name);
-    const string data = ROOT_TONE_PRELOAD_PATH_NOAH_PATH + "rdbStore_Insert_test_001";
-    values.PutString(RINGTONE_COLUMN_DATA, data);
-    const string title = "insert test";
-    values.PutString(RINGTONE_COLUMN_TITLE, title);
-    values.Put(RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, static_cast<int>(1));
-    cmd.SetValueBucket(values);
-    uniStore->Init();
-    int64_t rowId = E_HAS_DB_ERROR;
-    ret = uniStore->Insert(cmd, rowId);
-    EXPECT_EQ(ret, E_OK);
-    defaultSetting->AlarmToneDefaultSettings();
-    system("param set const.multimedia.alarm_tone Bellatrix.ogg");
-    defaultSetting->AlarmToneDefaultSettings();
 }
 } // namespace Media
 } // namespace OHOS

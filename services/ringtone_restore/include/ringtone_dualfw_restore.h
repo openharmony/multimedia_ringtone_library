@@ -23,43 +23,28 @@
 #include "ringtone_metadata.h"
 #include "ringtone_restore_base.h"
 #include "ringtone_restore_type.h"
-#include "medialibrary_db_const.h"
 
 namespace OHOS {
 namespace Media {
-class RingtoneDualfwRestore : public RingtoneRestoreBase {
+class RingtoneDualfwRestore final : public RingtoneRestoreBase {
 public:
     RingtoneDualfwRestore() = default;
     virtual ~RingtoneDualfwRestore() = default;
     int32_t Init(const std::string &backupPath) override;
     void StartRestore() override;
 protected:
-    std::unique_ptr<DualfwSoundSetting> dualfwSetting_ = nullptr;
-private:
     virtual bool OnPrepare(FileInfo &info, const std::string &destPath) override;
     virtual void OnFinished(std::vector<FileInfo> &infos) override;
-    virtual int32_t LoadDualfwConf() override;
-    int32_t ParseDualfwConf(const std::string &xml);
+private:
+    int32_t ParseDualfwConf(std::string &xml);
     int32_t DupToneFile(FileInfo &info);
     void UpdateRestoreFileInfo(FileInfo &info);
-    std::vector<FileInfo> BuildFileInfo();
-    int32_t QueryMediaLibForFileInfo(const std::vector<std::string>& names,
-        std::map<std::string, std::shared_ptr<FileInfo>>& infoMap,
-        const std::string& queryFileUriBase = UFM_QUERY_AUDIO,
-        const std::string& predicateColumn = MEDIA_DATA_DB_NAME);
-    int32_t QueryRingToneDbForFileInfo(std::shared_ptr<NativeRdb::RdbStore> rdbStore,
-        const std::vector<std::string>&, std::map<std::string, std::shared_ptr<FileInfo>>&,
-        const std::string& predicateColumn = MEDIA_DATA_DB_NAME);
-
 private:
     std::shared_ptr<DataShare::DataShareHelper> mediaDataShare_ = nullptr;
+    std::unique_ptr<DualfwSoundSetting> dualfwSetting_ = nullptr;
     std::string dualfwConf_ = {};
-};
-
-class RingtoneDualfwRestoreClone : public RingtoneDualfwRestore {
-private:
-    virtual int32_t LoadDualfwConf() override;
 };
 } // namespace Media
 } // namespace OHOS
+
 #endif  // RINGTONE_DUALFW_RESTORE_H

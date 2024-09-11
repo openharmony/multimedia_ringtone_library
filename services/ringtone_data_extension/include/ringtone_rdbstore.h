@@ -17,11 +17,12 @@
 #define RINGTONE_RDBSTORE_H
 
 #include "ringtone_unistore.h"
-#include "ringtone_rdb_callbacks.h"
 
 namespace OHOS {
 namespace Media {
 #define EXPORT __attribute__ ((visibility ("default")))
+
+class RingtoneDataCallBack;
 
 class RingtoneRdbStore final : public RingtoneUnistore {
 public:
@@ -48,6 +49,19 @@ private:
     std::string bundleName_ {RINGTONE_BUNDLE_NAME};
     NativeRdb::RdbStoreConfig config_ {""};
     static std::shared_ptr<NativeRdb::RdbStore> rdbStore_;
+};
+
+class RingtoneDataCallBack : public NativeRdb::RdbOpenCallback {
+public:
+    EXPORT RingtoneDataCallBack();
+    EXPORT ~RingtoneDataCallBack();
+    EXPORT int32_t OnCreate(NativeRdb::RdbStore &rdbStore) override;
+    EXPORT int32_t OnUpgrade(NativeRdb::RdbStore &rdbStore, int32_t oldVersion, int32_t newVersion) override;
+private:
+    static int32_t InitSql(NativeRdb::RdbStore &store);
+    static int32_t PrepareDir();
+    EXPORT static int32_t CreatePreloadFolder(const std::string &path);
+    EXPORT static int32_t MkdirRecursive(const std::string &path, size_t start);
 };
 } // namespace Media
 } // namespace OHOS
