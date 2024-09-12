@@ -72,7 +72,6 @@ ohos_shared_library("ringtone_data_extension") {
     "${RINGTONE_EXTENSION_PATH}/src/ringtone_data_manager.cpp",
     "${RINGTONE_EXTENSION_PATH}/src/ringtone_datashare_extension.cpp",
     "${RINGTONE_EXTENSION_PATH}/src/ringtone_datashare_stub_impl.cpp",
-    "${RINGTONE_EXTENSION_PATH}/src/ringtone_language_manager.cpp",
     "${RINGTONE_EXTENSION_PATH}/src/ringtone_rdbstore.cpp",
     "${RINGTONE_EXTENSION_PATH}/src/ringtone_subscriber.cpp",
   ]
@@ -113,7 +112,6 @@ ohos_shared_library("ringtone_data_extension") {
     "hitrace:hitrace_meter",
     "init:libbegetutil",
     "ipc:ipc_core",
-    "libxml2:libxml2",
     "napi:ace_napi",
     "player_framework:media_client",
     "preferences:native_preferences",
@@ -146,7 +144,6 @@ ohos_shared_library("ringtonerestore") {
   ]
 
   sources = [
-    "${RINGTONE_RESTORE_PATH}/src/dualfw_conf_loader.cpp",
     "${RINGTONE_RESTORE_PATH}/src/dualfw_conf_parser.cpp",
     "${RINGTONE_RESTORE_PATH}/src/dualfw_sound_setting.cpp",
     "${RINGTONE_RESTORE_PATH}/src/native_module_ohos_ringtone_restore.cpp",
@@ -162,11 +159,6 @@ ohos_shared_library("ringtonerestore") {
   configs = [ "//build/config/compiler:exceptions" ]
 
   ldflags = [ "-Wl" ]
-
-  cflags_cc = [
-    "-fvisibility-inlines-hidden",
-    "-Os",
-  ]
 
   deps = [
     ":ringtone_data_extension",
@@ -193,8 +185,6 @@ ohos_shared_library("ringtonerestore") {
     "libxml2:libxml2",
     "media_library:media_library",
     "napi:ace_napi",
-    "player_framework:media_client",
-    "preferences:native_preferences",
     "relational_store:native_rdb",
     "relational_store:rdb_data_share_adapter",
     "samgr:samgr_proxy",
@@ -230,7 +220,7 @@ ohos_shared_library("ringtone_utils") {
     "${RINGTONE_UTILS_PATH}/src/ringtone_file_utils.cpp",
     "${RINGTONE_UTILS_PATH}/src/ringtone_mimetype_utils.cpp",
     "${RINGTONE_UTILS_PATH}/src/ringtone_privacy_manager.cpp",
-    "${RINGTONE_UTILS_PATH}/src/ringtone_rdb_callbacks.cpp",
+    "${RINGTONE_UTILS_PATH}/src/ringtone_props.cpp",
   ]
 
   public_configs = [ ":ringtone_public_visible_config" ]
@@ -244,10 +234,7 @@ ohos_shared_library("ringtone_utils") {
     "-Os",
   ]
 
-  cflags_cc = [
-    "-fvisibility-inlines-hidden",
-    "-Os",
-  ]
+  cflags_cc = [ "-Os" ]
 
   external_deps = [
     "ability_base:want",

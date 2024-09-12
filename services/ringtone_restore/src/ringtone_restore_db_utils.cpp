@@ -19,7 +19,6 @@
 #include "ringtone_log.h"
 #include "ringtone_errno.h"
 #include "result_set_utils.h"
-#include "ringtone_rdb_callbacks.h"
 
 namespace OHOS {
 namespace Media {
@@ -37,7 +36,7 @@ int32_t RingtoneRestoreDbUtils::InitDb(std::shared_ptr<NativeRdb::RdbStore> &rdb
     config.SetSecurityLevel(NativeRdb::SecurityLevel::S3);
 
     int32_t err;
-    RingtoneDataCallBack cb;
+    RingtoneRdbCallback cb;
     rdbStore = NativeRdb::RdbHelper::GetRdbStore(config, RINGTONE_RDB_VERSION, cb, err);
     return err;
 }

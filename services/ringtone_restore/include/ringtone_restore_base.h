@@ -28,7 +28,6 @@ public:
     RingtoneRestoreBase() = default;
     virtual ~RingtoneRestoreBase() = default;
     int32_t Init(const std::string &backupPath) override;
-    void StartRestore() override;
     virtual std::shared_ptr<NativeRdb::RdbStore> GetBaseDb() override
     {
         return localRdb_;
@@ -38,21 +37,14 @@ protected:
     virtual void OnFinished(std::vector<FileInfo> &fileInfos) = 0;
     virtual std::vector<NativeRdb::ValuesBucket> MakeInsertValues(std::vector<FileInfo> &infos);
     virtual void InsertTones(std::vector<FileInfo> &infos);
-    virtual int32_t LoadDualfwConf() { return -1; }
-    virtual void CheckSetting(FileInfo &info);
+
     static bool MoveFile(const std::string &src, const std::string &dst);
     static int32_t MoveDirectory(const std::string &srcDir, const std::string &dstDir);
-    void ExtractMetaFromColumn(const std::shared_ptr<NativeRdb::ResultSet> &resultSet,
-        std::unique_ptr<RingtoneMetadata> &metadata, const std::string &col);
-    int32_t PopulateMetadata(const std::shared_ptr<NativeRdb::ResultSet> &resultSet,
-        std::unique_ptr<RingtoneMetadata> &metaData);
-    virtual void FlushSettings();
 private:
     static std::string GetRestoreDir(const int32_t toneType);
     static NativeRdb::ValuesBucket SetInsertValue(const FileInfo &fileInfo);
     int32_t BatchInsert(const std::string &tableName, std::vector<NativeRdb::ValuesBucket> &values, int64_t &rowNum);
-    bool NeedCommitSetting(const std::string &typeColumn, const std::string &sourceColumn,
-        int type, int allSetType);
+    void CheckSetting(FileInfo &info);
 
     std::shared_ptr<NativeRdb::RdbStore> localRdb_ = nullptr;
     std::unique_ptr<RingtoneSettingManager> settingMgr_ = nullptr;

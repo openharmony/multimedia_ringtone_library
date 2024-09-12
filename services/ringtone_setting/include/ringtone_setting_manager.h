@@ -57,13 +57,13 @@ private:
         std::unique_ptr<RingtoneMetadata> &metadata, const std::string &col);
     EXPORT int32_t UpdateSettingsByPath(const std::string &tonePath, int32_t settingType, int32_t toneType,
         int32_t sourceType);
-    EXPORT int32_t UpdateShotSetting(std::shared_ptr<RingtoneMetadata> &meta, int32_t toneType,
-        int32_t sourceType);
+    EXPORT int32_t UpdateShotSetting(std::shared_ptr<RingtoneMetadata> &meta, int32_t toneType, int32_t sourceType);
     EXPORT int32_t UpdateRingtoneSetting(std::shared_ptr<RingtoneMetadata> &meta, int32_t toneType,
         int32_t sourceType);
     EXPORT int32_t UpdateNotificationSetting(std::shared_ptr<RingtoneMetadata> &meta, int32_t toneType,
         int32_t sourceType);
-    EXPORT int32_t UpdateAlarmSetting(std::shared_ptr<RingtoneMetadata> &meta, int32_t toneType, int32_t sourceType);
+    EXPORT int32_t UpdateAlarmSetting(std::shared_ptr<RingtoneMetadata> &meta, int32_t toneType,
+        int32_t sourceType);
 private:
     std::shared_ptr<NativeRdb::RdbStore> ringtoneRdb_ = nullptr;
     std::unordered_multimap<std::string, SettingItem> settings_ = {};

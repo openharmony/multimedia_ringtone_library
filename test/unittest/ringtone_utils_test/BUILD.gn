@@ -39,6 +39,7 @@ ohos_unittest("ringtone_utils_unittest") {
     "./src/ringtone_mimetype_utils_test.cpp",
     "./src/ringtone_permission_utils_test.cpp",
     "./src/ringtone_privacy_manager_test.cpp",
+    "./src/ringtone_props_test.cpp",
   ]
 
   deps = [

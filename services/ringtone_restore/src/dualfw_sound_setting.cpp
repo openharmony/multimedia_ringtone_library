@@ -94,24 +94,6 @@ void DualfwSoundSetting::SettingsTraval(std::function<void (DualfwSettingItem &)
     }
 }
 
-std::vector<std::string> DualfwSoundSetting::GetFileNames() const
-{
-    std::vector<std::string> fileNames;
-    for (auto setting : settings_) {
-        fileNames.push_back(setting.second.toneFileName);
-    }
-    return fileNames;
-}
-
-std::vector<DualfwSettingItem> DualfwSoundSetting::GetSettings() const
-{
-    std::vector<DualfwSettingItem> settings;
-    for (auto setting : settings_) {
-        settings.push_back(setting.second);
-    }
-    return settings;
-}
-
 int32_t DualfwSoundSetting::ProcessConfRow(std::unique_ptr<DualFwConfRow> &conf)
 {
     int32_t ret = E_SUCCESS;
@@ -142,47 +124,6 @@ int32_t DualfwSoundSetting::ProcessConfRow(std::unique_ptr<DualFwConfRow> &conf)
     }
 
     return ret;
-}
-
-
-void DualfwSoundSetting::ProcessConf(const DualFwConf& conf)
-{
-    if (!conf.notificationSoundPath.empty()) {
-        settings_[SETTING_ITEM_NOTIFICATION] = {
-            RingtoneFileUtils::GetFileNameFromPathOrUri(conf.notificationSoundPath),
-            TONE_SETTING_TYPE_NOTIFICATION, NOTIFICATION_TONE_TYPE, false, true
-        };
-    }
-    if (!conf.ringtonePath.empty()) {
-        settings_[SETTING_ITEM_RINGTONE] = {
-            RingtoneFileUtils::GetFileNameFromPathOrUri(conf.ringtonePath),
-            TONE_SETTING_TYPE_RINGTONE, RING_TONE_TYPE_SIM_CARD_1, false, true
-        };
-    }
-    if (!conf.ringtone2Path.empty()) {
-        settings_[SETTING_ITEM_RINGTONE2] = {
-            RingtoneFileUtils::GetFileNameFromPathOrUri(conf.ringtone2Path),
-            TONE_SETTING_TYPE_RINGTONE, RING_TONE_TYPE_SIM_CARD_2, false, true
-        };
-    }
-    if (!conf.alarmAlertPath.empty()) {
-        settings_[SETTING_ITEM_ALARM] = {
-            RingtoneFileUtils::GetFileNameFromPathOrUri(conf.alarmAlertPath),
-            TONE_SETTING_TYPE_ALARM, ALARM_TONE_TYPE,  false, true
-        };
-    }
-    if (!conf.messagePath.empty()) {
-        settings_[SETTING_ITEM_MESSAGE] = {
-            RingtoneFileUtils::GetFileNameFromPathOrUri(conf.messagePath),
-            TONE_SETTING_TYPE_SHOT, SHOT_TONE_TYPE_SIM_CARD_1, false, true
-        };
-    }
-    if (!conf.messageSub1.empty()) {
-        settings_[SETTING_ITEM_MESSAGE2] = {
-            RingtoneFileUtils::GetFileNameFromPathOrUri(conf.messageSub1),
-            TONE_SETTING_TYPE_SHOT, SHOT_TONE_TYPE_SIM_CARD_2, false, true
-        };
-    }
 }
 } // namespace Media
 } // namespace OHOS

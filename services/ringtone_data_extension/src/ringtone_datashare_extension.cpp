@@ -27,7 +27,6 @@
 #include "ringtone_data_manager.h"
 #include "ringtone_datashare_stub_impl.h"
 #include "ringtone_file_utils.h"
-#include "ringtone_language_manager.h"
 #include "ringtone_log.h"
 #include "ringtone_scanner_manager.h"
 #include "runtime.h"
@@ -44,6 +43,7 @@ using namespace OHOS::DataShare;
 const char RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY[] = "ringtone.scanner.completed";
 const int RINGTONE_PARAMETER_SCANNER_COMPLETED_TRUE = 1;
 const int RINGTONE_PARAMETER_SCANNER_COMPLETED_FALSE = 0;
+const string RINGTONE_SINGLE_CLONE_BACKUP_PATH = "/storage/media/local/files/Backup";
 const std::vector<std::string> RINGTONE_OPEN_WRITE_MODE_VECTOR = {
     { RINGTONE_FILEMODE_WRITEONLY },
     { RINGTONE_FILEMODE_READWRITE },
@@ -109,6 +109,7 @@ void RingtoneDataShareExtension::OnStart(const AAFwk::Want &want)
         NativePreferences::PreferencesHelper::GetPreferences(DFX_COMMON_XML, errCode);
     if (!prefs) {
         RINGTONE_ERR_LOG("get preferences error: %{public}d", errCode);
+        return;
     }
     int isCompleted = prefs->GetInt(RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY,
         RINGTONE_PARAMETER_SCANNER_COMPLETED_FALSE);
@@ -117,7 +118,7 @@ void RingtoneDataShareExtension::OnStart(const AAFwk::Want &want)
         prefs->PutInt(RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY, RINGTONE_PARAMETER_SCANNER_COMPLETED_TRUE);
         prefs->FlushSync();
     }
-    RingtoneLanguageManager::GetInstance()->SyncAssetLanguage();
+
     RINGTONE_INFO_LOG("end.");
 }
 

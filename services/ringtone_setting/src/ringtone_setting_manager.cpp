@@ -90,8 +90,6 @@ int32_t RingtoneSettingManager::CommitSettingCompare(int32_t settingType, int32_
 int32_t RingtoneSettingManager::CommitSetting(int32_t toneId, const string &tonePath, int32_t settingType,
     int32_t toneType, int32_t sourceType)
 {
-    RINGTONE_INFO_LOG("toneId=%{public}d, tonePath=%{public}s, settingType=%{public}d, toneType=%{public}d,"
-        "sourceType=%{public}d", toneId, tonePath.c_str(), settingType, toneType, sourceType);
     auto ret = CommitSettingCompare(settingType, toneType, sourceType);
     if (ret != E_OK) {
         return ret;
@@ -299,26 +297,31 @@ int32_t RingtoneSettingManager::UpdateSettingsByPath(const string &tonePath, int
     string querySql = QUERY_SETTINGS_BY_PATH + "\"" + tonePath + "\"";
     auto ret = TravelQueryResultSet(querySql, [&](shared_ptr<RingtoneMetadata> &meta) -> bool {
         string updateSql = {};
-        bool result = true;
-        switch (settingType) {
-            case TONE_SETTING_TYPE_SHOT:
-                result = UpdateShotSetting(meta, toneType, sourceType) == E_OK;
-                break;
-            case TONE_SETTING_TYPE_RINGTONE:
-                result = UpdateRingtoneSetting(meta, toneType, sourceType) == E_OK;
-                break;
-            case TONE_SETTING_TYPE_NOTIFICATION:
-                result = UpdateNotificationSetting(meta, toneType, sourceType) == E_OK;
-                break;
-            case TONE_SETTING_TYPE_ALARM:
-                result = UpdateAlarmSetting(meta, toneType, sourceType) == E_OK;
-                break;
-            default:
-                RINGTONE_INFO_LOG("invalid tone-setting-type");
-                result =  false;
-                break;
+        if (settingType == TONE_SETTING_TYPE_SHOT) {
+            // update shot-tone settings
+            if (UpdateShotSetting(meta, toneType, sourceType) != E_OK) {
+                return false;
+            }
+        } else if (settingType == TONE_SETTING_TYPE_RINGTONE) {
+            // update ring-tone settings
+            if (UpdateRingtoneSetting(meta, toneType, sourceType) != E_OK) {
+                return false;
+            }
+        } else if (settingType == TONE_SETTING_TYPE_NOTIFICATION) {
+            // update notification-tone settings
+            if (UpdateNotificationSetting(meta, toneType, sourceType) != E_OK) {
+                return false;
+            }
+        } else if (settingType == TONE_SETTING_TYPE_ALARM) {
+            // update alarm-tone settings
+            if (UpdateAlarmSetting(meta, toneType, sourceType) != E_OK) {
+                return false;
+            }
+        } else {
+            RINGTONE_INFO_LOG("invalid tone-setting-type");
+            return false;
         }
-        return result;
+        return true;
     });
 
     return ret;
@@ -329,30 +332,25 @@ int32_t RingtoneSettingManager::UpdateSettingsWithToneId(int32_t settingType, in
     int32_t ret = E_OK;
 
     string updateSql = {};
-    switch (settingType) {
-        case TONE_SETTING_TYPE_SHOT:
-            // update shot-tone settings
-            updateSql = "UPDATE ToneFiles SET " + RINGTONE_COLUMN_SHOT_TONE_TYPE + " = " +
-                to_string(toneType) + " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(toneId);
-            break;
-        case TONE_SETTING_TYPE_RINGTONE:
-            // update ring-tone settings
-            updateSql = "UPDATE ToneFiles SET " + RINGTONE_COLUMN_RING_TONE_TYPE + " = " +
-                to_string(toneType) + " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(toneId);
-            break;
-        case TONE_SETTING_TYPE_NOTIFICATION:
-            // update notification-tone settings
-            updateSql = "UPDATE ToneFiles SET " + RINGTONE_COLUMN_NOTIFICATION_TONE_TYPE + " = " +
-                to_string(toneType) + " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(toneId);
-            break;
-        case TONE_SETTING_TYPE_ALARM:
-            // update alarm-tone settings
-            updateSql = "UPDATE ToneFiles SET " + RINGTONE_COLUMN_ALARM_TONE_TYPE + " = " +
-                to_string(toneType) + " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(toneId);
-            break;
-        default:
-            RINGTONE_INFO_LOG("invalid tone-setting-type");
-            return E_INVALID_ARGUMENTS;
+    if (settingType == TONE_SETTING_TYPE_SHOT) {
+        // update shot-tone settings
+        updateSql = "UPDATE ToneFiles SET " + RINGTONE_COLUMN_SHOT_TONE_TYPE + " = " +
+            to_string(toneType) + " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(toneId);
+    } else if (settingType == TONE_SETTING_TYPE_RINGTONE) {
+        // update ring-tone settings
+        updateSql = "UPDATE ToneFiles SET " + RINGTONE_COLUMN_RING_TONE_TYPE + " = " +
+            to_string(toneType) + " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(toneId);
+    } else if (settingType == TONE_SETTING_TYPE_NOTIFICATION) {
+        // update notification-tone settings
+        updateSql = "UPDATE ToneFiles SET " + RINGTONE_COLUMN_NOTIFICATION_TONE_TYPE + " = " +
+            to_string(toneType) + " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(toneId);
+    } else if (settingType == TONE_SETTING_TYPE_ALARM) {
+        // update alarm-tone settings
+        updateSql = "UPDATE ToneFiles SET " + RINGTONE_COLUMN_ALARM_TONE_TYPE + " = " +
+            to_string(toneType) + " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(toneId);
+    } else {
+        RINGTONE_INFO_LOG("invalid tone-setting-type");
+        return E_INVALID_ARGUMENTS;
     }
     if (!updateSql.empty()) {
         int32_t rdbRet = ringtoneRdb_->ExecuteSql(updateSql);

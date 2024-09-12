@@ -37,14 +37,12 @@ ohos_unittest("ringtone_data_extension_unittest") {
     "./src/ringtone_data_manager_test.cpp",
     "./src/ringtone_datashare_extension_test.cpp",
     "./src/ringtone_datashare_stub_impl_test.cpp",
-    "./src/ringtone_language_manager_test.cpp",
     "./src/ringtone_rdbstore_test.cpp",
     "./src/ringtone_subscriber_test.cpp",
   ]
 
   deps = [
     "${RINGTONE_ROOT_PATH}/services:ringtone_data_extension",
-    "${RINGTONE_ROOT_PATH}/services:ringtone_utils",
     "${RINGTONE_ROOT_PATH}/services/ringtone_helper:ringtone_data_helper",
   ]
 

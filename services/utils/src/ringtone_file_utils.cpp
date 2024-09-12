@@ -23,13 +23,11 @@
 #include <sstream>
 #include <sys/sendfile.h>
 #include <unistd.h>
-#include <iostream>
 
 #include "directory_ex.h"
 #include "ringtone_errno.h"
 #include "ringtone_log.h"
 #include "ringtone_type.h"
-#include "securec.h"
 
 namespace OHOS {
 namespace Media {
@@ -72,45 +70,12 @@ string RingtoneFileUtils::GetFileNameFromPath(const string &path)
 {
     string fileName = {};
     size_t found = path.rfind("/");
-    if (found != string::npos && (found + 1) < path.size()) {
+    if (found != std::string::npos && (found + 1) < path.size()) {
         fileName = path.substr(found + 1);
     } else {
         fileName = "";
     }
 
-    return fileName;
-}
-
-static string ParseFromUri(const string& path, const string& key)
-{
-    RINGTONE_INFO_LOG("parsing uri : %{public}s for key : %{public}s", path.c_str(), key.c_str());
-    auto keyLen = key.size();
-    auto found = path.find(key);
-    if (found == string::npos) {
-        RINGTONE_INFO_LOG("there is no such field in uri: %{public}s", path.c_str());
-        return "";
-    }
-    string sub = path.substr(found + keyLen + 1);
-    found = sub.find("&");
-    if (found != string::npos) {
-        sub = sub.substr(0, found);
-    }
-    sub = RingtoneFileUtils::UrlDecode(sub);
-    RINGTONE_INFO_LOG("parsing uri : %{public}s -> key=%{public}s, value=%{public}s",
-        path.c_str(), key.c_str(), sub.c_str());
-    return sub;
-}
-
-string RingtoneFileUtils::GetFileNameFromPathOrUri(const string &path)
-{
-    string fileName = {};
-    size_t found = path.find("content://");
-    if (found == 0) {
-        fileName = ParseFromUri(path, "title"); // Pay attention! It's actually "title".
-    } else {
-        fileName = GetFileNameFromPath(path);
-    }
-    RINGTONE_INFO_LOG("%{public}s -> %{public}s", path.c_str(), fileName.c_str());
     return fileName;
 }
 
@@ -120,8 +85,8 @@ string RingtoneFileUtils::GetBaseNameFromPath(const string &path)
     size_t foundDot = path.rfind(".");
 
     string baseName = {};
-    found = (found == string::npos ? 0 : found);
-    if ((foundDot > found) && (foundDot != string::npos)) {
+    found = (found == std::string::npos ? 0 : found);
+    if ((foundDot > found) && (foundDot != std::string::npos)) {
         baseName = path.substr(found + 1, foundDot - found - 1);
     } else {
         baseName = "";
@@ -373,7 +338,7 @@ int64_t RingtoneFileUtils::Timespec2Millisecond(const struct timespec &time)
     return time.tv_sec * MSEC_TO_SEC + time.tv_nsec / MSEC_TO_NSEC;
 }
 
-bool RingtoneFileUtils::StartsWith(const string &str, const string &prefix)
+bool RingtoneFileUtils::StartsWith(const std::string &str, const std::string &prefix)
 {
     return str.compare(0, prefix.size(), prefix) == 0;
 }
@@ -404,28 +369,6 @@ string RingtoneFileUtils::StrCreateTimeByMilliseconds(const string &format, int6
     }
     (void)strftime(strTime, sizeof(strTime), format.c_str(), tm);
     return strTime;
-}
-
-static const int URL_DECODE_DOUBLE = 2;
-string RingtoneFileUtils::UrlDecode(const string &src)
-{
-    string ret;
-    char ch;
-    int tmpNum;
-    for (int i = 0; i < src.length(); i++) {
-        if (src[i]=='%') {
-            if (sscanf_s(src.substr(i + 1, URL_DECODE_DOUBLE).c_str(), "%x", &tmpNum) == -1) {
-                RINGTONE_ERR_LOG("Not a valid url: %{private}s", src.c_str());
-                return src;
-            }
-            ch = static_cast<char>(tmpNum);
-            ret += ch;
-            i = i + URL_DECODE_DOUBLE;
-        } else {
-            ret += src[i];
-        }
-    }
-    return ret;
 }
 } // namespace Media
 } // namespace OHOS

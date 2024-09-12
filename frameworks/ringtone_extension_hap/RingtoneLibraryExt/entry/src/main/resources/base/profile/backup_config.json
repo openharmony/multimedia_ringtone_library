@@ -1,11 +1,6 @@
 {
 	"allowToBackupRestore": true,
-	"extraInfo" : {
-        "supportScene": [
-            "next2next",
-            "hmos2next"
-        ]
-    },
+	"supportScene": "next2next, hmos2next",
 	"includes": [
 		"/data/storage/el2/database/rdb/",
 		"/storage/media/local/files/Ringtone/"

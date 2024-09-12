@@ -16,7 +16,7 @@
 #ifndef OHOS_RINGTONE_DFX_MANAGER_H
 #define OHOS_RINGTONE_DFX_MANAGER_H
 
-#include "fa_ability_context.h"
+#include "ability_context.h"
 #include "dfx_reporter.h"
 #include "ringtone_type.h"
 

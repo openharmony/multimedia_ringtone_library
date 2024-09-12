@@ -26,7 +26,7 @@ using namespace testing::ext;
 
 namespace OHOS {
 namespace Media {
-const std::string STORAGE_MEDIA_DIR = "/storage/cloud/files/";
+const std::string ROOT_MEDIA_DIR = "/storage/cloud/files/";
 const string DEFAULT_STR = "";
 
 void RingtonePrivacyManagerTest::SetUpTestCase() {}
@@ -90,7 +90,7 @@ HWTEST_F(RingtonePrivacyManagerTest, ringtonePrivacyManager_Open_test_006, TestS
 HWTEST_F(RingtonePrivacyManagerTest, ringtonePrivacyManager_Open_test_007, TestSize.Level0)
 {
     const string mode = "w";
-    RingtonePrivacyManager ringtonePrivacyManager(STORAGE_MEDIA_DIR, mode);
+    RingtonePrivacyManager ringtonePrivacyManager(ROOT_MEDIA_DIR, mode);
     int32_t ret = ringtonePrivacyManager.Open();
     EXPECT_EQ(ret, E_INVALID_PATH);
 }

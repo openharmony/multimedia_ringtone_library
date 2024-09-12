@@ -570,12 +570,6 @@ HWTEST_F(RingtoneDataManagerUnitTest, dataManager_GetOwner_Test_001, TestSize.Le
     EXPECT_NE(dataManager, nullptr);
     shared_ptr<RingtoneDataShareExtension> datashareExternsion =  nullptr;
     dataManager->SetOwner(datashareExternsion);
-    auto stageContext = std::make_shared<AbilityRuntime::ContextImpl>();
-    auto abilityContextImpl = std::make_shared<OHOS::AbilityRuntime::AbilityContextImpl>();
-    abilityContextImpl->SetStageContext(stageContext);
-    auto result = RingtoneDataManager::GetInstance()->Init(abilityContextImpl);
-    EXPECT_EQ(result, E_OK);
-    dataManager->ClearRingtoneDataMgr();
     auto ret = dataManager->GetOwner();
     EXPECT_EQ(ret, nullptr);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Huawei Device Co., Ltd.
+ * Copyright (C) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -38,6 +38,19 @@ public:
         const std::shared_ptr<NativeRdb::RdbStore> &rdbStore, const std::string &tableName);
 };
 
+class RingtoneRdbCallback : public NativeRdb::RdbOpenCallback {
+public:
+    virtual int32_t OnCreate(NativeRdb::RdbStore &rdb) override
+    {
+        return 0;
+    }
+
+    virtual int32_t OnUpgrade(NativeRdb::RdbStore &rdb, int32_t oldVersion,
+        int32_t newVersion) override
+    {
+        return 0;
+    }
+};
 } // namespace Media
 } // namespace OHOS
 
