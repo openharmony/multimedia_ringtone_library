@@ -24,6 +24,7 @@
 #include "ringtone_restore_base.h"
 #include "ringtone_restore_type.h"
 #include "medialibrary_db_const.h"
+#include "userfilemgr_uri.h"
 
 namespace OHOS {
 namespace Media {
