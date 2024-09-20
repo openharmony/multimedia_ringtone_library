@@ -491,5 +491,16 @@ int32_t RingtoneSettingManager::TravelQueryResultSet(const string &querySql,
     resultSet->Close();
     return E_OK;
 }
+
+int32_t RingtoneSettingManager::Update(int &changedRows, const NativeRdb::ValuesBucket &values,
+    const NativeRdb::AbsRdbPredicates &predicates)
+{
+    if (ringtoneRdb_ == nullptr) {
+        RINGTONE_ERR_LOG("ringtone rdb_ is nullptr");
+        return E_DB_FAIL;
+    }
+    return ringtoneRdb_->Update(changedRows, values, predicates);
+}
+
 } // namespace Media
 } // namespace OHOS

@@ -23,6 +23,9 @@
 #include "ringtone_type.h"
 #include "ringtone_scanner_db.h"
 #include "ringtone_setting_manager.h"
+#include "rdb_helper.h"
+#include "result_set.h"
+#include "ringtone_utils.h"
 
 namespace OHOS {
 namespace Media {
@@ -171,6 +174,32 @@ void RingtoneDefaultSetting::Update()
         settingMgr_->FlushSettings();
     } else {
         RINGTONE_ERR_LOG("ringtone setting mgr is nullptr");
+    }
+    UpdateDefaultSystemTone();
+}
+
+void RingtoneDefaultSetting::UpdateDefaultSystemTone()
+{
+    RINGTONE_INFO_LOG("setting system tone begin");
+    auto infos = RingtoneUtils::GetDefaultSystemtoneInfo();
+    for (auto info : infos) {
+        const string querySql = "SELECT tone_id FROM ToneFiles WHERE display_name = "s + "\"" + info.second + "\"";
+        int32_t tone_id = 0;
+        settingMgr_->TravelQueryResultSet(querySql, [&](shared_ptr<RingtoneMetadata> &meta) -> bool {
+            tone_id = meta->GetToneId();
+            return true;
+        });
+
+        NativeRdb::ValuesBucket values;
+        values.PutString(PRELOAD_CONFIG_COLUMN_DISPLAY_NAME, info.second);
+        values.PutInt(PRELOAD_CONFIG_COLUMN_TONE_ID, tone_id);
+        NativeRdb::AbsRdbPredicates absRdbPredicates(PRELOAD_CONFIG_TABLE);
+        absRdbPredicates.EqualTo(PRELOAD_CONFIG_COLUMN_RING_TONE_TYPE, std::to_string(info.first));
+        int32_t changedRows = 0;
+        int32_t result = settingMgr_->Update(changedRows, values, absRdbPredicates);
+        if (result != E_OK || changedRows <= 0) {
+            RINGTONE_ERR_LOG("Update operation failed. Result %{public}d. Updated %{public}d", result, changedRows);
+        }
     }
 }
 

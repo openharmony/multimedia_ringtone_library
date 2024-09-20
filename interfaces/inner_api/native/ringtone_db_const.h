@@ -58,11 +58,12 @@ const std::string RINGTONE_LIBRARY_DB_PATH = "/data/storage/el2/database";
 const std::string RINGTONE_LIBRARY_DB_NAME = "ringtone_library.db";
 
 // ringtone db version
-const int32_t RINGTONE_RDB_VERSION = 4;
+const int32_t RINGTONE_RDB_VERSION = 5;
 enum {
     VERSION_ADD_DISPLAY_LANGUAGE_COLUMN = 2,
     VERSION_ADD_VIBRATE_TABLE,
     VERSION_UPDATE_MIME_TYPE,
+    VERSION_ADD_PRELOAD_CONF_TABLE
 };
 
 // ringtone table name
@@ -118,6 +119,15 @@ const std::string VIBRATE_COLUMN_DATE_ADDED                     = "date_added";
 const std::string VIBRATE_COLUMN_DATE_MODIFIED                  = "date_modified";
 const std::string VIBRATE_COLUMN_DATE_TAKEN                     = "date_taken";
 const std::string VIBRATE_COLUMN_PLAY_MODE                      = "play_mode";
+
+// preload config table name
+const std::string PRELOAD_CONFIG_TABLE                          = "PreloadConfig";
+
+// preload config column name
+const std::string PRELOAD_CONFIG_COLUMN_RING_TONE_TYPE          = "ring_tone_type";
+const std::string PRELOAD_CONFIG_COLUMN_TONE_ID                 = "tone_id";
+const std::string PRELOAD_CONFIG_COLUMN_DISPLAY_NAME            = "display_name";
+
 } // namespace Media
 } // namespace OHOS
 

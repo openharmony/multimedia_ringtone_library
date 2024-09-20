@@ -23,6 +23,7 @@
 #include "ringtone_db_const.h"
 #include "ringtone_file_utils.h"
 #include "ringtone_mimetype_utils.h"
+#include "ringtone_utils.h"
 #include "result_set_utils.h"
 
 namespace OHOS {
@@ -84,12 +85,21 @@ const std::string CREATE_VIBRATE_TABLE = "CREATE TABLE IF NOT EXISTS " + VIBRATE
     VIBRATE_COLUMN_DATE_TAKEN                     + " BIGINT   DEFAULT 0, " +
     VIBRATE_COLUMN_PLAY_MODE                      + " INT      DEFAULT 0  " + ")";
 
+const std::string CREATE_PRELOAD_CONF_TABLE = "CREATE TABLE IF NOT EXISTS " + PRELOAD_CONFIG_TABLE + "(" +
+    PRELOAD_CONFIG_COLUMN_RING_TONE_TYPE          + " INTEGER  PRIMARY KEY," +
+    PRELOAD_CONFIG_COLUMN_TONE_ID                 + " INTEGER             ," +
+    PRELOAD_CONFIG_COLUMN_DISPLAY_NAME            + " TEXT                 " + ")";
+
+const std::string INIT_PRELOAD_CONF_TABLE = "INSERT OR IGNORE INTO " + PRELOAD_CONFIG_TABLE + " (" +
+    PRELOAD_CONFIG_COLUMN_RING_TONE_TYPE + ") VALUES (1), (2), (3), (4), (5), (6);";
 
 static const vector<string> g_initSqls = {
     CREATE_RINGTONE_TABLE,
     CREATE_VIBRATE_TABLE,
     CREATE_SIMCARD_SETTING_TABLE,
     INIT_SIMCARD_SETTING_TABLE,
+    CREATE_PRELOAD_CONF_TABLE,
+    INIT_PRELOAD_CONF_TABLE,
 };
 
 RingtoneDataCallBack::RingtoneDataCallBack(void)
@@ -176,7 +186,7 @@ static void UpdateMimeType(NativeRdb::RdbStore &store)
         int32_t mime = RingtoneMimeTypeUtils::GetMediaTypeFromMimeType(mimeType);
         RINGTONE_INFO_LOG("extension: %{public}s, mimeType: %{public}s, toneid: %{public}d mime: %{public}d",
             extension.c_str(), mimeType.c_str(), toneid, mime);
- 
+
         NativeRdb::ValuesBucket values;
         values.PutString(RINGTONE_COLUMN_MIME_TYPE, mimeType);
         values.PutInt(RINGTONE_COLUMN_MEDIA_TYPE, mime);
@@ -191,6 +201,42 @@ static void UpdateMimeType(NativeRdb::RdbStore &store)
     resultSet->Close();
 }
 
+static void AddPreloadConfTable(NativeRdb::RdbStore &store)
+{
+    const vector<string> sqls = {
+        CREATE_PRELOAD_CONF_TABLE,
+        INIT_PRELOAD_CONF_TABLE
+    };
+    RINGTONE_INFO_LOG("Add preload config table");
+    ExecSqls(sqls, store);
+}
+
+static void UpdateDefaultSystemTone(NativeRdb::RdbStore &store)
+{
+    RINGTONE_INFO_LOG("setting system tone begin");
+    auto infos = RingtoneUtils::GetDefaultSystemtoneInfo();
+    for (auto info : infos) {
+        const string querySql = "SELECT tone_id FROM ToneFiles WHERE display_name = "s + "\"" + info.second + "\"";
+        auto resultSet = store.QuerySql(querySql);
+        if (resultSet == nullptr || resultSet->GoToFirstRow() != NativeRdb::E_OK) {
+            RINGTONE_ERR_LOG("Update operation failed. no resultSet");
+            continue;
+        }
+
+        int32_t tone_id = GetInt32Val("tone_id", resultSet);
+        NativeRdb::ValuesBucket values;
+        values.PutString(PRELOAD_CONFIG_COLUMN_DISPLAY_NAME, info.second);
+        values.PutInt(PRELOAD_CONFIG_COLUMN_TONE_ID, tone_id);
+        NativeRdb::AbsRdbPredicates absRdbPredicates(PRELOAD_CONFIG_TABLE);
+        absRdbPredicates.EqualTo(PRELOAD_CONFIG_COLUMN_RING_TONE_TYPE, std::to_string(info.first));
+        int32_t changedRows = 0;
+        int32_t result = store.Update(changedRows, values, absRdbPredicates);
+        if (result != E_OK || changedRows <= 0) {
+            RINGTONE_ERR_LOG("Update operation failed. Result %{public}d. Updated %{public}d", result, changedRows);
+        }
+    }
+}
+
 static void UpgradeExtension(NativeRdb::RdbStore &store, int32_t oldVersion)
 {
     if (oldVersion < VERSION_ADD_DISPLAY_LANGUAGE_COLUMN) {
@@ -201,6 +247,10 @@ static void UpgradeExtension(NativeRdb::RdbStore &store, int32_t oldVersion)
     }
     if (oldVersion < VERSION_UPDATE_MIME_TYPE) {
         UpdateMimeType(store);
+    }
+    if (oldVersion < VERSION_ADD_PRELOAD_CONF_TABLE) {
+        AddPreloadConfTable(store);
+        UpdateDefaultSystemTone(store);
     }
 }
 
