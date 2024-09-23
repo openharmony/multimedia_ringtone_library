@@ -29,6 +29,7 @@
 #include "ringtone_db_const.h"
 #include "ringtone_errno.h"
 #include "ringtone_log.h"
+#include "ringtone_mimetype_utils.h"
 #include "ringtone_type.h"
 #include "vibrate_type.h"
 #include "securec.h"
@@ -40,13 +41,48 @@ static const int32_t OPEN_FDS = 128;
 static const mode_t MODE_RWX_USR_GRP = 02771;
 static const mode_t MODE_RW_USR = 0644;
 const vector<string> EXIF_SUPPORTED_EXTENSION = {
+    RINGTONE_CONTAINER_TYPE_3GA,
+    RINGTONE_CONTAINER_TYPE_AC3,
+    RINGTONE_CONTAINER_TYPE_A52,
+    RINGTONE_CONTAINER_TYPE_AMR,
+    RINGTONE_CONTAINER_TYPE_IMY,
+    RINGTONE_CONTAINER_TYPE_RTTTL,
+    RINGTONE_CONTAINER_TYPE_XMF,
+    RINGTONE_CONTAINER_TYPE_RTX,
+    RINGTONE_CONTAINER_TYPE_MXMF,
+    RINGTONE_CONTAINER_TYPE_M4A,
+    RINGTONE_CONTAINER_TYPE_M4B,
+    RINGTONE_CONTAINER_TYPE_M4P,
+    RINGTONE_CONTAINER_TYPE_F4A,
+    RINGTONE_CONTAINER_TYPE_F4B,
+    RINGTONE_CONTAINER_TYPE_F4P,
+    RINGTONE_CONTAINER_TYPE_M3U,
+    RINGTONE_CONTAINER_TYPE_SMF,
+    RINGTONE_CONTAINER_TYPE_MKA,
+    RINGTONE_CONTAINER_TYPE_RA,
     RINGTONE_CONTAINER_TYPE_MP3,
+    RINGTONE_CONTAINER_TYPE_AAC,
+    RINGTONE_CONTAINER_TYPE_ADTS,
+    RINGTONE_CONTAINER_TYPE_ADT,
+    RINGTONE_CONTAINER_TYPE_SND,
+    RINGTONE_CONTAINER_TYPE_FLAC,
+    RINGTONE_CONTAINER_TYPE_MP2,
+    RINGTONE_CONTAINER_TYPE_MP1,
+    RINGTONE_CONTAINER_TYPE_MPA,
+    RINGTONE_CONTAINER_TYPE_M4R,
+    RINGTONE_CONTAINER_TYPE_WAV,
     RINGTONE_CONTAINER_TYPE_OGG
 };
 
 static bool IsTargetExtension(const string &path)
 {
     const string ext = RingtoneFileUtils::GetExtensionFromPath(path);
+    std::string mimeType = RingtoneMimeTypeUtils::GetMimeTypeFromExtension(ext);
+    int32_t mime = RingtoneMimeTypeUtils::GetMediaTypeFromMimeType(mimeType);
+    if (mime == RINGTONE_MEDIA_TYPE_AUDIO) {
+        return true;
+    }
+    RINGTONE_ERR_LOG("MimeType error:%{public}s,%{public}s", ext.c_str(), mimeType.c_str());
     bool ret = find(EXIF_SUPPORTED_EXTENSION.begin(), EXIF_SUPPORTED_EXTENSION.end(), ext) !=
         EXIF_SUPPORTED_EXTENSION.end();
     if (!ret) {
