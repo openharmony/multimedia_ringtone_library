@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #define MLOG_TAG "RdbStore"
 
 #include "ringtone_rdbstore.h"
@@ -22,12 +23,18 @@
 #include "ringtone_errno.h"
 #include "ringtone_log.h"
 #include "ringtone_tracer.h"
+#include "ringtone_utils.h"
 #include "result_set_utils.h"
 #include "ringtone_rdb_callbacks.h"
+#include "dfx_const.h"
+#include "preferences_helper.h"
 
 namespace OHOS::Media {
 using namespace std;
 using namespace OHOS;
+
+const int CONTEXT_AREA_EL1 = 0;
+const int RDB_AREA_EL1 = 1;
 
 shared_ptr<NativeRdb::RdbStore> RingtoneRdbStore::rdbStore_;
 
@@ -56,19 +63,30 @@ RingtoneRdbStore::RingtoneRdbStore(const shared_ptr<OHOS::AbilityRuntime::Contex
         RINGTONE_ERR_LOG("Failed to get context");
         return;
     }
-    string databaseDir = context->GetDatabaseDir();
+
+    auto preArea = context->GetArea();
+    context->SwitchArea(CONTEXT_AREA_EL1);
+    context->GetPreferencesDir();
+    context->SwitchArea(preArea);
+
+    string databaseDir = RINGTONE_LIBRARY_DB_PATH_EL1;
     string name = RINGTONE_LIBRARY_DB_NAME;
     int32_t errCode = 0;
     string realPath = NativeRdb::RdbSqlUtils::GetDefaultDatabasePath(databaseDir, name, errCode);
     config_.SetName(move(name));
     config_.SetPath(move(realPath));
     config_.SetBundleName(context->GetBundleName());
-    config_.SetArea(context->GetArea());
+    config_.SetArea(RDB_AREA_EL1);
     config_.SetSecurityLevel(NativeRdb::SecurityLevel::S3);
 }
 
 int32_t RingtoneRdbStore::Init()
 {
+    auto ret = RingtoneUtils::ChecMoveDb();
+    if (ret == E_ERR) {
+        RINGTONE_ERR_LOG("check is failed");
+        return E_ERR;
+    }
     RINGTONE_INFO_LOG("Init rdb store");
     if (rdbStore_ != nullptr) {
         return E_OK;

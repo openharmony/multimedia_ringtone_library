@@ -7,7 +7,7 @@
         ]
     },
 	"includes": [
-		"/data/storage/el2/database/rdb/",
+		"/data/storage/el1/database/rdb/",
 		"/storage/media/local/files/Ringtone/"
 	],
 	"fullBackupOnly": true
