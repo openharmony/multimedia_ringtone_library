@@ -25,6 +25,10 @@ class RingtoneUtils {
 public:
     static std::string ReplaceAll(std::string str, const std::string &oldValue, const std::string &newValue);
     static std::map<int, std::string> GetDefaultSystemtoneInfo();
+    static int32_t ChecMoveDb();
+    static int32_t CheckNeedScanner(const std::string &xmlFilePath);
+    static bool MoveEL2DBToEL1DB();
+    static bool SetMoveEL2DBToEL1();
 };
 } // namespace Media
 } // namespace OHOS

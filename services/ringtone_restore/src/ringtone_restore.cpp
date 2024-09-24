@@ -34,7 +34,6 @@ namespace Media {
 using namespace std;
 static const int32_t QUERY_COUNT = 500;
 static const int32_t INVALID_QUERY_OFFSET = -1;
-static string RINGTONELIBRARY_DB_PATH = "/data/storage/el2/database";
 int32_t RingtoneRestore::Init(const std::string &backupPath)
 {
     RINGTONE_INFO_LOG("Init db start");
@@ -42,13 +41,16 @@ int32_t RingtoneRestore::Init(const std::string &backupPath)
         RINGTONE_ERR_LOG("error: backup path is null");
         return E_INVALID_ARGUMENTS;
     }
-    dbPath_ = backupPath + RINGTONELIBRARY_DB_PATH + "/rdb" + "/" + RINGTONE_LIBRARY_DB_NAME;
-    backupPath_ = backupPath;
-
+    dbPath_ = backupPath + RINGTONE_LIBRARY_DB_PATH_EL1 + "/rdb" + "/" + RINGTONE_LIBRARY_DB_NAME;
     if (!RingtoneFileUtils::IsFileExists(dbPath_)) {
         RINGTONE_ERR_LOG("ringtone db is not exist, path=%{public}s", dbPath_.c_str());
-        return E_FAIL;
+        dbPath_ = backupPath + RINGTONE_LIBRARY_DB_PATH + "/rdb" + "/" + RINGTONE_LIBRARY_DB_NAME;
+        if (!RingtoneFileUtils::IsFileExists(dbPath_)) {
+            RINGTONE_ERR_LOG("ringtone db is not exist, path=%{public}s", dbPath_.c_str());
+            return E_FAIL;
+        }
     }
+    backupPath_ = backupPath;
     if (RingtoneRestoreBase::Init(backupPath) != E_OK) {
         return E_FAIL;
     }

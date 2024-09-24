@@ -28,6 +28,7 @@
 #include "ringtone_db_const.h"
 #include "ringtone_errno.h"
 #include "ringtone_file_utils.h"
+#include "ringtone_utils.h"
 #include "ringtone_log.h"
 #include "ringtone_mimetype_utils.h"
 #include "ringtone_rdb_transaction.h"
@@ -62,9 +63,9 @@ int32_t RingtoneRestoreBase::Init(const string &backupPath)
     }
 
     int32_t errCode = 0;
-    string realPath = NativeRdb::RdbSqlUtils::GetDefaultDatabasePath(RINGTONE_LIBRARY_DB_PATH,
+    string realPath = NativeRdb::RdbSqlUtils::GetDefaultDatabasePath(RINGTONE_LIBRARY_DB_PATH_EL1,
         RINGTONE_LIBRARY_DB_NAME, errCode);
-    int32_t err = RingtoneRestoreDbUtils::InitDb(localRdb_, RINGTONE_LIBRARY_DB_NAME, realPath,
+    int32_t err = RingtoneRestoreDbUtils::InitDb(localRdb_, RINGTONE_LIBRARY_DB_PATH_EL1, realPath,
         RINGTONE_BUNDLE_NAME, true);
     if (err != E_OK) {
         RINGTONE_ERR_LOG("medialibrary rdb fail, err = %{public}d", err);
@@ -88,7 +89,7 @@ int32_t RingtoneRestoreBase::StartRestore()
         return errCode;
     }
     shared_ptr<NativePreferences::Preferences> prefs =
-        NativePreferences::PreferencesHelper::GetPreferences(DFX_COMMON_XML, errCode);
+        NativePreferences::PreferencesHelper::GetPreferences(COMMON_XML_EL1, errCode);
     if (!prefs) {
         RINGTONE_ERR_LOG("get preferences error: %{public}d", errCode);
         return E_FAIL;

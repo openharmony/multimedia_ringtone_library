@@ -53,6 +53,7 @@ const std::string ROOT_VIBRATE_PRELOAD_PATH_OVERSEA_PATH =
 
 // ringtone DB file path
 const std::string RINGTONE_LIBRARY_DB_PATH = "/data/storage/el2/database";
+const std::string RINGTONE_LIBRARY_DB_PATH_EL1 = "/data/storage/el1/database";
 
 // ringtone DB file name
 const std::string RINGTONE_LIBRARY_DB_NAME = "ringtone_library.db";

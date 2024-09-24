@@ -360,7 +360,7 @@ void RingtoneDataShareExtension::RingtoneScanner()
     // ringtone scan
     int32_t errCode;
     shared_ptr<NativePreferences::Preferences> prefs =
-        NativePreferences::PreferencesHelper::GetPreferences(DFX_COMMON_XML, errCode);
+        NativePreferences::PreferencesHelper::GetPreferences(COMMON_XML_EL1, errCode);
     if (!prefs) {
         RINGTONE_ERR_LOG("get preferences error: %{public}d", errCode);
         return;
