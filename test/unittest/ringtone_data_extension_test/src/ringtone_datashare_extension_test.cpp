@@ -73,8 +73,7 @@ HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_OnConnect_test_001, 
     shared_ptr<DataShare::RingtoneDataShareExtension> extension(mediaDataShare);
     sptr<DataShare::RingtoneDataShareStubImpl> remoteObject =
         new DataShare::RingtoneDataShareStubImpl(extension, env);
-    std::shared_ptr<AppExecFwk::AbilityLocalRecord> recordTwo =
-        std::make_shared<AppExecFwk::AbilityLocalRecord>(info, token);
+    auto recordTwo = std::make_shared<AppExecFwk::AbilityLocalRecord>(info, token, nullptr, 0);
     mediaDataShare->Init(recordTwo, application, handler, token);
     std::shared_ptr<AppExecFwk::OHOSApplication> applicationTwo = std::make_shared<AppExecFwk::OHOSApplication>();
     mediaDataShare->Init(recordTwo, applicationTwo, handler, token);
