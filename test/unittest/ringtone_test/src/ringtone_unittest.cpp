@@ -1078,7 +1078,9 @@ HWTEST_F(RingtoneUnitTest, medialib_GetVibrateSetting_test_001, TestSize.Level0)
         EXPECT_NE(results, nullptr);
         auto simcardSettingAsset = results->GetFirstObject();
         EXPECT_NE(simcardSettingAsset, nullptr);
-        EXPECT_EQ(simcardSettingAsset->GetVibrateMode(), newMode);
+        if (simcardSettingAsset != nullptr) {
+            EXPECT_EQ(simcardSettingAsset->GetVibrateMode(), newMode);
+        }
     }
 
     tracer.Finish();
