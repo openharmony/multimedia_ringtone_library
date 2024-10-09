@@ -15,6 +15,7 @@
 
 #include "ringtone_data_command.h"
 
+#include "rdb_utils.h"
 #include "ringtone_errno.h"
 #include "ringtone_log.h"
 
@@ -62,7 +63,7 @@ ValuesBucket &RingtoneDataCommand::GetValueBucket()
 AbsRdbPredicates *RingtoneDataCommand::GetAbsRdbPredicates()
 {
     if (absRdbPredicates_ == nullptr) {
-        absRdbPredicates_ = make_unique<AbsRdbPredicates>(tableName_);
+        absRdbPredicates_ = static_cast<unique_ptr<AbsRdbPredicates>>(make_unique<RdbPredicates>(tableName_));
     }
     return absRdbPredicates_.get();
 }

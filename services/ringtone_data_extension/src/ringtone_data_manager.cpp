@@ -278,6 +278,9 @@ shared_ptr<ResultSetBridge> RingtoneDataManager::Query(RingtoneDataCommand &cmd,
     cmd.GetAbsRdbPredicates()->SetWhereClause(rdbPredicate.GetWhereClause());
     cmd.GetAbsRdbPredicates()->SetWhereArgs(rdbPredicate.GetWhereArgs());
     cmd.GetAbsRdbPredicates()->SetOrder(rdbPredicate.GetOrder());
+    cmd.GetAbsRdbPredicates()->SetJoinConditions(rdbPredicate.GetJoinConditions());
+    cmd.GetAbsRdbPredicates()->SetJoinTableNames(rdbPredicate.GetJoinTableNames());
+    cmd.GetAbsRdbPredicates()->SetJoinTypes(rdbPredicate.GetJoinTypes());
 
     auto absResultSet = g_uniStore->Query(cmd, columns);
 
