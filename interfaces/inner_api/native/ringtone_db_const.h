@@ -32,6 +32,8 @@ const std::string RINGTONE_PATH_URI         = RINGTONE_URI + "/" + RINGTONE_URI_
 const std::string VIBRATE_URI_PATH          = "vibrate";
 const std::string VIBRATE_PATH_URI          = RINGTONE_URI + "/" + VIBRATE_URI_PATH;
 
+const std::string RINGTONE_URI_PROXY_STRING = "?Proxy";
+
 // ringtone user customized tones file location
 const std::string RINGTONE_CUSTOMIZED_BASE_PATH          = "/storage/media/local/files";
 const std::string RINGTONE_CUSTOMIZED_ALARM_PATH         = RINGTONE_CUSTOMIZED_BASE_PATH + "/Ringtone/alarms";

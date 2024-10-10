@@ -27,17 +27,22 @@
 #include "ringtone_scanner_utils.h"
 #include "ringtone_tracer.h"
 #include "ringtone_type.h"
+#include "accesstoken_kit.h"
+#include "hap_token_info.h"
+#include "token_setproc.h"
+#include "ringtone_proxy_uri.h"
 
 using namespace std;
 using namespace OHOS;
 using namespace testing::ext;
 using namespace OHOS::DataShare;
 using namespace OHOS::AppExecFwk;
-
+using namespace OHOS::Security::AccessToken;
 namespace OHOS {
 namespace Media {
 constexpr int STORAGE_MANAGER_ID = 5003;
 std::shared_ptr<DataShare::DataShareHelper> g_dataShareHelper = nullptr;
+std::shared_ptr<DataShare::DataShareHelper> g_dataShareHelperProxy = nullptr;
 const int S2MS = 1000;
 const int MS2NS = 1000000;
 const string SELECTION = RINGTONE_COLUMN_TONE_ID + " <> ? LIMIT 1, 3 ";
@@ -51,6 +56,27 @@ const string TITLE_UPDATE = "run";
 const string ZERO = "0";
 const string SLASH_STR = "/";
 const string MTP_FORMAT_JSON = ".json"; // OGG audio files
+
+std::vector<PermissionStateFull> GetPermissionStateFulls()
+{
+    std::vector<PermissionStateFull> permissionStateFulls = {
+        {
+            .permissionName = "ohos.permission.WRITE_RINGTONE",
+            .isGeneral = true,
+            .resDeviceID = { "local" },
+            .grantStatus = { PermissionState::PERMISSION_GRANTED },
+            .grantFlags = { 1 }
+        },
+        {
+            .permissionName = "ohos.permission.READ_AUDIO",
+            .isGeneral = true,
+            .resDeviceID = { "local" },
+            .grantStatus = { PermissionState::PERMISSION_GRANTED },
+            .grantFlags = { 1 }
+        }
+    };
+    return permissionStateFulls;
+}
 
 void RingtoneUnitTest::SetUpTestCase()
 {
@@ -69,6 +95,40 @@ void RingtoneUnitTest::SetUpTestCase()
 
     g_dataShareHelper = DataShare::DataShareHelper::Creator(remoteObj, RINGTONE_URI);
     ASSERT_TRUE(g_dataShareHelper != nullptr);
+
+    HapInfoParams info = {
+        .userID = 100,
+        .bundleName = "ohos.datashareclienttest.demo",
+        .instIndex = 0,
+        .appIDDesc = "ohos.datashareclienttest.demo"
+    };
+
+    auto permStateList = GetPermissionStateFulls();
+    HapPolicyParams policy = {
+        .apl = APL_NORMAL,
+        .domain = "test.domain",
+        .permList = {
+            {
+                .permissionName = "ohos.permission.test",
+                .bundleName = "ohos.datashareclienttest.demo",
+                .grantMode = 1,
+                .availableLevel = APL_NORMAL,
+                .label = "label",
+                .labelId = 1,
+                .description = "ohos.datashareclienttest.demo",
+                .descriptionId = 1
+            }
+        },
+        .permStateList = permStateList
+    };
+    AccessTokenKit::AllocHapToken(info, policy);
+    auto testTokenId = Security::AccessToken::AccessTokenKit::GetHapTokenIDEx(
+        info.userID, info.bundleName, info.instIndex);
+    SetSelfTokenID(testTokenId.tokenIDEx);
+
+    CreateOptions options;
+    options.enabled_ = true;
+    g_dataShareHelperProxy = DataShare::DataShareHelper::Creator(RINGTONE_LIBRARY_PROXY_URI, options);
 }
 
 void RingtoneUnitTest::TearDownTestCase()
@@ -1107,6 +1167,36 @@ HWTEST_F(RingtoneUnitTest, medialib_deleteVibrateSetting_test_001, TestSize.Leve
     auto ret = g_dataShareHelper->Delete(uri, predicates);
     GTEST_LOG_(INFO)<< "GetVibrateSetting -> Delete result=" << ret;
     EXPECT_EQ((ret > 0), true);
+}
+
+HWTEST_F(RingtoneUnitTest, medialib_silentAccessQuery_test_001, TestSize.Level0)
+{
+    Uri uri(RINGTONE_LIBRARY_PROXY_DATA_URI_SIMCARD_SETTING);
+
+    DataSharePredicates predicates;
+    vector<string> selectionArgs = {std::to_string(RING_TONE_TYPE_SIM_CARD_1)};
+    const std::string selection = SIMCARD_SETTING_COLUMN_MODE + " = ? ";
+    predicates.SetWhereClause(selection);
+    predicates.SetWhereArgs(selectionArgs);
+
+    vector<string> columns {
+        SIMCARD_SETTING_COLUMN_MODE,
+        SIMCARD_SETTING_COLUMN_TONE_FILE,
+        SIMCARD_SETTING_COLUMN_VIBRATE_FILE,
+        SIMCARD_SETTING_COLUMN_VIBRATE_MODE
+    };
+
+    DatashareBusinessError businessError;
+    auto resultSet = g_dataShareHelperProxy->Query(uri, predicates, columns, &businessError);
+    auto errCode = businessError.GetCode();
+    GTEST_LOG_(INFO)<< "g_dataShareHelperProxy->Query(uri errCode=" << errCode;
+    EXPECT_NE(resultSet, nullptr);
+    if (resultSet != nullptr) {
+        auto results = make_unique<RingtoneFetchResult<SimcardSettingAsset>>(move(resultSet));
+        EXPECT_NE(results, nullptr);
+        auto simcardSettingAsset = results->GetFirstObject();
+        EXPECT_NE(simcardSettingAsset, nullptr);
+    }
 }
 } // namespace Media
 } // namespace OHOS

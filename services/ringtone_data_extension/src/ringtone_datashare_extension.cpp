@@ -160,6 +160,15 @@ static int32_t GetValidUriTab(const Uri &uri, string &tab)
 {
     string uriStr = uri.ToString();
 
+    auto proxyStringPos = uriStr.find(RINGTONE_URI_PROXY_STRING);
+    auto lastSlash = uriStr.find_last_of('/');
+    if (lastSlash != std::string::npos &&
+        proxyStringPos != std::string::npos) {
+        auto tablePos = lastSlash + 1;
+        tab = uriStr.substr(tablePos, proxyStringPos - tablePos);
+        return Media::E_OK;
+    }
+
     for (const auto &pair : VALID_URI_TO_TABLE) {
         if (uriStr.find(pair.first) != std::string::npos) {
             tab = pair.second;

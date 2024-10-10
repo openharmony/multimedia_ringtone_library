@@ -19,6 +19,7 @@
 #include <queue>
 
 #include "ringtone_scanner.h"
+#include <condition_variable>
 
 namespace OHOS {
 namespace Media {
@@ -41,7 +42,8 @@ private:
     std::mutex queueMtx_;
 
     std::shared_ptr<bool> stopFlag_ = std::make_shared<bool>(false);
-    int32_t sleepTime_ = 200;
+    std::condition_variable stopCond;
+    bool isScanFinished = true;
 };
 } // namespace Media
 } // namespace OHOS

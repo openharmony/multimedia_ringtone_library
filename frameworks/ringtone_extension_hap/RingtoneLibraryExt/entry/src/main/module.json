@@ -75,6 +75,36 @@
           "when": "inuse"
         }
       }
+    ],
+    "proxyDatas": [
+      {
+        "uri":"datashareproxy://com.ohos.ringtonelibrary.ringtonelibrarydata/entry/ringtone_library/SimCardSetting",
+        "metadata": {
+          "name": "dataProperties",
+          "resource": "$profile:rdb_meta_simcard_setting"
+        }
+      },
+      {
+        "uri":"datashareproxy://com.ohos.ringtonelibrary.ringtonelibrarydata/entry/ringtone_library/ToneFiles",
+        "metadata": {
+          "name": "dataProperties",
+          "resource": "$profile:rdb_meta_tone_files"
+        }
+      },
+      {
+        "uri":"datashareproxy://com.ohos.ringtonelibrary.ringtonelibrarydata/entry/ringtone_library/VibrateFiles",
+        "metadata": {
+          "name": "dataProperties",
+          "resource": "$profile:rdb_meta_vibrate_files"
+        }
+      },
+      {
+        "uri":"datashareproxy://com.ohos.ringtonelibrary.ringtonelibrarydata/entry/ringtone_library/PreloadConfig",
+        "metadata": {
+          "name": "dataProperties",
+          "resource": "$profile:rdb_meta_preload_config"
+        }
+      }
     ]
   }
 }

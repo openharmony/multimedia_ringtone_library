@@ -61,7 +61,8 @@
                   "header_base": "//foundation/multimedia/ringtone_library/interfaces/inner_api/native",
                   "header_files": [
                     "ringtone_type.h",
-                    "ringtone_db_const.h"
+                    "ringtone_db_const.h",
+                    "ringtone_proxy_uri.h"
                   ]
                 },
                 "name": "//foundation/multimedia/ringtone_library/services:ringtone_data_extension"

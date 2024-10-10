@@ -166,7 +166,7 @@ bool RingtoneUtils::MoveEL2DBToEL1DB()
     RINGTONE_ERR_LOG("rdb Backup, realPath = %{public}s", realPath.c_str());
     auto ret = rdbStore->Backup(realPath);
     RINGTONE_ERR_LOG("rdb Backup, ret = %{public}d", ret);
-    return true;
+    return ret != E_OK ? false : true;
 }
 
 bool RingtoneUtils::SetMoveEL2DBToEL1()
