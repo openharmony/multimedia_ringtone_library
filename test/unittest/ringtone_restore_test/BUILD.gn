@@ -44,7 +44,6 @@ ohos_unittest("ringtone_restore_unittest") {
     "${RINGTONE_RESTORE_PATH}/src/ringtone_restore_factory.cpp",
     "${RINGTONE_RESTORE_PATH}/src/ringtone_restore_napi.cpp",
     "../ringtone_unittest_utils/src/ringtone_unittest_utils.cpp",
-    "./src/ringtone_restore_test.cpp",
     "./src/ringtone_source.cpp",
   ]
 
