@@ -15,7 +15,7 @@
 
 #include "ringtone_metadata_test.h"
 
-#include<memory>
+#include <memory>
 
 using namespace std;
 using namespace OHOS;

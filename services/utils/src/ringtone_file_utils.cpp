@@ -23,11 +23,15 @@
 #include <sstream>
 #include <sys/sendfile.h>
 #include <unistd.h>
+#include <iostream>
 
 #include "directory_ex.h"
+#include "ringtone_db_const.h"
 #include "ringtone_errno.h"
 #include "ringtone_log.h"
+#include "ringtone_mimetype_utils.h"
 #include "ringtone_type.h"
+#include "securec.h"
 
 namespace OHOS {
 namespace Media {
@@ -36,13 +40,48 @@ static const int32_t OPEN_FDS = 128;
 static const mode_t MODE_RWX_USR_GRP = 02771;
 static const mode_t MODE_RW_USR = 0644;
 const vector<string> EXIF_SUPPORTED_EXTENSION = {
+    RINGTONE_CONTAINER_TYPE_3GA,
+    RINGTONE_CONTAINER_TYPE_AC3,
+    RINGTONE_CONTAINER_TYPE_A52,
+    RINGTONE_CONTAINER_TYPE_AMR,
+    RINGTONE_CONTAINER_TYPE_IMY,
+    RINGTONE_CONTAINER_TYPE_RTTTL,
+    RINGTONE_CONTAINER_TYPE_XMF,
+    RINGTONE_CONTAINER_TYPE_RTX,
+    RINGTONE_CONTAINER_TYPE_MXMF,
+    RINGTONE_CONTAINER_TYPE_M4A,
+    RINGTONE_CONTAINER_TYPE_M4B,
+    RINGTONE_CONTAINER_TYPE_M4P,
+    RINGTONE_CONTAINER_TYPE_F4A,
+    RINGTONE_CONTAINER_TYPE_F4B,
+    RINGTONE_CONTAINER_TYPE_F4P,
+    RINGTONE_CONTAINER_TYPE_M3U,
+    RINGTONE_CONTAINER_TYPE_SMF,
+    RINGTONE_CONTAINER_TYPE_MKA,
+    RINGTONE_CONTAINER_TYPE_RA,
     RINGTONE_CONTAINER_TYPE_MP3,
+    RINGTONE_CONTAINER_TYPE_AAC,
+    RINGTONE_CONTAINER_TYPE_ADTS,
+    RINGTONE_CONTAINER_TYPE_ADT,
+    RINGTONE_CONTAINER_TYPE_SND,
+    RINGTONE_CONTAINER_TYPE_FLAC,
+    RINGTONE_CONTAINER_TYPE_MP2,
+    RINGTONE_CONTAINER_TYPE_MP1,
+    RINGTONE_CONTAINER_TYPE_MPA,
+    RINGTONE_CONTAINER_TYPE_M4R,
+    RINGTONE_CONTAINER_TYPE_WAV,
     RINGTONE_CONTAINER_TYPE_OGG
 };
 
 static bool IsTargetExtension(const string &path)
 {
     const string ext = RingtoneFileUtils::GetExtensionFromPath(path);
+    std::string mimeType = RingtoneMimeTypeUtils::GetMimeTypeFromExtension(ext);
+    int32_t mime = RingtoneMimeTypeUtils::GetMediaTypeFromMimeType(mimeType);
+    if (mime == RINGTONE_MEDIA_TYPE_AUDIO) {
+        return true;
+    }
+    RINGTONE_ERR_LOG("MimeType error:%{public}s,%{public}s", ext.c_str(), mimeType.c_str());
     bool ret = find(EXIF_SUPPORTED_EXTENSION.begin(), EXIF_SUPPORTED_EXTENSION.end(), ext) !=
         EXIF_SUPPORTED_EXTENSION.end();
     if (!ret) {
@@ -70,12 +109,47 @@ string RingtoneFileUtils::GetFileNameFromPath(const string &path)
 {
     string fileName = {};
     size_t found = path.rfind("/");
-    if (found != std::string::npos && (found + 1) < path.size()) {
+    if (found != string::npos && (found + 1) < path.size()) {
         fileName = path.substr(found + 1);
     } else {
         fileName = "";
     }
 
+    return fileName;
+}
+
+static string ParseFromUri(const string& path, const string& key)
+{
+    RINGTONE_INFO_LOG("parsing uri : %{public}s for key : %{public}s", path.c_str(), key.c_str());
+    auto keyLen = key.size();
+    auto found = path.find(key);
+    if (found == string::npos) {
+        RINGTONE_INFO_LOG("there is no such field in uri: %{public}s", path.c_str());
+        return "";
+    }
+    string sub = path.substr(found + keyLen + 1);
+    found = sub.find("&");
+    if (found != string::npos) {
+        sub = sub.substr(0, found);
+    }
+    sub = RingtoneFileUtils::UrlDecode(sub);
+    RINGTONE_INFO_LOG("parsing uri : %{public}s -> key=%{public}s, value=%{public}s",
+        path.c_str(), key.c_str(), sub.c_str());
+    return sub;
+}
+
+string RingtoneFileUtils::GetFileNameFromPathOrUri(const string &path, bool &isTitle)
+{
+    string fileName = {};
+    size_t found = path.find("content://");
+    if (found == 0) {
+        fileName = ParseFromUri(path, "title"); // Pay attention! It's actually "title".
+        isTitle = true;
+    } else {
+        fileName = GetFileNameFromPath(path);
+        isTitle = false;
+    }
+    RINGTONE_INFO_LOG("%{public}s -> %{public}s", path.c_str(), fileName.c_str());
     return fileName;
 }
 
@@ -85,8 +159,8 @@ string RingtoneFileUtils::GetBaseNameFromPath(const string &path)
     size_t foundDot = path.rfind(".");
 
     string baseName = {};
-    found = (found == std::string::npos ? 0 : found);
-    if ((foundDot > found) && (foundDot != std::string::npos)) {
+    found = (found == string::npos ? 0 : found);
+    if ((foundDot > found) && (foundDot != string::npos)) {
         baseName = path.substr(found + 1, foundDot - found - 1);
     } else {
         baseName = "";
@@ -338,7 +412,7 @@ int64_t RingtoneFileUtils::Timespec2Millisecond(const struct timespec &time)
     return time.tv_sec * MSEC_TO_SEC + time.tv_nsec / MSEC_TO_NSEC;
 }
 
-bool RingtoneFileUtils::StartsWith(const std::string &str, const std::string &prefix)
+bool RingtoneFileUtils::StartsWith(const string &str, const string &prefix)
 {
     return str.compare(0, prefix.size(), prefix) == 0;
 }
@@ -369,6 +443,180 @@ string RingtoneFileUtils::StrCreateTimeByMilliseconds(const string &format, int6
     }
     (void)strftime(strTime, sizeof(strTime), format.c_str(), tm);
     return strTime;
+}
+
+static const int URL_DECODE_DOUBLE = 2;
+string RingtoneFileUtils::UrlDecode(const string &src)
+{
+    string ret;
+    char ch;
+    int tmpNum;
+    for (size_t i = 0; i < src.length(); i++) {
+        if (src[i]=='%') {
+            if (sscanf_s(src.substr(i + 1, URL_DECODE_DOUBLE).c_str(), "%x", &tmpNum) == -1) {
+                RINGTONE_ERR_LOG("Not a valid url: %{private}s", src.c_str());
+                return src;
+            }
+            ch = static_cast<char>(tmpNum);
+            ret += ch;
+            i = i + URL_DECODE_DOUBLE;
+        } else {
+            ret += src[i];
+        }
+    }
+    return ret;
+}
+
+static int32_t MkdirRecursive(const string &path, size_t start)
+{
+    RINGTONE_DEBUG_LOG("start pos %{public}zu", start);
+    size_t end = path.find("/", start + 1);
+
+    string subDir = "";
+    if (end == std::string::npos) {
+        if (start + 1 == path.size()) {
+            RINGTONE_DEBUG_LOG("path size=%zu", path.size());
+        } else {
+            subDir = path.substr(start + 1, path.size() - start - 1);
+        }
+    } else {
+        subDir = path.substr(start + 1, end - start - 1);
+    }
+
+    if (subDir.size() == 0) {
+        return E_SUCCESS;
+    } else {
+        string real = path.substr(0, start + subDir.size() + 1);
+        mode_t mask = umask(0);
+        int result = mkdir(real.c_str(), MODE_RWX_USR_GRP);
+        if (result == 0) {
+            RINGTONE_INFO_LOG("mkdir %{public}s successfully", real.c_str());
+        } else {
+            RINGTONE_INFO_LOG("mkdir %{public}s failed, errno is %{public}d", real.c_str(), errno);
+        }
+        umask(mask);
+    }
+    if (end == std::string::npos) {
+        return E_SUCCESS;
+    }
+
+    return MkdirRecursive(path, end);
+}
+
+int32_t RingtoneFileUtils::CreatePreloadFolder(const string &path)
+{
+    RINGTONE_DEBUG_LOG("start");
+    if (access(path.c_str(), F_OK) == 0) {
+        RINGTONE_DEBUG_LOG("dir is existing");
+        return E_SUCCESS;
+    }
+
+    auto start = path.find(RINGTONE_CUSTOMIZED_BASE_PATH);
+    if (start == string::npos) {
+        RINGTONE_ERR_LOG("base dir is wrong");
+        return E_ERR;
+    }
+
+    return MkdirRecursive(path, start + RINGTONE_CUSTOMIZED_BASE_PATH.size());
+}
+
+void RingtoneFileUtils::CreateRingtoneDir()
+{
+    static const vector<string> userPreloadDirs = {
+        { RINGTONE_CUSTOMIZED_ALARM_PATH }, { RINGTONE_CUSTOMIZED_RINGTONE_PATH },
+        { RINGTONE_CUSTOMIZED_NOTIFICATIONS_PATH }
+    };
+
+    for (const auto &dir: userPreloadDirs) {
+        if (CreatePreloadFolder(dir) != E_SUCCESS) {
+            RINGTONE_INFO_LOG("scan failed on dir %{public}s", dir.c_str());
+            continue;
+        }
+    }
+}
+
+int32_t RingtoneFileUtils::MoveDirectory(const std::string &srcDir, const std::string &dstDir)
+{
+    if (access(srcDir.c_str(), F_OK) != 0) {
+        RINGTONE_ERR_LOG("access srcDir failed, errno is %{public}d", errno);
+        return E_FAIL;
+    }
+    if (access(dstDir.c_str(), F_OK) != 0) {
+        RINGTONE_ERR_LOG("access dstDir failed, errno is %{public}d", errno);
+        return E_FAIL;
+    }
+    int ret = E_SUCCESS;
+    for (const auto &dirEntry : std::filesystem::directory_iterator{ srcDir }) {
+        std::string srcFilePath = dirEntry.path();
+        std::string tmpFilePath = srcFilePath;
+        std::string dstFilePath = tmpFilePath.replace(0, srcDir.length(), dstDir);
+        if (!MoveFile(srcFilePath, dstFilePath)) {
+            RINGTONE_ERR_LOG("Move file failed, errno is %{public}d", errno);
+            ret = E_FAIL;
+        }
+    }
+    return ret;
+}
+
+void RingtoneFileUtils::AccessRingtoneDir()
+{
+    if (access(RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH.c_str(), F_OK) != 0) {
+        CreateRingtoneDir();
+        return;
+    }
+    struct stat fileStat;
+    if (stat(RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH.c_str(), &fileStat) != 0) {
+        RINGTONE_ERR_LOG("stat dir failed, errno is %{public}d", errno);
+        return;
+    }
+    // 检查组的写权限
+    if ((fileStat.st_mode & S_IWGRP) != 0) {
+        return;
+    }
+    if (IsEmptyFolder(RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH.c_str())) {
+        RINGTONE_ERR_LOG("The directory is empty and lacks group write permission.");
+        if (DeleteFile(RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH.c_str())) {
+            RINGTONE_ERR_LOG("DeleteFile denied, errCode: %{public}d", errno);
+        }
+        CreateRingtoneDir();
+    } else { //rename and move file
+        RINGTONE_ERR_LOG("The directory is not empty and lacks group write permission.");
+        if (MoveFile(RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH.c_str(),
+            RINGTONE_CUSTOMIZED_BASE_RINGTONETMP_PATH.c_str())) {
+            if (CreatePreloadFolder(RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH.c_str()) != E_SUCCESS) {
+                RINGTONE_ERR_LOG("Create Ringtone dir failed, errno is %{public}d", errno);
+                //restore dir
+                MoveFile(RINGTONE_CUSTOMIZED_BASE_RINGTONETMP_PATH.c_str(),
+                    RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH.c_str());
+                return;
+            }
+            if (MoveDirectory(RINGTONE_CUSTOMIZED_BASE_RINGTONETMP_PATH.c_str(),
+                RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH.c_str()) != E_SUCCESS) {
+                RINGTONE_ERR_LOG("Move dir failed, errno is %{public}d", errno);
+                CreateRingtoneDir();
+                return;
+            }
+            if (DeleteFile(RINGTONE_CUSTOMIZED_BASE_RINGTONETMP_PATH.c_str())) {
+                RINGTONE_ERR_LOG("DeleteFile denied, errCode: %{public}d", errno);
+            }
+        } else {
+            RINGTONE_ERR_LOG("Move Ringtone dir failed, errno is %{public}d", errno);
+        }
+    }
+    return;
+}
+
+string RingtoneFileUtils::GetFileExtension(const string &path)
+{
+    if (!path.empty()) {
+        size_t dotIndex = path.rfind(".");
+        if (dotIndex != string::npos) {
+            return path.substr(dotIndex + 1);
+        }
+    }
+ 
+    RINGTONE_ERR_LOG("Failed to obtain file extension because given pathname is empty");
+    return "";
 }
 } // namespace Media
 } // namespace OHOS

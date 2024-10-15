@@ -34,6 +34,8 @@ const std::string RINGTONE_CUSTOMIZED_BASE_PATH          = "/storage/media/local
 const std::string RINGTONE_CUSTOMIZED_ALARM_PATH         = RINGTONE_CUSTOMIZED_BASE_PATH + "/Ringtone/alarms";
 const std::string RINGTONE_CUSTOMIZED_RINGTONE_PATH      = RINGTONE_CUSTOMIZED_BASE_PATH + "/Ringtone/ringtones";
 const std::string RINGTONE_CUSTOMIZED_NOTIFICATIONS_PATH = RINGTONE_CUSTOMIZED_BASE_PATH + "/Ringtone/notifications";
+const std::string RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH = "/storage/media/local/files/Ringtone";
+const std::string RINGTONE_CUSTOMIZED_BASE_RINGTONETMP_PATH = "/storage/media/local/files/RingtoneTmp";
 
 // ringtone preload pathes
 const std::string ROOT_TONE_PRELOAD_PATH_NOAH_PATH = "/sys_prod/resource/media/audio";
@@ -47,14 +49,12 @@ const std::string RINGTONE_LIBRARY_DB_PATH = "/data/storage/el2/database";
 const std::string RINGTONE_LIBRARY_DB_NAME = "ringtone_library.db";
 
 // ringtone db version
-const int32_t RINGTONE_RDB_VERSION = 1;
-
-// RingtoneProps table name
-const std::string PROPERTIES_TABLE                              = "RingtoneProps";
-// RingtoneProps table column name
-const std::string RINGTONEPROPS_COLUMN_ID                       = "id";
-const std::string RINGTONEPROPS_COLUMN_NAME                     = "name";
-const std::string RINGTONEPROPS_COLUMN_VALUE                    = "value";
+const int32_t RINGTONE_RDB_VERSION = 4;
+enum {
+    VERSION_ADD_DISPLAY_LANGUAGE_COLUMN = 2,
+    VERSION_UPDATE_MIME_TYPE,
+    VERSION_ADD_PRELOAD_CONF_TABLE,
+};
 
 // ringtone table name
 const std::string RINGTONE_TABLE                                = "ToneFiles";
@@ -80,6 +80,15 @@ const std::string RINGTONE_COLUMN_RING_TONE_TYPE                = "ring_tone_typ
 const std::string RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE         = "ring_tone_source_type";
 const std::string RINGTONE_COLUMN_ALARM_TONE_TYPE               = "alarm_tone_type";
 const std::string RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE        = "alarm_tone_source_type";
+const std::string RINGTONE_COLUMN_DISPLAY_LANGUAGE_TYPE         = "display_language_type";
+
+// preload config table name
+const std::string PRELOAD_CONFIG_TABLE                          = "PreloadConfig";
+
+// preload config column name
+const std::string PRELOAD_CONFIG_COLUMN_RING_TONE_TYPE          = "ring_tone_type";
+const std::string PRELOAD_CONFIG_COLUMN_TONE_ID                 = "tone_id";
+const std::string PRELOAD_CONFIG_COLUMN_DISPLAY_NAME            = "display_name";
 } // namespace Media
 } // namespace OHOS
 

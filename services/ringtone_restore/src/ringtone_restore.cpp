@@ -42,7 +42,7 @@ int32_t RingtoneRestore::Init(const std::string &backupPath)
         RINGTONE_ERR_LOG("error: backup path is null");
         return E_INVALID_ARGUMENTS;
     }
-    dbPath_ = backupPath + "/" + RINGTONELIBRARY_DB_PATH + "/rdb" + "/" + RINGTONE_LIBRARY_DB_NAME;
+    dbPath_ = backupPath + RINGTONELIBRARY_DB_PATH + "/rdb" + "/" + RINGTONE_LIBRARY_DB_NAME;
     backupPath_ = backupPath;
 
     if (!RingtoneFileUtils::IsFileExists(dbPath_)) {
@@ -60,45 +60,6 @@ int32_t RingtoneRestore::Init(const std::string &backupPath)
     }
 
     RINGTONE_INFO_LOG("Init db successfully");
-    return E_OK;
-}
-
-void RingtoneRestore::ExtractMetaFromColumn(const shared_ptr<NativeRdb::ResultSet> &resultSet,
-    unique_ptr<RingtoneMetadata> &metadata, const std::string &col)
-{
-    RingtoneResultSetDataType dataType = RingtoneResultSetDataType::DATA_TYPE_NULL;
-    RingtoneMetadata::RingtoneMetadataFnPtr requestFunc = nullptr;
-    auto itr = metadata->memberFuncMap_.find(col);
-    if (itr != metadata->memberFuncMap_.end()) {
-        dataType = itr->second.first;
-        requestFunc = itr->second.second;
-    } else {
-        RINGTONE_ERR_LOG("column name invalid %{private}s", col.c_str());
-        return;
-    }
-
-    std::variant<int32_t, std::string, int64_t, double> data =
-        ResultSetUtils::GetValFromColumn<const shared_ptr<NativeRdb::ResultSet>>(col, resultSet, dataType);
-
-    if (requestFunc != nullptr) {
-        (metadata.get()->*requestFunc)(data);
-    }
-}
-
-int32_t RingtoneRestore::PopulateMetadata(const shared_ptr<NativeRdb::ResultSet> &resultSet,
-    unique_ptr<RingtoneMetadata> &metaData)
-{
-    std::vector<std::string> columnNames;
-    int32_t err = resultSet->GetAllColumnNames(columnNames);
-    if (err != NativeRdb::E_OK) {
-        RINGTONE_ERR_LOG("failed to get all column names");
-        return E_RDB;
-    }
-
-    for (const auto &col : columnNames) {
-        ExtractMetaFromColumn(resultSet, metaData, col);
-    }
-
     return E_OK;
 }
 
@@ -134,32 +95,7 @@ vector<FileInfo> RingtoneRestore::ConvertToFileInfos(vector<shared_ptr<RingtoneM
 {
     vector<FileInfo> infos = {};
     for (auto meta : metaDatas) {
-        FileInfo info = {
-            meta->GetToneId(),
-            meta->GetData(),
-            meta->GetSize(),
-            meta->GetDisplayName(),
-            meta->GetTitle(),
-            meta->GetMediaType(),
-            meta->GetToneType(),
-            meta->GetMimeType(),
-            meta->GetSourceType(),
-            meta->GetDateAdded(),
-            meta->GetDateModified(),
-            meta->GetDateTaken(),
-            meta->GetDuration(),
-            meta->GetShotToneType(),
-            meta->GetShotToneSourceType(),
-            meta->GetNotificationToneType(),
-            meta->GetNotificationToneSourceType(),
-            meta->GetRingToneType(),
-            meta->GetRingToneSourceType(),
-            meta->GetAlarmToneType(),
-            meta->GetAlarmToneSourceType(),
-            {}
-        };
-
-        infos.emplace_back(info);
+        infos.emplace_back(*meta);
     }
     return infos;
 }
@@ -170,7 +106,12 @@ void RingtoneRestore::CheckRestoreFileInfos(vector<FileInfo> &infos)
         // at first, check backup file path
         string srcPath = backupPath_ + it->data;
         if (!RingtoneFileUtils::IsFileExists(srcPath)) {
-            RINGTONE_INFO_LOG("warnning:backup file is not exist, path=%{public}s", srcPath.c_str());
+            // 系统铃音不克隆，需要进行设置铃音判断
+            if (it->sourceType == SOURCE_TYPE_PRESET) {
+                it->restorePath = it->data;
+                CheckSetting(*it);
+            }
+            RINGTONE_INFO_LOG("warnning:backup file is not exist, path=%{private}s", srcPath.c_str());
             infos.erase(it);
         } else {
             it++;
@@ -178,16 +119,22 @@ void RingtoneRestore::CheckRestoreFileInfos(vector<FileInfo> &infos)
     }
 }
 
-void RingtoneRestore::StartRestore()
+int32_t RingtoneRestore::StartRestore()
 {
     if (restoreRdb_ == nullptr || backupPath_.empty()) {
-        return;
+        return E_FAIL;
+    }
+    auto ret = RingtoneRestoreBase::StartRestore();
+    if (ret != E_OK) {
+        return ret;
     }
     auto infos = QueryFileInfos(INVALID_QUERY_OFFSET);
     if ((!infos.empty()) && (infos.size() != 0)) {
         CheckRestoreFileInfos(infos);
-        InsertTones(infos);
+        ret = InsertTones(infos);
     }
+    FlushSettings();
+    return ret;
 }
 
 void RingtoneRestore::UpdateRestoreFileInfo(FileInfo &info)
@@ -212,26 +159,29 @@ bool RingtoneRestore::OnPrepare(FileInfo &info, const std::string &destPath)
     }
 
     string fileName = RingtoneFileUtils::GetFileNameFromPath(info.data);
-    if (fileName.empty() || fileName == "") {
+    if (fileName.empty()) {
+        RINGTONE_ERR_LOG("src file name is null");
         return false;
     }
     string baseName = RingtoneFileUtils::GetBaseNameFromPath(info.data);
-    if (baseName.empty() || baseName == "") {
+    if (baseName.empty()) {
+        RINGTONE_ERR_LOG("src file base name is null");
         return false;
     }
     string extensionName = RingtoneFileUtils::GetExtensionFromPath(info.data);
 
     int32_t repeatCount = 1;
     string srcPath = backupPath_ + info.data;
-    while (RingtoneFileUtils::IsFileExists(destPath + "/" + fileName)) {
-        if (RingtoneFileUtils::IsSameFile(srcPath, destPath + "/" + fileName)) {
-            RINGTONE_ERR_LOG("samefile: srcPath=%{public}s, dstPath=%{public}s", srcPath.c_str(),
-                (destPath + "/" + fileName).c_str());
+    info.restorePath = destPath + "/" + fileName;
+    while (RingtoneFileUtils::IsFileExists(info.restorePath)) {
+        if (RingtoneFileUtils::IsSameFile(srcPath, info.restorePath)) {
+            CheckSetting(info);
+            RINGTONE_ERR_LOG("samefile: srcPath=%{private}s, dstPath=%{private}s", srcPath.c_str(),
+                info.restorePath.c_str());
             return false;
         }
-        fileName = baseName + "(" + to_string(repeatCount++) + ")" + "." + extensionName;
+        info.restorePath = destPath + "/" + baseName + "(" + to_string(repeatCount++) + ")" + "." + extensionName;
     }
-    info.restorePath = destPath + "/" + fileName;
 
     if (!RingtoneRestoreBase::MoveFile(srcPath, info.restorePath)) {
         return false;

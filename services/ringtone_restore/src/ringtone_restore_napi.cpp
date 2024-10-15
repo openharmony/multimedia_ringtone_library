@@ -20,7 +20,6 @@
 #include "ringtone_db_const.h"
 #include "ringtone_errno.h"
 #include "ringtone_log.h"
-#include "ringtone_props.h"
 #include "ringtone_restore_factory.h"
 #include "ringtone_restore_type.h"
 
@@ -28,9 +27,16 @@
 
 namespace OHOS {
 namespace Media {
-const std::string UPGRADE_COMPLETE_PROP = "upgrade_complete_prop";
-const std::string UPGRADE_COMPLETE_VAL_FALSE = "false";
-const std::string UPGRADE_COMPLETE_VAL_TRUE = "true";
+using namespace std;
+
+using RestoreBlock = struct {
+    napi_env env;
+    int32_t sceneCode;
+    std::string baseBackupPath;
+    int32_t resultSet;
+    napi_deferred nativeDeferred;
+};
+
 napi_value RingtoneRestoreNapi::Init(napi_env env, napi_value exports)
 {
     RINGTONE_INFO_LOG("Init");
@@ -87,22 +93,13 @@ static int32_t CheckPermission(void)
     return E_OK;
 }
 
-static int32_t RingtoneDualfwUpgrade(std::unique_ptr<RestoreInterface> &restore, string backupPath)
+static int32_t RingtoneRestore(std::unique_ptr<RestoreInterface> &restore, string backupPath)
 {
     int32_t ret = E_OK;
     if ((restore != nullptr) && (restore->Init(backupPath)) == Media::E_OK) {
-        RingtoneProps props(restore->GetBaseDb());
-        if (props.Init() != E_OK) {
-            RINGTONE_INFO_LOG("ringtone props table init failed");
-        }
-        std::string upgradeCompleteProp = props.GetProp(UPGRADE_COMPLETE_PROP, UPGRADE_COMPLETE_VAL_FALSE);
-        RINGTONE_INFO_LOG("upgradeCompleteProp=%{public}s", upgradeCompleteProp.c_str());
-        if (upgradeCompleteProp != UPGRADE_COMPLETE_VAL_TRUE) {
-            RINGTONE_INFO_LOG("start dualfw upgrade");
-            restore->StartRestore();
-            props.SetProp(UPGRADE_COMPLETE_PROP, UPGRADE_COMPLETE_VAL_TRUE);
-            RINGTONE_INFO_LOG("dualfw upgrade finished");
-        }
+        RINGTONE_INFO_LOG("start restore....");
+        ret = restore->StartRestore();
+        RINGTONE_INFO_LOG("restore finished");
     } else {
         RINGTONE_ERR_LOG("ringtone-restore failed on init");
         ret = E_HAS_DB_ERROR;
@@ -111,19 +108,52 @@ static int32_t RingtoneDualfwUpgrade(std::unique_ptr<RestoreInterface> &restore,
     return ret;
 }
 
-static int32_t RingtoneRestore(std::unique_ptr<RestoreInterface> &restore, string backupPath)
+void RingtoneRestoreNapi::UvQueueWork(uv_loop_s *loop, uv_work_t *work)
 {
-    int32_t ret = E_OK;
-    if ((restore != nullptr) && (restore->Init(backupPath)) == Media::E_OK) {
-        RINGTONE_INFO_LOG("start restore....");
-        restore->StartRestore();
-        RINGTONE_INFO_LOG("restore finished");
-    } else {
-        RINGTONE_ERR_LOG("ringtone-restore failed on init");
-        ret = E_HAS_DB_ERROR;
+    if (loop == nullptr) {
+        RINGTONE_ERR_LOG("Failed to uv_loop");
+        return;
     }
-
-    return ret;
+    if (work == nullptr || work->data == nullptr) {
+        RINGTONE_ERR_LOG("Failed to uv_work");
+        return;
+    }
+    uv_queue_work(loop, work, [](uv_work_t *work) {
+        RestoreBlock *block = reinterpret_cast<RestoreBlock *> (work->data);
+        if (block == nullptr) {
+            RINGTONE_ERR_LOG("Failed to new block");
+            return;
+        }
+        auto restore = RingtoneRestoreFactory::CreateObj(RestoreSceneType(block->sceneCode));
+        if (restore == nullptr) {
+            RINGTONE_ERR_LOG("Failed to new restore");
+            block->resultSet = E_FAIL;
+            return;
+        }
+        block->resultSet = RingtoneRestore(restore, block->baseBackupPath);
+    }, [](uv_work_t *work, int _status) {
+        RestoreBlock *block = reinterpret_cast<RestoreBlock *> (work->data);
+        if (block == nullptr) {
+            RINGTONE_ERR_LOG("Failed to new block");
+            delete work;
+            return;
+        }
+        napi_handle_scope scope = nullptr;
+        napi_open_handle_scope(block->env, &scope);
+        if (scope == nullptr) {
+            RINGTONE_ERR_LOG("Failed to new scope");
+            delete block;
+            delete work;
+            return;
+        }
+        napi_value restoreExResult = nullptr;
+        RINGTONE_INFO_LOG("resultSet, %{public}d", block->resultSet);
+        napi_create_int32(block->env, block->resultSet, &restoreExResult);
+        napi_resolve_deferred(block->env, block->nativeDeferred, restoreExResult);
+        napi_close_handle_scope(block->env, scope);
+        delete block;
+        delete work;
+    });
 }
 
 napi_value RingtoneRestoreNapi::JSStartRestore(napi_env env, napi_callback_info info)
@@ -148,24 +178,33 @@ napi_value RingtoneRestoreNapi::JSStartRestore(napi_env env, napi_callback_info 
         return result;
     }
     napi_get_undefined(env, &result);
-    int32_t scenceCode = GetIntFromParams(env, argv, 0);
+    int32_t sceneCode = GetIntFromParams(env, argv, 0);
     std::string baseBackupPath = GetStringFromParams(env, argv, 1);
-    RINGTONE_INFO_LOG("scenceCode: %{public}d", scenceCode);
-    RINGTONE_INFO_LOG("backupPath: %{public}s", baseBackupPath.c_str());
+    RINGTONE_INFO_LOG("sceneCode: %{public}d, backupPath: %{private}s", sceneCode, baseBackupPath.c_str());
 
-    auto restore = RingtoneRestoreFactory::CreateObj(RestoreSceneType(scenceCode));
-    switch (scenceCode) {
-        case RESTORE_SCENE_TYPE_SINGLE_CLONE:
-            RingtoneRestore(restore, baseBackupPath);
-            break;
-        case RESTORE_SCENE_TYPE_DUAL_CLONE:
-        case RESTORE_SCENE_TYPE_DUAL_UPGRADE:
-            RingtoneDualfwUpgrade(restore, baseBackupPath);
-            break;
-        default:
-            RINGTONE_ERR_LOG("scense code argument err, scenceCode=%{public}d", scenceCode);
-            break;
+    uv_loop_s *loop = nullptr;
+    napi_get_uv_event_loop(env, &loop);
+    if (loop == nullptr) {
+        RINGTONE_ERR_LOG("Failed to new uv_loop");
+        return result;
     }
+    uv_work_t *work = new (std::nothrow) uv_work_t;
+    if (work == nullptr) {
+        RINGTONE_ERR_LOG("Failed to new uv_work");
+        return result;
+    }
+    int32_t resultSet = E_OK;
+    napi_deferred nativeDeferred = nullptr;
+    napi_create_promise(env, &nativeDeferred, &result);
+    RestoreBlock *block = new (std::nothrow) RestoreBlock {
+        env, sceneCode, baseBackupPath, resultSet, nativeDeferred };
+    if (block == nullptr) {
+        RINGTONE_ERR_LOG("Failed to new block");
+        delete work;
+        return result;
+    }
+    work->data = reinterpret_cast<void *>(block);
+    UvQueueWork(loop, work);
     RINGTONE_INFO_LOG("JSStartRestore end");
     return result;
 }

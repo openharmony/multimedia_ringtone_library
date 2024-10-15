@@ -27,6 +27,7 @@
 #include "ringtone_data_manager.h"
 #include "ringtone_datashare_stub_impl.h"
 #include "ringtone_file_utils.h"
+#include "ringtone_language_manager.h"
 #include "ringtone_log.h"
 #include "ringtone_scanner_manager.h"
 #include "runtime.h"
@@ -43,7 +44,6 @@ using namespace OHOS::DataShare;
 const char RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY[] = "ringtone.scanner.completed";
 const int RINGTONE_PARAMETER_SCANNER_COMPLETED_TRUE = 1;
 const int RINGTONE_PARAMETER_SCANNER_COMPLETED_FALSE = 0;
-const string RINGTONE_SINGLE_CLONE_BACKUP_PATH = "/storage/media/local/files/Backup";
 const std::vector<std::string> RINGTONE_OPEN_WRITE_MODE_VECTOR = {
     { RINGTONE_FILEMODE_WRITEONLY },
     { RINGTONE_FILEMODE_READWRITE },
@@ -78,7 +78,7 @@ void RingtoneDataShareExtension::Init(const shared_ptr<AbilityLocalRecord> &reco
 
 void RingtoneDataShareExtension::OnStart(const AAFwk::Want &want)
 {
-    RINGTONE_INFO_LOG("begin.");
+    RINGTONE_DEBUG_LOG("begin.");
     Extension::OnStart(want);
     auto context = AbilityRuntime::Context::GetApplicationContext();
     if (context == nullptr) {
@@ -103,39 +103,25 @@ void RingtoneDataShareExtension::OnStart(const AAFwk::Want &want)
     auto dfxMgr = DfxManager::GetInstance();
     dfxMgr->Init(context);
 
-    // ringtone scan
-    int32_t errCode;
-    shared_ptr<NativePreferences::Preferences> prefs =
-        NativePreferences::PreferencesHelper::GetPreferences(DFX_COMMON_XML, errCode);
-    if (!prefs) {
-        RINGTONE_ERR_LOG("get preferences error: %{public}d", errCode);
-        return;
-    }
-    int isCompleted = prefs->GetInt(RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY,
-        RINGTONE_PARAMETER_SCANNER_COMPLETED_FALSE);
-    if (!isCompleted) {
-        RingtoneScannerManager::GetInstance()->Start(false);
-        prefs->PutInt(RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY, RINGTONE_PARAMETER_SCANNER_COMPLETED_TRUE);
-        prefs->FlushSync();
-    }
-
-    RINGTONE_INFO_LOG("end.");
+    RingtoneScanner();
+    RingtoneLanguageManager::GetInstance()->SyncAssetLanguage();
+    RINGTONE_DEBUG_LOG("end.");
 }
 
 void RingtoneDataShareExtension::OnStop()
 {
-    RINGTONE_INFO_LOG("begin.");
+    RINGTONE_DEBUG_LOG("begin.");
     auto scannerManager = RingtoneScannerManager::GetInstance();
     if (scannerManager != nullptr) {
         scannerManager->Stop();
     }
     RingtoneDataManager::GetInstance()->ClearRingtoneDataMgr();
-    RINGTONE_INFO_LOG("end.");
+    RINGTONE_DEBUG_LOG("end.");
 }
 
 sptr<IRemoteObject> RingtoneDataShareExtension::OnConnect(const AAFwk::Want &want)
 {
-    RINGTONE_INFO_LOG("begin.");
+    RINGTONE_DEBUG_LOG("begin.");
     Extension::OnConnect(want);
     sptr<RingtoneDataShareStubImpl> remoteObject = new (nothrow) RingtoneDataShareStubImpl(
         static_pointer_cast<RingtoneDataShareExtension>(shared_from_this()),
@@ -144,7 +130,7 @@ sptr<IRemoteObject> RingtoneDataShareExtension::OnConnect(const AAFwk::Want &wan
         RINGTONE_ERR_LOG("No memory allocated for DataShareStubImpl");
         return nullptr;
     }
-    RINGTONE_INFO_LOG("end.");
+    RINGTONE_DEBUG_LOG("end.");
     return remoteObject->AsObject();
 }
 
@@ -346,6 +332,26 @@ int RingtoneDataShareExtension::OpenFile(const Uri &uri, const string &mode)
         return err;
     }
     return RingtoneDataManager::GetInstance()->OpenFile(cmd, unifyMode);
+}
+
+void RingtoneDataShareExtension::RingtoneScanner()
+{
+    RingtoneFileUtils::AccessRingtoneDir();
+    // ringtone scan
+    int32_t errCode;
+    shared_ptr<NativePreferences::Preferences> prefs =
+        NativePreferences::PreferencesHelper::GetPreferences(DFX_COMMON_XML, errCode);
+    if (!prefs) {
+        RINGTONE_ERR_LOG("get preferences error: %{public}d", errCode);
+        return;
+    }
+    int isCompleted = prefs->GetInt(RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY,
+        RINGTONE_PARAMETER_SCANNER_COMPLETED_FALSE);
+    if (!isCompleted) {
+        RingtoneScannerManager::GetInstance()->Start(false);
+        prefs->PutInt(RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY, RINGTONE_PARAMETER_SCANNER_COMPLETED_TRUE);
+        prefs->FlushSync();
+    }
 }
 
 static DataShare::DataShareExtAbility *RingtoneDataShareCreator(const unique_ptr<Runtime> &runtime)

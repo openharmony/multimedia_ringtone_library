@@ -46,6 +46,9 @@ public:
     EXPORT const std::string &GetMimeType() const;
     EXPORT void SetMimeType(const std::string &mimeType);
 
+    EXPORT int32_t GetToneType() const;
+    EXPORT void SetToneType(int32_t toneType);
+
     EXPORT int32_t GetSourceType() const;
     EXPORT void SetSourceType(int32_t type);
 

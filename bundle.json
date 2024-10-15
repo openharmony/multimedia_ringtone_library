@@ -27,6 +27,7 @@
           "bundle_framework",
           "c_utils",
           "common_event_service",
+          "config_policy",
           "data_share",
           "hilog",
           "hisysevent",
@@ -40,7 +41,8 @@
           "player_framework",
           "relational_store",
           "samgr",
-          "preferences"
+          "preferences",
+          "os_account"
         ],
         "third_party": []
       },

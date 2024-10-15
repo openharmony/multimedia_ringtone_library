@@ -27,7 +27,7 @@ public:
     virtual ~RestoreInterface() {}
     virtual int32_t Init(const std::string &backupPath) = 0;
     virtual std::shared_ptr<NativeRdb::RdbStore> GetBaseDb() = 0;
-    virtual void StartRestore() = 0;
+    virtual int32_t StartRestore() = 0;
 };
 } // namespace Media
 } // namespace OHOS

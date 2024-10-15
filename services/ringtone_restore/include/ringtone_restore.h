@@ -28,18 +28,13 @@ public:
     RingtoneRestore() = default;
     virtual ~RingtoneRestore() = default;
     int32_t Init(const std::string &backupPath) override;
-    void StartRestore() override;
+    int32_t StartRestore() override;
 protected:
     virtual bool OnPrepare(FileInfo &info, const std::string &destPath) override;
     virtual void OnFinished(std::vector<FileInfo> &infos) override;
-
 private:
     void CheckRestoreFileInfos(std::vector<FileInfo> &infos);
     std::vector<FileInfo> QueryFileInfos(int32_t offset);
-    void ExtractMetaFromColumn(const std::shared_ptr<NativeRdb::ResultSet> &resultSet,
-        std::unique_ptr<RingtoneMetadata> &metadata, const std::string &col);
-    int32_t PopulateMetadata(const std::shared_ptr<NativeRdb::ResultSet> &resultSet,
-        std::unique_ptr<RingtoneMetadata> &metaData);
     std::vector<FileInfo> ConvertToFileInfos(std::vector<std::shared_ptr<RingtoneMetadata>> &metaDatas);
     void UpdateRestoreFileInfo(FileInfo &info);
 private:

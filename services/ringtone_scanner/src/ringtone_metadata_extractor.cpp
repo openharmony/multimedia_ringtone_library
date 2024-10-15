@@ -102,11 +102,11 @@ int32_t RingtoneMetadataExtractor::ExtractAudioMetadata(std::unique_ptr<Ringtone
 
     string absFilePath;
     if (!PathToRealPath(data->GetData(), absFilePath)) {
-        RINGTONE_ERR_LOG("AV RingtoneMetadata is not real path, file path: %{private}s", data->GetData().c_str());
+        RINGTONE_ERR_LOG("AV RingtoneMetadata is not real path, file path: %{public}s", data->GetData().c_str());
         return E_AVMETADATA;
     }
     if (absFilePath.empty()) {
-        RINGTONE_ERR_LOG("Failed to obtain the canonical path for source path: %{private}s %{public}d",
+        RINGTONE_ERR_LOG("Failed to obtain the canonical path for source path: %{public}s %{public}d",
             absFilePath.c_str(), errno);
         return E_AVMETADATA;
     }
