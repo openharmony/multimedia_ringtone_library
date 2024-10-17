@@ -49,7 +49,7 @@ const string TEST_BACKUP_PATH = "/data/test/backup";
 const string TEST_BACKUP_DATA = "/data/local/tmp/test/Adara.ogg";
 const string TEST_BACKUP_DB_PATH = TEST_BACKUP_PATH + "/data/storage/el2/database/rdb/ringtone_library.db";
 const string LOCAL_DB_PATH =
-    "/data/app/el2/100/database/com.ohos.ringtonelibrary.ringtonelibrarydata/rdb/ringtone_library.db";
+    "/data/app/el1/100/database/com.ohos.ringtonelibrary.ringtonelibrarydata/rdb/ringtone_library.db";
 
 unique_ptr<RingtoneRestore> g_restoreService = nullptr;
 RingtoneSource g_ringtoneSource;

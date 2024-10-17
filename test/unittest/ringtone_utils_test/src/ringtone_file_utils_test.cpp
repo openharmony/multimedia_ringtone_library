@@ -123,7 +123,7 @@ HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_CreateFile_Test_002, TestSize.
 {
     string filePath = DEFAULT_STR;
     EXPECT_EQ(RingtoneFileUtils::CreateFile(filePath), E_VIOLATION_PARAMETERS);
-    filePath = "/data/local/tmp/test/createfile_002.wav";
+    filePath = "/data/local/tmp/test/createfile_002.pcm";
     EXPECT_EQ(RingtoneFileUtils::CreateFile(filePath), E_INVALID_PATH);
 }
 

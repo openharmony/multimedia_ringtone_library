@@ -30,10 +30,7 @@ using namespace OHOS::NativeRdb;
 using namespace OHOS::DataShare;
 int32_t RingtoneScannerDb::GetFileBasicInfo(const string &path, unique_ptr<RingtoneMetadata> &ptr)
 {
-    vector<string> columns = {
-        RINGTONE_COLUMN_TONE_ID, RINGTONE_COLUMN_SIZE, RINGTONE_COLUMN_DATE_MODIFIED, RINGTONE_COLUMN_TITLE,
-        RINGTONE_COLUMN_DATE_ADDED
-    };
+    vector<string> columns = {};
     string whereClause = RINGTONE_COLUMN_DATA + " = ?";
     vector<string> args = { path };
 

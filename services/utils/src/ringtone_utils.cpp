@@ -32,7 +32,6 @@
 namespace OHOS {
 namespace Media {
 using namespace std;
-
 const char RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY[] = "ringtone.scanner.completed";
 const int RINGTONE_PARAMETER_SCANNER_COMPLETED_TRUE = 1;
 const int RINGTONE_PARAMETER_SCANNER_COMPLETED_FALSE = 0;
@@ -57,39 +56,45 @@ std::map<int, std::string> RingtoneUtils::GetDefaultSystemtoneInfo()
     map<int, string> defaultSystemtoneInfo;
     char paramValue[SYSPARA_SIZE] = {0};
     GetParameter(PARAM_RINGTONE_SETTING_RINGTONE, "", paramValue, SYSPARA_SIZE);
-    if (strcmp(paramValue, "")) {
+    if (strlen(paramValue) > 0) {
         defaultSystemtoneInfo.insert(make_pair(DEFAULT_RING_TYPE_SIM_CARD_1, string(paramValue)));
     }
 
-    memset_s(paramValue, sizeof(paramValue), 0, sizeof(paramValue));
-    GetParameter(PARAM_RINGTONE_SETTING_RINGTONE2, "", paramValue, SYSPARA_SIZE);
-    if (strcmp(paramValue, "")) {
-        defaultSystemtoneInfo.insert(make_pair(DEFAULT_RING_TYPE_SIM_CARD_2, string(paramValue)));
+    if (memset_s(paramValue, sizeof(paramValue), 0, sizeof(paramValue)) == 0) {
+        GetParameter(PARAM_RINGTONE_SETTING_RINGTONE2, "", paramValue, SYSPARA_SIZE);
+        if (strlen(paramValue) > 0) {
+            defaultSystemtoneInfo.insert(make_pair(DEFAULT_RING_TYPE_SIM_CARD_2, string(paramValue)));
+        }
     }
 
-    memset_s(paramValue, sizeof(paramValue), 0, sizeof(paramValue));
-    GetParameter(PARAM_RINGTONE_SETTING_SHOT, "", paramValue, SYSPARA_SIZE);
-    if (strcmp(paramValue, "")) {
-        defaultSystemtoneInfo.insert(make_pair(DEFAULT_SHOT_TYPE_SIM_CARD_1, string(paramValue)));
+    if (memset_s(paramValue, sizeof(paramValue), 0, sizeof(paramValue)) == 0) {
+        GetParameter(PARAM_RINGTONE_SETTING_SHOT, "", paramValue, SYSPARA_SIZE);
+        if (strlen(paramValue) > 0) {
+            defaultSystemtoneInfo.insert(make_pair(DEFAULT_SHOT_TYPE_SIM_CARD_1, string(paramValue)));
+        }
     }
 
-    memset_s(paramValue, sizeof(paramValue), 0, sizeof(paramValue));
-    GetParameter(PARAM_RINGTONE_SETTING_SHOT2, "", paramValue, SYSPARA_SIZE);
-    if (strcmp(paramValue, "")) {
-        defaultSystemtoneInfo.insert(make_pair(DEFAULT_SHOT_TYPE_SIM_CARD_2, string(paramValue)));
+    if (memset_s(paramValue, sizeof(paramValue), 0, sizeof(paramValue)) == 0) {
+        GetParameter(PARAM_RINGTONE_SETTING_SHOT2, "", paramValue, SYSPARA_SIZE);
+        if (strlen(paramValue) > 0) {
+            defaultSystemtoneInfo.insert(make_pair(DEFAULT_SHOT_TYPE_SIM_CARD_2, string(paramValue)));
+        }
     }
 
-    memset_s(paramValue, sizeof(paramValue), 0, sizeof(paramValue));
-    GetParameter(PARAM_RINGTONE_SETTING_NOTIFICATIONTONE, "", paramValue, SYSPARA_SIZE);
-    if (strcmp(paramValue, "")) {
-        defaultSystemtoneInfo.insert(make_pair(DEFAULT_NOTIFICATION_TYPE, string(paramValue)));
+    if (memset_s(paramValue, sizeof(paramValue), 0, sizeof(paramValue)) == 0) {
+        GetParameter(PARAM_RINGTONE_SETTING_NOTIFICATIONTONE, "", paramValue, SYSPARA_SIZE);
+        if (strlen(paramValue) > 0) {
+            defaultSystemtoneInfo.insert(make_pair(DEFAULT_NOTIFICATION_TYPE, string(paramValue)));
+        }
     }
 
-    memset_s(paramValue, sizeof(paramValue), 0, sizeof(paramValue));
-    GetParameter(PARAM_RINGTONE_SETTING_ALARM, "", paramValue, SYSPARA_SIZE);
-    if (strcmp(paramValue, "")) {
-        defaultSystemtoneInfo.insert(make_pair(DEFAULT_ALARM_TYPE, string(paramValue)));
+    if (memset_s(paramValue, sizeof(paramValue), 0, sizeof(paramValue)) == 0) {
+        GetParameter(PARAM_RINGTONE_SETTING_ALARM, "", paramValue, SYSPARA_SIZE);
+        if (strlen(paramValue) > 0) {
+            defaultSystemtoneInfo.insert(make_pair(DEFAULT_ALARM_TYPE, string(paramValue)));
+        }
     }
+
     return defaultSystemtoneInfo;
 }
 
