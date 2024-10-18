@@ -25,12 +25,16 @@
 #include "ringtone_mimetype_utils.h"
 #include "ringtone_utils.h"
 #include "result_set_utils.h"
+#include "preferences_helper.h"
+#include "dfx_const.h"
 
 namespace OHOS {
 namespace Media {
 using namespace std;
 
 const string DEFAULT_MIME_TYPE = "application/octet-stream";
+static const char RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY[] = "ringtone.scanner.completed";
+static const int RINGTONE_PARAMETER_SCANNER_COMPLETED_FALSE = 0;
 
 const std::string CREATE_RINGTONE_TABLE = "CREATE TABLE IF NOT EXISTS " + RINGTONE_TABLE + "(" +
     RINGTONE_COLUMN_TONE_ID                       + " INTEGER  PRIMARY KEY AUTOINCREMENT, " +
@@ -160,6 +164,16 @@ static void AddVibrateTable(NativeRdb::RdbStore &store)
         CREATE_SIMCARD_SETTING_TABLE,
         INIT_SIMCARD_SETTING_TABLE,
     };
+    int32_t errCode;
+    shared_ptr<NativePreferences::Preferences> prefs =
+        NativePreferences::PreferencesHelper::GetPreferences(COMMON_XML_EL1, errCode);
+    if (!prefs) {
+        RINGTONE_ERR_LOG("AddVibrateTable: update faild errCode=%{public}d", errCode);
+    } else {
+        prefs->PutInt(RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY, RINGTONE_PARAMETER_SCANNER_COMPLETED_FALSE);
+        prefs->FlushSync();
+    }
+
     RINGTONE_INFO_LOG("Add vibrate table");
     ExecSqls(sqls, store);
 }
