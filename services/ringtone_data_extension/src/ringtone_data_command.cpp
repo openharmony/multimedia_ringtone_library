@@ -63,7 +63,7 @@ ValuesBucket &RingtoneDataCommand::GetValueBucket()
 AbsRdbPredicates *RingtoneDataCommand::GetAbsRdbPredicates()
 {
     if (absRdbPredicates_ == nullptr) {
-        absRdbPredicates_ = static_cast<unique_ptr<AbsRdbPredicates>>(make_unique<RdbPredicates>(tableName_));
+        absRdbPredicates_ = make_unique<RdbPredicates>(tableName_);
     }
     return absRdbPredicates_.get();
 }
