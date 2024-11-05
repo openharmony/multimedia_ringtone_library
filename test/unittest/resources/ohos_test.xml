@@ -18,19 +18,23 @@
         <preparer>
             <option name="shell" value="rm -rf /data/test/backup" />
             <option name="shell" value="mkdir -p /data/test/backup/data/storage/el2/database/rdb" />
-            <option name="shell" value="mkdir -p /data/test/backup/storage/media/local/files/Ringtone/ringtones/" />
-            <option name="shell" value="mkdir -p /data/test/backup/storage/media/local/files/Ringtone/notifications/" />
-            <option name="shell" value="mkdir -p /data/test/backup/storage/media/local/files/Ringtone/alarms/" />
+            <option name="shell" value="mkdir -p /data/test/backup/storage/media/local/files/Ringtone/ringtones/ogg/" />
+            <option name="shell" value="mkdir -p /data/test/backup/storage/media/local/files/Ringtone/notifications/ogg/" />
+            <option name="shell" value="mkdir -p /data/test/backup/storage/media/local/files/Ringtone/alarms/ogg/" />
             <option name="shell" value="mkdir -p /storage/media/local/files/Ringtone/ringtones/" />
             <option name="shell" value="mkdir -p /storage/media/local/files/Ringtone/notifications/" />
             <option name="shell" value="mkdir -p /storage/media/local/files/Ringtone/alarms/" />
+            <option name="shell" value="touch  /data/test/backup/storage/media/local/files/Ringtone/alarms/ogg/Adara.ogg" />
+            <option name="shell" value="touch  /data/test/backup/storage/media/local/files/Ringtone/ringtones/ogg/Carme.ogg" />
+            <option name="shell" value="touch  /data/test/backup/storage/media/local/files/Ringtone/notifications/ogg/Radon.ogg" />
+            <option name="shell" value="touch  /data/test/backup/storage/media/local/files/Ringtone/notifications/ogg/Titan.ogg" />
         </preparer>
     </target>
-    <target name="ringtone_dualfw_restore_unittest">
+    <target name="ringtone_dualfwk_restore_unittest">
         <preparer>
             <option name="shell" value="rm -rf /data/test/backup" />
             <option name="shell" value="mkdir -p /data/test/backup" />
-            <option name="push" value="setting_system.xml -> /data/test/backup/setting_system.xml" src="res" />
+            <option name="push" value="setting_system.xml -> /data/test/backup/" src="res" />
         </preparer>
     </target>
 </configuration>

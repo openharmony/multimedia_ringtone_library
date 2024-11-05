@@ -31,11 +31,13 @@ class RingtoneSettingManager final {
 public:
     EXPORT RingtoneSettingManager(std::shared_ptr<NativeRdb::RdbStore> rdb);
     EXPORT ~RingtoneSettingManager() = default;
-    EXPORT int32_t CommitSetting(int32_t toneId, const std::string &tonePath, int32_t settingType,
+    EXPORT int32_t CommitSetting(int32_t toneId, std::string &tonePath, int32_t settingType,
         int32_t toneType, int32_t sourceType);
     EXPORT void FlushSettings();
-    EXPORT int32_t TravelQueryResultSet(const std::string &querySql,
+    EXPORT int32_t TravelQueryResultSet(std::string querySql,
         std::function<bool (std::shared_ptr<RingtoneMetadata> &)> func);
+    EXPORT int32_t Update(int &changedRows, const NativeRdb::ValuesBucket &values,
+        const NativeRdb::AbsRdbPredicates &predicates);
 private:
     struct SettingItem {
         int32_t toneId = TONE_ID_DEFAULT;
@@ -44,18 +46,18 @@ private:
         int32_t sourceType = SOURCE_TYPE_DEFAULT;
     };
     EXPORT int32_t CommitSettingCompare(int32_t settingType, int32_t toneType, int32_t sourceType);
-    EXPORT void TravelSettings(std::function<int32_t (const std::string &, SettingItem &)> func);
+    EXPORT void TravelSettings(std::function<int32_t (std::string &, SettingItem &)> func);
     EXPORT int32_t PopulateMetadata(const std::shared_ptr<NativeRdb::ResultSet> &resultSet,
         std::unique_ptr<RingtoneMetadata> &metaData);
     EXPORT int32_t GetMetaDataFromResultSet(std::shared_ptr<NativeRdb::ResultSet> resultSet,
         std::vector<std::shared_ptr<RingtoneMetadata>> &metaDatas);
     EXPORT int32_t CleanupSettingFromRdb(int32_t settingType, int32_t toneType, int32_t sourceType);
-    EXPORT int32_t UpdateSettingsWithTonePath(const std::string &tonePath, int32_t settingType, int32_t toneType);
+    EXPORT int32_t UpdateSettingsWithTonePath(std::string &tonePath, int32_t settingType, int32_t toneType);
     EXPORT int32_t UpdateSettingsWithToneId(int32_t settingType, int32_t toneId, int32_t toneType);
     EXPORT int32_t CleanupSetting(int32_t settingType, int32_t toneType, int32_t sourceType);
     EXPORT void ExtractMetaFromColumn(const std::shared_ptr<NativeRdb::ResultSet> &resultSet,
         std::unique_ptr<RingtoneMetadata> &metadata, const std::string &col);
-    EXPORT int32_t UpdateSettingsByPath(const std::string &tonePath, int32_t settingType, int32_t toneType,
+    EXPORT int32_t UpdateSettingsByPath(std::string &tonePath, int32_t settingType, int32_t toneType,
         int32_t sourceType);
     EXPORT int32_t UpdateShotSetting(std::shared_ptr<RingtoneMetadata> &meta, int32_t toneType, int32_t sourceType);
     EXPORT int32_t UpdateRingtoneSetting(std::shared_ptr<RingtoneMetadata> &meta, int32_t toneType,

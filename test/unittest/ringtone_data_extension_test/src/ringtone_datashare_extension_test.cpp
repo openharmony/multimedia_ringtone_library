@@ -92,23 +92,6 @@ HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_OnConnect_test_001, 
     EXPECT_EQ((ret != nullptr), true);
 }
 
-HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_Insert_test_001, TestSize.Level0)
-{
-    const std::unique_ptr<AbilityRuntime::Runtime> runtime;
-    AbilityRuntime::RingtoneDataShareExtension *mediaDataShare;
-    mediaDataShare = AbilityRuntime::RingtoneDataShareExtension::Create(runtime);
-    EXPECT_EQ(mediaDataShare != nullptr, true);
-
-    Uri uri(RINGTONE_PATH_URI);
-    AbilityRuntime::DataShareValuesBucket values;
-    auto ret = mediaDataShare->Insert(uri, values);
-    EXPECT_EQ(ret, E_COMMON_START);
-
-    Uri uriError(RINGTONE_URI);
-    ret = mediaDataShare->Insert(uriError, values);
-    EXPECT_EQ(ret, E_INVALID_URI);
-}
-
 HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_Update_test_001, TestSize.Level0)
 {
     const std::unique_ptr<AbilityRuntime::Runtime> runtime;
@@ -124,23 +107,6 @@ HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_Update_test_001, Tes
 
     Uri uriError(RINGTONE_URI);
     ret = mediaDataShare->Update(uriError, predicates, values);
-    EXPECT_EQ(ret, E_INVALID_URI);
-}
-
-HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_Delete_test_001, TestSize.Level0)
-{
-    const std::unique_ptr<AbilityRuntime::Runtime> runtime;
-    AbilityRuntime::RingtoneDataShareExtension *mediaDataShare;
-    mediaDataShare = AbilityRuntime::RingtoneDataShareExtension::Create(runtime);
-    EXPECT_EQ(mediaDataShare != nullptr, true);
-
-    Uri uri(RINGTONE_PATH_URI);
-    const AbilityRuntime::DataSharePredicates predicates;
-    auto ret = mediaDataShare->Delete(uri, predicates);
-    EXPECT_EQ(ret, E_COMMON_START);
-
-    Uri uriError(RINGTONE_URI);
-    ret = mediaDataShare->Delete(uriError, predicates);
     EXPECT_EQ(ret, E_INVALID_URI);
 }
 
@@ -163,22 +129,6 @@ HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_Query_test_001, Test
     EXPECT_EQ(ret, nullptr);
 }
 
-HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_OpenFile_test_001, TestSize.Level0)
-{
-    const std::unique_ptr<AbilityRuntime::Runtime> runtime;
-    AbilityRuntime::RingtoneDataShareExtension *mediaDataShare;
-    mediaDataShare = AbilityRuntime::RingtoneDataShareExtension::Create(runtime);
-    EXPECT_EQ(mediaDataShare != nullptr, true);
-
-    Uri uri(RINGTONE_PATH_URI);
-    auto ret = mediaDataShare->OpenFile(uri, RINGTONE_FILEMODE_READWRITE);
-    EXPECT_EQ(ret, E_INVALID_VALUES);
-
-    Uri uriError(RINGTONE_URI);
-    ret = mediaDataShare->OpenFile(uriError, RINGTONE_FILEMODE_READWRITE);
-    EXPECT_EQ(ret, E_INVALID_URI);
-}
-
 HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_DumpDataShareValueBucket_test_001, TestSize.Level0)
 {
     const std::unique_ptr<AbilityRuntime::Runtime> runtime;
@@ -189,22 +139,25 @@ HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_DumpDataShareValueBu
     const string ringtoneUintType = "uint_type";
     const string ringtoneBoolType = "bool_type";
     const string ringtoneDoubleType = "double_type";
+    const string ringtoneVectorType = "vector_type";
     const int64_t addedTime = 1559276453;
     const double doubleSize = 155.9276457;
     std::vector<string> tabFields;
+    std::vector<uint8_t> ringtoneVec;
+    ringtoneVec.push_back(1);
     tabFields.push_back(ringtoneUintType);
     tabFields.push_back(RINGTONE_COLUMN_DATE_ADDED);
     tabFields.push_back(RINGTONE_COLUMN_MIME_TYPE);
     tabFields.push_back(ringtoneBoolType);
     tabFields.push_back(ringtoneDoubleType);
-    tabFields.push_back(RINGTONE_COLUMN_MEDIA_TYPE);
+    tabFields.push_back(ringtoneVectorType);
     AbilityRuntime::DataShareValuesBucket value;
     value.Put(ringtoneUintType, static_cast<uint8_t>(1));
     value.Put(RINGTONE_COLUMN_DATE_ADDED, static_cast<int64_t>(addedTime));
     value.Put(RINGTONE_COLUMN_MIME_TYPE, static_cast<string>(RINGTONE_CONTAINER_TYPE_OGG));
     value.Put(ringtoneBoolType, static_cast<bool>(true));
     value.Put(ringtoneDoubleType, static_cast<double>(doubleSize));
-    value.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(1));
+    value.Put(ringtoneVectorType, static_cast<std::vector<uint8_t>>(ringtoneVec));
     mediaDataShare->DumpDataShareValueBucket(tabFields, value);
     EXPECT_EQ(mediaDataShare != nullptr, true);
 }

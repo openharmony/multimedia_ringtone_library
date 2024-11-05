@@ -65,6 +65,7 @@ int32_t RingtoneMimeTypeUtils::InitMimeTypeMap()
 {
     CreateMapFromJson();
     if (mediaJsonMap_.empty()) {
+        RINGTONE_ERR_LOG("JsonMap is empty");
         return E_FAIL;
     }
     return E_OK;
@@ -94,14 +95,14 @@ RingtoneMediaType RingtoneMimeTypeUtils::GetMediaTypeFromMimeType(const string &
 {
     size_t pos = mimeType.find_first_of("/");
     if (pos == string::npos) {
-        RINGTONE_ERR_LOG("Invalid mime type: %{private}s", mimeType.c_str());
+        RINGTONE_ERR_LOG("Invalid mime type: %{public}s", mimeType.c_str());
         return RINGTONE_MEDIA_TYPE_INVALID;
     }
     string prefix = mimeType.substr(0, pos);
     if (prefix == "audio") {
         return RINGTONE_MEDIA_TYPE_AUDIO;
     } else {
-        RINGTONE_ERR_LOG("Invalid mime type: %{private}s", mimeType.c_str());
+        RINGTONE_ERR_LOG("Invalid mime type: %{public}s", mimeType.c_str());
         return RINGTONE_MEDIA_TYPE_INVALID;
     }
 }

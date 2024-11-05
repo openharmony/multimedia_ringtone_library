@@ -23,19 +23,19 @@
 
 #include "ringtone_db_const.h"
 #include "ringtone_type.h"
+#include "ringtone_metadata.h"
 
 namespace OHOS {
 namespace Media {
 
-const std::string RINGTONE_BACKUP_DIR = "/data/storage/el2/backup/restore";
 const std::string RINGTONE_BACKUP_SUFFIX_DIR = "/storage/media/local/files/Ringtone";
 const std::string RINGTONE_RESTORE_DIR = "/storage/media/local/files/Ringtone";
 
 enum RestoreSceneType : int32_t {
     RESTORE_SCENE_TYPE_INVILID = -1,
+    RESTORE_SCENE_TYPE_DUAL_UPGRADE,
     RESTORE_SCENE_TYPE_SINGLE_CLONE,
     RESTORE_SCENE_TYPE_DUAL_CLONE,
-    RESTORE_SCENE_TYPE_DUAL_UPGRADE,
     RESTORE_SCENE_TYPE_MAX,
 };
 
@@ -62,6 +62,44 @@ struct FileInfo {
     int32_t alarmToneType {0};
     int32_t alarmToneSourceType {0};
     std::string restorePath {};
+    bool doInsert {true};
+    
+    FileInfo() = default;
+    FileInfo(const RingtoneMetadata &meta): toneId(meta.GetToneId()),
+        data(meta.GetData()),
+        size(meta.GetSize()),
+        displayName(meta.GetDisplayName()),
+        title(meta.GetTitle()),
+        mediaType(meta.GetMediaType()),
+        toneType(meta.GetToneType()),
+        mimeType(meta.GetMimeType()),
+        sourceType(meta.GetSourceType()),
+        dateAdded(meta.GetDateAdded()),
+        dateModified(meta.GetDateModified()),
+        dateTaken(meta.GetDateTaken()),
+        duration(meta.GetDuration()),
+        shotToneType(meta.GetShotToneType()),
+        shotToneSourceType(meta.GetShotToneSourceType()),
+        notificationToneType(meta.GetNotificationToneType()),
+        notificationToneSourceType(meta.GetNotificationToneSourceType()),
+        ringToneType(meta.GetRingToneType()),
+        ringToneSourceType(meta.GetRingToneSourceType()),
+        alarmToneType(meta.GetAlarmToneType()),
+        alarmToneSourceType(meta.GetAlarmToneSourceType()) {}
+
+    std::string toString() const
+    {
+        return data + "|" + displayName + "|" + title + "|size=" + std::to_string(size) +
+            "|sourceType=" + std::to_string(sourceType) +
+            "|shotToneType=" + std::to_string(shotToneType) +
+            "|shotToneSourceType=" + std::to_string(shotToneSourceType) +
+            "|notificationToneType=" + std::to_string(notificationToneType) +
+            "|notificationToneSourceType=" + std::to_string(notificationToneSourceType) +
+            "|ringToneType=" + std::to_string(ringToneType) +
+            "|ringToneSourceType=" + std::to_string(ringToneSourceType) +
+            "|doInsert=" + std::to_string(doInsert) +
+            "|restorePath=" + restorePath;
+    }
 };
 } // namespace Media
 } // namespace OHOS

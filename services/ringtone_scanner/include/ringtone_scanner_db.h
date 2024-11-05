@@ -33,9 +33,9 @@ public:
     EXPORT static int32_t InsertMetadata(const RingtoneMetadata &metadata, std::string &tableName);
     EXPORT static int32_t UpdateMetadata(const RingtoneMetadata &metadata, std::string &tableName);
     EXPORT static int32_t GetFileBasicInfo(const std::string &path, std::unique_ptr<RingtoneMetadata> &ptr);
-    EXPORT static int32_t UpdateRingtoneRdb(NativeRdb::ValuesBucket &values, const std::string &whereClause,
+    EXPORT static int32_t UpdateRingtoneRdb(NativeRdb::ValuesBucket &values, std::string &whereClause,
          std::vector<std::string> &whereArgs);
-    EXPORT static int32_t QueryRingtoneRdb(const std::string &whereClause, std::vector<std::string> &whereArgs,
+    EXPORT static int32_t QueryRingtoneRdb(std::string &whereClause, std::vector<std::string> &whereArgs,
         const std::vector<std::string> &columns, std::shared_ptr<NativeRdb::ResultSet> &resultSet);
     EXPORT static int32_t FillMetadata(const std::shared_ptr<NativeRdb::ResultSet> &resultSet,
         std::unique_ptr<RingtoneMetadata> &ptr);

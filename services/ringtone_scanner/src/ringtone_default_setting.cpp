@@ -23,6 +23,9 @@
 #include "ringtone_type.h"
 #include "ringtone_scanner_db.h"
 #include "ringtone_setting_manager.h"
+#include "rdb_helper.h"
+#include "result_set.h"
+#include "ringtone_utils.h"
 
 namespace OHOS {
 namespace Media {
@@ -42,7 +45,7 @@ RingtoneDefaultSetting::RingtoneDefaultSetting(shared_ptr<NativeRdb::RdbStore> &
 // liuxk just for debug
 static const std::string LOCAL_DIR = "/data/storage/el2/base/preload_data";
 #endif
-string RingtoneDefaultSetting::GetTonePathByDisplayName(const string &name)
+string RingtoneDefaultSetting::GetTonePathByDisplayName(string &name)
 {
     string pathStr = {};
     string querySql = "SELECT data FROM ToneFiles WHERE display_name = "s + "\"" + name + "\"";
@@ -78,24 +81,19 @@ void RingtoneDefaultSetting::ShotToneDefaultSettings()
     GetParameter(PARAM_RINGTONE_SETTING_SHOT, "", paramValue1, SYSPARA_SIZE);
     GetParameter(PARAM_RINGTONE_SETTING_SHOT2, "", paramValue2, SYSPARA_SIZE);
 
-    if (strcmp(paramValue1, "")) {
-        string tonePath = {};
-        string strVal = {paramValue1};
-        tonePath = GetTonePathByDisplayName(strVal);
-        if (!tonePath.empty()) {
-            settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_SHOT, SHOT_TONE_TYPE_SIM_CARD_1,
-                SOURCE_TYPE_PRESET);
-        }
+    string tonePath = {};
+    string strVal1 = {paramValue1};
+    tonePath = GetTonePathByDisplayName(strVal1);
+    if (!tonePath.empty() && tonePath != "") {
+        settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_SHOT, SHOT_TONE_TYPE_SIM_CARD_1,
+            SOURCE_TYPE_PRESET);
     }
 
-    if (strcmp(paramValue2, "")) {
-        string tonePath = {};
-        string strVal = {paramValue2};
-        tonePath = GetTonePathByDisplayName(strVal);
-        if (!tonePath.empty()) {
-            settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_SHOT, SHOT_TONE_TYPE_SIM_CARD_2,
-                SOURCE_TYPE_PRESET);
-        }
+    string strVal2 = {paramValue2};
+    tonePath = GetTonePathByDisplayName(strVal2);
+    if (!tonePath.empty() && tonePath != "") {
+        settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_SHOT, SHOT_TONE_TYPE_SIM_CARD_2,
+            SOURCE_TYPE_PRESET);
     }
 }
 
@@ -104,14 +102,12 @@ void RingtoneDefaultSetting::NotificationToneDefaultSettings()
     char paramValue[SYSPARA_SIZE] = {0};
     GetParameter(PARAM_RINGTONE_SETTING_NOTIFICATIONTONE, "", paramValue, SYSPARA_SIZE);
 
-    if (strcmp(paramValue, "")) {
-        string tonePath = {};
-        string strVal = {paramValue};
-        tonePath = GetTonePathByDisplayName(strVal);
-        if (!tonePath.empty()) {
-            settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_NOTIFICATION,
-                NOTIFICATION_TONE_TYPE, SOURCE_TYPE_PRESET);
-        }
+    string tonePath = {};
+    string strVal = {paramValue};
+    tonePath = GetTonePathByDisplayName(strVal);
+    if (!tonePath.empty() && tonePath != "") {
+        settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_NOTIFICATION,
+            NOTIFICATION_TONE_TYPE, SOURCE_TYPE_PRESET);
     }
 }
 
@@ -123,24 +119,19 @@ void RingtoneDefaultSetting::RingToneDefaultSettings()
     GetParameter(PARAM_RINGTONE_SETTING_RINGTONE, "", paramValue1, SYSPARA_SIZE);
     GetParameter(PARAM_RINGTONE_SETTING_RINGTONE2, "", paramValue2, SYSPARA_SIZE);
 
-    if (strcmp(paramValue1, "")) {
-        string tonePath = {};
-        string strVal = {paramValue1};
-        tonePath = GetTonePathByDisplayName(strVal);
-        if (!tonePath.empty()) {
-            settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_RINGTONE, RING_TONE_TYPE_SIM_CARD_1,
-                SOURCE_TYPE_PRESET);
-        }
+    string tonePath = {};
+    string strVal1 = {paramValue1};
+    tonePath = GetTonePathByDisplayName(strVal1);
+    if (!tonePath.empty() && tonePath != "") {
+        settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_RINGTONE, RING_TONE_TYPE_SIM_CARD_1,
+            SOURCE_TYPE_PRESET);
     }
 
-    if (strcmp(paramValue2, "")) {
-        string tonePath = {};
-        string strVal = {paramValue2};
-        tonePath = GetTonePathByDisplayName(strVal);
-        if (!tonePath.empty()) {
-            settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_RINGTONE, RING_TONE_TYPE_SIM_CARD_2,
-                SOURCE_TYPE_PRESET);
-        }
+    string strVal2 = {paramValue2};
+    tonePath = GetTonePathByDisplayName(strVal2);
+    if (!tonePath.empty() && tonePath != "") {
+        settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_RINGTONE, RING_TONE_TYPE_SIM_CARD_2,
+            SOURCE_TYPE_PRESET);
     }
 }
 
@@ -149,14 +140,12 @@ void RingtoneDefaultSetting::AlarmToneDefaultSettings()
     char paramValue[SYSPARA_SIZE] = {0};
     GetParameter(PARAM_RINGTONE_SETTING_ALARM, "", paramValue, SYSPARA_SIZE);
 
-    if (strcmp(paramValue, "")) {
-        string tonePath = {};
-        string strVal = {paramValue};
-        tonePath = GetTonePathByDisplayName(strVal);
-        if (!tonePath.empty()) {
-            settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_ALARM, ALARM_TONE_TYPE,
-                SOURCE_TYPE_PRESET);
-        }
+    string tonePath = {};
+    string strVal = {paramValue};
+    tonePath = GetTonePathByDisplayName(strVal);
+    if (!tonePath.empty()) {
+        settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_ALARM, ALARM_TONE_TYPE,
+            SOURCE_TYPE_PRESET);
     }
 }
 
@@ -171,6 +160,32 @@ void RingtoneDefaultSetting::Update()
         settingMgr_->FlushSettings();
     } else {
         RINGTONE_ERR_LOG("ringtone setting mgr is nullptr");
+    }
+    UpdateDefaultSystemTone();
+}
+
+void RingtoneDefaultSetting::UpdateDefaultSystemTone()
+{
+    RINGTONE_INFO_LOG("setting system tone begin");
+    auto infos = RingtoneUtils::GetDefaultSystemtoneInfo();
+    for (auto info : infos) {
+        const string querySql = "SELECT tone_id FROM ToneFiles WHERE display_name = "s + "\"" + info.second + "\"";
+        int32_t tone_id = 0;
+        settingMgr_->TravelQueryResultSet(querySql, [&](shared_ptr<RingtoneMetadata> &meta) -> bool {
+            tone_id = meta->GetToneId();
+            return true;
+        });
+
+        NativeRdb::ValuesBucket values;
+        values.PutString(PRELOAD_CONFIG_COLUMN_DISPLAY_NAME, info.second);
+        values.PutInt(PRELOAD_CONFIG_COLUMN_TONE_ID, tone_id);
+        NativeRdb::AbsRdbPredicates absRdbPredicates(PRELOAD_CONFIG_TABLE);
+        absRdbPredicates.EqualTo(PRELOAD_CONFIG_COLUMN_RING_TONE_TYPE, std::to_string(info.first));
+        int32_t changedRows = 0;
+        int32_t result = settingMgr_->Update(changedRows, values, absRdbPredicates);
+        if (result != E_OK || changedRows <= 0) {
+            RINGTONE_ERR_LOG("Update operation failed. Result %{public}d. Updated %{public}d", result, changedRows);
+        }
     }
 }
 

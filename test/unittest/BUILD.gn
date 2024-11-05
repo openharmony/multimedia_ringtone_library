@@ -17,6 +17,7 @@ group("test") {
   deps = [
     "ringtone_data_extension_test:ringtone_data_extension_unittest",
     "ringtone_dfx_test:ringtone_dfx_unittest",
+    "ringtone_dualfwk_restore_test:ringtone_dualfwk_restore_unittest",
     "ringtone_helper_test:ringtone_helper_unittest",
     "ringtone_restore_test:ringtone_restore_unittest",
     "ringtone_scanner:ringtone_read_test",
