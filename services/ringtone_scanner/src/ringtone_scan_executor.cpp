@@ -39,6 +39,7 @@ int32_t RingtoneScanExecutor::Commit(std::shared_ptr<RingtoneScannerObj> scanner
 void RingtoneScanExecutor::HandleScanExecution()
 {
     shared_ptr<RingtoneScannerObj> scanner;
+    isScanFinished = false;
     while (true) {
         {
             std::lock_guard<std::mutex> lock(queueMtx_);
@@ -54,6 +55,8 @@ void RingtoneScanExecutor::HandleScanExecution()
         scanner->SetStopFlag(stopFlag_);
         (void)scanner->Scan();
     }
+    isScanFinished = true;
+    stopCond.notify_one();
 }
 
 /* race condition is avoided by the ability life cycle */
@@ -66,11 +69,13 @@ void RingtoneScanExecutor::Stop()
 {
     *stopFlag_ = true;
 
-    /* wait for async scan theads to stop */
-    std::this_thread::sleep_for(std::chrono::milliseconds(sleepTime_));
-
     /* clear all tasks in the queue */
-    std::lock_guard<std::mutex> lock(queueMtx_);
+    std::unique_lock<std::mutex> lock(queueMtx_);
+
+    if (!isScanFinished) {
+        stopCond.wait(lock);
+    }
+
     std::queue<std::shared_ptr<RingtoneScannerObj>> emptyQueue;
     queue_.swap(emptyQueue);
 }

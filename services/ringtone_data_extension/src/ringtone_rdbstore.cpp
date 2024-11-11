@@ -34,7 +34,7 @@ using namespace std;
 using namespace OHOS;
 
 const int CONTEXT_AREA_EL1 = 0;
-const int RDB_AREA_EL1 = 1;
+const int RDB_AREA_EL1 = 0;
 
 shared_ptr<NativeRdb::RdbStore> RingtoneRdbStore::rdbStore_;
 
