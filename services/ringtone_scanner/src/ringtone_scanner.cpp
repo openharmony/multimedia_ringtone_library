@@ -207,7 +207,9 @@ int32_t RingtoneScannerObj::BootScan()
 
     // reset ringtone default settings
     auto rawRdb = RingtoneRdbStore::GetInstance()->GetRaw();
-    RingtoneDefaultSetting::GetObj(rawRdb)->Update();
+    if (rawRdb != nullptr) {
+        RingtoneDefaultSetting::GetObj(rawRdb)->Update();
+    }
 
     int64_t scanEnd = RingtoneFileUtils::UTCTimeMilliSeconds();
     RINGTONE_INFO_LOG("total preload tone files count:%{public}d, scanned: %{public}d, costed-time:%{public}"
