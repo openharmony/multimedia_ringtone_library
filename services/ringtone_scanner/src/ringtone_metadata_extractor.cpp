@@ -40,8 +40,10 @@ static Type stringToNum(const string &str)
 static time_t convertTimeStr2TimeStamp(string &timeStr)
 {
     struct tm timeinfo;
-    strptime(timeStr.c_str(), "%Y-%m-%d %H:%M:%S",  &timeinfo);
-    time_t timeStamp = mktime(&timeinfo);
+    time_t timeStamp = time(NULL);
+    if (strptime(timeStr.c_str(), "%Y-%m-%d %H:%M:%S",  &timeinfo) != nullptr) {
+        timeStamp = mktime(&timeinfo);
+    }
     return timeStamp;
 }
 
