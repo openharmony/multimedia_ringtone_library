@@ -51,6 +51,10 @@ int32_t DualFwkConfParser::Parse()
 
     if (!xmlStrcmp(rootNode->name, BAD_CAST"settings")) {
         xmlChar* xmlVersion = xmlGetProp(rootNode, BAD_CAST"version");
+        if (xmlVersion == nullptr) {
+            RINGTONE_ERR_LOG("xml version is null");
+            return E_ERR;
+        }
         try {
             version_ = std::stoi((const char *)xmlVersion);
             RINGTONE_INFO_LOG("xml verison=%{public}d", version_);

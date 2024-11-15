@@ -129,6 +129,10 @@ std::vector<DualFwkSettingItem> DualFwkSoundSetting::GetSettings() const
 
 int32_t DualFwkSoundSetting::ProcessConfRow(std::unique_ptr<DualFwkConfRow> &conf)
 {
+    if (conf == nullptr) {
+        RINGTONE_ERR_LOG("invalid conf");
+        return E_ERR;
+    }
     int32_t ret = E_SUCCESS;
 
     auto found = g_dualFwkInfoMap.find(conf->name);
