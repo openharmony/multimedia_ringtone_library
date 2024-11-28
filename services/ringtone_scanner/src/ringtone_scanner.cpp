@@ -206,9 +206,12 @@ int32_t RingtoneScannerObj::BootScan()
     }
 
     // reset ringtone default settings
-    auto rawRdb = RingtoneRdbStore::GetInstance()->GetRaw();
-    if (rawRdb != nullptr) {
-        RingtoneDefaultSetting::GetObj(rawRdb)->Update();
+    auto rdbStore = RingtoneRdbStore::GetInstance();
+    if (rdbStore != nullptr) {
+        auto rawRdb = rdbStore->GetRaw();
+        if (rawRdb != nullptr) {
+            RingtoneDefaultSetting::GetObj(rawRdb)->Update();
+        }
     }
 
     int64_t scanEnd = RingtoneFileUtils::UTCTimeMilliSeconds();
