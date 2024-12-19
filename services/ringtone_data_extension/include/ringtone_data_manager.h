@@ -19,6 +19,7 @@
 #include "datashare_values_bucket.h"
 #include "rdb_utils.h"
 #include "ringtone_asset.h"
+#include "vibrate_asset.h"
 #include "ringtone_data_command.h"
 #include "ringtone_datashare_extension.h"
 
@@ -49,10 +50,14 @@ public:
     EXPORT void SetOwner(const std::shared_ptr<RingtoneDataShareExtension> &datashareExtension);
     EXPORT std::shared_ptr<RingtoneDataShareExtension> GetOwner();
 private:
-    std::string GetIdFromUri(Uri &uri);
+    std::string GetIdFromUri(Uri &uri, const std::string &uriPath);
     std::shared_ptr<RingtoneAsset> GetRingtoneAssetFromId(const std::string &id);
+    std::shared_ptr<VibrateAsset> GetVibrateAssetFromId(const std::string &id);
     int32_t DeleteFileFromResultSet(std::shared_ptr<NativeRdb::ResultSet> &resultSet);
     int32_t DeleteRingtoneRowById(int32_t toneId);
+    int32_t OpenRingtoneFile(RingtoneDataCommand &cmd, const std::string &mode);
+    int32_t OpenVibrateFile(RingtoneDataCommand &cmd, const std::string &mode);
+
     std::shared_mutex mgrSharedMutex_;
     std::shared_ptr<OHOS::AbilityRuntime::Context> context_ = nullptr;
     static std::mutex mutex_;

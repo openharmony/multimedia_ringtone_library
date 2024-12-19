@@ -29,6 +29,7 @@ enum DfxType {
 const std::string ONE_WEEK = "168";
 
 const std::string DFX_COMMON_XML = "/data/storage/el2/base/preferences/dfx_ringtone_common.xml";
+const std::string COMMON_XML_EL1 = "/data/storage/el1/base/preferences/ringtone_common.xml";
 const std::string LAST_REPORT_TIME = "last_report_time";
 
 const std::string DATE_FORMAT = "%Y/%m/%d";

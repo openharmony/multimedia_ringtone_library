@@ -47,6 +47,25 @@ static const ResultTypeMap &GetResultTypeMap()
         { RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, DATA_TYPE_INT32 },
         { RINGTONE_COLUMN_ALARM_TONE_TYPE, DATA_TYPE_INT32 },
         { RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE, DATA_TYPE_INT32 },
+        { SIMCARD_SETTING_COLUMN_MODE, DATA_TYPE_INT32 },
+        { SIMCARD_SETTING_COLUMN_RINGTONE_TYPE, DATA_TYPE_INT32},
+        { SIMCARD_SETTING_COLUMN_TONE_FILE, DATA_TYPE_STRING },
+        { SIMCARD_SETTING_COLUMN_VIBRATE_FILE, DATA_TYPE_STRING },
+        { SIMCARD_SETTING_COLUMN_VIBRATE_MODE, DATA_TYPE_INT32 },
+        { SIMCARD_SETTING_COLUMN_RING_MODE, DATA_TYPE_INT32 },
+        // vibrate data
+        { VIBRATE_COLUMN_VIBRATE_ID, DATA_TYPE_INT32 },
+        { VIBRATE_COLUMN_DATA, DATA_TYPE_STRING },
+        { VIBRATE_COLUMN_SIZE, DATA_TYPE_INT64 },
+        { VIBRATE_COLUMN_DISPLAY_NAME, DATA_TYPE_STRING },
+        { VIBRATE_COLUMN_TITLE, DATA_TYPE_STRING },
+        { VIBRATE_COLUMN_DISPLAY_LANGUAGE, DATA_TYPE_STRING },
+        { VIBRATE_COLUMN_VIBRATE_TYPE, DATA_TYPE_INT32 },
+        { VIBRATE_COLUMN_SOURCE_TYPE, DATA_TYPE_INT32 },
+        { VIBRATE_COLUMN_DATE_ADDED, DATA_TYPE_INT64 },
+        { VIBRATE_COLUMN_DATE_MODIFIED, DATA_TYPE_INT64 },
+        { VIBRATE_COLUMN_DATE_TAKEN, DATA_TYPE_INT64 },
+        { VIBRATE_COLUMN_PLAY_MODE, DATA_TYPE_INT32 },
     };
     return RESULT_TYPE_MAP;
 }
@@ -247,7 +266,7 @@ variant<int32_t, int64_t, string, double> RingtoneFetchResult<T>::GetValByIndex(
 }
 
 template<class T>
-void RingtoneFetchResult<T>::SetRingtoneAsset(RingtoneAsset *asset, shared_ptr<NativeRdb::ResultSet> &resultSet)
+void RingtoneFetchResult<T>::SetRingtoneAsset(unique_ptr<T>& asset, shared_ptr<NativeRdb::ResultSet> &resultSet)
 {
     if ((resultset_ == nullptr) && (resultSet == nullptr)) {
         RINGTONE_ERR_LOG("SetRingtoneAsset fail, result is nullptr");
@@ -272,7 +291,7 @@ void RingtoneFetchResult<T>::SetRingtoneAsset(RingtoneAsset *asset, shared_ptr<N
 }
 
 template<class T>
-void RingtoneFetchResult<T>::GetObjectFromResultSet(RingtoneAsset *asset, shared_ptr<NativeRdb::ResultSet> &resultSet)
+void RingtoneFetchResult<T>::GetObjectFromResultSet(unique_ptr<T>& asset, shared_ptr<NativeRdb::ResultSet> &resultSet)
 {
     SetRingtoneAsset(asset, resultSet);
 }
@@ -281,7 +300,8 @@ template<class T>
 unique_ptr<T> RingtoneFetchResult<T>::GetObject(shared_ptr<NativeRdb::ResultSet> &resultSet)
 {
     unique_ptr<T> asset = make_unique<T>();
-    GetObjectFromResultSet(asset.get(), resultSet);
+
+    GetObjectFromResultSet(asset, resultSet);
     return asset;
 }
 
@@ -304,5 +324,7 @@ unique_ptr<T> RingtoneFetchResult<T>::GetObjectFromRdb(shared_ptr<NativeRdb::Res
 }
 
 template class RingtoneFetchResult<RingtoneAsset>;
+template class RingtoneFetchResult<SimcardSettingAsset>;
+template class RingtoneFetchResult<VibrateAsset>;
 }  // namespace Media
 }  // namespace OHOS

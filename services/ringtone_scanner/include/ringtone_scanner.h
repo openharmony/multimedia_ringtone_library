@@ -67,8 +67,10 @@ private:
     /* file */
     EXPORT int32_t ScanFile();
     EXPORT int32_t ScanFileInternal();
+    EXPORT int32_t ScanVibrateFile();
     EXPORT int32_t BuildFileInfo();
     EXPORT int32_t BuildData(const struct stat &statInfo);
+    EXPORT int32_t BuildVibrateData(const struct stat &statInfo);
     EXPORT int32_t GetFileMetadata();
     EXPORT int32_t GetMediaInfo();
 
@@ -83,6 +85,7 @@ private:
     EXPORT int32_t Commit();
     EXPORT int32_t AddToTransaction();
     EXPORT int32_t CommitTransaction();
+    EXPORT int32_t CommitVibrateTransaction();
     EXPORT int32_t UpdateToneTypeSettings();
 
     /* callback */
@@ -97,6 +100,9 @@ private:
 
     std::unique_ptr<RingtoneMetadata> data_;
     std::vector<std::unique_ptr<RingtoneMetadata>> dataBuffer_;
+    std::unique_ptr<VibrateMetadata> vibrateData_;
+    std::vector<std::unique_ptr<VibrateMetadata>> vibrateDataBuffer_;
+    bool isVibrateFile_ = false;
     bool isForceScan_ = false;
     uint32_t tonesScannedCount_ = 0;
     std::mutex scannerLock_;

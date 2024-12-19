@@ -25,9 +25,9 @@ using namespace OHOS::NativeRdb;
 using namespace OHOS::DataShare;
 
 RingtoneDataCommand::RingtoneDataCommand(const Uri &uri, const string &table, const RingtoneOperationType type)
-    : uri_(uri), tableName_(table), oprnType_(type), toneId_(-1)
+    : uri_(uri), tableName_(table), oprnType_(type)
 {
-    toneId_ = GetToneIdFromUri(uri_);
+    toneId_ = -1;
 }
 
 RingtoneDataCommand::~RingtoneDataCommand() {}

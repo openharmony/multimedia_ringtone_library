@@ -23,7 +23,6 @@
 namespace OHOS {
 namespace Media {
 using namespace std;
-
 static const int32_t SYSPARA_SIZE = 128;
 
 std::string RingtoneUtils::ReplaceAll(std::string str, const std::string &oldValue, const std::string &newValue)

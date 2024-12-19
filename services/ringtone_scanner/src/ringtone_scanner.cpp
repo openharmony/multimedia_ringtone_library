@@ -31,6 +31,13 @@ using namespace std;
 using namespace OHOS::AppExecFwk;
 using namespace OHOS::DataShare;
 static const int32_t SCANNER_WAIT_FOR_TIMEOUT = 10000; // ms
+static const std::string PATH_PLAY_MODE_SYNC = "/synchronized";
+static const std::string PATH_PLAY_MODE_CLASSIC = "/non-synchronized";
+static const std::string PATH_VIBRATE_TYPE_STANDARD = "/standard";
+static const std::string PATH_VIBRATE_TYPE_GENTLE = "/gentle";
+static const std::string ALARMS_TYPE = "alarms";
+static const std::string RINGTONES_TYPE = "ringtones";
+static const std::string NOTIFICATIONS_TYPE = "notifications";
 #ifndef OHOS_LOCAL_DEBUG_DISABLE
 // liuxk just for debug
 static const std::string LOCAL_DIR = "/data/storage/el2/base/preload_data";
@@ -57,7 +64,42 @@ static std::unordered_map<std::string, std::pair<int32_t, int32_t>> g_typeMap = 
     {ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH + "/ringtones", {SOURCE_TYPE_PRESET, TONE_TYPE_RINGTONE}},
     {ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH + "/notifications", {SOURCE_TYPE_PRESET, TONE_TYPE_NOTIFICATION}},
 };
+// vibrate type map
+static std::unordered_map<std::string, std::pair<int32_t, int32_t>> g_vibrateTypeMap = {
+    {ROOT_VIBRATE_PRELOAD_PATH_NOAH_PATH + PATH_VIBRATE_TYPE_STANDARD, {SOURCE_TYPE_PRESET, VIBRATE_TYPE_STANDARD}},
+    {ROOT_VIBRATE_PRELOAD_PATH_NOAH_PATH + PATH_VIBRATE_TYPE_GENTLE, {SOURCE_TYPE_PRESET, VIBRATE_TYPE_GENTLE}},
+    {ROOT_VIBRATE_PRELOAD_PATH_CHINA_PATH + PATH_VIBRATE_TYPE_STANDARD, {SOURCE_TYPE_PRESET, VIBRATE_TYPE_STANDARD}},
+    {ROOT_VIBRATE_PRELOAD_PATH_CHINA_PATH + PATH_VIBRATE_TYPE_GENTLE, {SOURCE_TYPE_PRESET, VIBRATE_TYPE_GENTLE}},
+    {ROOT_VIBRATE_PRELOAD_PATH_OVERSEA_PATH + PATH_VIBRATE_TYPE_STANDARD, {SOURCE_TYPE_PRESET, VIBRATE_TYPE_STANDARD}},
+    {ROOT_VIBRATE_PRELOAD_PATH_OVERSEA_PATH + PATH_VIBRATE_TYPE_GENTLE, {SOURCE_TYPE_PRESET, VIBRATE_TYPE_GENTLE}},
+};
 
+static std::unordered_map<std::string, std::pair<int32_t, int32_t>> g_vibratePlayModeMap = {
+    {ROOT_VIBRATE_PRELOAD_PATH_NOAH_PATH + PATH_VIBRATE_TYPE_STANDARD + PATH_PLAY_MODE_SYNC,
+        {SOURCE_TYPE_PRESET, VIBRATE_PLAYMODE_SYNC}},
+    {ROOT_VIBRATE_PRELOAD_PATH_NOAH_PATH + PATH_VIBRATE_TYPE_STANDARD + PATH_PLAY_MODE_CLASSIC,
+        {SOURCE_TYPE_PRESET, VIBRATE_PLAYMODE_CLASSIC}},
+    {ROOT_VIBRATE_PRELOAD_PATH_NOAH_PATH + PATH_VIBRATE_TYPE_GENTLE + PATH_PLAY_MODE_SYNC,
+        {SOURCE_TYPE_PRESET, VIBRATE_PLAYMODE_SYNC}},
+    {ROOT_VIBRATE_PRELOAD_PATH_NOAH_PATH + PATH_VIBRATE_TYPE_GENTLE + PATH_PLAY_MODE_CLASSIC,
+        {SOURCE_TYPE_PRESET, VIBRATE_PLAYMODE_CLASSIC}},
+    {ROOT_VIBRATE_PRELOAD_PATH_CHINA_PATH + PATH_VIBRATE_TYPE_STANDARD + PATH_PLAY_MODE_SYNC,
+        {SOURCE_TYPE_PRESET, VIBRATE_PLAYMODE_SYNC}},
+    {ROOT_VIBRATE_PRELOAD_PATH_CHINA_PATH + PATH_VIBRATE_TYPE_STANDARD + PATH_PLAY_MODE_CLASSIC,
+        {SOURCE_TYPE_PRESET, VIBRATE_PLAYMODE_CLASSIC}},
+    {ROOT_VIBRATE_PRELOAD_PATH_CHINA_PATH + PATH_VIBRATE_TYPE_GENTLE + PATH_PLAY_MODE_SYNC,
+        {SOURCE_TYPE_PRESET, VIBRATE_PLAYMODE_SYNC}},
+    {ROOT_VIBRATE_PRELOAD_PATH_CHINA_PATH + PATH_VIBRATE_TYPE_GENTLE + PATH_PLAY_MODE_CLASSIC,
+        {SOURCE_TYPE_PRESET, VIBRATE_PLAYMODE_CLASSIC}},
+    {ROOT_VIBRATE_PRELOAD_PATH_OVERSEA_PATH + PATH_VIBRATE_TYPE_STANDARD + PATH_PLAY_MODE_SYNC,
+        {SOURCE_TYPE_PRESET, VIBRATE_PLAYMODE_SYNC}},
+    {ROOT_VIBRATE_PRELOAD_PATH_OVERSEA_PATH + PATH_VIBRATE_TYPE_STANDARD + PATH_PLAY_MODE_CLASSIC,
+        {SOURCE_TYPE_PRESET, VIBRATE_PLAYMODE_CLASSIC}},
+    {ROOT_VIBRATE_PRELOAD_PATH_OVERSEA_PATH + PATH_VIBRATE_TYPE_GENTLE + PATH_PLAY_MODE_SYNC,
+        {SOURCE_TYPE_PRESET, VIBRATE_PLAYMODE_SYNC}},
+    {ROOT_VIBRATE_PRELOAD_PATH_OVERSEA_PATH + PATH_VIBRATE_TYPE_GENTLE + PATH_PLAY_MODE_CLASSIC,
+        {SOURCE_TYPE_PRESET, VIBRATE_PLAYMODE_CLASSIC}},
+};
 
 RingtoneScannerObj::RingtoneScannerObj(const std::string &path,
     const std::shared_ptr<IRingtoneScannerCallback> &callback,
@@ -133,7 +175,13 @@ int32_t RingtoneScannerObj::BootScan()
         {ROOT_TONE_PRELOAD_PATH_CHINA_PATH + "/notifications"},
         {ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH + "/alarms"},
         {ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH + "/ringtones"},
-        {ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH + "/notifications"}
+        {ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH + "/notifications"},
+        {ROOT_VIBRATE_PRELOAD_PATH_NOAH_PATH + "/standard"},
+        {ROOT_VIBRATE_PRELOAD_PATH_NOAH_PATH + "/gentle"},
+        {ROOT_VIBRATE_PRELOAD_PATH_CHINA_PATH + "/standard"},
+        {ROOT_VIBRATE_PRELOAD_PATH_CHINA_PATH + "/gentle"},
+        {ROOT_VIBRATE_PRELOAD_PATH_OVERSEA_PATH + "/standard"},
+        {ROOT_VIBRATE_PRELOAD_PATH_OVERSEA_PATH + "/gentle"},
     };
 
     int64_t scanStart = RingtoneFileUtils::UTCTimeMilliSeconds();
@@ -207,6 +255,12 @@ int32_t RingtoneScannerObj::ScanDirInternal()
         RINGTONE_ERR_LOG("commit transaction err %{public}d", err);
         return err;
     }
+
+    err = CommitVibrateTransaction();
+    if (err != E_OK) {
+        RINGTONE_ERR_LOG("commit vibrate transaction err %{public}d", err);
+        return err;
+    }
     err = CleanupDirectory();
     if (err != E_OK) {
         RINGTONE_ERR_LOG("clean up dir err %{public}d", err);
@@ -235,10 +289,33 @@ int32_t RingtoneScannerObj::CommitTransaction()
             RingtoneScannerDb::InsertMetadata(*data, tableName);
         }
     }
+
     if (dataBuffer_.size() > 0) {
         tonesScannedCount_ += dataBuffer_.size();
     }
     dataBuffer_.clear();
+
+    return E_OK;
+}
+
+int32_t RingtoneScannerObj::CommitVibrateTransaction()
+{
+    unique_ptr<VibrateMetadata> vibrateData;
+    string vibrateTableName = VIBRATE_TABLE;
+
+    for (uint32_t i = 0; i < vibrateDataBuffer_.size(); i++) {
+        vibrateData = move(vibrateDataBuffer_[i]);
+        if (vibrateData->GetVibrateId() != FILE_ID_DEFAULT) {
+            RingtoneScannerDb::UpdateVibrateMetadata(*vibrateData, vibrateTableName);
+        } else {
+            RingtoneScannerDb::InsertVibrateMetadata(*vibrateData, vibrateTableName);
+        }
+    }
+
+    if (vibrateDataBuffer_.size() > 0) {
+        tonesScannedCount_ += vibrateDataBuffer_.size();
+    }
+    vibrateDataBuffer_.clear();
 
     return E_OK;
 }
@@ -302,6 +379,20 @@ int32_t RingtoneScannerObj::ScanFileInTraversal(const string &path)
         RINGTONE_ERR_LOG("the file is hidden");
         return E_FILE_HIDDEN;
     }
+
+    bool flag = (path_.find(ROOT_VIBRATE_PRELOAD_PATH_NOAH_PATH) != std::string::npos) ? true : false;
+    flag |= (path_.find(ROOT_VIBRATE_PRELOAD_PATH_CHINA_PATH) != std::string::npos);
+    flag |= (path_.find(ROOT_VIBRATE_PRELOAD_PATH_OVERSEA_PATH) != std::string::npos);
+    std::string extension = RingtoneScannerUtils::GetFileExtension(path_);
+
+    if (flag) {
+        if (extension.compare("json") == 0) {
+            isVibrateFile_ = true;
+            return ScanVibrateFile();
+        }
+        return E_OK;
+    }
+
     int32_t err = GetFileMetadata();
     if (err != E_OK) {
         if (err != E_SCANNED) {
@@ -329,9 +420,18 @@ int32_t RingtoneScannerObj::GetFileMetadata()
         RINGTONE_ERR_LOG("stat syscall err %{public}d", errno);
         return E_SYSCALL;
     }
-    int errCode = BuildData(statInfo);
-    if (errCode != E_OK) {
-        return errCode;
+
+    int errCode = 0;
+    if (isVibrateFile_) {
+        errCode = BuildVibrateData(statInfo);
+        if (errCode != E_OK) {
+            return errCode;
+        }
+    } else {
+        errCode = BuildData(statInfo);
+        if (errCode != E_OK) {
+            return errCode;
+        }
     }
 
     return E_OK;
@@ -355,9 +455,16 @@ int32_t RingtoneScannerObj::BuildFileInfo()
 
 int32_t RingtoneScannerObj::AddToTransaction()
 {
-    dataBuffer_.emplace_back(move(data_));
-    if (dataBuffer_.size() >= MAX_BATCH_SIZE) {
-        return CommitTransaction();
+    if (isVibrateFile_) {
+        vibrateDataBuffer_.emplace_back(move(vibrateData_));
+        if (vibrateDataBuffer_.size() >= MAX_BATCH_SIZE) {
+            return CommitVibrateTransaction();
+        }
+    } else {
+        dataBuffer_.emplace_back(move(data_));
+        if (dataBuffer_.size() >= MAX_BATCH_SIZE) {
+            return CommitTransaction();
+        }
     }
 
     return E_OK;
@@ -423,11 +530,84 @@ int32_t RingtoneScannerObj::BuildData(const struct stat &statInfo)
     return E_OK;
 }
 
+int32_t RingtoneScannerObj::BuildVibrateData(const struct stat &statInfo)
+{
+    vibrateData_ = make_unique<VibrateMetadata>();
+    if (vibrateData_ == nullptr) {
+        RINGTONE_ERR_LOG("failed to make unique ptr for metadata");
+        return E_DATA;
+    }
+
+    if (S_ISDIR(statInfo.st_mode)) {
+        return E_INVALID_ARGUMENTS;
+    }
+
+    int32_t err = RingtoneScannerDb::GetVibrateFileBasicInfo(path_, vibrateData_);
+    if (err != E_OK) {
+        RINGTONE_ERR_LOG("failed to get file basic info");
+        return err;
+    }
+
+    for (const auto &pair : g_vibrateTypeMap) {
+        if (path_.find(pair.first) == 0) {
+            vibrateData_->SetSourceType(pair.second.first);
+            vibrateData_->SetVibrateType(pair.second.second);
+            int32_t ntype = 0;
+            if (pair.second.second == VIBRATE_TYPE_STANDARD) {
+                ntype = (path_.find(ALARMS_TYPE) != string::npos) ? VIBRATE_TYPE_SALARM : VIBRATE_TYPE_STANDARD;
+                ntype = (path_.find(RINGTONES_TYPE) != string::npos) ? VIBRATE_TYPE_SRINGTONE : ntype;
+                ntype = (path_.find(NOTIFICATIONS_TYPE) != string::npos) ? \
+                    VIBRATE_TYPE_SNOTIFICATION : ntype;
+                vibrateData_->SetVibrateType(ntype);
+            } else {
+                ntype = (path_.find(ALARMS_TYPE) != string::npos) ? VIBRATE_TYPE_GALARM : VIBRATE_TYPE_GENTLE;
+                ntype = (path_.find(RINGTONES_TYPE) != string::npos) ? VIBRATE_TYPE_GRINGTONE : ntype;
+                ntype = (path_.find(NOTIFICATIONS_TYPE) != string::npos) ? \
+                    VIBRATE_TYPE_GNOTIFICATION : ntype;
+                vibrateData_->SetVibrateType(ntype);
+            }
+        }
+    }
+
+    for (const auto &pair : g_vibratePlayModeMap) {
+        if (path_.find(pair.first) == 0) {
+            vibrateData_->SetPlayMode(pair.second.second);
+        }
+    }
+
+    // file path
+    vibrateData_->SetData(path_);
+    auto dispName = RingtoneScannerUtils::GetFileNameFromUri(path_);
+    vibrateData_->SetDisplayName(dispName);
+    if (vibrateData_->GetTitle() == TITLE_DEFAULT) {
+        vibrateData_->SetTitle(RingtoneScannerUtils::GetFileTitle(vibrateData_->GetDisplayName()));
+    }
+
+    // statinfo
+    vibrateData_->SetSize(statInfo.st_size);
+    vibrateData_->SetDateModified(static_cast<int64_t>(RingtoneFileUtils::Timespec2Millisecond(statInfo.st_mtim)));
+
+    return E_OK;
+}
+
 int32_t RingtoneScannerObj::ScanFileInternal()
 {
     if (RingtoneScannerUtils::IsFileHidden(path_)) {
         RINGTONE_ERR_LOG("the file is hidden");
         return E_FILE_HIDDEN;
+    }
+
+    bool flag = (path_.find(ROOT_VIBRATE_PRELOAD_PATH_NOAH_PATH) != std::string::npos) ? true : false;
+    flag |= (path_.find(ROOT_VIBRATE_PRELOAD_PATH_CHINA_PATH) != std::string::npos);
+    flag |= (path_.find(ROOT_VIBRATE_PRELOAD_PATH_OVERSEA_PATH) != std::string::npos);
+    std::string extension = RingtoneScannerUtils::GetFileExtension(path_);
+
+    if (flag) {
+        if (extension.compare("json") == 0) {
+            isVibrateFile_ = true;
+            return ScanVibrateFile();
+        }
+        return E_INVALID_PATH;
     }
 
     int32_t err = GetFileMetadata();
@@ -451,10 +631,57 @@ int32_t RingtoneScannerObj::ScanFileInternal()
     return E_OK;
 }
 
+int32_t RingtoneScannerObj::ScanVibrateFile()
+{
+    int32_t err = GetFileMetadata();
+    if (err != E_OK) {
+        if (err != E_SCANNED) {
+            RINGTONE_ERR_LOG("failed to get vibrate file metadata");
+        }
+        isVibrateFile_ = false;
+        return err;
+    }
+
+    if (type_ == FILE) {
+        err = Commit();
+        if (err != E_OK) {
+            RINGTONE_ERR_LOG("failed to commit err %{public}d", err);
+            isVibrateFile_ = false;
+            return err;
+        }
+    } else {
+        err = AddToTransaction();
+        if (err != E_OK) {
+            RINGTONE_ERR_LOG("failed to add to transaction err %{public}d", err);
+            isVibrateFile_ = false;
+            return err;
+        }
+    }
+
+    isVibrateFile_ = false;
+    return E_OK;
+}
+
 int32_t RingtoneScannerObj::Commit()
 {
     std::string tab = RINGTONE_TABLE;
-    uri_ = RingtoneScannerDb::InsertMetadata(*data_, tab);
+
+    if (isVibrateFile_) {
+        tab = VIBRATE_TABLE;
+
+        if (vibrateData_->GetVibrateId() != FILE_ID_DEFAULT) {
+            uri_ = RingtoneScannerDb::UpdateVibrateMetadata(*vibrateData_, tab);
+        } else {
+            uri_ = RingtoneScannerDb::InsertVibrateMetadata(*vibrateData_, tab);
+        }
+    } else {
+        if (data_->GetToneId() != FILE_ID_DEFAULT) {
+            uri_ = RingtoneScannerDb::UpdateMetadata(*data_, tab);
+        } else {
+            uri_ = RingtoneScannerDb::InsertMetadata(*data_, tab);
+        }
+    }
+
     return E_OK;
 }
 } // namespace Media

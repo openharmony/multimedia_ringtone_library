@@ -71,7 +71,9 @@
                 "header_base": "//foundation/multimedia/ringtone_library/services/ringtone_helper/include",
                 "header_files": [
                   "ringtone_asset.h",
-                  "ringtone_fetch_result.h"
+                  "ringtone_fetch_result.h",
+                  "simcard_setting_asset.h",
+                  "vibrate_asset.h"
                 ]
               },
               "name": "//foundation/multimedia/ringtone_library/services/ringtone_helper:ringtone_data_helper"

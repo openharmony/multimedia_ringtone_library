@@ -31,6 +31,7 @@
 #include "ringtone_log.h"
 #include "ringtone_mimetype_utils.h"
 #include "ringtone_type.h"
+#include "vibrate_type.h"
 #include "securec.h"
 
 namespace OHOS {
@@ -84,6 +85,16 @@ static bool IsTargetExtension(const string &path)
     RINGTONE_ERR_LOG("MimeType error:%{public}s,%{public}s", ext.c_str(), mimeType.c_str());
     bool ret = find(EXIF_SUPPORTED_EXTENSION.begin(), EXIF_SUPPORTED_EXTENSION.end(), ext) !=
         EXIF_SUPPORTED_EXTENSION.end();
+    if (!ret) {
+        RINGTONE_ERR_LOG("invalid target extension:%{public}s", ext.c_str());
+    }
+    return ret;
+}
+
+static bool IsVibrateFile(const string &path)
+{
+    const string ext = RingtoneFileUtils::GetExtensionFromPath(path);
+    bool ret = (ext == VIBRATE_CONTAINER_TYPE_JSON);
     if (!ret) {
         RINGTONE_ERR_LOG("invalid target extension:%{public}s", ext.c_str());
     }
@@ -271,6 +282,50 @@ int32_t RingtoneFileUtils::OpenFile(const string &filePath, const string &mode)
     }
 
     if (!IsTargetExtension(filePath)) {
+        return E_INVALID_PATH;
+    }
+
+    static const unordered_map<string, int32_t> RINGTONE_OPEN_MODE_MAP = {
+        { RINGTONE_FILEMODE_READONLY, O_RDONLY },
+        { RINGTONE_FILEMODE_WRITEONLY, O_WRONLY },
+        { RINGTONE_FILEMODE_READWRITE, O_RDWR },
+        { RINGTONE_FILEMODE_WRITETRUNCATE, O_WRONLY | O_TRUNC },
+        { RINGTONE_FILEMODE_WRITEAPPEND, O_WRONLY | O_APPEND },
+        { RINGTONE_FILEMODE_READWRITETRUNCATE, O_RDWR | O_TRUNC },
+        { RINGTONE_FILEMODE_READWRITEAPPEND, O_RDWR | O_APPEND },
+    };
+    if (RINGTONE_OPEN_MODE_MAP.find(mode) == RINGTONE_OPEN_MODE_MAP.end()) {
+        return E_ERR;
+    }
+
+    if (filePath.size() >= PATH_MAX) {
+        RINGTONE_ERR_LOG("File path too long %{public}d", (int)filePath.size());
+        return errCode;
+    }
+    string absFilePath;
+    if (!PathToRealPath(filePath, absFilePath)) {
+        RINGTONE_ERR_LOG("file is not real path, file path: %{private}s", filePath.c_str());
+        return errCode;
+    }
+    if (absFilePath.empty()) {
+        RINGTONE_ERR_LOG("Failed to obtain the canonical path for source path %{public}d %{private}s",
+            errno, filePath.c_str());
+        return errCode;
+    }
+    RINGTONE_INFO_LOG("File absFilePath is %{private}s", absFilePath.c_str());
+    return open(absFilePath.c_str(), RINGTONE_OPEN_MODE_MAP.at(mode));
+}
+
+int32_t RingtoneFileUtils::OpenVibrateFile(const std::string &filePath, const std::string &mode)
+{
+    int32_t errCode = E_ERR;
+
+    if (filePath.empty() || mode.empty()) {
+        RINGTONE_ERR_LOG("Invalid open argument! mode: %{private}s, path: %{private}s", mode.c_str(), filePath.c_str());
+        return errCode;
+    }
+
+    if (!IsVibrateFile(filePath)) {
         return E_INVALID_PATH;
     }
 

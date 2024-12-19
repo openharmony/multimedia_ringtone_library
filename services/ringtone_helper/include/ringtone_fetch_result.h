@@ -20,8 +20,10 @@
 #include "datashare_result_set.h"
 #include "rdb_errno.h"
 #include "ringtone_asset.h"
+#include "vibrate_asset.h"
 #include "ringtone_db_const.h"
 #include "ringtone_type.h"
+#include "simcard_setting_asset.h"
 
 namespace OHOS {
 namespace Media {
@@ -59,9 +61,9 @@ private:
     std::variant<int32_t, int64_t, std::string, double> GetValByIndex(int32_t index, RingtoneResultSetDataType dataType,
         std::shared_ptr<NativeRdb::ResultSet> &resultSet);
 
-    void SetRingtoneAsset(RingtoneAsset *asset, std::shared_ptr<NativeRdb::ResultSet> &resultSet);
+    void SetRingtoneAsset(std::unique_ptr<T>& asset, std::shared_ptr<NativeRdb::ResultSet> &resultSet);
 
-    void GetObjectFromResultSet(RingtoneAsset *asset, std::shared_ptr<NativeRdb::ResultSet> &resultSet);
+    void GetObjectFromResultSet(std::unique_ptr<T>& asset, std::shared_ptr<NativeRdb::ResultSet> &resultSet);
 
     std::shared_ptr<DataShare::DataShareResultSet> resultset_ = nullptr;
 };
