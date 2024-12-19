@@ -229,7 +229,8 @@ int32_t RingtoneSettingManager::UpdateShotSetting(shared_ptr<RingtoneMetadata> &
     string updateSql = "UPDATE ToneFiles SET " +
         RINGTONE_COLUMN_SHOT_TONE_TYPE + " = " + to_string(val) + ", " +
         RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE + " = " + to_string(sourceType) +
-        " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(meta->GetToneId());
+        " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(meta->GetToneId()) +
+        " AND " + RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE + " NOT IN (1, 2)";
     int32_t rdbRet = ringtoneRdb_->ExecuteSql(updateSql);
     if (rdbRet < 0) {
         RINGTONE_ERR_LOG("execute update failed");
@@ -251,7 +252,8 @@ int32_t RingtoneSettingManager::UpdateRingtoneSetting(shared_ptr<RingtoneMetadat
     string updateSql = "UPDATE ToneFiles SET " +
         RINGTONE_COLUMN_RING_TONE_TYPE + " = " + to_string(val) + ", " +
         RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE + " = " + to_string(sourceType) +
-        " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(meta->GetToneId());
+        " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(meta->GetToneId()) +
+        " AND " + RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE + " NOT IN (1, 2)";
     int32_t rdbRet = ringtoneRdb_->ExecuteSql(updateSql);
     if (rdbRet < 0) {
         RINGTONE_ERR_LOG("execute update failed");
@@ -267,7 +269,8 @@ int32_t RingtoneSettingManager::UpdateNotificationSetting(shared_ptr<RingtoneMet
     string updateSql = "UPDATE ToneFiles SET " +
         RINGTONE_COLUMN_NOTIFICATION_TONE_TYPE + " = " + to_string(toneType) + ", " +
         RINGTONE_COLUMN_NOTIFICATION_TONE_SOURCE_TYPE + " = " + to_string(sourceType) +
-        " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(meta->GetToneId());
+        " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(meta->GetToneId()) +
+        " AND " + RINGTONE_COLUMN_NOTIFICATION_TONE_SOURCE_TYPE + " NOT IN (1, 2)";
     int32_t rdbRet = ringtoneRdb_->ExecuteSql(updateSql);
     if (rdbRet < 0) {
         RINGTONE_ERR_LOG("execute update failed");
@@ -283,7 +286,8 @@ int32_t RingtoneSettingManager::UpdateAlarmSetting(shared_ptr<RingtoneMetadata> 
     string updateSql = "UPDATE ToneFiles SET " +
         RINGTONE_COLUMN_ALARM_TONE_TYPE + " = " + to_string(toneType) + ", " +
         RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE + " = " + to_string(sourceType) +
-        " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(meta->GetToneId());
+        " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(meta->GetToneId()) +
+        " AND " + RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE + " NOT IN (1, 2)";
     int32_t rdbRet = ringtoneRdb_->ExecuteSql(updateSql);
     if (rdbRet < 0) {
         RINGTONE_ERR_LOG("execute update failed");

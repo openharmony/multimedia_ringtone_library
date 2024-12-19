@@ -42,14 +42,18 @@ const string CHINESE_ABBREVIATION = "zh-Hans";
 const string ENGLISH_ABBREVIATION = "en-Latn-US";
 const int32_t SYSPARA_SIZE = 64;
 const int32_t SYSINIT_TYPE = 1;
+const int32_t STANDARDVIBRATION = 1;
 const int32_t UNKNOWN_INDEX = -1;
-const int32_t FIELD_LENGTH = 2;
 #ifdef USE_CONFIG_POLICY
 static constexpr char RINGTONE_MULTILINGUAL_FILE_PATH[] =
     "etc/resource/media/audio/ringtone_list_language.xml";
+static constexpr char VIBRATION_MULTILINGUAL_FILE_PATH[] =
+    "etc/resource/media/haptics/vibration_list_language.xml";
 #else
 static constexpr char RINGTONE_MULTILINGUAL_FILE_PATH[] =
     "/system/variant/phone/base/etc/resource/media/audio/ringtone_list_language.xml";
+static constexpr char VIBRATION_MULTILINGUAL_FILE_PATH[] =
+    "/system/variant/phone/base/etc/resource/media/haptics/vibration_list_language.xml";
 #endif
 
 shared_ptr<RingtoneLanguageManager> RingtoneLanguageManager::instance_ = nullptr;
@@ -90,6 +94,7 @@ void RingtoneLanguageManager::SyncAssetLanguage()
         systemLanguage_ = ENGLISH_ABBREVIATION;
     }
     UpdateRingtoneLanguage();
+    UpdateVibrationLanguage();
     RINGTONE_INFO_LOG("SyncAssetLanguage end.");
 }
 
@@ -137,6 +142,37 @@ void RingtoneLanguageManager::UpdateRingtoneLanguage()
     RINGTONE_INFO_LOG("UpdateRingtonLanguage end.");
 }
 
+void RingtoneLanguageManager::UpdateVibrationLanguage()
+{
+    RINGTONE_INFO_LOG("UpdateVibrationLanguage start.");
+    int32_t rowCount = 0;
+    std::shared_ptr<NativeRdb::ResultSet> resultSet;
+    if (CheckLanguageTypeByVibration(rowCount, resultSet) != E_OK) {
+        return;
+    }
+    RINGTONE_INFO_LOG("%{public}d vibration need to be sync", rowCount);
+    if (rowCount == 0) {
+        return;
+    }
+
+#ifdef USE_CONFIG_POLICY
+    char buf[MAX_PATH_LEN] = {0};
+    char *path = GetOneCfgFile(VIBRATION_MULTILINGUAL_FILE_PATH, buf, MAX_PATH_LEN);
+    if (path == nullptr || *path == '\0') {
+        RINGTONE_ERR_LOG("GetOneCfgFile for %{public}s failed.", VIBRATION_MULTILINGUAL_FILE_PATH);
+        return;
+    }
+#else
+    const char *path = VIBRATION_MULTILINGUAL_FILE_PATH;
+#endif
+
+    if (!ReadMultilingualResources(path, VIBRATION_FILE)) {
+        return;
+    }
+    ChangeLanguageDataToVibration(rowCount, resultSet);
+    RINGTONE_INFO_LOG("UpdateVibrationLanguage end.");
+}
+
 int32_t RingtoneLanguageManager::CheckLanguageTypeByRingtone(int32_t &rowCount,
     shared_ptr<ResultSet> &resultSet)
 {
@@ -182,7 +218,7 @@ void RingtoneLanguageManager::ChangeLanguageDataToRingtone(int32_t rowCount,
         return;
     }
 
-    vector<pair<string, int>> fieldIndex = {
+    map<string, int> fieldIndex = {
         { RINGTONE_COLUMN_TONE_ID, UNKNOWN_INDEX },
         { RINGTONE_COLUMN_DATA, UNKNOWN_INDEX }
     };
@@ -198,7 +234,7 @@ void RingtoneLanguageManager::ChangeLanguageDataToRingtone(int32_t rowCount,
 
         ValuesBucket values;
         int ringtoneId;
-        if (SetValuesFromResultSet(resultSet, fieldIndex, values, ringtoneId) == E_OK) {
+        if (SetValuesFromResultSet(resultSet, fieldIndex, values, ringtoneId, RINGTONE_FILE) == E_OK) {
             AbsRdbPredicates absRdbPredicates(RINGTONE_TABLE);
             absRdbPredicates.EqualTo(RINGTONE_COLUMN_TONE_ID, ringtoneId);
             int32_t changedRows;
@@ -211,8 +247,8 @@ void RingtoneLanguageManager::ChangeLanguageDataToRingtone(int32_t rowCount,
     }
 }
 
-int32_t RingtoneLanguageManager::GetFieldIndex(const shared_ptr<ResultSet> &resultSet,
-    vector<pair<string, int>> &fieldIndex)
+int32_t RingtoneLanguageManager::GetFieldIndex(const std::shared_ptr<NativeRdb::ResultSet> &resultSet,
+    std::map<std::string, int> &fieldIndex)
 {
     for (auto& field : fieldIndex) {
         if (resultSet->GetColumnIndex(field.first, field.second) != E_OK) {
@@ -223,30 +259,121 @@ int32_t RingtoneLanguageManager::GetFieldIndex(const shared_ptr<ResultSet> &resu
     return E_OK;
 }
 
-int32_t RingtoneLanguageManager::SetValuesFromResultSet(const shared_ptr<ResultSet> &resultSet,
-    const vector<pair<string, int>> &fieldIndex, ValuesBucket &values, int32_t &ringtoneId)
+int32_t RingtoneLanguageManager::SetValuesFromResultSet(const std::shared_ptr<NativeRdb::ResultSet> &resultSet,
+    const std::map<std::string, int> &fieldIndex, NativeRdb::ValuesBucket &values, int32_t &indexId,
+    ResourceFileType resourceFileType)
 {
     string data;
-    if (fieldIndex.size() < FIELD_LENGTH) {
+    string idIndexField = resourceFileType == RINGTONE_FILE ? RINGTONE_COLUMN_TONE_ID : VIBRATE_COLUMN_VIBRATE_ID;
+    string dataIndexField = resourceFileType == RINGTONE_FILE ? RINGTONE_COLUMN_DATA : VIBRATE_COLUMN_DATA;
+    string titleIndexField = resourceFileType == RINGTONE_FILE ? RINGTONE_COLUMN_TITLE : VIBRATE_COLUMN_TITLE;
+    string languageIndexField = resourceFileType == RINGTONE_FILE ?
+        RINGTONE_COLUMN_DISPLAY_LANGUAGE_TYPE : VIBRATE_COLUMN_DISPLAY_LANGUAGE;
+    auto& translation = resourceFileType == RINGTONE_FILE ? ringtoneTranslate_ : vibrationTranslate_;
+
+    auto idItem = fieldIndex.find(idIndexField);
+    if (idItem == fieldIndex.end()) {
+        RINGTONE_ERR_LOG("failed to get %{public}s index", idIndexField.c_str());
         return E_RDB;
     }
-    if (resultSet->GetInt(fieldIndex[0].second, ringtoneId) != E_OK) {
+    if (resultSet->GetInt(idItem->second, indexId) != E_OK) {
         RINGTONE_ERR_LOG("failed to get tone_id value");
         return E_RDB;
     }
-    if (resultSet->GetString(fieldIndex[1].second, data) != E_OK) {
-        RINGTONE_ERR_LOG("failed to get data value");
+
+    auto dataItem = fieldIndex.find(dataIndexField);
+    if (dataItem == fieldIndex.end()) {
+        RINGTONE_ERR_LOG("failed to get %{public}s index", dataIndexField.c_str());
         return E_RDB;
     }
-    values.PutString(RINGTONE_COLUMN_DISPLAY_LANGUAGE_TYPE, systemLanguage_);
+    if (resultSet->GetString(dataItem->second, data) != E_OK) {
+        RINGTONE_ERR_LOG("failed to get tone_id value");
+        return E_RDB;
+    }
+
+    values.PutString(languageIndexField, systemLanguage_);
     string realName = RingtoneFileUtils::GetBaseNameFromPath(data);
-    auto item = ringtoneTranslate_[systemLanguage_].find(realName);
-    if (item == ringtoneTranslate_[systemLanguage_].end()) {
+    auto item = translation[systemLanguage_].find(realName);
+    if (item == translation[systemLanguage_].end()) {
         return E_OK;
     }
     string titleName = item->second;
-    values.PutString(RINGTONE_COLUMN_TITLE, titleName);
+    values.PutString(titleIndexField, titleName);
     return E_OK;
+}
+
+int32_t RingtoneLanguageManager::CheckLanguageTypeByVibration(int32_t &rowCount,
+    std::shared_ptr<NativeRdb::ResultSet> &resultSet)
+{
+    vector<string> columns = {
+        VIBRATE_COLUMN_VIBRATE_ID,
+        VIBRATE_COLUMN_DATA
+    };
+
+    auto rawRdb = RingtoneRdbStore::GetInstance()->GetRaw();
+    if (rawRdb == nullptr) {
+        RINGTONE_ERR_LOG("failed to get raw rdb");
+        return E_RDB;
+    }
+
+    AbsRdbPredicates absRdbPredicates(VIBRATE_TABLE);
+    absRdbPredicates.EqualTo(VIBRATE_COLUMN_VIBRATE_TYPE, STANDARDVIBRATION);
+    absRdbPredicates.And();
+    absRdbPredicates.BeginWrap();
+    absRdbPredicates.NotEqualTo(VIBRATE_COLUMN_DISPLAY_LANGUAGE, systemLanguage_);
+    absRdbPredicates.Or();
+    absRdbPredicates.IsNull(VIBRATE_COLUMN_DISPLAY_LANGUAGE);
+    absRdbPredicates.EndWrap();
+    resultSet = rawRdb->Query(absRdbPredicates, columns);
+    if (resultSet == nullptr) {
+        RINGTONE_ERR_LOG("failed to query rdb");
+        return E_RDB;
+    }
+
+    int32_t ret = resultSet->GetRowCount(rowCount);
+    if (ret != NativeRdb::E_OK) {
+        RINGTONE_ERR_LOG("failed to get resultSet row count");
+        return E_RDB;
+    }
+    return E_OK;
+}
+
+void RingtoneLanguageManager::ChangeLanguageDataToVibration(int32_t rowCount,
+    const std::shared_ptr<NativeRdb::ResultSet> &resultSet)
+{
+    auto rawRdb = RingtoneRdbStore::GetInstance()->GetRaw();
+    if (rawRdb == nullptr) {
+        RINGTONE_ERR_LOG("failed to get raw rdb");
+        return;
+    }
+
+    map<string, int> fieldIndex = {
+        { VIBRATE_COLUMN_VIBRATE_ID, UNKNOWN_INDEX },
+        { VIBRATE_COLUMN_DATA, UNKNOWN_INDEX }
+    };
+    if (GetFieldIndex(resultSet, fieldIndex) != E_OK) {
+        return;
+    }
+
+    for (int i = 0; i < rowCount; i++) {
+        if (resultSet->GoToRow(i) != E_OK) {
+            RINGTONE_ERR_LOG("failed to goto row : %{public}d", i);
+            return;
+        }
+
+        ValuesBucket values;
+        int vibrateId;
+        if (SetValuesFromResultSet(resultSet, fieldIndex, values, vibrateId, VIBRATION_FILE) == E_OK) {
+            AbsRdbPredicates absRdbPredicates(VIBRATE_TABLE);
+            absRdbPredicates.EqualTo(VIBRATE_COLUMN_VIBRATE_ID, vibrateId);
+            int32_t changedRows;
+            int32_t result = rawRdb->Update(changedRows, values, absRdbPredicates);
+            if (result != E_OK || changedRows <= 0) {
+                RINGTONE_ERR_LOG("Update operation failed. Result %{public}d. Updated %{public}d", result, changedRows);
+                return;
+            }
+        }
+    }
 }
 
 bool RingtoneLanguageManager::ReadMultilingualResources(const string &filePath, ResourceFileType resourceFileType)
@@ -275,6 +402,12 @@ bool RingtoneLanguageManager::ReadMultilingualResources(const string &filePath, 
             return false;
         }
         ringtoneTranslate_.clear();
+    } else if (resourceFileType == VIBRATION_FILE) {
+        if (xmlStrcmp(rootNode->name, BAD_CAST "VibrationList") != 0) {
+            RINGTONE_ERR_LOG("failed to root node name is not matched");
+            return false;
+        }
+        vibrationTranslate_.clear();
     }
     return ParseMultilingualXml(rootNode, resourceFileType);
 }
@@ -295,7 +428,10 @@ bool RingtoneLanguageManager::ParseMultilingualXml(xmlNodePtr &rootNode, Resourc
 
         for (xmlNodePtr childNode = itemNode->children; childNode; childNode = childNode->next) {
             if (resourceFileType == RINGTONE_FILE && xmlStrcmp(childNode->name, BAD_CAST "Ring") != 0) {
-                RINGTONE_ERR_LOG("failed to child node name is not matched");
+                RINGTONE_ERR_LOG("failed to ringtone child node name is not matched");
+                return false;
+            } else if (resourceFileType == VIBRATION_FILE && xmlStrcmp(childNode->name, BAD_CAST "vibrtion") != 0) {
+                RINGTONE_ERR_LOG("failed to vibrate child node name is not matched");
                 return false;
             }
 
@@ -314,6 +450,8 @@ bool RingtoneLanguageManager::ParseMultilingualXml(xmlNodePtr &rootNode, Resourc
 
             if (resourceFileType == RINGTONE_FILE && !resourceName.empty() && !displayName.empty()) {
                 ringtoneTranslate_[language][resourceName] = displayName;
+            } else if (resourceFileType == VIBRATION_FILE && !resourceName.empty() && !displayName.empty()) {
+                vibrationTranslate_[language][resourceName] = displayName;
             }
         }
     }

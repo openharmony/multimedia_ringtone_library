@@ -222,6 +222,7 @@ ohos_shared_library("ringtone_utils") {
   install_enable = true
 
   include_dirs = [
+    "${RINGTONE_DFX_PATH}/include",
     "${RINGTONE_UTILS_PATH}/include",
     "${RINGTONE_INTERFACES_PATH}/inner_api/native",
   ]
@@ -259,6 +260,7 @@ ohos_shared_library("ringtone_utils") {
     "hitrace:hitrace_meter",
     "init:libbegetutil",
     "ipc:ipc_core",
+    "preferences:native_preferences",
     "relational_store:native_rdb",
     "samgr:samgr_proxy",
   ]
@@ -290,6 +292,7 @@ ohos_shared_library("ringtone_setting") {
   sources = [
     "${RINGTONE_SETTING_PATH}/src/ringtone_metadata.cpp",
     "${RINGTONE_SETTING_PATH}/src/ringtone_setting_manager.cpp",
+    "${RINGTONE_SETTING_PATH}/src/vibrate_metadata.cpp",
   ]
 
   configs = [ "//build/config/compiler:exceptions" ]

@@ -30,6 +30,7 @@ namespace Media {
 
 enum ResourceFileType {
     RINGTONE_FILE,
+    VIBRATION_FILE,
 };
 
 class RingtoneLanguageManager {
@@ -43,19 +44,24 @@ public:
 private:
     EXPORT static std::string GetSystemLanguage();
     EXPORT void UpdateRingtoneLanguage();
+    EXPORT void UpdateVibrationLanguage();
 
     EXPORT int32_t CheckLanguageTypeByRingtone(int32_t &rowCount, std::shared_ptr<NativeRdb::ResultSet> &resultSet);
     EXPORT void ChangeLanguageDataToRingtone(int32_t rowCount, const std::shared_ptr<NativeRdb::ResultSet> &resultSet);
-    EXPORT int32_t SetValuesFromResultSet(const std::shared_ptr<NativeRdb::ResultSet> &resultSet,
-        const std::vector<std::pair<std::string, int>> &fieldIndex,
-        NativeRdb::ValuesBucket &values, int32_t &ringtoneId);
     EXPORT static int32_t GetFieldIndex(const std::shared_ptr<NativeRdb::ResultSet> &resultSet,
-        std::vector<std::pair<std::string, int>> &fieldIndex);
+        std::map<std::string, int> &fieldIndex);
+    EXPORT int32_t SetValuesFromResultSet(const std::shared_ptr<NativeRdb::ResultSet> &resultSet,
+        const std::map<std::string, int> &fieldIndex, NativeRdb::ValuesBucket &values, int32_t &indexId,
+        ResourceFileType resourceFileType);
+
+    EXPORT int32_t CheckLanguageTypeByVibration(int32_t &rowCount, std::shared_ptr<NativeRdb::ResultSet> &resultSet);
+    EXPORT void ChangeLanguageDataToVibration(int32_t rowCount, const std::shared_ptr<NativeRdb::ResultSet> &resultSet);
 
     EXPORT bool ReadMultilingualResources(const std::string &filePath, ResourceFileType resourceFileType);
     EXPORT bool ParseMultilingualXml(xmlNodePtr& parentNode, ResourceFileType resourceFileType);
 
     std::map<std::string, std::map<std::string, std::string>> ringtoneTranslate_;
+    std::map<std::string, std::map<std::string, std::string>> vibrationTranslate_;
     std::string systemLanguage_;
     static std::mutex mutex_;
     static std::shared_ptr<RingtoneLanguageManager> instance_;

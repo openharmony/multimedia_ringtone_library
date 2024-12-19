@@ -123,6 +123,9 @@ int32_t RingtoneDataManager::Insert(RingtoneDataCommand &cmd, const DataShareVal
         RINGTONE_ERR_LOG("Insert operation failed. Result %{public}d.", retRdb);
         return E_HAS_DB_ERROR;
     }
+    if (cmd.GetTableName().compare(SIMCARD_SETTING_TABLE) == 0) {
+        return static_cast<int32_t>(outRowId);
+    }
 
     auto asset = GetRingtoneAssetFromId(to_string(outRowId));
     if (asset == nullptr) {
@@ -192,20 +195,18 @@ int32_t RingtoneDataManager::Delete(RingtoneDataCommand &cmd, const DataSharePre
         return E_DB_FAIL;
     }
 
-    string uriString = cmd.GetUri().ToString();
-    if (uriString.find(RINGTONE_URI) == string::npos) {
-        RINGTONE_ERR_LOG("Not Data ability Uri");
-        return E_INVALID_URI;
-    }
-
     NativeRdb::RdbPredicates rdbPredicate = RdbUtils::ToPredicates(predicates, cmd.GetTableName());
     cmd.GetAbsRdbPredicates()->SetWhereClause(rdbPredicate.GetWhereClause());
     cmd.GetAbsRdbPredicates()->SetWhereArgs(rdbPredicate.GetWhereArgs());
 
-    vector<string> columns = {RINGTONE_COLUMN_TONE_ID, RINGTONE_COLUMN_DATA};
-    auto absResultSet = g_uniStore->Query(cmd, columns);
-    if (!onlyDb) {
-        DeleteFileFromResultSet(absResultSet);
+    if (cmd.GetTableName().compare(SIMCARD_SETTING_TABLE) == 0) {
+        onlyDb = true;
+    } else {
+        vector<string> columns = {RINGTONE_COLUMN_TONE_ID, RINGTONE_COLUMN_DATA};
+        auto absResultSet = g_uniStore->Query(cmd, columns);
+        if (!onlyDb) {
+            DeleteFileFromResultSet(absResultSet);
+        }
     }
 
     int32_t deletedRows = E_HAS_DB_ERROR;
@@ -299,12 +300,12 @@ static bool IsNumber(const string &str)
     return true;
 }
 
-int32_t RingtoneDataManager::OpenFile(RingtoneDataCommand &cmd, const string &mode)
+int32_t RingtoneDataManager::OpenRingtoneFile(RingtoneDataCommand &cmd, const string &mode)
 {
     RINGTONE_DEBUG_LOG("start");
     RingtoneTracer tracer;
     tracer.Start("RingtoneDataManager::OpenFile");
-    string toneId = GetIdFromUri(const_cast<Uri &>(cmd.GetUri()));
+    string toneId = GetIdFromUri(const_cast<Uri &>(cmd.GetUri()), RINGTONE_URI_PATH);
     auto asset = GetRingtoneAssetFromId(toneId);
     if (asset == nullptr) {
         RINGTONE_ERR_LOG("Failed to get RingtoneAsset");
@@ -321,6 +322,39 @@ int32_t RingtoneDataManager::OpenFile(RingtoneDataCommand &cmd, const string &mo
     return RingtoneFileUtils::OpenFile(absFilePath, mode);
 }
 
+int32_t RingtoneDataManager::OpenVibrateFile(RingtoneDataCommand &cmd, const string &mode)
+{
+    RINGTONE_DEBUG_LOG("start");
+    RingtoneTracer tracer;
+    tracer.Start("RingtoneDataManager::OpenFile");
+    string toneId = GetIdFromUri(const_cast<Uri &>(cmd.GetUri()), VIBRATE_URI_PATH);
+    auto asset = GetVibrateAssetFromId(toneId);
+    if (asset == nullptr) {
+        RINGTONE_ERR_LOG("Failed to get VibrateAsset");
+        return E_INVALID_VALUES;
+    }
+
+    string absFilePath;
+    if (!PathToRealPath(asset->GetPath(), absFilePath)) {
+        RINGTONE_ERR_LOG("Failed to get real path: %{private}s", asset->GetPath().c_str());
+        return E_ERR;
+    }
+
+    RINGTONE_DEBUG_LOG("end");
+    return RingtoneFileUtils::OpenVibrateFile(absFilePath, mode);
+}
+
+int32_t RingtoneDataManager::OpenFile(RingtoneDataCommand &cmd, const string &mode)
+{
+    RINGTONE_INFO_LOG("openfile uri %{public}s", cmd.GetUri().ToString().c_str());
+    RINGTONE_INFO_LOG("openfile table %{public}s", cmd.GetTableName().c_str());
+    if (cmd.GetTableName() == RINGTONE_TABLE) {
+        return OpenRingtoneFile(cmd, mode);
+    } else {
+        return OpenVibrateFile(cmd, mode);
+    }
+}
+
 void RingtoneDataManager::SetOwner(const shared_ptr<RingtoneDataShareExtension> &datashareExternsion)
 {
     extension_ = datashareExternsion;
@@ -331,13 +365,13 @@ shared_ptr<RingtoneDataShareExtension> RingtoneDataManager::GetOwner()
     return extension_;
 }
 
-string RingtoneDataManager::GetIdFromUri(Uri &uri)
+string RingtoneDataManager::GetIdFromUri(Uri &uri, const std::string &uriPath)
 {
     vector<string> segments;
     uri.GetPathSegments(segments);
     const int uriSegmentsCount = 3;
     const int toneIdSegmentNumber = 2;
-    if (segments.size() != uriSegmentsCount || segments[1] != RINGTONE_URI_PATH ||
+    if (segments.size() != uriSegmentsCount || segments[1] != uriPath ||
         !IsNumber(segments[toneIdSegmentNumber])) {
         return {};
     }
@@ -361,6 +395,30 @@ shared_ptr<RingtoneAsset> RingtoneDataManager::GetRingtoneAssetFromId(const stri
     }
 
     shared_ptr<RingtoneFetchResult<RingtoneAsset>> fetchResult = make_shared<RingtoneFetchResult<RingtoneAsset>>();
+    if (fetchResult == nullptr) {
+        RINGTONE_ERR_LOG("Failed to obtain fetch file result");
+        return nullptr;
+    }
+    return fetchResult->GetObjectFromRdb(resultSet, 0);
+}
+
+std::shared_ptr<VibrateAsset> RingtoneDataManager::GetVibrateAssetFromId(const std::string &id)
+{
+    if ((id.empty()) || (!IsNumber(id)) || (stoi(id) == -1)) {
+        RINGTONE_ERR_LOG("Id for the path is incorrect: %{private}s", id.c_str());
+        return nullptr;
+    }
+    Uri uri("");
+    RingtoneDataCommand cmd(uri, VIBRATE_TABLE, RingtoneOperationType::QUERY);
+    cmd.GetAbsRdbPredicates()->EqualTo(VIBRATE_COLUMN_VIBRATE_ID, id);
+
+    auto resultSet = g_uniStore->Query(cmd, {VIBRATE_COLUMN_VIBRATE_ID, VIBRATE_COLUMN_DATA});
+    if (resultSet == nullptr) {
+        RINGTONE_ERR_LOG("Failed to obtain file asset from database");
+        return nullptr;
+    }
+
+    shared_ptr<RingtoneFetchResult<VibrateAsset>> fetchResult = make_shared<RingtoneFetchResult<VibrateAsset>>();
     if (fetchResult == nullptr) {
         RINGTONE_ERR_LOG("Failed to obtain fetch file result");
         return nullptr;
