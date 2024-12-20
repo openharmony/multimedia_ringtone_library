@@ -38,6 +38,7 @@ using namespace OHOS::RdbDataShareAdapter;
 shared_ptr<RingtoneDataManager> RingtoneDataManager::instance_ = nullptr;
 mutex RingtoneDataManager::mutex_;
 shared_ptr<RingtoneUnistore> g_uniStore = nullptr;
+constexpr int32_t MAX_SIZE = 9;
 
 RingtoneDataManager::RingtoneDataManager(void)
 {
@@ -294,7 +295,10 @@ static bool IsNumber(const string &str)
         RINGTONE_DEBUG_LOG("IsNumber input is empty ");
         return false;
     }
-
+    if (str.size() > MAX_SIZE) {
+        RINGTONE_ERR_LOG("IsNumber input is too long ");
+        return false;
+    }
     for (char const &c : str) {
         if (isdigit(c) == 0) {
             return false;
