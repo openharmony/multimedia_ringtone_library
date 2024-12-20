@@ -24,6 +24,7 @@ namespace Media {
 using namespace std;
 using namespace OHOS::NativeRdb;
 using namespace OHOS::DataShare;
+constexpr int32_t MAX_SIZE = 9;
 
 RingtoneDataCommand::RingtoneDataCommand(const Uri &uri, const string &table, const RingtoneOperationType type)
     : uri_(uri), tableName_(table), oprnType_(type)
@@ -94,7 +95,10 @@ static bool IsNumber(const string &str)
         RINGTONE_DEBUG_LOG("IsNumber input is empty ");
         return false;
     }
-
+    if (str.size() > MAX_SIZE) {
+        RINGTONE_ERR_LOG("IsNumber input is too long ");
+        return false;
+    }
     for (char const &c : str) {
         if (isdigit(c) == 0) {
             return false;
