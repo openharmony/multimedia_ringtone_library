@@ -24,8 +24,8 @@ ohos_hap("ringtone_extension_hap") {
   certificate_profile = "${RINGTONE_EXT_HAP_PATH}/signature/ringtonelibrary.p7b"
   shared_libraries = [ "${RINGTONE_SERVICES_PATH}:ringtone_data_extension" ]
   hap_name = "Ringtone_Library_Ext"
-  part_name = "prebuilt_hap"
-  subsystem_name = "applications"
+  part_name = "ringtone_library"
+  subsystem_name = "multimedia"
   module_install_dir = "app/com.ohos.ringtonelibrary.RingtoneLibraryData"
   if (defined(sign_hap_py_path)) {
     certificate_profile =
