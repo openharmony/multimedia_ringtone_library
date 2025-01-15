@@ -52,7 +52,8 @@
           "service_group": [
             "//foundation/multimedia/ringtone_library/services:ringtone_data_extension",
             "//foundation/multimedia/ringtone_library/services:ringtonerestore",
-            "//foundation/multimedia/ringtone_library/services/ringtone_helper:ringtone_data_helper"
+            "//foundation/multimedia/ringtone_library/services/ringtone_helper:ringtone_data_helper",
+            "//foundation/multimedia/ringtone_library/frameworks/ringtone_extension_hap:ringtone_extension_hap"
           ]
         },
         "inner_kits": [
