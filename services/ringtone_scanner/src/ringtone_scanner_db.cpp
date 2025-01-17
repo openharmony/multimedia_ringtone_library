@@ -392,7 +392,7 @@ bool RingtoneScannerDb::InsertData(const ValuesBucket values, const string &tabl
     auto rawRdb = RingtoneRdbStore::GetInstance()->GetRaw();
     if (rawRdb == nullptr) {
         RINGTONE_ERR_LOG("get raw rdb failed");
-        return E_RDB;
+        return false;
     }
 
     int64_t nRow = static_cast<int64_t>(rowNum);
