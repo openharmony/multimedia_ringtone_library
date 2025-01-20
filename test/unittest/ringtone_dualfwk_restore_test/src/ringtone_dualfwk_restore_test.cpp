@@ -106,18 +106,20 @@ HWTEST_F(RingtoneDualFwkRestoreTest, ringtone_dualfwk_restore_test_0002, TestSiz
 {
     RINGTONE_INFO_LOG("ringtone_dualfwk_restore_test_0002 start");
     
-    DualFwkConfLoader confLoader;
-    if (confLoader.Init() != E_OK) {
+
+    shared_ptr<DualFwkConfLoader> confLoaderPtr = make_shared<DualFwkConfLoader>();
+    EXPECT_NE(confLoaderPtr, nullptr);
+    if (confLoaderPtr->Init() != E_OK) {
         RINGTONE_ERR_LOG("Failed to initialize DualFwkConfLoader.");
         return;
     }
-    auto confVal = confLoader.GetConf("SETTINGSDATA_CreatedTime");
+    auto confVal = confLoaderPtr->GetConf("SETTINGSDATA_CreatedTime");
     std::cout << "conf value of SETTINGSDATA_CreatedTime = " << confVal << std::endl;
     DualFwkConf conf;
-    confLoader.Load(conf, RESTORE_SCENE_TYPE_DUAL_CLONE, "");
-    confLoader.ShowConf(conf);
-    confLoader.Load(conf, RESTORE_SCENE_TYPE_DUAL_UPGRADE, "");
-    confLoader.ShowConf(conf);
+    confLoaderPtr->Load(conf, RESTORE_SCENE_TYPE_DUAL_CLONE, "");
+    confLoaderPtr->ShowConf(conf);
+    confLoaderPtr->Load(conf, RESTORE_SCENE_TYPE_DUAL_UPGRADE, "");
+    confLoaderPtr->ShowConf(conf);
     RINGTONE_INFO_LOG("ringtone_dualfwk_restore_test_0002 end");
 }
 
@@ -136,6 +138,7 @@ HWTEST_F(RingtoneDualFwkRestoreTest, ringtone_dualfwk_restore_test_0003, TestSiz
     std::map<std::string, std::shared_ptr<FileInfo>> resultFromMedia;
     std::map<std::string, std::shared_ptr<FileInfo>> resultFromRingtone;
     auto restore = std::make_unique<RingtoneDualFwkRestoreClone>();
+    EXPECT_NE(restore, nullptr);
     restore->Init("/");
     restore->QueryMediaLibForFileInfo({"sound.m4a", "common.mp3", "cc"}, resultFromMedia, TOOL_QUERY_AUDIO);
     restore->QueryRingToneDbForFileInfo(rdbStore, {"Creek.ogg", "Dawn.ogg", "Flourish.ogg"}, resultFromRingtone);
