@@ -165,15 +165,11 @@ HWTEST_F(RingtoneScannerUnitTest,  scannerManager_ScanFile_CanonicalPathtest_001
 
 HWTEST_F(RingtoneScannerUnitTest,  scannerManager_Strat_test_001, TestSize.Level0)
 {
-    if (g_ringtoneScannerManager == nullptr) {
-        RINGTONE_ERR_LOG("g_ringtoneScannerManager invalid");
-        exit(1);
-    }
-
-    RingtoneScannerManager::GetInstance();
-    g_ringtoneScannerManager->Start(true);
-    g_ringtoneScannerManager->Start(false);
-    g_ringtoneScannerManager->Stop();
+    auto instance = RingtoneScannerManager::GetInstance();
+    EXPECT_NE(instance, nullptr);
+    instance->Start(true);
+    instance->Start(false);
+    instance->Stop();
 }
 
 HWTEST_F(RingtoneScannerUnitTest,  scannerManager_ScanFile_test_001, TestSize.Level0)
