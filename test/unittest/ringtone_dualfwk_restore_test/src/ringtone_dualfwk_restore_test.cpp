@@ -17,9 +17,11 @@
 #include "ability_context_impl.h"
 #include "datashare_ext_ability.h"
 #include "iservice_registry.h"
+#ifdef USE_MEDIA_LIBRARY
 #include "medialibrary_db_const.h"
 #include "file_asset.h"
 #include "fetch_result.h"
+#endif
 #include "ringtone_restore_napi.h"
 #include "ringtone_restore_factory.h"
 #include "ringtone_restore_type.h"
@@ -140,7 +142,9 @@ HWTEST_F(RingtoneDualFwkRestoreTest, ringtone_dualfwk_restore_test_0003, TestSiz
     auto restore = std::make_unique<RingtoneDualFwkRestoreClone>();
     EXPECT_NE(restore, nullptr);
     restore->Init("/");
+#ifdef USE_MEDIA_LIBRARY
     restore->QueryMediaLibForFileInfo({"sound.m4a", "common.mp3", "cc"}, resultFromMedia, TOOL_QUERY_AUDIO);
+#endif
     restore->QueryRingToneDbForFileInfo(rdbStore, {"Creek.ogg", "Dawn.ogg", "Flourish.ogg"}, resultFromRingtone);
     RINGTONE_INFO_LOG("ringtone_dualfwk_restore_test_0003 end");
 }

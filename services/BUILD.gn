@@ -195,7 +195,6 @@ ohos_shared_library("ringtonerestore") {
     "hilog:libhilog",
     "init:libbegetutil",
     "libxml2:libxml2",
-    "media_library:media_library",
     "napi:ace_napi",
     "os_account:os_account_innerkits",
     "player_framework:media_client",
@@ -204,6 +203,11 @@ ohos_shared_library("ringtonerestore") {
     "relational_store:rdb_data_share_adapter",
     "samgr:samgr_proxy",
   ]
+
+  if (ringtone_media_library_enable) {
+    defines = [ "USE_MEDIA_LIBRARY" ]
+    external_deps += [ "media_library:media_library" ]
+  }
 
   defines = []
 
