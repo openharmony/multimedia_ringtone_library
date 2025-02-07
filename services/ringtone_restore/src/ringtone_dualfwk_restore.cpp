@@ -28,8 +28,6 @@
 #include "dualfwk_conf_parser.h"
 #include "dualfwk_conf_loader.h"
 #include "dualfwk_sound_setting.h"
-#include "file_asset.h"
-#include "fetch_result.h"
 #include "iservice_registry.h"
 #include "result_set_utils.h"
 #include "ringtone_errno.h"
@@ -40,7 +38,11 @@
 #include "ringtone_restore_type.h"
 #include "ringtone_type.h"
 #include "ringtone_utils.h"
+#ifdef USE_MEDIA_LIBRARY
+#include "fetch_result.h"
+#include "file_asset.h"
 #include "userfile_manager_types.h"
+#endif
 
 namespace OHOS {
 namespace Media {
@@ -138,6 +140,7 @@ int32_t RingtoneDualFwkRestore::Init(const std::string &backupPath)
     return E_OK;
 }
 
+#ifdef USE_MEDIA_LIBRARY
 static void MediaUriAppendKeyValue(string &uri, const string &key, const string &value)
 {
     string uriKey = key + '=';
@@ -155,6 +158,7 @@ static void MediaUriAppendKeyValue(string &uri, const string &key, const string 
         uri.insert(posJ, append);
     }
 }
+#endif
 
 static const string KEY_API_VERSION = "API_VERSION";
 static std::string MakeBatchQueryWhereClause(const std::vector<std::string> &names,
@@ -175,6 +179,7 @@ static std::string MakeBatchQueryWhereClause(const std::vector<std::string> &nam
     return prefixSs.str();
 }
 
+#ifdef USE_MEDIA_LIBRARY
 static void AssetToFileInfo(std::shared_ptr<FileInfo> infoPtr, const std::unique_ptr<FileAsset> &asset)
 {
     infoPtr->toneId = asset->GetId();
@@ -242,6 +247,7 @@ int32_t RingtoneDualFwkRestore::QueryMediaLibForFileInfo(const std::vector<std::
     }
     return E_SUCCESS;
 }
+#endif
 
 int32_t RingtoneDualFwkRestore::QueryRingToneDbForFileInfo(std::shared_ptr<NativeRdb::RdbStore> rdbStore,
     const std::vector<std::string> &names, std::map<std::string, std::shared_ptr<FileInfo>> &infoMap,
@@ -362,8 +368,10 @@ std::vector<FileInfo> RingtoneDualFwkRestore::BuildFileInfo()
     std::vector<std::string> displayNames = dualFwkSetting_->GetDisplayNames();
     std::map<std::string, std::shared_ptr<FileInfo>> resultFromRingtoneByDisplayName;
 
+#ifdef USE_MEDIA_LIBRARY
     QueryMediaLibForFileInfo(fileNames, resultFromMediaByDisplayName, UFM_QUERY_AUDIO, "display_name");
     QueryMediaLibForFileInfo(fileNames, resultFromMediaByTitle, UFM_QUERY_AUDIO, "title");
+#endif
     QueryRingToneDbForFileInfo(GetBaseDb(), displayNames, resultFromRingtoneByDisplayName, "display_name");
 
     for (const auto& setting : dualFwkSetting_->GetSettings()) {
