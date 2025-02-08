@@ -25,6 +25,7 @@ enum ToneType : int32_t {
     TONE_TYPE_RINGTONE,
     TONE_TYPE_NOTIFICATION,
     TONE_TYPE_SHOT,
+    TONE_TYPE_CONTACTS,
     TONE_TYPE_MAX,
 };
 
