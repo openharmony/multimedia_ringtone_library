@@ -132,6 +132,7 @@ public:
 private:
     EXPORT static void DumpDataShareValueBucket(const std::vector<std::string> &tabFields,
         const DataShareValuesBucket &value);
+    EXPORT static int DatashareStartedHandle();
     void RingtoneScanner();
     Runtime &runtime_;
 };
