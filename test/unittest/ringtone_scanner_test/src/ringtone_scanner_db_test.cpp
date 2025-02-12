@@ -94,7 +94,8 @@ HWTEST_F(RingtoneScannerDbTest, scannerDb_InsertMetadata_test_001, TestSize.Leve
     string tableName;
     g_uniStore->Stop();
     int32_t ret = ringtoneScannerDb.InsertMetadata(metadata, tableName);
-    EXPECT_EQ(ret, E_OK);
+    // stop g_uniStore will cause insert failed
+    EXPECT_EQ(ret, E_DB_FAIL);
     struct stat statInfo;
     metadata.SetData(STORAGE_FILES_DIR);
     metadata.SetDisplayName(RingtoneScannerUtils::GetFileNameFromUri(STORAGE_FILES_DIR));
@@ -105,11 +106,11 @@ HWTEST_F(RingtoneScannerDbTest, scannerDb_InsertMetadata_test_001, TestSize.Leve
     const int64_t DATE_TAKEN = 1;
     metadata.SetDateTaken(DATE_TAKEN);
     ret = ringtoneScannerDb.InsertMetadata(metadata, tableName);
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(ret, E_DB_FAIL);
     const int64_t DATE_ADD = 1;
     metadata.SetDateAdded(DATE_ADD);
     ret = ringtoneScannerDb.InsertMetadata(metadata, tableName);
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(ret, E_DB_FAIL);
 }
 
 HWTEST_F(RingtoneScannerDbTest, scannerDb_UpdateMetadata_test_001, TestSize.Level0)
