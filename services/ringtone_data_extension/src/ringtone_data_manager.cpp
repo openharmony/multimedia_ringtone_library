@@ -314,10 +314,13 @@ int32_t RingtoneDataManager::OpenRingtoneFile(RingtoneDataCommand &cmd, const st
         RINGTONE_ERR_LOG("Failed to get RingtoneAsset");
         return E_INVALID_VALUES;
     }
-
+    if (access(asset->GetPath().c_str(), F_OK) != E_OK) {
+        RINGTONE_ERR_LOG("File not exist: %{public}s", asset->GetPath().c_str());
+        return E_ERR;
+    }
     string absFilePath;
     if (!PathToRealPath(asset->GetPath(), absFilePath)) {
-        RINGTONE_ERR_LOG("Failed to get real path: %{private}s", asset->GetPath().c_str());
+        RINGTONE_ERR_LOG("Failed to get real path: %{private}s, err:%{public}d", asset->GetPath().c_str(), errno);
         return E_ERR;
     }
 
