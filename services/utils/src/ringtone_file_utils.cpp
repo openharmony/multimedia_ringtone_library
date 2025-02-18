@@ -596,14 +596,6 @@ int32_t RingtoneFileUtils::MoveDirectory(const std::string &srcDir, const std::s
         RINGTONE_ERR_LOG("access srcDir failed, errno is %{public}d", errno);
         return E_FAIL;
     }
-
-    // 检查contacts目录是否创建
-    if (access(RINGTONE_CUSTOMIZED_CONTACTS_PATH.c_str(), F_OK) != 0) {
-        if (CreatePreloadFolder(RINGTONE_CUSTOMIZED_CONTACTS_PATH) != E_SUCCESS) {
-            RINGTONE_ERR_LOG("create contacts dir failed!");
-        }
-    }
-
     if (access(dstDir.c_str(), F_OK) != 0) {
         RINGTONE_ERR_LOG("access dstDir failed, errno is %{public}d", errno);
         return E_FAIL;
@@ -627,6 +619,14 @@ void RingtoneFileUtils::AccessRingtoneDir()
         CreateRingtoneDir();
         return;
     }
+
+    // 检查contacts目录是否创建
+    if (access(RINGTONE_CUSTOMIZED_CONTACTS_PATH.c_str(), F_OK) != 0) {
+        if (CreatePreloadFolder(RINGTONE_CUSTOMIZED_CONTACTS_PATH) != E_SUCCESS) {
+            RINGTONE_ERR_LOG("create contacts dir failed!");
+        }
+    }
+
     struct stat fileStat;
     if (stat(RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH.c_str(), &fileStat) != 0) {
         RINGTONE_ERR_LOG("stat dir failed, errno is %{public}d", errno);
