@@ -154,7 +154,9 @@ static int32_t CheckRingtonePerm(RingtoneDataCommand &cmd, bool isWrite)
     }
 
     if (isWrite) {
-        err = (RingtonePermissionUtils::CheckCallerPermission(PERM_WRITE_RINGTONE) ? E_SUCCESS : E_PERMISSION_DENIED);
+        err = (RingtonePermissionUtils::CheckCallerPermission(PERM_WRITE_RINGTONE)||
+            (RingtonePermissionUtils::CheckCallerPermission(PERM_ACCESS_CUSTOM_RINGTONE)) ?
+            E_SUCCESS : E_PERMISSION_DENIED);
     }
 
     return err;
@@ -301,7 +303,7 @@ int RingtoneDataShareExtension::Update(const Uri &uri, const DataSharePredicates
     }
 
     RingtoneDataCommand cmd(uri, tab, RingtoneOperationType::UPDATE);
-    err = CheckRingtonePerm(cmd, false);
+    err = CheckRingtonePerm(cmd, true);
     if (err < 0) {
         RINGTONE_ERR_LOG("Check Update-permission failed, errCode: %{public}d", err);
         return err;

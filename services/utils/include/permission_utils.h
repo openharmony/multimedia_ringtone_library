@@ -21,6 +21,7 @@ namespace OHOS {
 namespace Media {
 #define EXPORT __attribute__ ((visibility ("default")))
 const std::string PERM_WRITE_RINGTONE = "ohos.permission.WRITE_RINGTONE";
+const std::string PERM_ACCESS_CUSTOM_RINGTONE = "ohos.permission.ACCESS_CUSTOM_RINGTONE";
 
 class RingtonePermissionUtils {
 public:
