@@ -387,3 +387,10 @@ ohos_prebuilt_etc("ringtone_param.para.dac") {
   part_name = "ringtone_library"
   module_install_dir = "etc/param"
 }
+
+ohos_prebuilt_etc("ringtone_setting_datashare.para") {
+  source = "etc/ringtone_setting_datashare.para"
+  subsystem_name = "multimedia"
+  part_name = "ringtone_library"
+  module_install_dir = "etc/param"
+}
