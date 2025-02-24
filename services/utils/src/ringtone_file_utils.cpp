@@ -31,6 +31,7 @@
 #include "ringtone_log.h"
 #include "ringtone_mimetype_utils.h"
 #include "ringtone_type.h"
+#include "ringtone_xcollie.h"
 #include "vibrate_type.h"
 #include "securec.h"
 
@@ -303,10 +304,16 @@ int32_t RingtoneFileUtils::OpenFile(const string &filePath, const string &mode)
         return errCode;
     }
     string absFilePath;
+    RingtoneXCollie ringtoneXCollie("PathToRealPath time out",
+        [](void *) {
+            RINGTONE_INFO_LOG("PathToRealPath time out");
+        });
     if (!PathToRealPath(filePath, absFilePath)) {
         RINGTONE_ERR_LOG("file is not real path, file path: %{private}s", filePath.c_str());
+        ringtoneXCollie.CancelXCollieTimer();
         return errCode;
     }
+    ringtoneXCollie.CancelXCollieTimer();
     if (absFilePath.empty()) {
         RINGTONE_ERR_LOG("Failed to obtain the canonical path for source path %{public}d %{private}s",
             errno, filePath.c_str());
@@ -347,10 +354,16 @@ int32_t RingtoneFileUtils::OpenVibrateFile(const std::string &filePath, const st
         return errCode;
     }
     string absFilePath;
+    RingtoneXCollie ringtoneXCollie("VibrateFile PathToRealPath time out",
+        [](void *) {
+            RINGTONE_INFO_LOG("VibrateFile PathToRealPath time out");
+        });
     if (!PathToRealPath(filePath, absFilePath)) {
         RINGTONE_ERR_LOG("file is not real path, file path: %{private}s", filePath.c_str());
+        ringtoneXCollie.CancelXCollieTimer();
         return errCode;
     }
+    ringtoneXCollie.CancelXCollieTimer();
     if (absFilePath.empty()) {
         RINGTONE_ERR_LOG("Failed to obtain the canonical path for source path %{public}d %{private}s",
             errno, filePath.c_str());
@@ -422,10 +435,16 @@ bool RingtoneFileUtils::CopyFileUtil(const string &filePath, const string &newPa
     }
     RINGTONE_INFO_LOG("File path is %{private}s", filePath.c_str());
     string absFilePath;
+    RingtoneXCollie ringtoneXCollie("CopyFileUtil PathToRealPath time out",
+        [](void *) {
+            RINGTONE_INFO_LOG("CopyFileUtil PathToRealPath time out");
+        });
     if (!PathToRealPath(filePath, absFilePath)) {
         RINGTONE_ERR_LOG("file is not real path, file path: %{private}s", filePath.c_str());
+        ringtoneXCollie.CancelXCollieTimer();
         return ret;
     }
+    ringtoneXCollie.CancelXCollieTimer();
     if (absFilePath.empty()) {
         RINGTONE_ERR_LOG("Failed to obtain the canonical path for source path%{private}s %{public}d",
             filePath.c_str(), errno);
