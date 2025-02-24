@@ -26,6 +26,7 @@
 #include "ringtone_rdbstore.h"
 #include "ringtone_scanner_manager.h"
 #include "ringtone_tracer.h"
+#include "ringtone_xcollie.h"
 
 namespace OHOS {
 namespace Media {
@@ -323,10 +324,16 @@ int32_t RingtoneDataManager::OpenRingtoneFile(RingtoneDataCommand &cmd, const st
         return E_ERR;
     }
     string absFilePath;
+    RingtoneXCollie ringtoneXCollie("RingtoneFile PathToRealPath time out",
+        [](void *) {
+            RINGTONE_INFO_LOG("RingtoneFile PathToRealPath time out");
+        });
     if (!PathToRealPath(asset->GetPath(), absFilePath)) {
         RINGTONE_ERR_LOG("Failed to get real path: %{private}s, err:%{public}d", asset->GetPath().c_str(), errno);
+        ringtoneXCollie.CancelXCollieTimer();
         return E_ERR;
     }
+    ringtoneXCollie.CancelXCollieTimer();
 
     RINGTONE_DEBUG_LOG("end");
     return RingtoneFileUtils::OpenFile(absFilePath, mode);
@@ -345,11 +352,16 @@ int32_t RingtoneDataManager::OpenVibrateFile(RingtoneDataCommand &cmd, const str
     }
 
     string absFilePath;
+    RingtoneXCollie ringtoneXCollie("VibrateFile PathToRealPath time out",
+        [](void *) {
+            RINGTONE_INFO_LOG("VibrateFile PathToRealPath time out");
+        });
     if (!PathToRealPath(asset->GetPath(), absFilePath)) {
         RINGTONE_ERR_LOG("Failed to get real path: %{private}s", asset->GetPath().c_str());
+        ringtoneXCollie.CancelXCollieTimer();
         return E_ERR;
     }
-
+    ringtoneXCollie.CancelXCollieTimer();
     RINGTONE_DEBUG_LOG("end");
     return RingtoneFileUtils::OpenVibrateFile(absFilePath, mode);
 }
