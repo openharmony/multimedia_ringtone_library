@@ -335,6 +335,7 @@ static std::shared_ptr<FileInfo> MergeQueries(const DualFwkSettingItem &setting,
     std::shared_ptr<FileInfo> infoPtr;
     doInsert = true;
     auto keyName = setting.toneFileName;
+    auto KeyToneType = setting.toneType;
     if (resultFromMediaByDisplayName.find(keyName) != resultFromMediaByDisplayName.end()) {
         infoPtr = resultFromMediaByDisplayName[keyName];
         RINGTONE_INFO_LOG("found %{public}s in media_lib", keyName.c_str());
@@ -342,9 +343,26 @@ static std::shared_ptr<FileInfo> MergeQueries(const DualFwkSettingItem &setting,
         infoPtr = resultFromMediaByTitle[keyName];
         RINGTONE_INFO_LOG("found %{public}s in media_lib", keyName.c_str());
     } else if (resultFromRingtoneByDisplayName.find(keyName) != resultFromRingtoneByDisplayName.end()) {
-        infoPtr = resultFromRingtoneByDisplayName[keyName];
-        RINGTONE_INFO_LOG("found %{public}s in ringtone db", keyName.c_str());
-        doInsert = false;
+        infoPtr = resultFromRingtoneByDisplayName.at(keyName);
+        if (infoPtr == nullptr) {
+            RINGTONE_ERR_LOG("infoPtr from ringtone by display name is nullptr");
+            return nullptr;
+        }
+        if ((infoPtr->sourceType == SourceType::SOURCE_TYPE_PRESET) && ((infoPtr->toneType ==
+            ToneType::TONE_TYPE_RINGTONE) || (infoPtr->toneType == ToneType::TONE_TYPE_NOTIFICATION))) {
+            if (KeyToneType == infoPtr->toneType) {
+                infoPtr = resultFromRingtoneByDisplayName[keyName];
+                RINGTONE_INFO_LOG("found %{public}s in ringtone db", keyName.c_str());
+                doInsert = false;
+            } else {
+                RINGTONE_INFO_LOG("%{public}s is invalid", keyName.c_str());
+                return nullptr;
+            }
+        } else {
+            infoPtr = resultFromRingtoneByDisplayName[keyName];
+            RINGTONE_INFO_LOG("found %{public}s in ringtone db", keyName.c_str());
+            doInsert = false;
+        }
     } else if (setting.isTitle) {
         keyName = RingtoneUtils::ReplaceAll(keyName + ".ogg", " ", "_");
         if (resultFromRingtoneByDisplayName.find(keyName) != resultFromRingtoneByDisplayName.end()) {
