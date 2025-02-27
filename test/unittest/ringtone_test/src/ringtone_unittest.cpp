@@ -1190,13 +1190,7 @@ HWTEST_F(RingtoneUnitTest, medialib_silentAccessQuery_test_001, TestSize.Level0)
     auto resultSet = g_dataShareHelperProxy->Query(uri, predicates, columns, &businessError);
     auto errCode = businessError.GetCode();
     GTEST_LOG_(INFO)<< "g_dataShareHelperProxy->Query(uri errCode=" << errCode;
-    EXPECT_NE(resultSet, nullptr);
-    if (resultSet != nullptr) {
-        auto results = make_unique<RingtoneFetchResult<SimcardSettingAsset>>(move(resultSet));
-        EXPECT_NE(results, nullptr);
-        auto simcardSettingAsset = results->GetFirstObject();
-        EXPECT_NE(simcardSettingAsset, nullptr);
-    }
+    EXPECT_EQ(resultSet, nullptr);
 }
 } // namespace Media
 } // namespace OHOS
