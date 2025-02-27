@@ -181,7 +181,12 @@ int32_t RingtoneLanguageManager::CheckLanguageTypeByRingtone(int32_t &rowCount,
         RINGTONE_COLUMN_DATA
     };
 
-    auto rawRdb = RingtoneRdbStore::GetInstance()->GetRaw();
+    auto rdbStore = RingtoneRdbStore::GetInstance();
+    if (rdbStore == nullptr) {
+        RINGTONE_ERR_LOG("failed to get rdb");
+        return E_RDB;
+    }
+    auto rawRdb = rdbStore->GetRaw();
     if (rawRdb == nullptr) {
         RINGTONE_ERR_LOG("failed to get raw rdb");
         return E_RDB;
@@ -212,7 +217,12 @@ int32_t RingtoneLanguageManager::CheckLanguageTypeByRingtone(int32_t &rowCount,
 void RingtoneLanguageManager::ChangeLanguageDataToRingtone(int32_t rowCount,
     const std::shared_ptr<ResultSet> &resultSet)
 {
-    auto rawRdb = RingtoneRdbStore::GetInstance()->GetRaw();
+    auto rdbStore = RingtoneRdbStore::GetInstance();
+    if (rdbStore == nullptr) {
+        RINGTONE_ERR_LOG("failed to get rdb");
+        return;
+    }
+    auto rawRdb = rdbStore->GetRaw();
     if (rawRdb == nullptr) {
         RINGTONE_ERR_LOG("failed to get raw rdb");
         return;
@@ -310,7 +320,12 @@ int32_t RingtoneLanguageManager::CheckLanguageTypeByVibration(int32_t &rowCount,
         VIBRATE_COLUMN_DATA
     };
 
-    auto rawRdb = RingtoneRdbStore::GetInstance()->GetRaw();
+    auto rdbStore = RingtoneRdbStore::GetInstance();
+    if (rdbStore == nullptr) {
+        RINGTONE_ERR_LOG("failed to get rdb");
+        return E_RDB;
+    }
+    auto rawRdb = rdbStore->GetRaw();
     if (rawRdb == nullptr) {
         RINGTONE_ERR_LOG("failed to get raw rdb");
         return E_RDB;
@@ -341,7 +356,12 @@ int32_t RingtoneLanguageManager::CheckLanguageTypeByVibration(int32_t &rowCount,
 void RingtoneLanguageManager::ChangeLanguageDataToVibration(int32_t rowCount,
     const std::shared_ptr<NativeRdb::ResultSet> &resultSet)
 {
-    auto rawRdb = RingtoneRdbStore::GetInstance()->GetRaw();
+    auto rdbStore = RingtoneRdbStore::GetInstance();
+    if (rdbStore == nullptr) {
+        RINGTONE_ERR_LOG("failed to get rdb");
+        return;
+    }
+    auto rawRdb = rdbStore->GetRaw();
     if (rawRdb == nullptr) {
         RINGTONE_ERR_LOG("failed to get raw rdb");
         return;
