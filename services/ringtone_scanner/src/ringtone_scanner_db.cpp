@@ -76,7 +76,12 @@ int32_t RingtoneScannerDb::GetVibrateFileBasicInfo(const string &path, unique_pt
 int32_t RingtoneScannerDb::QueryRingtoneRdb(const string &whereClause, vector<string> &whereArgs,
     const vector<string> &columns, shared_ptr<NativeRdb::ResultSet> &resultSet, const string &tableName)
 {
-    auto rawRdb = RingtoneRdbStore::GetInstance()->GetRaw();
+    auto rdbStore = RingtoneRdbStore::GetInstance();
+    if (rdbStore == nullptr) {
+        RINGTONE_ERR_LOG("failed to get rdb store");
+        return E_RDB;
+    }
+    auto rawRdb = rdbStore->GetRaw();
     if (rawRdb == nullptr) {
         RINGTONE_ERR_LOG("get raw rdb failed");
         return E_RDB;
@@ -97,7 +102,12 @@ int32_t RingtoneScannerDb::QueryRingtoneRdb(const string &whereClause, vector<st
 int32_t RingtoneScannerDb::UpdateRingtoneRdb(ValuesBucket &values, const string &whereClause,
     vector<string> &whereArgs, const string &tableName)
 {
-    auto rawRdb = RingtoneRdbStore::GetInstance()->GetRaw();
+    auto rdbStore = RingtoneRdbStore::GetInstance();
+    if (rdbStore == nullptr) {
+        RINGTONE_ERR_LOG("failed to get rdb");
+        return E_RDB;
+    }
+    auto rawRdb = rdbStore->GetRaw();
     if (rawRdb == nullptr) {
         RINGTONE_ERR_LOG("get raw rdb failed");
         return E_RDB;
@@ -194,7 +204,12 @@ void RingtoneScannerDb::ExtractVibrateMetaFromColumn(const shared_ptr<NativeRdb:
 int32_t RingtoneScannerDb::GetFileSet(RingtoneDataCommand &cmd, const vector<string> &columns,
     shared_ptr<NativeRdb::ResultSet> &resultSet)
 {
-    auto rawRdb = RingtoneRdbStore::GetInstance()->GetRaw();
+    auto rdbStore = RingtoneRdbStore::GetInstance();
+    if (rdbStore == nullptr) {
+        RINGTONE_ERR_LOG("failed to get rdb");
+        return E_RDB;
+    }
+    auto rawRdb = rdbStore->GetRaw();
     if (rawRdb == nullptr) {
         RINGTONE_ERR_LOG("get raw rdb failed");
         return E_RDB;
@@ -323,7 +338,12 @@ int32_t RingtoneScannerDb::UpdateMetadata(const RingtoneMetadata &metadata, stri
     SetValuesFromMetaData(metadata, values, false);
 
     tableName = RINGTONE_TABLE;
-    auto rawRdb = RingtoneRdbStore::GetInstance()->GetRaw();
+    auto rdbStore = RingtoneRdbStore::GetInstance();
+    if (rdbStore == nullptr) {
+        RINGTONE_ERR_LOG("failed to get rdb");
+        return E_RDB;
+    }
+    auto rawRdb = rdbStore->GetRaw();
     if (rawRdb == nullptr) {
         RINGTONE_ERR_LOG("get raw rdb failed");
         return E_RDB;
@@ -346,7 +366,12 @@ int32_t RingtoneScannerDb::UpdateVibrateMetadata(const VibrateMetadata &metadata
     SetValuesFromVibrateMetaData(metadata, values, false);
 
     tableName = VIBRATE_TABLE;
-    auto rawRdb = RingtoneRdbStore::GetInstance()->GetRaw();
+    auto rdbStore = RingtoneRdbStore::GetInstance();
+    if (rdbStore == nullptr) {
+        RINGTONE_ERR_LOG("failed to get rdb");
+        return E_RDB;
+    }
+    auto rawRdb = rdbStore->GetRaw();
     if (rawRdb == nullptr) {
         RINGTONE_ERR_LOG("get raw rdb failed");
         return E_RDB;
@@ -389,7 +414,12 @@ int32_t RingtoneScannerDb::InsertVibrateMetadata(const VibrateMetadata &metadata
 
 bool RingtoneScannerDb::InsertData(const ValuesBucket values, const string &tableName, int32_t &rowNum)
 {
-    auto rawRdb = RingtoneRdbStore::GetInstance()->GetRaw();
+    auto rdbStore = RingtoneRdbStore::GetInstance();
+    if (rdbStore == nullptr) {
+        RINGTONE_ERR_LOG("failed to get rdb");
+        return false;
+    }
+    auto rawRdb = rdbStore->GetRaw();
     if (rawRdb == nullptr) {
         RINGTONE_ERR_LOG("get raw rdb failed");
         return false;
