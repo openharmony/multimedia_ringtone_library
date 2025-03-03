@@ -266,6 +266,9 @@ static void UpgradeExtension(NativeRdb::RdbStore &store, int32_t oldVersion)
         AddPreloadConfTable(store);
         UpdateDefaultSystemTone(store);
     }
+    if (oldVersion < VERSION_UPDATE_WATCH_MIME_TYPE) {
+        UpdateMimeType(store);
+    }
 }
 
 int32_t RingtoneDataCallBack::OnUpgrade(NativeRdb::RdbStore &store, int32_t oldVersion, int32_t newVersion)
