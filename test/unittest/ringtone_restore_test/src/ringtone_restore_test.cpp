@@ -75,9 +75,9 @@ void ClearData()
 {
     RINGTONE_INFO_LOG("Start clear data");
     ExecuteSqls(g_restoreService->localRdb_, CLEAR_SQLS);
-    system("rm -rf /storage/media/local/files/Ringtone/alarms/*");
-    system("rm -rf /storage/media/local/files/Ringtone/notifications/*");
-    system("rm -rf /storage/media/local/files/Ringtone/ringtones/*");
+    system("rm -rf /data/storage/el2/base/files/Ringtone/alarms/*");
+    system("rm -rf /data/storage/el2/base/files/Ringtone/notifications/*");
+    system("rm -rf /data/storage/el2/base/files/Ringtone/ringtones/*");
     RINGTONE_INFO_LOG("End clear data");
 }
 

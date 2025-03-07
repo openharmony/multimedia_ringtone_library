@@ -20,7 +20,7 @@ import ringtonerestore from '@ohos.multimedia.ringtonerestore';
 
 const TAG = 'RingtoneBackupExtAbility';
 
-const ringtonePath = '/storage/media/local/files/Ringtone/';
+const ringtonePath = '/data/storage/el2/base/files/Ringtone/';
 
 const RESTORE_SCENE_TYPE_DUAL_UPGRADE : number = 0;
 const RESTORE_SCENE_TYPE_SINGLE_CLONE : number = 1;
@@ -51,7 +51,7 @@ export default class RingtoneBackupExtAbility extends BackupExtensionAbility {
     console.log(TAG, `onRestoreEx ok ${JSON.stringify(bundleVersion)}`);
     console.time(TAG + ' RESTORE');
     const backupBasePath = this.context.backupDir + 'restore';
-    const backupFilePath = backupBasePath + '/storage/media/local/files/Ringtone/';
+    const backupFilePath = backupBasePath + '/data/storage/el2/base/files/Ringtone/';
     let srcPath:string = backupFilePath;
     let destPath:string = ringtonePath;
     let cloneType:number;
