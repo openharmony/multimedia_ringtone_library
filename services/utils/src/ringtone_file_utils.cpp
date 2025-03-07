@@ -41,6 +41,7 @@ using namespace std;
 static const int32_t OPEN_FDS = 128;
 static const mode_t MODE_RWX_USR_GRP = 02771;
 static const mode_t MODE_RW_USR = 0644;
+const std::string OLD_RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH = "/storage/media/local/files/Ringtone";
 const vector<string> EXIF_SUPPORTED_EXTENSION = {
     RINGTONE_CONTAINER_TYPE_3GA,
     RINGTONE_CONTAINER_TYPE_AC3,
@@ -630,6 +631,51 @@ int32_t RingtoneFileUtils::MoveDirectory(const std::string &srcDir, const std::s
         }
     }
     return ret;
+}
+bool CopyRingtoneFolder(const std::filesystem::path& sourcePath, const std::filesystem::path& destinationPath)
+{
+    if (!std::filesystem::exists(sourcePath)) {
+        RINGTONE_ERR_LOG("source path is not exists, errno is %{public}d", errno);
+        return false;
+    }
+    for (const auto& entry : std::filesystem::directory_iterator(sourcePath)) {
+        std::filesystem::path srcPath = entry.path();
+        std::filesystem::path dstPath = destinationPath / srcPath.filename();
+
+        if (std::filesystem::is_directory(srcPath)) {
+            if (!CopyRingtoneFolder(srcPath, dstPath)) {
+                return false;
+            }
+        } else {
+            std::filesystem::copy_file(srcPath, dstPath, std::filesystem::copy_options::overwrite_existing);
+            if (!std::filesystem::exists(dstPath)) {
+                RINGTONE_ERR_LOG("copy file failed, dstPath : %{public}s, errno is %{public}d", dstPath.c_str(), errno);
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+void RingtoneFileUtils::MoveRingtoneFolder()
+{
+    const std::filesystem::path oldPath("/storage/media/local/files/Ringtone");
+    const std::filesystem::path newPath("/data/storage/el2/base/files/Ringtone");
+    if (!(std::filesystem::exists(RINGTONE_CUSTOMIZED_BASE_PATH))) {
+        RINGTONE_ERR_LOG("Target path is not exists");
+        return;
+    }
+    if (!CopyRingtoneFolder(oldPath, newPath)) {
+        RINGTONE_ERR_LOG("Copy ringtone folder failed");
+        return;
+    }
+    std::filesystem::remove_all(oldPath);
+    if (std::filesystem::exists(OLD_RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH)) {
+        RINGTONE_ERR_LOG("remove ringtone folder failed, errno is %{public}d", errno);
+        return;
+    }
+    RINGTONE_INFO_LOG("Ringtone folder move successfully");
+    return;
 }
 
 void RingtoneFileUtils::AccessRingtoneDir()

@@ -28,8 +28,8 @@
 namespace OHOS {
 namespace Media {
 
-const std::string RINGTONE_BACKUP_SUFFIX_DIR = "/storage/media/local/files/Ringtone";
-const std::string RINGTONE_RESTORE_DIR = "/storage/media/local/files/Ringtone";
+const std::string RINGTONE_BACKUP_SUFFIX_DIR = "/data/storage/el2/base/files/Ringtone";
+const std::string RINGTONE_RESTORE_DIR = "/data/storage/el2/base/files/Ringtone";
 
 enum RestoreSceneType : int32_t {
     RESTORE_SCENE_TYPE_INVILID = -1,

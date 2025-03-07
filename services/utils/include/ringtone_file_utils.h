@@ -72,6 +72,7 @@ public:
     EXPORT static void CreateRingtoneDir();
     EXPORT static int32_t CreatePreloadFolder(const std::string &path);
     EXPORT static int32_t MoveDirectory(const std::string &srcDir, const std::string &dstDir);
+    EXPORT static void MoveRingtoneFolder();
     EXPORT static void AccessRingtoneDir();
     EXPORT static std::string GetFileExtension(const std::string &path);
 };

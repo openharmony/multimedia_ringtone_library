@@ -35,13 +35,14 @@ const std::string VIBRATE_PATH_URI          = RINGTONE_URI + "/" + VIBRATE_URI_P
 const std::string RINGTONE_URI_PROXY_STRING = "?Proxy";
 
 // ringtone user customized tones file location
-const std::string RINGTONE_CUSTOMIZED_BASE_PATH          = "/storage/media/local/files";
+const std::string RINGTONE_CUSTOMIZED_BASE_PATH          = "/data/storage/el2/base/files/";
 const std::string RINGTONE_CUSTOMIZED_ALARM_PATH         = RINGTONE_CUSTOMIZED_BASE_PATH + "/Ringtone/alarms";
 const std::string RINGTONE_CUSTOMIZED_RINGTONE_PATH      = RINGTONE_CUSTOMIZED_BASE_PATH + "/Ringtone/ringtones";
 const std::string RINGTONE_CUSTOMIZED_NOTIFICATIONS_PATH = RINGTONE_CUSTOMIZED_BASE_PATH + "/Ringtone/notifications";
 const std::string RINGTONE_CUSTOMIZED_CONTACTS_PATH      = RINGTONE_CUSTOMIZED_BASE_PATH + "/Ringtone/contacts";
-const std::string RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH = "/storage/media/local/files/Ringtone";
-const std::string RINGTONE_CUSTOMIZED_BASE_RINGTONETMP_PATH = "/storage/media/local/files/RingtoneTmp";
+
+const std::string RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH = "/data/storage/el2/base/files/Ringtone";
+const std::string RINGTONE_CUSTOMIZED_BASE_RINGTONETMP_PATH = "/data/storage/el2/base/files/RingtoneTmp";
 
 // ringtone preload pathes
 const std::string ROOT_TONE_PRELOAD_PATH_NOAH_PATH = "/sys_prod/resource/media/audio";

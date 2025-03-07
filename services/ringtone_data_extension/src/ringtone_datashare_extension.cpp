@@ -32,6 +32,8 @@
 #include "ringtone_scanner_manager.h"
 #include "runtime.h"
 #include "singleton.h"
+#include "ringtone_proxy_uri.h"
+#include "ringtone_fetch_result.h"
 
 namespace OHOS {
 namespace AbilityRuntime {
@@ -46,6 +48,9 @@ const int RINGTONE_PARAMETER_SCANNER_COMPLETED_TRUE = 1;
 const int RINGTONE_PARAMETER_SCANNER_COMPLETED_FALSE = 0;
 const char RINGTONE_PARAMETER_DATASHARE_COMPLETED_KEY[] = "ringtone.setting.datashare";
 const char RINGTONE_PARAMETER_DATASHARE_COMPLETED_TRUE[] = "true";
+const char RINGTONE_PARAMETER_FOLDER_MOVE_COMPLETED_KEY[] = "ringtone.folder.move.completed";
+const char RINGTONE_PARAMETER_FOLDER_MOVE_COMPLETED_TRUE[] = "true";
+const std::string OLD_RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH = "/storage/media/local/files/Ringtone";
 const int32_t RINGTONEPARA_SIZE = 64;
 const std::vector<std::string> RINGTONE_OPEN_WRITE_MODE_VECTOR = {
     { RINGTONE_FILEMODE_WRITEONLY },
@@ -113,6 +118,15 @@ void RingtoneDataShareExtension::OnStart(const AAFwk::Want &want)
     dfxMgr->Init(context);
 
     RingtoneScanner();
+    
+    if (RingtoneFileUtils::IsFileExists(OLD_RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH)) {
+        char paramValue[RINGTONEPARA_SIZE] = {0};
+        GetParameter(RINGTONE_PARAMETER_FOLDER_MOVE_COMPLETED_KEY, "", paramValue, RINGTONEPARA_SIZE);
+        if (strcmp(paramValue, RINGTONE_PARAMETER_FOLDER_MOVE_COMPLETED_TRUE) != 0) {
+            UpdataRdbPathData();
+        }
+    }
+
     RingtoneLanguageManager::GetInstance()->SyncAssetLanguage();
     SetParameter(RINGTONE_PARAMETER_DATASHARE_COMPLETED_KEY, RINGTONE_PARAMETER_DATASHARE_COMPLETED_TRUE);
     RINGTONE_DEBUG_LOG("end.");
@@ -255,6 +269,59 @@ int RingtoneDataShareExtension::DatashareStartedHandle()
         return Media::E_DATASHARE_END;
     }
     return Media::E_OK;
+}
+
+void RingtoneDataShareExtension::UpdataRdbPathData()
+{
+    RingtoneFileUtils::MoveRingtoneFolder();
+    std::string oldPath;
+    std::string newPath;
+    DataShare::DataShareValuesBucket valuesBucket;
+    Uri uri(RINGTONE_LIBRARY_PROXY_DATA_URI_TONE_FILES);
+
+    DataSharePredicates predicates;
+    const std::string selection = RINGTONE_COLUMN_DATA + " LIKE ? ";
+    std::vector<std::string> selectionArgs = {"%/storage/media/local/files/%"};
+    predicates.SetWhereClause(selection);
+    predicates.SetWhereArgs(selectionArgs);
+
+    vector<string> columns {
+        RINGTONE_COLUMN_DATA
+    };
+    DatashareBusinessError businessError;
+    auto resultSet = Query(uri, predicates, columns, businessError);
+    if (resultSet == nullptr) {
+        return;
+    }
+    auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
+    unique_ptr<RingtoneAsset> ringtoneAsset = results->GetFirstObject();
+    if (ringtoneAsset == nullptr) {
+        RINGTONE_ERR_LOG("ringtoneAsset is nullptr");
+        return;
+    }
+
+    while (ringtoneAsset != nullptr) {
+        oldPath = ringtoneAsset->GetPath();
+        newPath = oldPath;
+        size_t start_pos = 0;
+        if ((start_pos = newPath.find("/storage/media/local/files/Ringtone/")) != std::string::npos) {
+            newPath.replace(start_pos, std::string("/storage/media/local/files/Ringtone").length(),
+                "/data/storage/el2/base/files/Ringtone");
+        }
+
+        if (!RingtoneFileUtils::IsFileExists(newPath)) {
+            RINGTONE_ERR_LOG("the file is not exists, path: %{private}s", newPath.c_str());
+            return;
+        }
+        RINGTONE_INFO_LOG("the file exists, path: %{private}s", newPath.c_str());
+        valuesBucket.Put(RINGTONE_COLUMN_DATA, newPath);
+        Update(uri, predicates, valuesBucket);
+        ringtoneAsset = results->GetNextObject();
+    }
+
+    SetParameter(RINGTONE_PARAMETER_FOLDER_MOVE_COMPLETED_KEY, RINGTONE_PARAMETER_FOLDER_MOVE_COMPLETED_TRUE);
+
+    return;
 }
 
 int RingtoneDataShareExtension::Insert(const Uri &uri, const DataShareValuesBucket &value)

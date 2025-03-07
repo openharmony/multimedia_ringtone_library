@@ -34,6 +34,7 @@ using namespace std;
 using namespace OHOS;
 
 const int CONTEXT_AREA_EL1 = 0;
+const int CONTEXT_AREA_EL2 = 1;
 const int RDB_AREA_EL1 = 0;
 
 shared_ptr<NativeRdb::RdbStore> RingtoneRdbStore::rdbStore_;
@@ -67,6 +68,10 @@ RingtoneRdbStore::RingtoneRdbStore(const shared_ptr<OHOS::AbilityRuntime::Contex
     auto preArea = context->GetArea();
     context->SwitchArea(CONTEXT_AREA_EL1);
     context->GetPreferencesDir();
+
+    context->SwitchArea(CONTEXT_AREA_EL2);
+    context->GetFilesDir();
+
     context->SwitchArea(preArea);
 
     string databaseDir = RINGTONE_LIBRARY_DB_PATH_EL1;

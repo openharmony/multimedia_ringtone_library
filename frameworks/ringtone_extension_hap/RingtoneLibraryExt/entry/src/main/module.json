@@ -79,6 +79,8 @@
     "proxyDatas": [
       {
         "uri":"datashareproxy://com.ohos.ringtonelibrary.ringtonelibrarydata/entry/ringtone_library/SimCardSetting",
+        "requiredReadPermission":"ohos.permission.ACCESS_CUSTOM_RINGTONE",
+        "requiredWritePermission":"ohos.permission.ACCESS_CUSTOM_RINGTONE",
         "metadata": {
           "name": "dataProperties",
           "resource": "$profile:rdb_meta_simcard_setting"
@@ -86,6 +88,8 @@
       },
       {
         "uri":"datashareproxy://com.ohos.ringtonelibrary.ringtonelibrarydata/entry/ringtone_library/ToneFiles",
+        "requiredReadPermission":"ohos.permission.ACCESS_CUSTOM_RINGTONE",
+        "requiredWritePermission":"ohos.permission.ACCESS_CUSTOM_RINGTONE",
         "metadata": {
           "name": "dataProperties",
           "resource": "$profile:rdb_meta_tone_files"
@@ -93,6 +97,8 @@
       },
       {
         "uri":"datashareproxy://com.ohos.ringtonelibrary.ringtonelibrarydata/entry/ringtone_library/VibrateFiles",
+        "requiredReadPermission":"ohos.permission.ACCESS_CUSTOM_RINGTONE",
+        "requiredWritePermission":"ohos.permission.ACCESS_CUSTOM_RINGTONE",
         "metadata": {
           "name": "dataProperties",
           "resource": "$profile:rdb_meta_vibrate_files"
@@ -100,6 +106,8 @@
       },
       {
         "uri":"datashareproxy://com.ohos.ringtonelibrary.ringtonelibrarydata/entry/ringtone_library/PreloadConfig",
+        "requiredReadPermission":"ohos.permission.ACCESS_CUSTOM_RINGTONE",
+        "requiredWritePermission":"ohos.permission.ACCESS_CUSTOM_RINGTONE",
         "metadata": {
           "name": "dataProperties",
           "resource": "$profile:rdb_meta_preload_config"

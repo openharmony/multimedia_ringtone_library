@@ -98,19 +98,18 @@ enum DefaultSystemToneType : int32_t {
     DEFAULT_ALARM_TYPE,
 };
 
-inline int32_t GetAppSandboxPathFromUri(std::string uri)
+inline int convertPath(std::string &uri)
 {
-    const std::string prefix = "/storage/media";
-    const std::string middle = "/local/files/Ringtone/";
-
-    size_t startPos = prefix.size();
-    size_t endPos = uri.find(middle, startPos);
-    if (startPos == 0 || endPos == std::string::npos || endPos <= startPos) {
+    const std::string prefixPart = "/data/app/el2/";
+    const std::string middlePart = "/base/com/files/Ringtone";
+    const std::string targetPrefix = "/data/storage/el2/base/files/Ringtone";
+    if (uri.substr(0, prefixPart.size()) == prefixPart &&
+        uri.substr(uri.size() - middlePart.size()) == middlePart) {
+        uri = targetPrefix;
+        return E_OK;
+    } else {
         return E_INVALID_URI;
     }
-
-    uri = prefix + middle + uri.substr(endPos + middle.size());
-    return E_OK;
 }
 
 // ringtone system default setting
