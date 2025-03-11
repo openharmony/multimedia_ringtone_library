@@ -98,13 +98,11 @@ enum DefaultSystemToneType : int32_t {
     DEFAULT_ALARM_TYPE,
 };
 
-inline int convertPath(std::string &uri)
+inline int GetAppSandboxPathFromUri(std::string &uri)
 {
     const std::string prefixPart = "/data/app/el2/";
-    const std::string middlePart = "/base/com/files/Ringtone";
     const std::string targetPrefix = "/data/storage/el2/base/files/Ringtone";
-    if (uri.substr(0, prefixPart.size()) == prefixPart &&
-        uri.substr(uri.size() - middlePart.size()) == middlePart) {
+    if (uri.compare(0, prefixPart.size(), prefixPart) ==  0) {
         uri = targetPrefix;
         return E_OK;
     } else {
