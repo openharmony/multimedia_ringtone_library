@@ -21,6 +21,7 @@
 #include "ringtone_errno.h"
 #include "ringtone_file_utils.h"
 #include "ringtone_log.h"
+#include "ringtone_type.h"
 
 using std::string;
 using namespace testing::ext;
@@ -228,5 +229,17 @@ HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_CopyFileUtil_Test_001, TestSiz
     const string filePath("a", 5200);
     RingtoneFileUtils::CopyFileUtil(filePath, newPath);
 }
+
+HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_GetSandboxPath_Test_001, TestSize.Level0)
+{
+    string uri1 = "/data/app/el2/100/base/com.ohos.ringtonelibrary.ringtonelibrarydata/files/Ringtone";
+    string uri2 = "/data/local/tmp/test";
+    int32_t result = GetAppSandboxPathFromUri(uri1);
+    EXPECT_EQ(result, E_OK);
+    result = GetAppSandboxPathFromUri(uri2);
+    EXPECT_EQ(result, E_INVALID_URI);
+}
+
+
 } // namespace Media
 } // namespace OHOS

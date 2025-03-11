@@ -46,12 +46,7 @@ using namespace OHOS::DataShare;
 const char RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY[] = "ringtone.scanner.completed";
 const int RINGTONE_PARAMETER_SCANNER_COMPLETED_TRUE = 1;
 const int RINGTONE_PARAMETER_SCANNER_COMPLETED_FALSE = 0;
-const char RINGTONE_PARAMETER_DATASHARE_COMPLETED_KEY[] = "ringtone.setting.datashare";
-const char RINGTONE_PARAMETER_DATASHARE_COMPLETED_TRUE[] = "true";
-const char RINGTONE_PARAMETER_FOLDER_MOVE_COMPLETED_KEY[] = "ringtone.folder.move.completed";
-const char RINGTONE_PARAMETER_FOLDER_MOVE_COMPLETED_TRUE[] = "true";
 const std::string OLD_RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH = "/storage/media/local/files/Ringtone";
-const int32_t RINGTONEPARA_SIZE = 64;
 const std::vector<std::string> RINGTONE_OPEN_WRITE_MODE_VECTOR = {
     { RINGTONE_FILEMODE_WRITEONLY },
     { RINGTONE_FILEMODE_READWRITE },
@@ -120,15 +115,10 @@ void RingtoneDataShareExtension::OnStart(const AAFwk::Want &want)
     RingtoneScanner();
     
     if (RingtoneFileUtils::IsFileExists(OLD_RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH)) {
-        char paramValue[RINGTONEPARA_SIZE] = {0};
-        GetParameter(RINGTONE_PARAMETER_FOLDER_MOVE_COMPLETED_KEY, "", paramValue, RINGTONEPARA_SIZE);
-        if (strcmp(paramValue, RINGTONE_PARAMETER_FOLDER_MOVE_COMPLETED_TRUE) != 0) {
-            UpdataRdbPathData();
-        }
+        UpdataRdbPathData();
     }
 
     RingtoneLanguageManager::GetInstance()->SyncAssetLanguage();
-    SetParameter(RINGTONE_PARAMETER_DATASHARE_COMPLETED_KEY, RINGTONE_PARAMETER_DATASHARE_COMPLETED_TRUE);
     RINGTONE_DEBUG_LOG("end.");
 }
 
@@ -261,16 +251,6 @@ void RingtoneDataShareExtension::DumpDataShareValueBucket(const std::vector<stri
     }
 }
 
-int RingtoneDataShareExtension::DatashareStartedHandle()
-{
-    char paramValue[RINGTONEPARA_SIZE] = {0};
-    GetParameter(RINGTONE_PARAMETER_DATASHARE_COMPLETED_KEY, "", paramValue, RINGTONEPARA_SIZE);
-    if (strcmp(paramValue, RINGTONE_PARAMETER_DATASHARE_COMPLETED_TRUE) == 0) {
-        return Media::E_DATASHARE_END;
-    }
-    return Media::E_OK;
-}
-
 void RingtoneDataShareExtension::UpdataRdbPathData()
 {
     RingtoneFileUtils::MoveRingtoneFolder();
@@ -319,8 +299,6 @@ void RingtoneDataShareExtension::UpdataRdbPathData()
         ringtoneAsset = results->GetNextObject();
     }
 
-    SetParameter(RINGTONE_PARAMETER_FOLDER_MOVE_COMPLETED_KEY, RINGTONE_PARAMETER_FOLDER_MOVE_COMPLETED_TRUE);
-
     return;
 }
 
@@ -328,15 +306,10 @@ int RingtoneDataShareExtension::Insert(const Uri &uri, const DataShareValuesBuck
 {
     RINGTONE_DEBUG_LOG("entry, uri=%{public}s", uri.ToString().c_str());
 
-    int err = DatashareStartedHandle();
-    if (err != Media::E_OK) {
-        return err;
-    }
-
     DumpDataShareValueBucket(g_ringToneTableFields, value);
 
     string tab("");
-    err = GetValidUriTab(uri, tab);
+    int err = GetValidUriTab(uri, tab);
     if (err != Media::E_OK) {
         return err;
     }
@@ -358,13 +331,8 @@ int RingtoneDataShareExtension::Update(const Uri &uri, const DataSharePredicates
     RINGTONE_DEBUG_LOG("entry, uri=%{public}s", uri.ToString().c_str());
     RINGTONE_DEBUG_LOG("WhereClause=%{public}s", predicates.GetWhereClause().c_str());
 
-    int err = DatashareStartedHandle();
-    if (err != Media::E_OK) {
-        return err;
-    }
-
     string tab("");
-    err = GetValidUriTab(uri, tab);
+    int err = GetValidUriTab(uri, tab);
     if (err != Media::E_OK) {
         return err;
     }
@@ -383,13 +351,8 @@ int RingtoneDataShareExtension::Delete(const Uri &uri, const DataSharePredicates
 {
     RINGTONE_DEBUG_LOG("entry, uri=%{public}s", uri.ToString().c_str());
 
-    int err = DatashareStartedHandle();
-    if (err != Media::E_OK) {
-        return err;
-    }
-
     string tab("");
-    err = GetValidUriTab(uri, tab);
+    int err = GetValidUriTab(uri, tab);
     if (err != Media::E_OK) {
         return err;
     }
@@ -409,14 +372,8 @@ shared_ptr<DataShareResultSet> RingtoneDataShareExtension::Query(const Uri &uri,
 {
     RINGTONE_DEBUG_LOG("entry, uri=%{public}s", uri.ToString().c_str());
 
-    int err = DatashareStartedHandle();
-    if (err != Media::E_OK) {
-        businessError.SetCode(err);
-        return nullptr;
-    }
-
     string tab("");
-    err = GetValidUriTab(uri, tab);
+    int err = GetValidUriTab(uri, tab);
     if (err != Media::E_OK) {
         return nullptr;
     }
@@ -445,13 +402,8 @@ int RingtoneDataShareExtension::OpenFile(const Uri &uri, const string &mode)
     RINGTONE_DEBUG_LOG("entry, uri=%{public}s, mode=%{public}s",
         uri.ToString().c_str(), mode.c_str());
 
-    int err = DatashareStartedHandle();
-    if (err != Media::E_OK) {
-        return err;
-    }
-
     string tab("");
-    err = GetValidUriTab(uri, tab);
+    int err = GetValidUriTab(uri, tab);
     if (err != Media::E_OK) {
         return err;
     }
