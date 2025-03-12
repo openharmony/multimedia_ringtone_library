@@ -95,6 +95,7 @@ static void RingtoneIndex()
         valuesBucket.Put(RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, static_cast<int>(type));
         valuesBucket.Put(RINGTONE_COLUMN_ALARM_TONE_TYPE, static_cast<int>(1));
         valuesBucket.Put(RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE, static_cast<int>(type));
+        valuesBucket.Put(RINGTONE_COLUMN_SCANNER_FLAG, static_cast<int>(0));
 
         g_dataShareHelper->Insert(ringtoneUri, valuesBucket);
     }
@@ -169,6 +170,7 @@ static int32_t RingtoneQuery()
         cout << "GetRingtoneSourceType()            = " << to_string(ringtoneAsset->GetRingtoneSourceType()) << endl;
         cout << "GetAlarmtoneType()                 = " << to_string(ringtoneAsset->GetAlarmtoneType()) << endl;
         cout << "GetAlarmtoneSourceType()           = " << to_string(ringtoneAsset->GetAlarmtoneSourceType()) << endl;
+        cout << "GetScannerFlag()                   = " << to_string(ringtoneAsset->GetScannerFlag()) << endl;
         ringtoneAsset = results->GetNextObject();
     } while (ringtoneAsset != nullptr);
     ringtoneAsset = results->GetLastObject();

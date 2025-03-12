@@ -63,6 +63,9 @@ public:
 
     EXPORT void SetPlayMode(int32_t playMode);
     EXPORT int32_t GetPlayMode() const;
+    
+    EXPORT void SetScannerFlag(int32_t playMode);
+    EXPORT int32_t GetScannerFlag() const;
 
     EXPORT std::unordered_map<std::string, std::variant<int32_t, int64_t, std::string, double>> &GetMemberMap();
     EXPORT std::variant<int32_t, int64_t, std::string, double> &GetMemberValue(const std::string &name);

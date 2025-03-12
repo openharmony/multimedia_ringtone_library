@@ -150,6 +150,16 @@ void VibrateAsset::SetPlayMode(int32_t playMode)
     member_[VIBRATE_COLUMN_PLAY_MODE] = playMode;
 }
 
+int32_t VibrateAsset::GetScannerFlag() const
+{
+    return GetInt32Member(VIBRATE_COLUMN_SCANNER_FLAG);
+}
+
+void VibrateAsset::SetScannerFlag(int32_t flag)
+{
+    member_[VIBRATE_COLUMN_SCANNER_FLAG] = flag;
+}
+
 unordered_map<string, variant<int32_t, int64_t, string, double>> &VibrateAsset::GetMemberMap()
 {
     return member_;
