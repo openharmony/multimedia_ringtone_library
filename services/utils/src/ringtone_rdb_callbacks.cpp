@@ -58,7 +58,8 @@ const std::string CREATE_RINGTONE_TABLE = "CREATE TABLE IF NOT EXISTS " + RINGTO
     RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE         + " INT      DEFAULT 0, " +
     RINGTONE_COLUMN_ALARM_TONE_TYPE               + " INT      DEFAULT 0, " +
     RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE        + " INT      DEFAULT 0, " +
-    RINGTONE_COLUMN_DISPLAY_LANGUAGE_TYPE         + " TEXT                " + ")";
+    RINGTONE_COLUMN_DISPLAY_LANGUAGE_TYPE         + " TEXT              , " +
+    RINGTONE_COLUMN_SCANNER_FLAG                  + " INT      DEFAULT 0  " + ")";
 
 const std::string CREATE_SIMCARD_SETTING_TABLE = "CREATE TABLE IF NOT EXISTS " + SIMCARD_SETTING_TABLE + "(" +
     SIMCARD_SETTING_COLUMN_MODE                   + " INTEGER            ," +
@@ -87,7 +88,8 @@ const std::string CREATE_VIBRATE_TABLE = "CREATE TABLE IF NOT EXISTS " + VIBRATE
     VIBRATE_COLUMN_DATE_ADDED                     + " BIGINT   DEFAULT 0, " +
     VIBRATE_COLUMN_DATE_MODIFIED                  + " BIGINT   DEFAULT 0, " +
     VIBRATE_COLUMN_DATE_TAKEN                     + " BIGINT   DEFAULT 0, " +
-    VIBRATE_COLUMN_PLAY_MODE                      + " INT      DEFAULT 0  " + ")";
+    VIBRATE_COLUMN_PLAY_MODE                      + " INT      DEFAULT 0, " +
+    VIBRATE_COLUMN_SCANNER_FLAG                   + " INT      DEFAULT 0  " + ")";
 
 const std::string CREATE_PRELOAD_CONF_TABLE = "CREATE TABLE IF NOT EXISTS " + PRELOAD_CONFIG_TABLE + "(" +
     PRELOAD_CONFIG_COLUMN_RING_TONE_TYPE          + " INTEGER  PRIMARY KEY," +
@@ -154,6 +156,16 @@ static void AddDisplayLanguageColumn(NativeRdb::RdbStore &store)
         "ALTER TABLE " + RINGTONE_TABLE + " ADD COLUMN " + RINGTONE_COLUMN_DISPLAY_LANGUAGE_TYPE + " TEXT",
     };
     RINGTONE_INFO_LOG("Add display language column");
+    ExecSqls(sqls, store);
+}
+
+static void AddScannerFlagColumn(NativeRdb::RdbStore &store)
+{
+    const vector<string> sqls = {
+        "ALTER TABLE " + RINGTONE_TABLE + " ADD COLUMN " + RINGTONE_COLUMN_SCANNER_FLAG + " INT DEFAULT 0",
+        "ALTER TABLE " + VIBRATE_TABLE + " ADD COLUMN " + VIBRATE_COLUMN_SCANNER_FLAG + " INT DEFAULT 0",
+    };
+    RINGTONE_INFO_LOG("Add scanner flag column");
     ExecSqls(sqls, store);
 }
 
@@ -268,6 +280,9 @@ static void UpgradeExtension(NativeRdb::RdbStore &store, int32_t oldVersion)
     }
     if (oldVersion < VERSION_UPDATE_WATCH_MIME_TYPE) {
         UpdateMimeType(store);
+    }
+    if (oldVersion < VERSION_ADD_SCANNER_FLAG) {
+        AddScannerFlagColumn(store);
     }
 }
 

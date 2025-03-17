@@ -39,7 +39,8 @@ RingtoneMetadata::RingtoneMetadata()
     ringToneType_(RING_TONE_TYPE_DEFAULT),
     ringToneSourceType_(RING_TONE_SOURCE_TYPE_DEFAULT),
     alarmToneType_(ALARM_TONE_TYPE_DEFAULT),
-    alarmToneSourceType_(ALARM_TONE_SOURCE_TYPE_DEFAULT)
+    alarmToneSourceType_(ALARM_TONE_SOURCE_TYPE_DEFAULT),
+    scannerFlag_(SCANNER_FLAG_DEFAULT)
 {
     Init();
 }
@@ -88,6 +89,8 @@ void RingtoneMetadata::Init()
         &RingtoneMetadata::SetAlarmToneType);
     memberFuncMap_[RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE] = make_pair(RingtoneResultSetDataType::DATA_TYPE_INT32,
         &RingtoneMetadata::SetAlarmToneSourceType);
+    memberFuncMap_[RINGTONE_COLUMN_SCANNER_FLAG] = make_pair(RingtoneResultSetDataType::DATA_TYPE_INT32,
+        &RingtoneMetadata::SetScannerFlag);
 }
 
 void RingtoneMetadata::SetToneId(const VariantData &toneId)
@@ -300,6 +303,16 @@ int32_t RingtoneMetadata::GetAlarmToneSourceType() const
     return alarmToneSourceType_;
 }
 
+void RingtoneMetadata::SetScannerFlag(const VariantData &scannerFlag)
+{
+    scannerFlag_ = std::get<int32_t>(scannerFlag);
+}
+
+int32_t RingtoneMetadata::GetScannerFlag() const
+{
+    return scannerFlag_;
+}
+
 string RingtoneMetadata::ToString() const
 {
     string str = "ringtone metadata:{ toneId_=" + to_string(toneId_) +
@@ -322,7 +335,8 @@ string RingtoneMetadata::ToString() const
                 "; ringToneType_=" + to_string(ringToneType_) +
                 "; ringToneSourceType_=" + to_string(ringToneSourceType_) +
                 "; alarmToneType_=" + to_string(alarmToneType_) +
-                "; alarmToneSourceType_=" + to_string(alarmToneSourceType_) + "}";
+                "; alarmToneSourceType_=" + to_string(alarmToneSourceType_) +
+                "; scannerFlag_=" + to_string(scannerFlag_) + "}";
     return str;
 }
 } // namespace Media

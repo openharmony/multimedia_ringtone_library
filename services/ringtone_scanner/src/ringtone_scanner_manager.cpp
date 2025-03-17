@@ -20,6 +20,7 @@
 #include "directory_ex.h"
 #include "ringtone_log.h"
 #include "ringtone_scanner_utils.h"
+#include "ringtone_tracer.h"
 
 namespace OHOS {
 namespace Media {
@@ -136,6 +137,8 @@ int32_t RingtoneScannerManager::ScanDirSync(const std::string &path,
 
 void RingtoneScannerManager::Start(bool isSync)
 {
+    RingtoneTracer tracer;
+    tracer.Start("Ringtone Scanner Start");
     if (isSync) {
         RINGTONE_DEBUG_LOG("scan start, isSync = %{public}d", isSync);
         RingtoneScannerObj scanner = RingtoneScannerObj(RingtoneScannerObj::START);

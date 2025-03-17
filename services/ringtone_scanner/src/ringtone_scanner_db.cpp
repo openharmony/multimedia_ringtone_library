@@ -18,6 +18,7 @@
 
 #include "result_set_utils.h"
 #include "rdb_errno.h"
+#include "rdb_utils.h"
 #include "ringtone_errno.h"
 #include "ringtone_file_utils.h"
 #include "ringtone_log.h"
@@ -303,6 +304,7 @@ static void SetValuesFromMetaData(const RingtoneMetadata &metadata, ValuesBucket
     values.PutInt(RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, metadata.GetRingToneSourceType());
     values.PutInt(RINGTONE_COLUMN_ALARM_TONE_TYPE, metadata.GetAlarmToneType());
     values.PutInt(RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE, metadata.GetAlarmToneSourceType());
+    values.PutInt(RINGTONE_COLUMN_SCANNER_FLAG, 1);
 
     if (isInsert) {
         InsertDateAdded(metadata, values);
@@ -322,6 +324,7 @@ static void SetValuesFromVibrateMetaData(const VibrateMetadata &metadata, Values
     values.PutLong(VIBRATE_COLUMN_DATE_MODIFIED, metadata.GetDateModified());
     values.PutLong(VIBRATE_COLUMN_DATE_TAKEN, metadata.GetDateTaken());
     values.PutInt(VIBRATE_COLUMN_PLAY_MODE, metadata.GetPlayMode());
+    values.PutInt(VIBRATE_COLUMN_SCANNER_FLAG, 1);
 
     if (isInsert) {
         InsertVibrateDateAdded(metadata, values);
@@ -442,6 +445,92 @@ bool RingtoneScannerDb::InsertData(const ValuesBucket values, const string &tabl
     }
     rowNum = static_cast<int32_t>(nRow);
 
+    return true;
+}
+
+bool RingtoneScannerDb::UpdateScannerFlag()
+{
+    int32_t updateCount = 0;
+    auto rdbStore = RingtoneRdbStore::GetInstance();
+    if (rdbStore == nullptr) {
+        RINGTONE_ERR_LOG("failed to get rdb");
+        return false;
+    }
+    auto rawRdb = rdbStore->GetRaw();
+    if (rawRdb == nullptr) {
+        RINGTONE_ERR_LOG("get raw rdb failed");
+        return false;
+    }
+
+    ValuesBucket ringtoneValues;
+    DataShare::DataSharePredicates ringtonePredicates;
+    int32_t result;
+    NativeRdb::RdbPredicates ringtoneRdbPredicate = RdbDataShareAdapter::RdbUtils::ToPredicates(ringtonePredicates,
+        RINGTONE_TABLE);
+    ringtoneValues.PutInt(RINGTONE_COLUMN_SCANNER_FLAG, 0);
+    result = rawRdb->Update(updateCount, ringtoneValues, ringtoneRdbPredicate);
+    RINGTONE_INFO_LOG("Ringtone update operation end. Updated %{public}d", updateCount);
+    if (result != NativeRdb::E_OK || updateCount < 0) {
+        RINGTONE_ERR_LOG("Ringtone update operation failed. Result %{public}d. Updated %{public}d",
+            result, updateCount);
+        return false;
+    }
+
+    ValuesBucket vibrateValues;
+    DataShare::DataSharePredicates vibratePredicates;
+    NativeRdb::RdbPredicates vibrateRdbPredicate = RdbDataShareAdapter::RdbUtils::ToPredicates(vibratePredicates,
+        VIBRATE_TABLE);
+    vibrateValues.PutInt(VIBRATE_COLUMN_SCANNER_FLAG, 0);
+    result = rawRdb->Update(updateCount, vibrateValues, vibrateRdbPredicate);
+    RINGTONE_INFO_LOG("Vibrate update operation end. Updated %{public}d", updateCount);
+    if (result != NativeRdb::E_OK || updateCount < 0) {
+        RINGTONE_ERR_LOG("Vibrate update operation failed. Result %{public}d. Updated %{public}d", result, updateCount);
+        return false;
+    }
+    return true;
+}
+
+bool RingtoneScannerDb::DeleteNotExist()
+{
+    int32_t deleteCount = 0;
+    auto rdbStore = RingtoneRdbStore::GetInstance();
+    if (rdbStore == nullptr) {
+        RINGTONE_ERR_LOG("failed to get rdb");
+        return false;
+    }
+    auto rawRdb = rdbStore->GetRaw();
+    if (rawRdb == nullptr) {
+        RINGTONE_ERR_LOG("get raw rdb failed");
+        return false;
+    }
+
+    DataShare::DataSharePredicates ringtonePredicates;
+    int32_t result;
+    NativeRdb::RdbPredicates ringtoneRdbPredicate = RdbDataShareAdapter::RdbUtils::ToPredicates(ringtonePredicates,
+        RINGTONE_TABLE);
+    ringtoneRdbPredicate.EqualTo(RINGTONE_COLUMN_SCANNER_FLAG, "0");
+    ringtoneRdbPredicate.And();
+    ringtoneRdbPredicate.EqualTo(RINGTONE_COLUMN_SOURCE_TYPE, "1");
+    result = rawRdb->Delete(deleteCount, ringtoneRdbPredicate);
+    RINGTONE_INFO_LOG("Ringtone delete operation end. Deleted %{public}d", deleteCount);
+    if (result != NativeRdb::E_OK || deleteCount < 0) {
+        RINGTONE_ERR_LOG("Ringtone delete operation failed. Result %{public}d. Deleted %{public}d",
+            result, deleteCount);
+        return false;
+    }
+
+    DataShare::DataSharePredicates vibratePredicates;
+    NativeRdb::RdbPredicates vibrateRdbPredicate = RdbDataShareAdapter::RdbUtils::ToPredicates(vibratePredicates,
+        VIBRATE_TABLE);
+    vibrateRdbPredicate.EqualTo(VIBRATE_COLUMN_SCANNER_FLAG, "0");
+    vibrateRdbPredicate.And();
+    vibrateRdbPredicate.EqualTo(VIBRATE_COLUMN_SOURCE_TYPE, "1");
+    result = rawRdb->Delete(deleteCount, vibrateRdbPredicate);
+    RINGTONE_INFO_LOG("Vibrate update operation end. Deleted %{public}d", deleteCount);
+    if (result != NativeRdb::E_OK || deleteCount < 0) {
+        RINGTONE_ERR_LOG("Vibrate update operation failed. Result %{public}d. Deleted %{public}d", result, deleteCount);
+        return false;
+    }
     return true;
 }
 } // namespace Media

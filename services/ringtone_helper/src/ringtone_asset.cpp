@@ -230,6 +230,16 @@ void RingtoneAsset::SetAlarmtoneSourceType(int32_t type)
     member_[RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE] = type;
 }
 
+int32_t RingtoneAsset::GetScannerFlag() const
+{
+    return GetInt32Member(RINGTONE_COLUMN_SCANNER_FLAG);
+}
+
+void RingtoneAsset::SetScannerFlag(int32_t flag)
+{
+    member_[RINGTONE_COLUMN_SCANNER_FLAG] = flag;
+}
+
 void RingtoneAsset::SetOpenStatus(int32_t fd, int32_t openStatus)
 {
     lock_guard<mutex> lock(openStatusMapMutex_);

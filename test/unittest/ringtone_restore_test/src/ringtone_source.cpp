@@ -43,7 +43,8 @@ const string RingtoneRestoreRdbOpenCb::CREATE_RINGTONE_TABLE = "CREATE TABLE IF 
     RINGTONE_COLUMN_RING_TONE_TYPE                + " INT      DEFAULT 0, " +
     RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE         + " INT      DEFAULT 0, " +
     RINGTONE_COLUMN_ALARM_TONE_TYPE               + " INT      DEFAULT 0, " +
-    RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE        + " INT      DEFAULT 0  " + ")";
+    RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE        + " INT      DEFAULT 0, " +
+    RINGTONE_COLUMN_SCANNER_FLAG                  + " INT      DEFAULT 0  " + ")";
 
 int RingtoneRestoreRdbOpenCb::OnCreate(NativeRdb::RdbStore &store)
 {
