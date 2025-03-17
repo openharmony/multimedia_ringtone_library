@@ -130,41 +130,10 @@ static const std::unordered_map<std::string, std::vector<std::string>> RINGTONE_
     { "text/x-python", { "py" } }
 };
 
-/**
- * The format of the target json file:
- * First floor: Media type string, such as image, video, audio, etc.
- * Second floor: Mime type string
- * Third floor: Extension array.
-*/
-void RingtoneMimeTypeUtils::CreateMapFromJson()
-{
-    std::ifstream jFile(MIMETYPE_JSON_PATH);
-    if (!jFile.is_open()) {
-        RINGTONE_ERR_LOG("Failed to open: %{private}s", MIMETYPE_JSON_PATH.c_str());
-        mediaJsonMap_ = RINGTONE_MIME_TYPE_MAP;
-        RINGTONE_INFO_LOG("Add ringtone mime type map success");
-        return;
-    }
-    json firstFloorObjs;
-    jFile >> firstFloorObjs;
-    for (auto& firstFloorObj : firstFloorObjs.items()) {
-        json secondFloorJsons = json::parse(firstFloorObj.value().dump(), nullptr, false);
-        if (secondFloorJsons.is_discarded()) {
-            continue;
-        }
-        for (auto &secondFloorJson : secondFloorJsons.items()) {
-            json thirdFloorJsons = json::parse(secondFloorJson.value().dump(), nullptr, false);
-            // Key: MimeType, Value: Extension array.
-            if (!thirdFloorJsons.is_discarded()) {
-                mediaJsonMap_.insert(std::pair<string, vector<string>>(secondFloorJson.key(), thirdFloorJsons));
-            }
-        }
-    }
-}
-
 int32_t RingtoneMimeTypeUtils::InitMimeTypeMap()
 {
-    CreateMapFromJson();
+    RINGTONE_INFO_LOG("InitMimeTypeMap start.");
+    mediaJsonMap_ = RINGTONE_MIME_TYPE_MAP;
     if (mediaJsonMap_.empty()) {
         RINGTONE_ERR_LOG("JsonMap is empty");
         return E_FAIL;
