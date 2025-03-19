@@ -34,8 +34,6 @@ public:
     EXPORT static RingtoneMediaType GetMediaTypeFromMimeType(const std::string &mimeType);
 
 private:
-    static void CreateMapFromJson();
-
     static std::unordered_map<std::string, std::vector<std::string>> mediaJsonMap_;
 };
 } // namespace Media
