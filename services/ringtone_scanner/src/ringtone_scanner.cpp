@@ -103,6 +103,24 @@ static std::unordered_map<std::string, std::pair<int32_t, int32_t>> g_vibratePla
         {SOURCE_TYPE_PRESET, VIBRATE_PLAYMODE_CLASSIC}},
 };
 
+static const std::vector<std::string> g_preloadDirs = {
+    {ROOT_TONE_PRELOAD_PATH_NOAH_PATH + "/alarms"},
+    {ROOT_TONE_PRELOAD_PATH_NOAH_PATH + "/ringtones"},
+    {ROOT_TONE_PRELOAD_PATH_NOAH_PATH + "/notifications"},
+    {ROOT_TONE_PRELOAD_PATH_CHINA_PATH + "/alarms"},
+    {ROOT_TONE_PRELOAD_PATH_CHINA_PATH + "/ringtones"},
+    {ROOT_TONE_PRELOAD_PATH_CHINA_PATH + "/notifications"},
+    {ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH + "/alarms"},
+    {ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH + "/ringtones"},
+    {ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH + "/notifications"},
+    {ROOT_VIBRATE_PRELOAD_PATH_NOAH_PATH + "/standard"},
+    {ROOT_VIBRATE_PRELOAD_PATH_NOAH_PATH + "/gentle"},
+    {ROOT_VIBRATE_PRELOAD_PATH_CHINA_PATH + "/standard"},
+    {ROOT_VIBRATE_PRELOAD_PATH_CHINA_PATH + "/gentle"},
+    {ROOT_VIBRATE_PRELOAD_PATH_OVERSEA_PATH + "/standard"},
+    {ROOT_VIBRATE_PRELOAD_PATH_OVERSEA_PATH + "/gentle"},
+};
+
 RingtoneScannerObj::RingtoneScannerObj(const std::string &path,
     const std::shared_ptr<IRingtoneScannerCallback> &callback,
     RingtoneScannerObj::ScanType type) : type_(type), callback_(callback)
@@ -168,26 +186,8 @@ void RingtoneScannerObj::Scan()
 
 int32_t RingtoneScannerObj::BootScan()
 {
-    static const std::vector<std::string> preloadDirs = {
-        {ROOT_TONE_PRELOAD_PATH_NOAH_PATH + "/alarms"},
-        {ROOT_TONE_PRELOAD_PATH_NOAH_PATH + "/ringtones"},
-        {ROOT_TONE_PRELOAD_PATH_NOAH_PATH + "/notifications"},
-        {ROOT_TONE_PRELOAD_PATH_CHINA_PATH + "/alarms"},
-        {ROOT_TONE_PRELOAD_PATH_CHINA_PATH + "/ringtones"},
-        {ROOT_TONE_PRELOAD_PATH_CHINA_PATH + "/notifications"},
-        {ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH + "/alarms"},
-        {ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH + "/ringtones"},
-        {ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH + "/notifications"},
-        {ROOT_VIBRATE_PRELOAD_PATH_NOAH_PATH + "/standard"},
-        {ROOT_VIBRATE_PRELOAD_PATH_NOAH_PATH + "/gentle"},
-        {ROOT_VIBRATE_PRELOAD_PATH_CHINA_PATH + "/standard"},
-        {ROOT_VIBRATE_PRELOAD_PATH_CHINA_PATH + "/gentle"},
-        {ROOT_VIBRATE_PRELOAD_PATH_OVERSEA_PATH + "/standard"},
-        {ROOT_VIBRATE_PRELOAD_PATH_OVERSEA_PATH + "/gentle"},
-    };
-
     int64_t scanStart = RingtoneFileUtils::UTCTimeMilliSeconds();
-    for (auto &dir : preloadDirs) {
+    for (auto &dir : g_preloadDirs) {
         RINGTONE_INFO_LOG("start to scan realpath %{private}s", dir.c_str());
         string realPath;
         if (!PathToRealPath(dir, realPath)) {
@@ -216,6 +216,15 @@ int32_t RingtoneScannerObj::BootScan()
         PRId64 " ms", tonesScannedCount_, tonesScannedCount_, scanEnd - scanStart);
     unique_lock<mutex> lock(scannerLock_);
     scannerCv_.notify_one();
+    bool res = true;
+    res = RingtoneScannerDb::DeleteNotExist();
+    if (!res) {
+        RINGTONE_ERR_LOG("DeleteNotExist operation failed, res: %{public}d", res);
+    }
+    res = RingtoneScannerDb::UpdateScannerFlag();
+    if (!res) {
+        RINGTONE_ERR_LOG("UpdateScannerFlag operation failed, res: %{public}d", res);
+    }
     return E_OK;
 }
 

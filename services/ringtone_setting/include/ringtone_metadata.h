@@ -93,6 +93,9 @@ public:
     EXPORT void SetAlarmToneSourceType(const VariantData &alarmToneSourceType);
     EXPORT int32_t GetAlarmToneSourceType() const;
 
+    EXPORT void SetScannerFlag(const VariantData &flag);
+    EXPORT int32_t GetScannerFlag() const;
+
     EXPORT void Init();
 
     using RingtoneMetadataFnPtr = void (RingtoneMetadata::*)(const VariantData &);
@@ -121,6 +124,7 @@ private:
     int32_t ringToneSourceType_;
     int32_t alarmToneType_;
     int32_t alarmToneSourceType_;
+    int32_t scannerFlag_;
 };
 } // namespace Media
 } // namespace OHOS

@@ -30,7 +30,8 @@ VibrateMetadata::VibrateMetadata()
     dateAdded_(DATE_ADDED_DEFAULT),
     dateModified_(DATE_MODIFIED_DEFAULT),
     dateTaken_(DATE_TAKEN_DEFAULT),
-    vibratePlayMode_(VIBRATE_PLAYMODE_NONE)
+    vibratePlayMode_(VIBRATE_PLAYMODE_NONE),
+    scannerFlag_(SCANNER_FLAG_DEFAULT)
 {
     Init();
 }
@@ -61,6 +62,8 @@ void VibrateMetadata::Init()
         &VibrateMetadata::SetDateTaken);
     memberFuncMap_[VIBRATE_COLUMN_PLAY_MODE] = make_pair(RingtoneResultSetDataType::DATA_TYPE_INT32,
         &VibrateMetadata::SetPlayMode);
+    memberFuncMap_[VIBRATE_COLUMN_SCANNER_FLAG] = make_pair(RingtoneResultSetDataType::DATA_TYPE_INT32,
+        &VibrateMetadata::SetScannerFlag);
 }
 
 void VibrateMetadata::SetVibrateId(const VariantData &vibrateId)
@@ -183,6 +186,16 @@ int32_t VibrateMetadata::GetPlayMode() const
     return vibratePlayMode_;
 }
 
+void VibrateMetadata::SetScannerFlag(const VariantData &scannerFlag)
+{
+    scannerFlag_ = std::get<int32_t>(scannerFlag);
+}
+
+int32_t VibrateMetadata::GetScannerFlag() const
+{
+    return scannerFlag_;
+}
+
 string VibrateMetadata::ToString() const
 {
     string str = "vibrate metadata:{ vibrateId_=" + to_string(vibrateId_) +
@@ -195,7 +208,8 @@ string VibrateMetadata::ToString() const
                 "; sourceType_=" + to_string(sourceType_) +
                 "; dateAdded_=" + to_string(dateAdded_) +
                 "; dateModified_=" + to_string(dateModified_) +
-                "; dateTaken_=" + to_string(dateTaken_) + "}";
+                "; dateTaken_=" + to_string(dateTaken_) +
+                "; scannerFlag_=" + to_string(scannerFlag_) + "}";
     return str;
 }
 } // namespace Media
