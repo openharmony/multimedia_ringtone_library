@@ -38,34 +38,13 @@
 #include "ringtone_restore_type.h"
 #include "ringtone_type.h"
 #include "ringtone_utils.h"
-#ifdef USE_MEDIA_LIBRARY
-#include "fetch_result.h"
-#include "file_asset.h"
-#include "userfile_manager_types.h"
-#endif
+#include "customised_tone_processor.h"
 
 namespace OHOS {
 namespace Media {
 using namespace std;
 
-constexpr int STORAGE_MANAGER_MANAGER_ID = 5003;
 static const string DUALFWK_SOUND_CONF_XML = "backup";
-
-static std::shared_ptr<DataShare::DataShareHelper> CreateMediaDataShare(int32_t systemAbilityId)
-{
-    RINGTONE_INFO_LOG("CreateDataShareHelper::CreateFileExtHelper ");
-    auto saManager = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    if (saManager == nullptr) {
-        RINGTONE_ERR_LOG("CreateFileExtHelper Get system ability mgr failed.");
-        return nullptr;
-    }
-    auto remoteObj = saManager->GetSystemAbility(systemAbilityId);
-    if (remoteObj == nullptr) {
-        RINGTONE_ERR_LOG("CreateDataShareHelper GetSystemAbility Service Failed.");
-        return nullptr;
-    }
-    return DataShare::DataShareHelper::Creator(remoteObj, MEDIALIBRARY_DATA_URI);
-}
 
 int32_t RingtoneDualFwkRestore::LoadDualFwkConf(const std::string &backupPath)
 {
@@ -122,12 +101,6 @@ int32_t RingtoneDualFwkRestore::Init(const std::string &backupPath)
         return E_INVALID_ARGUMENTS;
     }
 
-    mediaDataShare_ = CreateMediaDataShare(STORAGE_MANAGER_MANAGER_ID);
-    if (mediaDataShare_ == nullptr) {
-        RINGTONE_ERR_LOG("mediaDataShareHelper fail");
-        return E_FAIL;
-    }
-
     if (LoadDualFwkConf(backupPath + "/" + DUALFWK_SOUND_CONF_XML) != E_SUCCESS) {
         return E_FAIL;
     }
@@ -139,26 +112,6 @@ int32_t RingtoneDualFwkRestore::Init(const std::string &backupPath)
     RINGTONE_INFO_LOG("Init db successfully");
     return E_OK;
 }
-
-#ifdef USE_MEDIA_LIBRARY
-static void MediaUriAppendKeyValue(string &uri, const string &key, const string &value)
-{
-    string uriKey = key + '=';
-    if (uri.find(uriKey) != string::npos) {
-        return;
-    }
-
-    char queryMark = (uri.find('?') == string::npos) ? '?' : '&';
-    string append = queryMark + key + '=' + value;
-
-    size_t posJ = uri.find('#');
-    if (posJ == string::npos) {
-        uri += append;
-    } else {
-        uri.insert(posJ, append);
-    }
-}
-#endif
 
 static const string KEY_API_VERSION = "API_VERSION";
 static std::string MakeBatchQueryWhereClause(const std::vector<std::string> &names,
@@ -178,76 +131,6 @@ static std::string MakeBatchQueryWhereClause(const std::vector<std::string> &nam
     prefixSs << ")";
     return prefixSs.str();
 }
-
-#ifdef USE_MEDIA_LIBRARY
-static void AssetToFileInfo(std::shared_ptr<FileInfo> infoPtr, const std::unique_ptr<FileAsset> &asset)
-{
-    infoPtr->toneId = asset->GetId();
-    infoPtr->data = asset->GetPath();
-    infoPtr->size = asset->GetSize();
-    infoPtr->displayName = asset->GetDisplayName();
-    infoPtr->title = asset->GetTitle();
-    infoPtr->mimeType = asset->GetMimeType();
-    infoPtr->mediaType = RINGTONE_MEDIA_TYPE_AUDIO;
-    infoPtr->sourceType = SOURCE_TYPE_CUSTOMISED;
-    infoPtr->dateAdded = asset->GetDateAdded();
-    infoPtr->dateModified = asset->GetDateModified();
-    infoPtr->dateTaken = asset->GetDateTaken();
-    infoPtr->duration = asset->GetDuration();
-}
-
-int32_t RingtoneDualFwkRestore::QueryMediaLibForFileInfo(const std::vector<std::string> &names,
-    std::map<std::string, std::shared_ptr<FileInfo>> &infoMap,
-    const std::string &queryFileUriBase, const std::string &predicateColumn)
-{
-    if (mediaDataShare_ == nullptr || names.empty()) {
-        RINGTONE_ERR_LOG("argument errr, return nullptr");
-        return E_ERR;
-    }
-    vector<string> columns;
-    DataShare::DataSharePredicates predicates;
-    string whereClause = MakeBatchQueryWhereClause(names, predicateColumn) + " AND " +
-        MediaColumn::MEDIA_TYPE + "=" + std::to_string(MEDIA_TYPE_AUDIO);
-    RINGTONE_INFO_LOG("Querying media_library where %{public}s", whereClause.c_str());
-    predicates.SetWhereClause(whereClause);
-
-    std::string queryFileUri = queryFileUriBase;
-    MediaUriAppendKeyValue(queryFileUri, KEY_API_VERSION, to_string(MEDIA_API_VERSION_V10));
-    shared_ptr<DataShare::DataShareResultSet> resultSet = nullptr;
-    Uri uri(queryFileUri);
-
-    resultSet = mediaDataShare_->Query(uri, predicates, columns);
-    if (resultSet == nullptr) {
-        RINGTONE_WARN_LOG("resultset for %{public}s is null", whereClause.c_str());
-        return E_FAIL;
-    }
-    int count = 0;
-    resultSet->GetRowCount(count);
-    RINGTONE_INFO_LOG("Querying %{public}s where %{public}s, got %{public}d records",
-        queryFileUri.c_str(), whereClause.c_str(), count);
-
-    if (count <= 0) {
-        RINGTONE_WARN_LOG("resultset for %{public}s is empty", whereClause.c_str());
-        return E_SUCCESS;
-    }
-
-    std::unique_ptr<FetchResult<FileAsset>> fetchFileResult = make_unique<FetchResult<FileAsset>>(
-        move(resultSet));
-
-    for (int i = 0; i < count; i++) {
-        std::unique_ptr<FileAsset> asset = fetchFileResult->GetNextObject();
-        auto infoPtr = std::make_shared<FileInfo>();
-        AssetToFileInfo(infoPtr, asset);
-        if (predicateColumn == MediaColumn::MEDIA_TITLE) {
-            infoMap[asset->GetTitle()] = infoPtr;
-        } else {
-            infoMap[asset->GetDisplayName()] = infoPtr;
-        }
-        RINGTONE_INFO_LOG("new info found in media_lib: %{public}s", infoPtr->toString().c_str()); // debug
-    }
-    return E_SUCCESS;
-}
-#endif
 
 int32_t RingtoneDualFwkRestore::QueryRingToneDbForFileInfo(std::shared_ptr<NativeRdb::RdbStore> rdbStore,
     const std::vector<std::string> &names, std::map<std::string, std::vector<std::shared_ptr<FileInfo>>> &infoMap,
@@ -388,8 +271,7 @@ std::shared_ptr<FileInfo> GetRingtoneInfo(std::vector<std::shared_ptr<FileInfo>>
 }
 
 static std::shared_ptr<FileInfo> MergeQueries(const DualFwkSettingItem &setting,
-    std::map<std::string, std::shared_ptr<FileInfo>> resultFromMediaByDisplayName,
-    std::map<std::string, std::shared_ptr<FileInfo>> resultFromMediaByTitle,
+    std::map<std::string, std::shared_ptr<FileInfo>> resultFromFileMgr,
     std::map<std::string, std::vector<std::shared_ptr<FileInfo>>> resultFromRingtoneByDisplayName,
     bool &doInsert)
 {
@@ -397,12 +279,9 @@ static std::shared_ptr<FileInfo> MergeQueries(const DualFwkSettingItem &setting,
     std::vector<std::shared_ptr<FileInfo>> results;
     doInsert = true;
     auto keyName = setting.toneFileName;
-    if (resultFromMediaByDisplayName.find(keyName) != resultFromMediaByDisplayName.end()) {
-        infoPtr = resultFromMediaByDisplayName[keyName];
-        RINGTONE_INFO_LOG("found %{public}s in media_lib", keyName.c_str());
-    } else if (resultFromMediaByTitle.find(keyName) != resultFromMediaByTitle.end()) {
-        infoPtr = resultFromMediaByTitle[keyName];
-        RINGTONE_INFO_LOG("found %{public}s in media_lib", keyName.c_str());
+    if (resultFromFileMgr.find(keyName) != resultFromFileMgr.end()) {
+        infoPtr = resultFromFileMgr[keyName];
+        RINGTONE_INFO_LOG("found %{public}s in filemgr", keyName.c_str());
     } else if (resultFromRingtoneByDisplayName.find(keyName) != resultFromRingtoneByDisplayName.end()) {
         results = resultFromRingtoneByDisplayName.at(keyName);
         if (results.empty()) {
@@ -429,23 +308,18 @@ static std::shared_ptr<FileInfo> MergeQueries(const DualFwkSettingItem &setting,
 std::vector<FileInfo> RingtoneDualFwkRestore::BuildFileInfo()
 {
     std::vector<FileInfo> result;
-    std::vector<std::string> fileNames = dualFwkSetting_->GetFileNames();
-    std::map<std::string, std::shared_ptr<FileInfo>> resultFromMediaByDisplayName;
-    std::map<std::string, std::shared_ptr<FileInfo>> resultFromMediaByTitle;
+    std::map<std::string, std::shared_ptr<FileInfo>> resultFromFileMgr;
+    CustomisedToneProcessor customisedToneProcessor;
+    customisedToneProcessor.QueryFileMgrForFileInfo(resultFromFileMgr);
 
     std::vector<std::string> displayNames = dualFwkSetting_->GetDisplayNames();
     std::map<std::string, std::vector<std::shared_ptr<FileInfo>>> resultFromRingtoneByDisplayName;
 
-#ifdef USE_MEDIA_LIBRARY
-    QueryMediaLibForFileInfo(fileNames, resultFromMediaByDisplayName, UFM_QUERY_AUDIO, "display_name");
-    QueryMediaLibForFileInfo(fileNames, resultFromMediaByTitle, UFM_QUERY_AUDIO, "title");
-#endif
     QueryRingToneDbForFileInfo(GetBaseDb(), displayNames, resultFromRingtoneByDisplayName, "display_name");
 
     for (const auto& setting : dualFwkSetting_->GetSettings()) {
         bool doInsert = true;
-        auto infoPtr = MergeQueries(setting, resultFromMediaByDisplayName, resultFromMediaByTitle,
-            resultFromRingtoneByDisplayName, doInsert);
+        auto infoPtr = MergeQueries(setting, resultFromFileMgr, resultFromRingtoneByDisplayName, doInsert);
         if (infoPtr == nullptr) {
             continue;
         }
@@ -461,7 +335,7 @@ std::vector<FileInfo> RingtoneDualFwkRestore::BuildFileInfo()
 
 int32_t RingtoneDualFwkRestore::StartRestore()
 {
-    if (dualFwkSetting_ == nullptr || mediaDataShare_ == nullptr) {
+    if (dualFwkSetting_ == nullptr) {
         RINGTONE_ERR_LOG("dualfwk restrore is not initialized successfully");
         return E_ERR;
     }
@@ -487,6 +361,15 @@ int32_t RingtoneDualFwkRestore::DupToneFile(FileInfo &info)
         absDstPath.c_str());
 
     std::string absSrcPath = info.data;
+
+    std::string::size_type isCustomisedToneFile = absSrcPath.find(FILE_MANAGER_BASE_PATH);
+    if (isCustomisedToneFile != std::string::npos) {
+        if (RingtoneFileUtils::CopyFileUtil(absSrcPath, absDstPath)) {
+            return E_SUCCESS;
+        }
+        RINGTONE_ERR_LOG("copy file fail, src: %{public}s, dest: %{public}s", absSrcPath.c_str(), absDstPath.c_str());
+    }
+
     std::string sub = "cloud";
     std::string replacement = "media/local";
     auto found = absSrcPath.find(sub);

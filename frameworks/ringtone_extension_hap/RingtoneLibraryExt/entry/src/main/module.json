@@ -65,6 +65,16 @@
         }
       },
       {
+        "name": "ohos.permission.FILE_ACCESS_MANAGER",
+        "reason": "$string:permission_file_access_manager",
+        "usedScene": {
+          "abilities": [
+            "RingtoneBackupExtAbility"
+          ],
+          "when": "inuse"
+        }
+      },
+      {
         "name": "ohos.permission.ACCESS_RINGTONE_RESOURCE",
         "reason": "$string:permission_access_ringtone_resource",
         "useScene": {

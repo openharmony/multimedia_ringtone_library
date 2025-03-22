@@ -38,6 +38,7 @@ const int RINGTONE_PARAMETER_SCANNER_COMPLETED_FALSE = 0;
 static const int32_t SYSPARA_SIZE = 128;
 static const int32_t NO_NEED_SCANNER = 1;
 static const int32_t RDB_AREA_EL2 = 2;
+constexpr int32_t MAX_SIZE = 9;
 
 std::string RingtoneUtils::ReplaceAll(std::string str, const std::string &oldValue, const std::string &newValue)
 {
@@ -180,6 +181,26 @@ bool RingtoneUtils::SetMoveEL2DBToEL1()
     }
     prefs->PutInt(RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY, RINGTONE_PARAMETER_SCANNER_COMPLETED_TRUE);
     prefs->FlushSync();
+    return true;
+}
+
+bool RingtoneUtils::IsNumber(const std::string &str)
+{
+    if (str.empty()) {
+        RINGTONE_ERR_LOG("Input is empty");
+        return false;
+    }
+
+    if (str.size() > MAX_SIZE) {
+        RINGTONE_ERR_LOG("input is too long");
+        return false;
+    }
+
+    for (char const &c : str) {
+        if (isdigit(c) == 0) {
+            return false;
+        }
+    }
     return true;
 }
 } // namespace Media

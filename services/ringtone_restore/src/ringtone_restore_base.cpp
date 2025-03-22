@@ -226,13 +226,20 @@ string RingtoneRestoreBase::GetRestoreDir(const int32_t toneType)
 {
     string path = {};
     if (toneType == ToneType::TONE_TYPE_ALARM) {
-        path = RINGTONE_RESTORE_DIR + "/" + "alarms";
+        path = RINGTONE_CUSTOMIZED_ALARM_PATH;
     } else if (toneType == TONE_TYPE_RINGTONE) {
-        path = RINGTONE_RESTORE_DIR + "/" + "ringtones";
+        path = RINGTONE_CUSTOMIZED_RINGTONE_PATH;
     } else if (toneType == TONE_TYPE_NOTIFICATION) {
-        path = RINGTONE_RESTORE_DIR + "/" + "notifications";
+        path = RINGTONE_CUSTOMIZED_NOTIFICATIONS_PATH;
     } else {
         path = {};
+    }
+
+    // check ringtone dir
+    if (!path.empty() && access(path.c_str(), F_OK) != 0) {
+        if (!RingtoneFileUtils::CreateDirectory(path)) {
+            RINGTONE_ERR_LOG("Create customised tone dir: %{private}s failed!", path.c_str());
+        }
     }
     return path;
 }

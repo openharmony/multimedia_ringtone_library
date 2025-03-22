@@ -23,19 +23,9 @@
 #include "ringtone_metadata.h"
 #include "ringtone_restore_base.h"
 #include "ringtone_restore_type.h"
-#ifdef USE_MEDIA_LIBRARY
-#include "medialibrary_db_const.h"
-#include "userfilemgr_uri.h"
-#endif
 
 namespace OHOS {
 namespace Media {
-#ifndef USE_MEDIA_LIBRARY
-const std::string UFM_QUERY_AUDIO = "datashare:///media/userfilemgr_audio_operation/query";
-const std::string MEDIA_DATA_DB_NAME = "display_name";
-const std::string MEDIALIBRARY_DATA_URI = "datashare:///media";
-#endif
-
 class RingtoneDualFwkRestore : public RingtoneRestoreBase {
 public:
     RingtoneDualFwkRestore() = default;
@@ -52,16 +42,11 @@ private:
     int32_t DupToneFile(FileInfo &info);
     void UpdateRestoreFileInfo(FileInfo &info);
     std::vector<FileInfo> BuildFileInfo();
-    int32_t QueryMediaLibForFileInfo(const std::vector<std::string> &names,
-        std::map<std::string, std::shared_ptr<FileInfo>> &infoMap,
-        const std::string &queryFileUriBase = UFM_QUERY_AUDIO,
-        const std::string &predicateColumn = MEDIA_DATA_DB_NAME);
     int32_t QueryRingToneDbForFileInfo(std::shared_ptr<NativeRdb::RdbStore> rdbStore,
         const std::vector<std::string> &names, std::map<std::string, std::vector<std::shared_ptr<FileInfo>>> &infoMap,
-        const std::string &predicateColumn = MEDIA_DATA_DB_NAME);
+        const std::string &predicateColumn);
 
 private:
-    std::shared_ptr<DataShare::DataShareHelper> mediaDataShare_ = nullptr;
     std::string dualFwkConf_ = {};
 };
 

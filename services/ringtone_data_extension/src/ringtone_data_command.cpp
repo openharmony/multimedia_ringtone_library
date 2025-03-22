@@ -18,13 +18,13 @@
 #include "rdb_utils.h"
 #include "ringtone_errno.h"
 #include "ringtone_log.h"
+#include "ringtone_utils.h"
 
 namespace OHOS {
 namespace Media {
 using namespace std;
 using namespace OHOS::NativeRdb;
 using namespace OHOS::DataShare;
-constexpr int32_t MAX_SIZE = 9;
 
 RingtoneDataCommand::RingtoneDataCommand(const Uri &uri, const string &table, const RingtoneOperationType type)
     : uri_(uri), tableName_(table), oprnType_(type)
@@ -89,24 +89,6 @@ const string &RingtoneDataCommand::GetResult()
     return result_;
 }
 
-static bool IsNumber(const string &str)
-{
-    if (str.empty()) {
-        RINGTONE_DEBUG_LOG("IsNumber input is empty ");
-        return false;
-    }
-    if (str.size() > MAX_SIZE) {
-        RINGTONE_ERR_LOG("IsNumber input is too long ");
-        return false;
-    }
-    for (char const &c : str) {
-        if (isdigit(c) == 0) {
-            return false;
-        }
-    }
-    return true;
-}
-
 int32_t RingtoneDataCommand::GetToneIdFromUri(Uri &uri)
 {
     string uriStr = uri.ToString();
@@ -115,7 +97,7 @@ int32_t RingtoneDataCommand::GetToneIdFromUri(Uri &uri)
     }
 
     auto toneId = uriStr.substr(RINGTONE_PATH_URI.size(), uriStr.size());
-    if (IsNumber(toneId)) {
+    if (RingtoneUtils::IsNumber(toneId)) {
         RINGTONE_INFO_LOG("Get toneId=%{public}s from Uri", toneId.c_str());
         return stoi(toneId);
     }
