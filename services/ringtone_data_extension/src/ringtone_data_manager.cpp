@@ -27,6 +27,7 @@
 #include "ringtone_scanner_manager.h"
 #include "ringtone_tracer.h"
 #include "ringtone_xcollie.h"
+#include "ringtone_utils.h"
 
 namespace OHOS {
 namespace Media {
@@ -39,7 +40,6 @@ using namespace OHOS::RdbDataShareAdapter;
 shared_ptr<RingtoneDataManager> RingtoneDataManager::instance_ = nullptr;
 mutex RingtoneDataManager::mutex_;
 shared_ptr<RingtoneUnistore> g_uniStore = nullptr;
-constexpr int32_t MAX_SIZE = 9;
 
 RingtoneDataManager::RingtoneDataManager(void)
 {
@@ -290,24 +290,6 @@ shared_ptr<ResultSetBridge> RingtoneDataManager::Query(RingtoneDataCommand &cmd,
     return RdbUtils::ToResultSetBridge(absResultSet);
 }
 
-static bool IsNumber(const string &str)
-{
-    if (str.empty()) {
-        RINGTONE_DEBUG_LOG("IsNumber input is empty ");
-        return false;
-    }
-    if (str.size() > MAX_SIZE) {
-        RINGTONE_ERR_LOG("IsNumber input is too long ");
-        return false;
-    }
-    for (char const &c : str) {
-        if (isdigit(c) == 0) {
-            return false;
-        }
-    }
-    return true;
-}
-
 int32_t RingtoneDataManager::OpenRingtoneFile(RingtoneDataCommand &cmd, const string &mode)
 {
     RINGTONE_DEBUG_LOG("start");
@@ -394,7 +376,7 @@ string RingtoneDataManager::GetIdFromUri(Uri &uri, const std::string &uriPath)
     const int uriSegmentsCount = 3;
     const int toneIdSegmentNumber = 2;
     if (segments.size() != uriSegmentsCount || segments[1] != uriPath ||
-        !IsNumber(segments[toneIdSegmentNumber])) {
+        !RingtoneUtils::IsNumber(segments[toneIdSegmentNumber])) {
         return {};
     }
     return segments[toneIdSegmentNumber];
@@ -402,7 +384,7 @@ string RingtoneDataManager::GetIdFromUri(Uri &uri, const std::string &uriPath)
 
 shared_ptr<RingtoneAsset> RingtoneDataManager::GetRingtoneAssetFromId(const string &id)
 {
-    if ((id.empty()) || (!IsNumber(id)) || (stoi(id) == -1)) {
+    if ((id.empty()) || (!RingtoneUtils::IsNumber(id)) || (stoi(id) == -1)) {
         RINGTONE_ERR_LOG("Id for the path is incorrect: %{private}s", id.c_str());
         return nullptr;
     }
@@ -426,7 +408,7 @@ shared_ptr<RingtoneAsset> RingtoneDataManager::GetRingtoneAssetFromId(const stri
 
 std::shared_ptr<VibrateAsset> RingtoneDataManager::GetVibrateAssetFromId(const std::string &id)
 {
-    if ((id.empty()) || (!IsNumber(id)) || (stoi(id) == -1)) {
+    if ((id.empty()) || (!RingtoneUtils::IsNumber(id)) || (stoi(id) == -1)) {
         RINGTONE_ERR_LOG("Id for the path is incorrect: %{private}s", id.c_str());
         return nullptr;
     }

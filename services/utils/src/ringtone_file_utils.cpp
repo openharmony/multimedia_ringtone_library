@@ -468,11 +468,7 @@ bool RingtoneFileUtils::CopyFileUtil(const string &filePath, const string &newPa
     if (fstat(source, &fst) == 0) {
         // Copy file content
         if (sendfile(dest, source, nullptr, fst.st_size) != E_ERR) {
-            // Copy ownership and mode of source file
-            if (fchown(dest, fst.st_uid, fst.st_gid) == 0 &&
-                fchmod(dest, fst.st_mode) == 0) {
-                ret= true;
-            }
+            ret = true;
         }
     }
 

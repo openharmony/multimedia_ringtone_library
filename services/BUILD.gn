@@ -150,6 +150,7 @@ ohos_shared_library("ringtonerestore") {
   ]
 
   sources = [
+    "${RINGTONE_RESTORE_PATH}/src/customised_tone_processor.cpp",
     "${RINGTONE_RESTORE_PATH}/src/dualfwk_conf_loader.cpp",
     "${RINGTONE_RESTORE_PATH}/src/dualfwk_conf_parser.cpp",
     "${RINGTONE_RESTORE_PATH}/src/dualfwk_sound_setting.cpp",
@@ -193,6 +194,7 @@ ohos_shared_library("ringtonerestore") {
     "data_share:datashare_consumer",
     "data_share:datashare_provider",
     "hilog:libhilog",
+    "hitrace:hitrace_meter",
     "init:libbegetutil",
     "libxml2:libxml2",
     "napi:ace_napi",
@@ -203,11 +205,6 @@ ohos_shared_library("ringtonerestore") {
     "relational_store:rdb_data_share_adapter",
     "samgr:samgr_proxy",
   ]
-
-  if (ringtone_media_library_enable) {
-    defines = [ "USE_MEDIA_LIBRARY" ]
-    external_deps += [ "media_library:media_library" ]
-  }
 
   defines = []
 

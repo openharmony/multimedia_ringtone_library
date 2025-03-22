@@ -2,8 +2,8 @@
   "app": {
     "bundleName": "com.ohos.ringtonelibrary.ringtonelibrarydata",
     "vendor": "huawei",
-    "versionCode": 10000004,
-    "versionName": "1.0.0.4",
+    "versionCode": 10000022,
+    "versionName": "1.0.0.22",
     "minAPIVersion": 12,
     "targetAPIVersion": 12,
     "KeepAlive": false,

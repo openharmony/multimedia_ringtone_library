@@ -23,6 +23,10 @@
     {
       "name": "permission_access_ringtone_resource",
       "value": "Allows access to the ringtone files in a user directory."
+    },
+    {
+      "name": "permission_file_access_manager",
+      "value": "Allows app read write files in file manager app."
     }
   ]
 }

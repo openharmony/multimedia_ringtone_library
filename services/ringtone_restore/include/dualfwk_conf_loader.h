@@ -48,8 +48,9 @@ public:
     ~DualFwkConfLoader() {};
     int32_t Load(DualFwkConf &conf, const RestoreSceneType &type, const std::string &backupFile);
     void ShowConf(const DualFwkConf &conf);
-private:
     std::string GetConf(const std::string &key);
+
+private:
     std::shared_ptr<DataShare::DataShareHelper> dataShareHelper_;
     std::string settingsDataUri_;
 };

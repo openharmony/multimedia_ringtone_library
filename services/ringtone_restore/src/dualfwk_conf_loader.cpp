@@ -113,14 +113,12 @@ int32_t DualFwkConfLoader::Load(DualFwkConf &conf, const RestoreSceneType &type,
 
     if (type == RestoreSceneType::RESTORE_SCENE_TYPE_DUAL_CLONE) {
         RINGTONE_INFO_LOG("Load configurations for RestoreSceneType::RESTORE_SCENE_TYPE_DUAL_CLONE");
-        conf.notificationSoundPath = GetConf("notification_sound");
+        conf.notificationSoundPath = GetConf("notification_sound_path");
         conf.ringtonePath = GetConf("ringtone_path");
         conf.ringtone2Path = GetConf("ringtone2_path");
-        conf.alarmAlertPath = GetConf("alarm_alert");
+        conf.alarmAlertPath = GetConf("alarm_alert_path");
         conf.messagePath = GetConf("message_path");
-        conf.messageSub1 = GetConf("message_sub1");
-        conf.messagePath = backupConfigs["mms_sim1_channel"];
-        conf.messageSub1 = backupConfigs["mms_sim2_channel"];
+        conf.messageSub1 = GetConf("messageSub1");
     } else {
         RINGTONE_INFO_LOG("Load configurations for RestoreSceneType::RESTORE_SCENE_TYPE_DUAL_UPGRADE");
         conf.notificationSoundPath = GetConf("notification_sound_path");
