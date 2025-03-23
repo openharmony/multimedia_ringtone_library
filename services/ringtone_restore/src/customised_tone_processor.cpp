@@ -46,7 +46,8 @@ static int32_t GetFileTitleAndDuration(const std::string &path, FileInfo &fileIn
     tracer.Start("CustomisedToneProcessor::GetFileTitleAndDuration");
 
     std::error_code ec;
-    std::string realPath = std::filesystem::weakly_canonical(realPath, ec);
+    std::string realPath = path;
+    realPath = std::filesystem::weakly_canonical(realPath, ec);
     if (ec.value() != E_SUCCESS) {
         RINGTONE_ERR_LOG("GetFileTitle normalized realPath failed");
         return E_FAIL;
@@ -60,10 +61,7 @@ static int32_t GetFileTitleAndDuration(const std::string &path, FileInfo &fileIn
 
     int mode = O_RDONLY;
     int fd = open(realPath.c_str(), mode);
-    if (fd < 0) {
-        RINGTONE_ERR_LOG("open fail path: %{private}s", realPath.c_str());
-        return E_FAIL;
-    }
+    CHECK_AND_RETURN_RET_LOG(fd > 0, E_FAIL, "open fail path: %{private}s", realPath.c_str());
 
     struct stat64 st;
     int32_t ret = fstat64(fd, &st);
