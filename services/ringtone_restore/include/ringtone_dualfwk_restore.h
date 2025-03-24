@@ -57,7 +57,7 @@ private:
         const std::string &queryFileUriBase = UFM_QUERY_AUDIO,
         const std::string &predicateColumn = MEDIA_DATA_DB_NAME);
     int32_t QueryRingToneDbForFileInfo(std::shared_ptr<NativeRdb::RdbStore> rdbStore,
-        const std::vector<std::string> &names, std::map<std::string, std::shared_ptr<FileInfo>> &infoMap,
+        const std::vector<std::string> &names, std::map<std::string, std::vector<std::shared_ptr<FileInfo>>> &infoMap,
         const std::string &predicateColumn = MEDIA_DATA_DB_NAME);
 
 private:

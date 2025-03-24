@@ -250,7 +250,7 @@ int32_t RingtoneDualFwkRestore::QueryMediaLibForFileInfo(const std::vector<std::
 #endif
 
 int32_t RingtoneDualFwkRestore::QueryRingToneDbForFileInfo(std::shared_ptr<NativeRdb::RdbStore> rdbStore,
-    const std::vector<std::string> &names, std::map<std::string, std::shared_ptr<FileInfo>> &infoMap,
+    const std::vector<std::string> &names, std::map<std::string, std::vector<std::shared_ptr<FileInfo>>> &infoMap,
     const std::string &predicateColumn)
 {
     if (rdbStore == nullptr) {
@@ -287,12 +287,23 @@ int32_t RingtoneDualFwkRestore::QueryRingToneDbForFileInfo(std::shared_ptr<Nativ
         auto infoPtr = std::make_shared<FileInfo>(*metaData);
         infoPtr->doInsert = false;
         if (predicateColumn == RINGTONE_COLUMN_TITLE) {
-            infoMap[infoPtr->title] = infoPtr;
+            infoMap[infoPtr->title].emplace_back(infoPtr);
         } else {
-            infoMap[infoPtr->displayName] = infoPtr;
+            infoMap[infoPtr->displayName].emplace_back(infoPtr);
         }
         
         RINGTONE_INFO_LOG("new info found in ringtone_lib: %{public}s", infoPtr->toString().c_str()); // debug
+    }
+
+    for (const auto& results : infoMap) {
+        if (!results.second.empty()) {
+            for (const auto& infoPtr : results.second) {
+                RINGTONE_INFO_LOG("key: %{public}s, value: %{public}s", results.first.c_str(),
+                    infoPtr->toString().c_str());
+            }
+        } else {
+            RINGTONE_INFO_LOG("key: %{public}s, value is nullptr", results.first.c_str());
+        }
     }
 
     return E_SUCCESS;
@@ -326,16 +337,66 @@ static void AddSettingsToFileInfo(const DualFwkSettingItem &setting, FileInfo &i
     }
 }
 
+std::shared_ptr<FileInfo> GetRingtonebyDisplayName(std::vector<std::shared_ptr<FileInfo>>& results,
+    const DualFwkSettingItem &setting, bool &doInsert)
+{
+    auto keyName = setting.toneFileName;
+    auto keyToneType = setting.settingType;
+    std::shared_ptr<FileInfo> infoPtr;
+    for (const auto& ringtoneInfo : results) {
+        if (ringtoneInfo == nullptr) {
+            RINGTONE_ERR_LOG("ringtoneInfo from ringtone by display name is nullptr");
+            continue;
+        }
+        if ((ringtoneInfo->sourceType == SourceType::SOURCE_TYPE_PRESET) && ((ringtoneInfo->toneType ==
+            ToneType::TONE_TYPE_RINGTONE) || (ringtoneInfo->toneType == ToneType::TONE_TYPE_NOTIFICATION))) {
+            if (keyToneType == (ringtoneInfo->toneType + 1)) {
+                infoPtr = ringtoneInfo;
+                RINGTONE_INFO_LOG("found %{public}s in ringtone db", keyName.c_str());
+                doInsert = false;
+                break;
+            } else {
+                RINGTONE_INFO_LOG("%{public}s is invalid", keyName.c_str());
+                return nullptr;
+            }
+        } else {
+            infoPtr = ringtoneInfo;
+            RINGTONE_INFO_LOG("found %{public}s in ringtone db", keyName.c_str());
+            doInsert = false;
+            break;
+        }
+    }
+    return infoPtr;
+}
+
+std::shared_ptr<FileInfo> GetRingtoneInfo(std::vector<std::shared_ptr<FileInfo>>& results,
+    const DualFwkSettingItem &setting, bool &doInsert)
+{
+    auto keyName = setting.toneFileName;
+    std::shared_ptr<FileInfo> infoPtr;
+    for (const auto& ringtoneInfo : results) {
+        if (ringtoneInfo == nullptr) {
+            RINGTONE_ERR_LOG("ringtoneInfo from ringtone by display name is nullptr");
+            continue;
+        }
+        infoPtr = ringtoneInfo;
+        RINGTONE_INFO_LOG("found %{public}s in ringtone db", keyName.c_str());
+        doInsert = false;
+        break;
+    }
+    return infoPtr;
+}
+
 static std::shared_ptr<FileInfo> MergeQueries(const DualFwkSettingItem &setting,
     std::map<std::string, std::shared_ptr<FileInfo>> resultFromMediaByDisplayName,
     std::map<std::string, std::shared_ptr<FileInfo>> resultFromMediaByTitle,
-    std::map<std::string, std::shared_ptr<FileInfo>> resultFromRingtoneByDisplayName,
+    std::map<std::string, std::vector<std::shared_ptr<FileInfo>>> resultFromRingtoneByDisplayName,
     bool &doInsert)
 {
     std::shared_ptr<FileInfo> infoPtr;
+    std::vector<std::shared_ptr<FileInfo>> results;
     doInsert = true;
     auto keyName = setting.toneFileName;
-    auto KeyToneType = setting.toneType;
     if (resultFromMediaByDisplayName.find(keyName) != resultFromMediaByDisplayName.end()) {
         infoPtr = resultFromMediaByDisplayName[keyName];
         RINGTONE_INFO_LOG("found %{public}s in media_lib", keyName.c_str());
@@ -343,32 +404,21 @@ static std::shared_ptr<FileInfo> MergeQueries(const DualFwkSettingItem &setting,
         infoPtr = resultFromMediaByTitle[keyName];
         RINGTONE_INFO_LOG("found %{public}s in media_lib", keyName.c_str());
     } else if (resultFromRingtoneByDisplayName.find(keyName) != resultFromRingtoneByDisplayName.end()) {
-        infoPtr = resultFromRingtoneByDisplayName.at(keyName);
-        if (infoPtr == nullptr) {
-            RINGTONE_ERR_LOG("infoPtr from ringtone by display name is nullptr");
+        results = resultFromRingtoneByDisplayName.at(keyName);
+        if (results.empty()) {
+            RINGTONE_ERR_LOG("query ringtone from ringtoneDb by display name is null");
             return nullptr;
         }
-        if ((infoPtr->sourceType == SourceType::SOURCE_TYPE_PRESET) && ((infoPtr->toneType ==
-            ToneType::TONE_TYPE_RINGTONE) || (infoPtr->toneType == ToneType::TONE_TYPE_NOTIFICATION))) {
-            if (KeyToneType == infoPtr->toneType) {
-                infoPtr = resultFromRingtoneByDisplayName[keyName];
-                RINGTONE_INFO_LOG("found %{public}s in ringtone db", keyName.c_str());
-                doInsert = false;
-            } else {
-                RINGTONE_INFO_LOG("%{public}s is invalid", keyName.c_str());
-                return nullptr;
-            }
-        } else {
-            infoPtr = resultFromRingtoneByDisplayName[keyName];
-            RINGTONE_INFO_LOG("found %{public}s in ringtone db", keyName.c_str());
-            doInsert = false;
-        }
+        infoPtr = GetRingtonebyDisplayName(results, setting, doInsert);
     } else if (setting.isTitle) {
         keyName = RingtoneUtils::ReplaceAll(keyName + ".ogg", " ", "_");
         if (resultFromRingtoneByDisplayName.find(keyName) != resultFromRingtoneByDisplayName.end()) {
-            infoPtr = resultFromRingtoneByDisplayName[keyName];
-            RINGTONE_INFO_LOG("found %{public}s in ringtone db", keyName.c_str());
-            doInsert = false;
+            results = resultFromRingtoneByDisplayName.at(keyName);
+            if (results.empty()) {
+                RINGTONE_ERR_LOG("iquery ringtone from ringtoneDb by display name is null");
+                return nullptr;
+            }
+            infoPtr = GetRingtoneInfo(results, setting, doInsert);
         }
     } else {
         RINGTONE_INFO_LOG("failed to find %{public}s", keyName.c_str());
@@ -384,7 +434,7 @@ std::vector<FileInfo> RingtoneDualFwkRestore::BuildFileInfo()
     std::map<std::string, std::shared_ptr<FileInfo>> resultFromMediaByTitle;
 
     std::vector<std::string> displayNames = dualFwkSetting_->GetDisplayNames();
-    std::map<std::string, std::shared_ptr<FileInfo>> resultFromRingtoneByDisplayName;
+    std::map<std::string, std::vector<std::shared_ptr<FileInfo>>> resultFromRingtoneByDisplayName;
 
 #ifdef USE_MEDIA_LIBRARY
     QueryMediaLibForFileInfo(fileNames, resultFromMediaByDisplayName, UFM_QUERY_AUDIO, "display_name");
