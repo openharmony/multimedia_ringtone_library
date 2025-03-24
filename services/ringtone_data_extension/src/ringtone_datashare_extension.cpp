@@ -30,6 +30,7 @@
 #include "ringtone_language_manager.h"
 #include "ringtone_log.h"
 #include "ringtone_scanner_manager.h"
+#include "ringtone_tracer.h"
 #include "runtime.h"
 #include "singleton.h"
 #include "ringtone_proxy_uri.h"
@@ -43,9 +44,10 @@ using namespace OHOS::NativeRdb;
 using namespace OHOS::Media;
 using namespace OHOS::DataShare;
 
-const char RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY[] = "ringtone.scanner.completed";
-const int RINGTONE_PARAMETER_SCANNER_COMPLETED_TRUE = 1;
-const int RINGTONE_PARAMETER_SCANNER_COMPLETED_FALSE = 0;
+const char RINGTONE_PARAMETER_SCANNER_FIRST_KEY[] = "ringtone.scanner.first";
+const char RINGTONE_PARAMETER_SCANNER_FIRST_TRUE[] = "true";
+const char RINGTONE_PARAMETER_SCANNER_FIRST_FALSE[] = "false";
+const int32_t RINGTONEPARA_SIZE = 64;
 const std::string OLD_RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH = "/storage/media/local/files/Ringtone";
 const std::vector<std::string> RINGTONE_OPEN_WRITE_MODE_VECTOR = {
     { RINGTONE_FILEMODE_WRITEONLY },
@@ -212,6 +214,7 @@ static const std::vector<string> g_ringToneTableFields = {
     { RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE },
     { RINGTONE_COLUMN_ALARM_TONE_TYPE },
     { RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE },
+    { RINGTONE_COLUMN_SCANNER_FLAG },
 };
 
 void RingtoneDataShareExtension::DumpDataShareValueBucket(const std::vector<string> &tabFields,
@@ -427,22 +430,21 @@ int RingtoneDataShareExtension::OpenFile(const Uri &uri, const string &mode)
 
 void RingtoneDataShareExtension::RingtoneScanner()
 {
+    RingtoneTracer tracer;
+    tracer.Start("Ringtone Scanner");
+    RINGTONE_INFO_LOG("Ringtone Scanner Start.");
     RingtoneFileUtils::AccessRingtoneDir();
     // ringtone scan
-    int32_t errCode;
-    shared_ptr<NativePreferences::Preferences> prefs =
-        NativePreferences::PreferencesHelper::GetPreferences(COMMON_XML_EL1, errCode);
-    if (!prefs) {
-        RINGTONE_ERR_LOG("get preferences error: %{public}d", errCode);
-        return;
-    }
-    int isCompleted = prefs->GetInt(RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY,
-        RINGTONE_PARAMETER_SCANNER_COMPLETED_FALSE);
-    if (!isCompleted) {
+    char paramValue[RINGTONEPARA_SIZE] = {0};
+    GetParameter(RINGTONE_PARAMETER_SCANNER_FIRST_KEY, "", paramValue, RINGTONEPARA_SIZE);
+    std::string parameter(paramValue);
+    RINGTONE_INFO_LOG("GetParameter end, paramValue: %{public}s .", parameter.c_str());
+    if (strcmp(paramValue, RINGTONE_PARAMETER_SCANNER_FIRST_FALSE) == 0) {
         RingtoneScannerManager::GetInstance()->Start(false);
-        prefs->PutInt(RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY, RINGTONE_PARAMETER_SCANNER_COMPLETED_TRUE);
-        prefs->FlushSync();
+        int result = SetParameter(RINGTONE_PARAMETER_SCANNER_FIRST_KEY, RINGTONE_PARAMETER_SCANNER_FIRST_TRUE);
+        RINGTONE_INFO_LOG("SetParameter end, result: %{public}d", result);
     }
+    RINGTONE_INFO_LOG("Ringtone Scanner End.");
 }
 
 static DataShare::DataShareExtAbility *RingtoneDataShareCreator(const unique_ptr<Runtime> &runtime)

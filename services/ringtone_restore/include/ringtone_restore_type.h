@@ -62,6 +62,7 @@ struct FileInfo {
     int32_t alarmToneType {0};
     int32_t alarmToneSourceType {0};
     std::string restorePath {};
+    int32_t scannerFlag {0};
     bool doInsert {true};
     
     FileInfo() = default;
@@ -85,7 +86,8 @@ struct FileInfo {
         ringToneType(meta.GetRingToneType()),
         ringToneSourceType(meta.GetRingToneSourceType()),
         alarmToneType(meta.GetAlarmToneType()),
-        alarmToneSourceType(meta.GetAlarmToneSourceType()) {}
+        alarmToneSourceType(meta.GetAlarmToneSourceType()),
+        scannerFlag(meta.GetScannerFlag()) {}
 
     std::string toString() const
     {

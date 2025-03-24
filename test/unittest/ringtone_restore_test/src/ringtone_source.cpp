@@ -43,7 +43,8 @@ const string RingtoneRestoreRdbOpenCb::CREATE_RINGTONE_TABLE = "CREATE TABLE IF 
     RINGTONE_COLUMN_RING_TONE_TYPE                + " INT      DEFAULT 0, " +
     RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE         + " INT      DEFAULT 0, " +
     RINGTONE_COLUMN_ALARM_TONE_TYPE               + " INT      DEFAULT 0, " +
-    RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE        + " INT      DEFAULT 0  " + ")";
+    RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE        + " INT      DEFAULT 0, " +
+    RINGTONE_COLUMN_SCANNER_FLAG                  + " INT      DEFAULT 0  " + ")";
 
 int RingtoneRestoreRdbOpenCb::OnCreate(NativeRdb::RdbStore &store)
 {
@@ -82,19 +83,19 @@ void RingtoneSource::InitRingtoneDb()
     restoreRdbPtr_->ExecuteSql("INSERT INTO " + RINGTONE_TABLE +
         " VALUES (last_insert_rowid()+1, '/data/storage/el2/base/files/Ringtone/alarms/Adara.ogg'," +
         " 10414, 'Adara.ogg', 'Adara', 2, 0, 'audio/ogg', 2, 1505707241000, 1505707241846, 1505707241," +
-        " 600, 0, -1, 0, -1, 0, -1, 1, 2)");
+        " 600, 0, -1, 0, -1, 0, -1, 1, 2, 0)");
     restoreRdbPtr_->ExecuteSql("INSERT INTO " + RINGTONE_TABLE +
         " VALUES (last_insert_rowid()+1, '/data/storage/el2/base/files/Ringtone/ringtones/Carme.ogg'," +
         " 26177, 'Carme.ogg', 'Carme', 2, 1, 'audio/ogg', 2, 1505707241000, 1505707241846, 1505707241," +
-        " 1242, 0, -1, 0, -1, 3, 2, 0, -1)");
+        " 1242, 0, -1, 0, -1, 3, 2, 0, -1, 0)");
     restoreRdbPtr_->ExecuteSql("INSERT INTO " + RINGTONE_TABLE +
         " VALUES (last_insert_rowid()+1, '/data/storage/el2/base/files/Ringtone/notifications/Radon.ogg'," +
         " 25356, 'Radon.ogg', 'Radon', 2, 2, 'audio/ogg', 2, 1505707241000, 1505707241846, 1505707241," +
-        " 1800, 0, -1, 1, 2, 0, -1, 0, -1)");
+        " 1800, 0, -1, 1, 2, 0, -1, 0, -1, 0)");
     restoreRdbPtr_->ExecuteSql("INSERT INTO " + RINGTONE_TABLE +
         " VALUES (last_insert_rowid()+1, '/data/storage/el2/base/files/Ringtone/notifications/Titan.ogg'," +
         " 30984, 'Titan.ogg', 'Titan', 2, 2, 'audio/ogg', 2, 1505707241000, 1505707241846, 1505707241," +
-        " 1947, 3, 2, 0, -1, 0, -1, 0, -1)");
+        " 1947, 3, 2, 0, -1, 0, -1, 0, -1, 0)");
 }
 } // namespace Media
 } // namespace OHOS

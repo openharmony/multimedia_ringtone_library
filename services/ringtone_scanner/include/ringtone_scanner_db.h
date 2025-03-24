@@ -35,6 +35,8 @@ public:
     EXPORT static int32_t InsertVibrateMetadata(const VibrateMetadata &metadata, std::string &tableName);
     EXPORT static int32_t UpdateMetadata(const RingtoneMetadata &metadata, std::string &tableName);
     EXPORT static int32_t UpdateVibrateMetadata(const VibrateMetadata &metadata, std::string &tableName);
+    EXPORT static bool UpdateScannerFlag();
+    EXPORT static bool DeleteNotExist();
     EXPORT static int32_t GetFileBasicInfo(const std::string &path, std::unique_ptr<RingtoneMetadata> &ptr);
     EXPORT static int32_t GetVibrateFileBasicInfo(const std::string &path, std::unique_ptr<VibrateMetadata> &ptr);
     EXPORT static int32_t UpdateRingtoneRdb(NativeRdb::ValuesBucket &values, const std::string &whereClause,
