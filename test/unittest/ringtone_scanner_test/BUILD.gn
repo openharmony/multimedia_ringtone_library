@@ -21,7 +21,7 @@ group("unittest") {
 }
 
 ohos_unittest("ringtone_scanner_unittest") {
-  module_out_path = "ringtone_library/ringtonelibraryextention"
+  module_out_path = "ringtone_library/ringtone_library"
 
   include_dirs = [
     "./include",
