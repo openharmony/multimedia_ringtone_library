@@ -67,6 +67,9 @@ public:
     EXPORT void SetPlayMode(const VariantData &dateTaken);
     EXPORT int32_t GetPlayMode() const;
 
+    EXPORT void SetScannerFlag(const VariantData &dateTaken);
+    EXPORT int32_t GetScannerFlag() const;
+
     EXPORT void Init();
 
     using VibrateMetadataFnPtr = void (VibrateMetadata::*)(const VariantData &);
@@ -86,6 +89,7 @@ private:
     int64_t dateModified_;
     int64_t dateTaken_;
     int32_t vibratePlayMode_;
+    int32_t scannerFlag_;
 };
 } // namespace Media
 } // namespace OHOS
