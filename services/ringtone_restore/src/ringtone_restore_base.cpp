@@ -275,6 +275,7 @@ NativeRdb::ValuesBucket RingtoneRestoreBase::SetInsertValue(const FileInfo &file
     values.PutLong(RINGTONE_COLUMN_DATE_MODIFIED, fileInfo.dateModified);
     values.PutLong(RINGTONE_COLUMN_DATE_TAKEN, fileInfo.dateTaken);
     values.PutInt(RINGTONE_COLUMN_DURATION, fileInfo.duration);
+    values.PutInt(RINGTONE_COLUMN_SCANNER_FLAG, fileInfo.scannerFlag);
     // ringtone setting infos
     values.PutInt(RINGTONE_COLUMN_SHOT_TONE_TYPE, SHOT_TONE_TYPE_DEFAULT);
     values.PutInt(RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE, SHOT_TONE_SOURCE_TYPE_DEFAULT);
