@@ -138,7 +138,7 @@ HWTEST_F(RingtoneDualFwkRestoreTest, ringtone_dualfwk_restore_test_0003, TestSiz
     RingtoneDataCallBack cb;
     auto rdbStore = NativeRdb::RdbHelper::GetRdbStore(config, RINGTONE_RDB_VERSION, cb, err);
     std::map<std::string, std::shared_ptr<FileInfo>> resultFromMedia;
-    std::map<std::string, std::shared_ptr<FileInfo>> resultFromRingtone;
+    std::map<std::string, std::vector<std::shared_ptr<FileInfo>>> resultFromRingtone;
     auto restore = std::make_unique<RingtoneDualFwkRestoreClone>();
     EXPECT_NE(restore, nullptr);
     restore->Init("/");
