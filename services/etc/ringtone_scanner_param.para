@@ -13,3 +13,4 @@
 
 ringtone.scanner.completed = false
 ringtone.scanner.first = false
+ringtone.scanner.userId = ""
