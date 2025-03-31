@@ -40,11 +40,8 @@ using namespace std;
 
 CustomisedToneProcessor::CustomisedToneProcessor() {}
 
-static int32_t GetFileTitleAndDuration(const std::string &path, FileInfo &fileInfo)
+static int32_t GetFileFd(const std::string &path, int &fd, struct stat64 &st)
 {
-    RingtoneTracer tracer;
-    tracer.Start("CustomisedToneProcessor::GetFileTitleAndDuration");
-
     std::error_code ec;
     std::string realPath = path;
     realPath = std::filesystem::weakly_canonical(realPath, ec);
@@ -60,10 +57,9 @@ static int32_t GetFileTitleAndDuration(const std::string &path, FileInfo &fileIn
     }
 
     int mode = O_RDONLY;
-    int fd = open(realPath.c_str(), mode);
+    fd = open(realPath.c_str(), mode);
     CHECK_AND_RETURN_RET_LOG(fd > 0, E_FAIL, "open fail path: %{private}s", realPath.c_str());
 
-    struct stat64 st;
     int32_t ret = fstat64(fd, &st);
     if (ret != 0) {
         RINGTONE_ERR_LOG("file stat is err, %{public}d, fd: %{public}d", ret, fd);
@@ -71,10 +67,24 @@ static int32_t GetFileTitleAndDuration(const std::string &path, FileInfo &fileIn
         return E_FAIL;
     }
 
+    return E_OK;
+}
+
+static int32_t GetFileTitleAndDuration(const std::string &path, FileInfo &fileInfo)
+{
+    RingtoneTracer tracer;
+    tracer.Start("CustomisedToneProcessor::GetFileTitleAndDuration");
+
+    int fd;
+    struct stat64 st;
+    if (GetFileFd(path, fd, st) != E_OK) {
+        return E_FAIL;
+    }
+
     shared_ptr<AVMetadataHelper> avMetadataHelper = AVMetadataHelperFactory::CreateAVMetadataHelper();
     CHECK_AND_RETURN_RET_LOG(avMetadataHelper != nullptr, 0, "avMetadataHelper is nullptr");
     int64_t fileLength = static_cast<int64_t>(st.st_size);
-    ret = avMetadataHelper->SetSource(fd, 0, fileLength, AV_META_USAGE_META_ONLY);
+    int32_t ret = avMetadataHelper->SetSource(fd, 0, fileLength, AV_META_USAGE_META_ONLY);
     close(fd);
     if (ret != 0) {
         RINGTONE_ERR_LOG("av set source is err");
@@ -85,7 +95,9 @@ static int32_t GetFileTitleAndDuration(const std::string &path, FileInfo &fileIn
     CHECK_AND_RETURN_RET_LOG(avMeta != nullptr, 0, "avMeta is nullptr");
     if (!avMeta->GetData(Tag::MEDIA_TITLE, fileInfo.title) || fileInfo.title.empty()) {
         RINGTONE_ERR_LOG("get file title fail");
-        return E_FAIL;
+        // If the title can not be obtained, use the prefix of displayname
+        std::string::size_type pos = fileInfo.displayName.find_last_of('.');
+        fileInfo.title = (pos == std::string::npos) ? fileInfo.displayName : fileInfo.displayName.substr(0, pos);
     }
 
     std::string duration;
@@ -181,6 +193,7 @@ int32_t CustomisedToneProcessor::BuildFileInfo(const std::string &dualFilePath, 
     fileInfo.shotToneType = shotToneType;
     fileInfo.sourceType = SOURCE_TYPE_CUSTOMISED;
     fileInfo.mediaType = RINGTONE_MEDIA_TYPE_AUDIO;
+    fileInfo.dateAdded = RingtoneFileUtils::UTCTimeMilliSeconds();
 
     GetFileTitleAndDuration(customisedAudioPath, fileInfo);
     std::string extension = RingtoneScannerUtils::GetFileExtension(customisedAudioPath);
