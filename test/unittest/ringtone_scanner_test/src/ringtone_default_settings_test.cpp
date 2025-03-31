@@ -204,5 +204,45 @@ HWTEST_F(RingtoneDefaultSettingsTest, settings_AlarmToneDefaultSettings_001, Tes
     system("param set const.multimedia.alarm_tone Bellatrix.ogg");
     defaultSetting->AlarmToneDefaultSettings();
 }
+
+/*
+ * Feature: Service
+ * Function: Test RingtoneDefaultSettings with GetTonePathByDisplayName
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test GetTonePathByDisplayName for abnormal branches
+ */
+HWTEST_F(RingtoneDefaultSettingsTest, settings_GetTonePathByDisplayName_002, TestSize.Level0)
+{
+    auto stageContext = std::make_shared<AbilityRuntime::ContextImpl>();
+    auto abilityContextImpl = std::make_shared<OHOS::AbilityRuntime::AbilityContextImpl>();
+    ASSERT_NE(abilityContextImpl, nullptr);
+    abilityContextImpl->SetStageContext(stageContext);
+    shared_ptr<RingtoneUnistore> uniStore = RingtoneRdbStore::GetInstance(abilityContextImpl);
+    ASSERT_NE(uniStore, nullptr);
+    int32_t ret = uniStore->Init();
+    EXPECT_EQ(ret, E_OK);
+    Uri uri(RINGTONE_PATH_URI);
+    RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::INSERT);
+    NativeRdb::ValuesBucket values;
+    string name = "test_name";
+    string test = "test";
+    values.PutString(RINGTONE_COLUMN_DISPLAY_NAME, name);
+    const string data = "rdbStore_Insert_test_001";
+    values.PutString(RINGTONE_COLUMN_DATA, data);
+    const string title = "insert test";
+    values.PutString(RINGTONE_COLUMN_TITLE, title);
+    values.Put(RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, static_cast<int>(1));
+    cmd.SetValueBucket(values);
+    uniStore->Init();
+    int64_t rowId = E_HAS_DB_ERROR;
+    ret = uniStore->Insert(cmd, rowId);
+    EXPECT_EQ(ret, E_OK);
+    auto rawRdb = uniStore->GetRaw();
+    std::unique_ptr<RingtoneDefaultSetting> defaultSetting = RingtoneDefaultSetting::GetObj(rawRdb);
+    ASSERT_NE(defaultSetting, nullptr);
+    defaultSetting->GetTonePathByDisplayName(test);
+}
 } // namespace Media
 } // namespace OHOS

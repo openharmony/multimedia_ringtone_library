@@ -26,6 +26,8 @@
 #undef private
 #include "ringtone_type.h"
 #include "ringtone_log.h"
+#include "ringtone_rdbstore.h"
+#include "ringtone_scanner_db.h"
 
 
 using namespace std;
@@ -41,7 +43,10 @@ const int TEST_RINGTONE_COLUMN_SIZE = 1022;
 const int TEST_RINGTONE_COLUMN_TONE_TYPE = 2;
 const string SLASH_STR = "/";
 const string MP3 = "mp3";
+const string RAINNING = "rainning";
+const int NUMBER_OF_TIMES = 10;
 shared_ptr<RingtoneFetchResult<RingtoneAsset>> g_fetchResult;
+shared_ptr<RingtoneUnistore> g_uniStore = nullptr;
 void RingtoneFetchResultTest::SetUpTestCase()
 {
     auto stageContext = std::make_shared<AbilityRuntime::ContextImpl>();
@@ -52,6 +57,11 @@ void RingtoneFetchResultTest::SetUpTestCase()
     std::shared_ptr<DataShare::DataShareResultSet> dataShare = make_shared<DataShare::DataShareResultSet>();
     g_fetchResult = make_shared<RingtoneFetchResult<RingtoneAsset>>(dataShare);
     EXPECT_NE(g_fetchResult, nullptr);
+
+    g_uniStore = RingtoneRdbStore::GetInstance(abilityContextImpl);
+    EXPECT_NE(g_uniStore, nullptr);
+    ret = g_uniStore->Init();
+    EXPECT_EQ(ret, E_OK);
     system("rm -rf /storage/cloud/files/");
     system("mkdir /storage/cloud/files");
     system("mkdir /storage/cloud/files/Ringtone");
@@ -248,5 +258,282 @@ HWTEST_F(RingtoneFetchResultTest, fetchResult_GetNextObject_test_001, TestSize.L
     retVal = dataManager->Delete(cmdDelete, predicates);
     EXPECT_EQ((retVal > 0), true);
 }
+
+/*
+ * Feature: Service
+ * Function: Test RingtoneFetchResult with GetCount
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test GetCount for RingtoneAsset
+ */
+HWTEST_F(RingtoneFetchResultTest, fetchResult_GetCount_test_001, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("fetchResult_GetCount_test_001 start.");
+    std::shared_ptr<DataShare::DataShareResultSet> dataShare = make_shared<DataShare::DataShareResultSet>();
+    std::shared_ptr<RingtoneFetchResult<RingtoneAsset>> fetchResult =
+        make_shared<RingtoneFetchResult<RingtoneAsset>>(dataShare);
+    ASSERT_NE(fetchResult, nullptr);
+    fetchResult->resultset_ = nullptr;
+    int count = fetchResult->GetCount();
+    EXPECT_EQ(count, 0);
+
+    fetchResult->Close();
+    EXPECT_EQ(fetchResult->resultset_, nullptr);
+    fetchResult->Close();
+    RINGTONE_INFO_LOG("fetchResult_GetCount_test_001 end.");
+}
+
+/*
+ * Feature: Service
+ * Function: Test RingtoneFetchResult with GetCount
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test GetCount for VibrateAsset
+ */
+HWTEST_F(RingtoneFetchResultTest, fetchResult_GetCount_test_002, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("fetchResult_GetCount_test_002 start.");
+    std::shared_ptr<DataShare::DataShareResultSet> dataShare = make_shared<DataShare::DataShareResultSet>();
+    std::shared_ptr<RingtoneFetchResult<VibrateAsset>> fetchResult =
+        make_shared<RingtoneFetchResult<VibrateAsset>>(dataShare);
+    ASSERT_NE(fetchResult, nullptr);
+    fetchResult->resultset_ = nullptr;
+    int count = fetchResult->GetCount();
+    EXPECT_EQ(count, 0);
+
+    fetchResult->Close();
+    EXPECT_EQ(fetchResult->resultset_, nullptr);
+    fetchResult->Close();
+    RINGTONE_INFO_LOG("fetchResult_GetCount_test_002 end.");
+}
+
+/*
+ * Feature: Service
+ * Function: Test RingtoneFetchResult with GetObjectAtPosition
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test GetObjectAtPosition for RingtoneAsset
+ */
+HWTEST_F(RingtoneFetchResultTest, fetchResult_GetObjectAtPosition_test_002, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("fetchResult_GetObjectAtPosition_test_002 start.");
+    Uri uri(RINGTONE_PATH_URI);
+    auto dataManager = RingtoneDataManager::GetInstance();
+    ASSERT_NE(dataManager, nullptr);
+    for (int index = 0; index < NUMBER_OF_TIMES; index++) {
+        AbilityRuntime::DataShareValuesBucket values;
+        values.Put(RINGTONE_COLUMN_DATA, static_cast<string>(RINGTONE_LIBRARY_PATH + SLASH_STR +
+            TEST_INSERT_RINGTONE_LIBRARY + to_string(index) + MTP_FORMAT_MP3));
+        values.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
+        values.Put(RINGTONE_COLUMN_TONE_TYPE, static_cast<int>(TEST_RINGTONE_COLUMN_TONE_TYPE));
+        values.Put(RINGTONE_COLUMN_MIME_TYPE, MP3);
+        values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_MP3);
+        values.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
+        RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::INSERT);
+        auto retVal = dataManager->Insert(cmd, values);
+        EXPECT_EQ((retVal > 0), true);
+    }
+
+    RingtoneDataCommand cmdQuery(uri, RINGTONE_TABLE, RingtoneOperationType::QUERY);
+    DataShare::DataSharePredicates queryPredicates;
+    queryPredicates.EqualTo(RINGTONE_COLUMN_MIME_TYPE, MP3);
+    vector<string> columns = { { RINGTONE_COLUMN_TONE_ID }, { RINGTONE_COLUMN_DATA }, { RINGTONE_COLUMN_SIZE } };
+    int32_t errCode;
+    auto queryResultSet = dataManager->Query(cmdQuery, columns, queryPredicates, errCode);
+    ASSERT_NE(queryResultSet, nullptr);
+    shared_ptr<AbilityRuntime::DataShareResultSet> resultSet =
+        make_shared<AbilityRuntime::DataShareResultSet>(queryResultSet);
+    auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
+    ASSERT_NE(results, nullptr);
+
+    for (int index = 0; index < NUMBER_OF_TIMES; index++) {
+        auto ringtoneObject = results->GetObjectAtPosition(index);
+        ASSERT_NE(ringtoneObject, nullptr);
+    }
+    results->Close();
+    RINGTONE_INFO_LOG("fetchResult_GetObjectAtPosition_test_002 end.");
+}
+
+/*
+ * Feature: Service
+ * Function: Test RingtoneFetchResult with GetObjectAtPosition
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test GetObjectAtPosition for RingtoneAsset when resultSet row is empty
+ */
+HWTEST_F(RingtoneFetchResultTest, fetchResult_GetObjectAtPosition_test_003, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("fetchResult_GetObjectAtPosition_test_003 start.");
+    Uri uri(RINGTONE_PATH_URI);
+    auto dataManager = RingtoneDataManager::GetInstance();
+    ASSERT_NE(dataManager, nullptr);
+
+    RingtoneDataCommand cmdQuery(uri, RINGTONE_TABLE, RingtoneOperationType::QUERY);
+    DataShare::DataSharePredicates queryPredicates;
+    queryPredicates.EqualTo(RINGTONE_COLUMN_MIME_TYPE, "mp4");
+    vector<string> columns = { { RINGTONE_COLUMN_TONE_ID }, { RINGTONE_COLUMN_DATA }, { RINGTONE_COLUMN_SIZE } };
+    int32_t errCode;
+    auto queryResultSet = dataManager->Query(cmdQuery, columns, queryPredicates, errCode);
+    ASSERT_NE(queryResultSet, nullptr);
+    shared_ptr<AbilityRuntime::DataShareResultSet> resultSet =
+        make_shared<AbilityRuntime::DataShareResultSet>(queryResultSet);
+    auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
+    ASSERT_NE(results, nullptr);
+
+    for (int index = 0; index < NUMBER_OF_TIMES; index++) {
+        auto ringtoneObject = results->GetObjectAtPosition(index);
+        EXPECT_EQ(ringtoneObject, nullptr);
+    }
+    results->Close();
+    RINGTONE_INFO_LOG("fetchResult_GetObjectAtPosition_test_003 end.");
+}
+
+/*
+ * Feature: Service
+ * Function: Test RingtoneFetchResult with GetObjectAtPosition
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test GetObjectAtPosition for abnormal branches
+ */
+HWTEST_F(RingtoneFetchResultTest, fetchResult_GetObjectAtPosition_test_004, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("fetchResult_GetObjectAtPosition_test_004 start.");
+    std::shared_ptr<DataShare::DataShareResultSet> dataShare = make_shared<DataShare::DataShareResultSet>();
+    std::shared_ptr<RingtoneFetchResult<VibrateAsset>> fetchResult =
+        make_shared<RingtoneFetchResult<VibrateAsset>>(dataShare);
+    fetchResult->resultset_ = nullptr;
+    std::unique_ptr<VibrateAsset> resultObject = fetchResult->GetObjectAtPosition(0);
+    EXPECT_EQ(resultObject, nullptr);
+
+    std::shared_ptr<RingtoneFetchResult<RingtoneAsset>> result =
+        make_shared<RingtoneFetchResult<RingtoneAsset>>(dataShare);
+    ASSERT_NE(result, nullptr);
+    result->resultset_ = nullptr;
+    std::unique_ptr<RingtoneAsset> object = result->GetObjectAtPosition(0);
+    EXPECT_EQ(object, nullptr);
+
+    RINGTONE_INFO_LOG("fetchResult_GetObjectAtPosition_test_004 end.");
+}
+
+/*
+ * Feature: Service
+ * Function: Test RingtoneFetchResult with GetFirstObject GetNextObject GetLastObject
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test GetFirstObject GetNextObject GetLastObject for RingtoneAsset when resultSet row is empty
+ */
+HWTEST_F(RingtoneFetchResultTest, fetchResult_GetFirstObject_test_001, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("fetchResult_GetFirstObject_test_001 start.");
+    Uri uri(RINGTONE_PATH_URI);
+    auto dataManager = RingtoneDataManager::GetInstance();
+    ASSERT_NE(dataManager, nullptr);
+
+    RingtoneDataCommand cmdQuery(uri, RINGTONE_TABLE, RingtoneOperationType::QUERY);
+    DataShare::DataSharePredicates queryPredicates;
+    queryPredicates.EqualTo(RINGTONE_COLUMN_MIME_TYPE, "mp4");
+    vector<string> columns = { { RINGTONE_COLUMN_TONE_ID }, { RINGTONE_COLUMN_DATA }, { RINGTONE_COLUMN_SIZE } };
+    int32_t errCode;
+    auto queryResultSet = dataManager->Query(cmdQuery, columns, queryPredicates, errCode);
+    ASSERT_NE(queryResultSet, nullptr);
+    shared_ptr<AbilityRuntime::DataShareResultSet> resultSet =
+        make_shared<AbilityRuntime::DataShareResultSet>(queryResultSet);
+    auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
+    ASSERT_NE(results, nullptr);
+    auto ringtoneObject = results->GetFirstObject();
+    EXPECT_EQ(ringtoneObject, nullptr);
+
+    ringtoneObject = results->GetNextObject();
+    EXPECT_EQ(ringtoneObject, nullptr);
+
+    ringtoneObject = results->GetLastObject();
+    EXPECT_EQ(ringtoneObject, nullptr);
+    results->Close();
+    RINGTONE_INFO_LOG("fetchResult_GetFirstObject_test_001 end.");
+}
+
+/*
+ * Feature: Service
+ * Function: Test RingtoneFetchResult with IsAtLastRow
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test IsAtLastRow for RingtoneAsset when resultSet row is not empty
+ */
+HWTEST_F(RingtoneFetchResultTest, fetchResult_IsAtLastRow_test_002, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("fetchResult_IsAtLastRow_test_002 start.");
+    Uri uri(RINGTONE_PATH_URI);
+    auto dataManager = RingtoneDataManager::GetInstance();
+    ASSERT_NE(dataManager, nullptr);
+
+    RingtoneDataCommand cmdQuery(uri, RINGTONE_TABLE, RingtoneOperationType::QUERY);
+    DataShare::DataSharePredicates queryPredicates;
+    queryPredicates.EqualTo(RINGTONE_COLUMN_MIME_TYPE, MP3);
+    vector<string> columns = { { RINGTONE_COLUMN_TONE_ID }, { RINGTONE_COLUMN_DATA }, { RINGTONE_COLUMN_SIZE } };
+    int32_t errCode;
+    auto queryResultSet = dataManager->Query(cmdQuery, columns, queryPredicates, errCode);
+    ASSERT_NE(queryResultSet, nullptr);
+    shared_ptr<AbilityRuntime::DataShareResultSet> resultSet =
+        make_shared<AbilityRuntime::DataShareResultSet>(queryResultSet);
+    auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
+    ASSERT_NE(results, nullptr);
+    auto ringtoneObject = results->GetLastObject();
+    EXPECT_NE(ringtoneObject, nullptr);
+
+    bool ret = results->IsAtLastRow();
+    EXPECT_TRUE(ret);
+    results->Close();
+    RINGTONE_INFO_LOG("fetchResult_IsAtLastRow_test_002 end.");
+}
+
+/*
+ * Feature: Service
+ * Function: Test RingtoneFetchResult with GetRowValFromColumn
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test GetRowValFromColumn when resultSet is not empty
+ */
+HWTEST_F(RingtoneFetchResultTest, fetchResult_GetRowValFromColumn_test_003, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("fetchResult_GetRowValFromColumn_test_003 start.");
+    RingtoneScannerDb ringtoneScannerDb;
+    g_uniStore->ExecuteSql("INSERT INTO " + RINGTONE_TABLE +
+        " VALUES (last_insert_rowid()+1, '/data/storage/el2/base/files/Ringtone/ringtones/Carme.ogg'," +
+        " 26177, 'RingtoneTest.ogg', 'RingtoneTest', 2, 1, 'audio/ogg', 1, 1505707241000, 1505707241846, 1505707241," +
+        " 1242, 0, -1, 0, -1, 3, 2, 0, -1, '1', 0)");
+    string whereClause = RINGTONE_COLUMN_DISPLAY_NAME + " = ?";
+    vector<string> whereArgs = {};
+    whereArgs.push_back("RingtoneTest.ogg");
+    vector<string> columns = {RINGTONE_COLUMN_SCANNER_FLAG};
+    shared_ptr<NativeRdb::ResultSet> resultSet = nullptr;
+    int ret = ringtoneScannerDb.QueryRingtoneRdb(whereClause, whereArgs, columns, resultSet);
+    EXPECT_EQ(ret, E_OK);
+
+    std::shared_ptr<RingtoneFetchResult<RingtoneAsset>> fetchResult = make_unique<RingtoneFetchResult<RingtoneAsset>>();
+    ASSERT_NE(fetchResult, nullptr);
+    RingtoneResultSetDataType dataType = RingtoneResultSetDataType::DATA_TYPE_DOUBLE;
+    std::string columnName = RINGTONE_COLUMN_DATA;
+    auto res = fetchResult->GetRowValFromColumn(columnName, dataType, resultSet);
+    variant<int32_t, int64_t, string, double> doubleVal = 0;
+    EXPECT_EQ(res, doubleVal);
+
+    dataType = RingtoneResultSetDataType::DATA_TYPE_INT64;
+    res = fetchResult->GetRowValFromColumn(columnName, dataType, resultSet);
+    variant<int32_t, int64_t, string, double> longVal = static_cast<int64_t>(0);
+    EXPECT_EQ(res, longVal);
+
+    std::unique_ptr<RingtoneAsset> asset = std::make_unique<RingtoneAsset>();
+    fetchResult->SetRingtoneAsset(asset, resultSet);
+    RINGTONE_INFO_LOG("fetchResult_GetRowValFromColumn_test_003 end.");
+}
+
 } // namespace Media
 } // namespace OHOS

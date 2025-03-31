@@ -53,6 +53,7 @@ void RingtoneDualFwkRestoreTest::SetUpTestCase(void)
     int32_t ret = rUniStore->Init();
     EXPECT_EQ(ret, E_OK);
     g_restoreDualFwkService = std::make_unique<RingtoneDualFwkRestore>();
+    EXPECT_NE(g_restoreDualFwkService, nullptr);
     int32_t res = g_restoreDualFwkService->Init(TEST_BACKUP_PATH);
     // (void) res;
     ASSERT_EQ(res, E_FAIL);
@@ -208,6 +209,29 @@ HWTEST_F(RingtoneDualFwkRestoreTest, ringtone_dualfwk_restore_test_0006, TestSiz
     auto ret = dualSetting->ProcessConfRow(unConf);
     EXPECT_EQ(ret, E_ERR);
     RINGTONE_INFO_LOG("ringtone_dualfwk_restore_test_0006 end");
+}
+
+HWTEST_F(RingtoneDualFwkRestoreTest, ringtone_dualfwk_restore_test_0007, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("ringtone_dualfwk_restore_test_0007 start");
+    FileInfo info;
+    DualFwkSettingItem dualFwkSettingItem;
+    ASSERT_NE(g_restoreDualFwkService->dualFwkSetting_, nullptr);
+    dualFwkSettingItem.settingType = static_cast<int32_t>(ToneSettingType::TONE_SETTING_TYPE_MAX);
+    g_restoreDualFwkService->dualFwkSetting_->settings_.insert({1, dualFwkSettingItem});
+    g_restoreDualFwkService->BuildFileInfo();
+    dualFwkSettingItem.settingType = static_cast<int32_t>(ToneSettingType::TONE_SETTING_TYPE_ALARM);
+    g_restoreDualFwkService->BuildFileInfo();
+    dualFwkSettingItem.settingType = static_cast<int32_t>(ToneSettingType::TONE_SETTING_TYPE_RINGTONE);
+    g_restoreDualFwkService->BuildFileInfo();
+    dualFwkSettingItem.settingType = static_cast<int32_t>(ToneSettingType::TONE_SETTING_TYPE_SHOT);
+    g_restoreDualFwkService->BuildFileInfo();
+    dualFwkSettingItem.settingType = static_cast<int32_t>(ToneSettingType::TONE_SETTING_TYPE_NOTIFICATION);
+    g_restoreDualFwkService->BuildFileInfo();
+    g_restoreDualFwkService->dualFwkSetting_ = nullptr;
+    int32_t ret = g_restoreDualFwkService->StartRestore();
+    EXPECT_EQ(ret, E_ERR);
+    RINGTONE_INFO_LOG("ringtone_dualfwk_restore_test_0007 end");
 }
 } // namespace Media
 } // namespace OHOS

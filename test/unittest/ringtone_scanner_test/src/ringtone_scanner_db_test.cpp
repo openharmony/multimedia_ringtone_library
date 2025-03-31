@@ -21,6 +21,7 @@
 #include "rdb_helper.h"
 #include "ringtone_data_manager.h"
 #include "ringtone_errno.h"
+#include "ringtone_log.h"
 #include "ringtone_rdbstore.h"
 #define private public
 #include "ringtone_scanner_db.h"
@@ -65,8 +66,10 @@ void RingtoneScannerDbTest::SetUp()
 {
     auto stageContext = std::make_shared<AbilityRuntime::ContextImpl>();
     auto abilityContextImpl = std::make_shared<OHOS::AbilityRuntime::AbilityContextImpl>();
+    EXPECT_NE(abilityContextImpl, nullptr);
     abilityContextImpl->SetStageContext(stageContext);
     g_uniStore = RingtoneRdbStore::GetInstance(abilityContextImpl);
+    EXPECT_NE(g_uniStore, nullptr);
     int32_t ret = g_uniStore->Init();
     EXPECT_EQ(ret, E_OK);
 }
@@ -148,6 +151,133 @@ HWTEST_F(RingtoneScannerDbTest, scannerDb_GetFileBasicInfo_test_001, TestSize.Le
     g_uniStore->Stop();
     int ret = ringtoneScannerDb.GetFileBasicInfo(path, metadata);
     EXPECT_EQ(ret, E_DB_FAIL);
+}
+
+/*
+ * Feature: Service
+ * Function: Test ringtoneScannerDb with UpdateScannerFlag
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test UpdateScannerFlag for Normal branches
+ */
+HWTEST_F(RingtoneScannerDbTest, scannerDb_UpdateScannerFlag_test_001, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("scannerDb_UpdateScannerFlag_test_001 start.");
+    RingtoneScannerDb ringtoneScannerDb;
+    g_uniStore->ExecuteSql("INSERT INTO " + RINGTONE_TABLE +
+        " VALUES (last_insert_rowid()+1, '/data/storage/el2/base/files/Ringtone/alarms/Adara.ogg'," +
+        " 10414, 'Adara.ogg', 'Adara', 2, 0, 'audio/ogg', 2, 1505707241000, 1505707241846, 1505707241," +
+        " 600, 0, -1, 0, -1, 0, -1, 1, 2, '1', 1)");
+    bool res = ringtoneScannerDb.UpdateScannerFlag();
+    EXPECT_EQ(res, true);
+
+    string whereClause = RINGTONE_COLUMN_DISPLAY_NAME + " = ?";
+    vector<string> whereArgs;
+    whereArgs.push_back("Adara.ogg");
+    vector<string> columns = {RINGTONE_COLUMN_SCANNER_FLAG};
+    shared_ptr<NativeRdb::ResultSet> resultSet = nullptr;
+    int ret = ringtoneScannerDb.QueryRingtoneRdb(whereClause, whereArgs, columns, resultSet);
+    ASSERT_NE(resultSet, nullptr);
+    EXPECT_EQ(ret, E_OK);
+    int scannerFlag;
+    resultSet->GetInt(0, scannerFlag);
+    EXPECT_EQ(scannerFlag, 0);
+    RINGTONE_INFO_LOG("scannerDb_UpdateScannerFlag_test_001 end.");
+}
+
+/*
+ * Feature: Service
+ * Function: Test ringtoneScannerDb with UpdateScannerFlag
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test UpdateScannerFlag for Normal branches
+ */
+HWTEST_F(RingtoneScannerDbTest, scannerDb_DeleteNotExist_test_001, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("scannerDb_DeleteNotExist_test_001 start.");
+    RingtoneScannerDb ringtoneScannerDb;
+    g_uniStore->ExecuteSql("INSERT INTO " + RINGTONE_TABLE +
+        " VALUES (last_insert_rowid()+1, '/data/storage/el2/base/files/Ringtone/ringtones/Carme.ogg'," +
+        " 26177, 'RingtoneTest.ogg', 'RingtoneTest', 2, 1, 'audio/ogg', 1, 1505707241000, 1505707241846, 1505707241," +
+        " 1242, 0, -1, 0, -1, 3, 2, 0, -1, '1', 0)");
+    string whereClause = RINGTONE_COLUMN_DISPLAY_NAME + " = ?";
+    vector<string> whereArgs = {};
+    whereArgs.push_back("RingtoneTest.ogg");
+    vector<string> columns = {RINGTONE_COLUMN_SCANNER_FLAG};
+    shared_ptr<NativeRdb::ResultSet> resultSet = nullptr;
+    int ret = ringtoneScannerDb.QueryRingtoneRdb(whereClause, whereArgs, columns, resultSet);
+    ASSERT_NE(resultSet, nullptr);
+    EXPECT_EQ(ret, E_OK);
+    int scannerFlag;
+    resultSet->GetInt(0, scannerFlag);
+    EXPECT_EQ(scannerFlag, 0);
+
+    bool res = ringtoneScannerDb.DeleteNotExist();
+    EXPECT_EQ(res, true);
+    resultSet = nullptr;
+    ret = ringtoneScannerDb.QueryRingtoneRdb(whereClause, whereArgs, columns, resultSet);
+    ASSERT_NE(resultSet, nullptr);
+    EXPECT_EQ(ret, E_OK);
+    int rowCount = 1;
+    resultSet->GetRowCount(rowCount);
+    EXPECT_EQ(rowCount, 0);
+    RINGTONE_INFO_LOG("scannerDb_DeleteNotExist_test_001 end.");
+}
+
+/*
+ * Feature: Service
+ * Function: Test ringtoneScannerDb with QueryRingtoneRdb
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test QueryRingtoneRdb when column is not exist
+ */
+HWTEST_F(RingtoneScannerDbTest, scannerDb_QueryRingtoneRdb_test_002, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("scannerDb_QueryRingtoneRdb_test_002 start.");
+    RingtoneScannerDb ringtoneScannerDb;
+    g_uniStore->ExecuteSql("INSERT INTO " + RINGTONE_TABLE +
+        " VALUES (last_insert_rowid()+1, '/data/storage/el2/base/files/Ringtone/ringtones/Carme.ogg'," +
+        " 26177, 'Ringtone.ogg', 'RingtoneTest', 2, 1, 'audio/ogg', 1, 1505707241000, 1505707241846, 1505707241," +
+        " 1242, 0, -1, 0, -1, 3, 2, 0, -1, '1', 0)");
+    string whereClause = "test = ?";
+    vector<string> whereArgs = {};
+    whereArgs.push_back("Ringtone.ogg");
+    vector<string> columns = {"test"};
+    shared_ptr<NativeRdb::ResultSet> resultSet = nullptr;
+    int ret = ringtoneScannerDb.QueryRingtoneRdb(whereClause, whereArgs, columns, resultSet);
+    EXPECT_EQ(ret, E_OK);
+    RINGTONE_INFO_LOG("scannerDb_QueryRingtoneRdb_test_002 end.");
+}
+
+/*
+ * Feature: Service
+ * Function: Test ringtoneScannerDb with InsertVibrateMetadata
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test InsertVibrateMetadata for normal branches
+ */
+HWTEST_F(RingtoneScannerDbTest, scannerDb_InsertVibrateMetadata_test_001, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("scannerDb_InsertVibrateMetadata_test_001 start.");
+    RingtoneScannerDb ringtoneScannerDb;
+    VibrateMetadata* metadata = new (std::nothrow) VibrateMetadata();
+    ASSERT_NE(metadata, nullptr);
+    metadata->SetData("test");
+    metadata->SetDateAdded(static_cast<int64_t>(0));
+    metadata->SetDateTaken(static_cast<int64_t>(0));
+    metadata->SetDateModified(static_cast<int64_t>(0));
+    std::string tableName = VIBRATE_TABLE;
+    int32_t ret = ringtoneScannerDb.InsertVibrateMetadata(*metadata, tableName);
+    EXPECT_NE(ret, 0);
+
+    metadata->SetDateTaken(static_cast<int64_t>(1));
+    ret = ringtoneScannerDb.InsertVibrateMetadata(*metadata, tableName);
+    EXPECT_NE(ret, 0);
+    RINGTONE_INFO_LOG("scannerDb_InsertVibrateMetadata_test_001 end.");
 }
 } // namespace Media
 } // namespace OHOS

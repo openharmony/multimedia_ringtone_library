@@ -274,5 +274,24 @@ HWTEST_F(RingtoneLanguageManagerTest, languageManager_ChangeLanguageDataToVibrat
     EXPECT_EQ(ret, E_OK);
     EXPECT_EQ(rowCount, 0);
 }
+
+/*
+ * Feature: Service
+ * Function: Test RingtoneLanguageManager with SyncAssetLanguage
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test SyncAssetLanguage for normal branches
+ */
+HWTEST_F(RingtoneLanguageManagerTest, languageManager_SyncAssetLanguage_test_001, TestSize.Level0)
+{
+    auto langMgr = RingtoneLanguageManager::GetInstance();
+    ASSERT_NE(langMgr, nullptr);
+    std::string language = "test";
+    langMgr->systemLanguage_ = language;
+    langMgr->SyncAssetLanguage();
+    EXPECT_NE(langMgr->systemLanguage_, language);
+}
+
 } // namespace Media
 } // namespace OHOS
