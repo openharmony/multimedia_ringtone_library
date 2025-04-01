@@ -455,7 +455,8 @@ bool RingtoneLanguageManager::ParseMultilingualXml(xmlNodePtr &rootNode, Resourc
                 return false;
             }
 
-            string resourceName, displayName;
+            string resourceName;
+            string displayName;
             auto xmlResourceName = reinterpret_cast<char*>(xmlGetProp(childNode, BAD_CAST "resource_name"));
             if (xmlResourceName) {
                 resourceName = string(xmlResourceName);
