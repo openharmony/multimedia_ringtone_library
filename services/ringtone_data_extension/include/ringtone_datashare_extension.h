@@ -132,8 +132,11 @@ public:
 private:
     EXPORT static void DumpDataShareValueBucket(const std::vector<std::string> &tabFields,
         const DataShareValuesBucket &value);
-    void UpdataRdbPathData();
-    void RingtoneScanner();
+    EXPORT static int32_t GetUserId();
+    EXPORT static bool IdExists(const std::string &ids, int32_t id);
+    EXPORT static bool CheckCurrentUser();
+    EXPORT void UpdataRdbPathData();
+    EXPORT void RingtoneScanner();
     Runtime &runtime_;
 };
 } // namespace AbilityRuntime

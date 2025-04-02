@@ -229,5 +229,38 @@ HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_DumpDataShareValueBu
     mediaDataShare->DumpDataShareValueBucket(tabFields, value);
     EXPECT_EQ(mediaDataShare != nullptr, true);
 }
+
+HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_IdExists_test_001, TestSize.Level0)
+{
+    const std::unique_ptr<AbilityRuntime::Runtime> runtime;
+    AbilityRuntime::RingtoneDataShareExtension *mediaDataShare;
+    mediaDataShare = AbilityRuntime::RingtoneDataShareExtension::Create(runtime);
+    EXPECT_NE(mediaDataShare, nullptr);
+
+    std::string ids = "";
+    int32_t id = 100;
+    bool ret = mediaDataShare->IdExists(ids, id);
+    EXPECT_FALSE(ret);
+
+    ids = "101";
+    id = 100;
+    ret = mediaDataShare->IdExists(ids, id);
+    EXPECT_FALSE(ret);
+
+    ids = "100 101";
+    id = 10;
+    ret = mediaDataShare->IdExists(ids, id);
+    EXPECT_FALSE(ret);
+
+    ids = "110 210";
+    id = 10;
+    ret = mediaDataShare->IdExists(ids, id);
+    EXPECT_FALSE(ret);
+
+    ids = "100 101";
+    id = 100;
+    ret = mediaDataShare->IdExists(ids, id);
+    EXPECT_TRUE(ret);
+}
 } // namespace Media
 } // namespace OHOS

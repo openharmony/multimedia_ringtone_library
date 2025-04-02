@@ -430,7 +430,7 @@ int RingtoneDataShareExtension::OpenFile(const Uri &uri, const string &mode)
     return RingtoneDataManager::GetInstance()->OpenFile(cmd, unifyMode);
 }
 
-static int32_t GetUserId()
+int32_t RingtoneDataShareExtension::GetUserId()
 {
     RINGTONE_INFO_LOG("GetUserID Start.");
     int32_t userId = 0;
@@ -449,7 +449,7 @@ static int32_t GetUserId()
     return userId;
 }
 
-static bool IdExists(const std::string &ids, int32_t id)
+bool RingtoneDataShareExtension::IdExists(const std::string &ids, int32_t id)
 {
     RINGTONE_INFO_LOG("IdExists Start.");
     if (ids.empty()) {
@@ -471,7 +471,7 @@ static bool IdExists(const std::string &ids, int32_t id)
     return false;
 }
 
-static bool CheckCurrentUser()
+bool RingtoneDataShareExtension::CheckCurrentUser()
 {
     RINGTONE_INFO_LOG("CheckCurrentUser Start.");
     char paramValue[RINGTONEPARA_SIZE] = {0};
