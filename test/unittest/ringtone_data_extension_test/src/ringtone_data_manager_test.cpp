@@ -22,11 +22,14 @@
 #include "datashare_helper.h"
 #include "get_self_permissions.h"
 #include "iservice_registry.h"
+#define private public
 #include "ringtone_data_manager.h"
+#undef private
 #include "ringtone_errno.h"
 #include "ringtone_fetch_result.h"
 #include "ringtone_file_utils.h"
 #include "ringtone_log.h"
+#include "ringtone_rdbstore.h"
 
 using namespace std;
 using namespace testing::ext;
@@ -34,15 +37,20 @@ using namespace testing::ext;
 namespace OHOS {
 namespace Media {
 const string RINGTONE_LIBRARY_PATH = "/storage/cloud/files/Ringtone";
+const string VIBRATE_LIBRARY_PATH = "/storage/cloud/files/Vibrate";
 const string MTP_FORMAT_OGG = ".ogg"; // OGG audio files
 const string MTP_FORMAT_MP3 = ".mp3"; // MP3 audio files
+const string VIBRATE_FORMAT_JSON = ".json";
 const string TEST_INSERT_RINGTONE_LIBRARY = "test_insert_ringtone_library";
+const string TEST_INSERT_VIBRATE_LIBRARY = "test_insert_ringtone_library";
 const int TEST_RINGTONE_COLUMN_SIZE = 1022;
 const string RAINNING = "rainning";
 const int TEST_RINGTONE_COLUMN_TONE_TYPE = 2;
 const int TEST_VIBRATE_COLUMN_VIBRATE_TYPE = 1;
 const int TEST_VIBRATE_COLUMN_SOURCE_TYPE = 1;
+const int TEST_SIMCARD_SETTING_MODE = 1;
 const string MP3 = "mp3";
+const string JSON = "json";
 const string ERROR_RINGTONE_TABLE = "ThotoFiles";
 const string SELECT_STR = " < ? ";
 
@@ -165,6 +173,63 @@ HWTEST_F(RingtoneDataManagerUnitTest, dataManager_Insert_Test_005, TestSize.Leve
     auto retVal = dataManager->Insert(cmd, valuesBucket);
     EXPECT_EQ(retVal, E_INVALID_VALUES);
     RINGTONE_INFO_LOG("dataManager_Insert_Test_005::retVal = %{public}d. End", retVal);
+}
+
+HWTEST_F(RingtoneDataManagerUnitTest, dataManager_Insert_Test_006, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("dataManager_Insert_Test_006::Start");
+    Uri uri(RINGTONE_PATH_URI);
+    DataShare::DataShareValuesBucket valuesBucket;
+    RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::INSERT);
+    auto dataManager = RingtoneDataManager::GetInstance();
+    ASSERT_NE(dataManager, nullptr);
+    dataManager->refCnt_ = 0;
+    auto retVal = dataManager->Insert(cmd, valuesBucket);
+    EXPECT_EQ(retVal, E_FAIL);
+    RINGTONE_INFO_LOG("dataManager_Insert_Test_006::retVal = %{public}d. End", retVal);
+}
+
+HWTEST_F(RingtoneDataManagerUnitTest, dataManager_Insert_Test_007, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("dataManager_Insert_Test_007::Start");
+    Uri uri(RINGTONE_PATH_URI);
+    DataShare::DataShareValuesBucket valuesBucket;
+    auto dataManager = RingtoneDataManager::GetInstance();
+    ASSERT_NE(dataManager, nullptr);
+    auto stageContext = std::make_shared<AbilityRuntime::ContextImpl>();
+    auto abilityContextImpl = std::make_shared<OHOS::AbilityRuntime::AbilityContextImpl>();
+    ASSERT_NE(abilityContextImpl, nullptr);
+    abilityContextImpl->SetStageContext(stageContext);
+    auto result = dataManager->Init(abilityContextImpl);
+    EXPECT_EQ(result, E_OK);
+    valuesBucket.Put(RINGTONE_COLUMN_DATA,
+        static_cast<string>(RINGTONE_LIBRARY_PATH + RINGTONE_SLASH_CHAR +
+        TEST_INSERT_RINGTONE_LIBRARY + to_string(1) + MTP_FORMAT_MP3));
+    valuesBucket.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
+    valuesBucket.Put(RINGTONE_COLUMN_TONE_TYPE, static_cast<int>(TEST_RINGTONE_COLUMN_TONE_TYPE));
+    valuesBucket.Put(RINGTONE_COLUMN_MIME_TYPE, MP3);
+    RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::INSERT);
+    shared_ptr<RingtoneUnistore> uniStore = RingtoneRdbStore::GetInstance(abilityContextImpl);
+    ASSERT_NE(uniStore, nullptr);
+    uniStore->Stop();
+    auto retVal = dataManager->Insert(cmd, valuesBucket);
+    EXPECT_EQ(retVal, E_HAS_DB_ERROR);
+    uniStore->Init();
+    RINGTONE_INFO_LOG("dataManager_Insert_Test_007::End");
+}
+
+HWTEST_F(RingtoneDataManagerUnitTest, dataManager_Insert_Test_008, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("dataManager_Insert_Test_008::Start");
+    Uri uri(SIMCARD_SETTING_PATH_URI);
+    DataShare::DataShareValuesBucket valuesBucket;
+    valuesBucket.Put(SIMCARD_SETTING_COLUMN_MODE, static_cast<int>(TEST_SIMCARD_SETTING_MODE));
+    RingtoneDataCommand cmd(uri, SIMCARD_SETTING_TABLE, RingtoneOperationType::INSERT);
+    auto dataManager = RingtoneDataManager::GetInstance();
+    ASSERT_NE(dataManager, nullptr);
+    auto retVal = dataManager->Insert(cmd, valuesBucket);
+    EXPECT_TRUE(retVal > 0);
+    RINGTONE_INFO_LOG("dataManager_Insert_Test_008::retVal = %{public}d. End", retVal);
 }
 
 HWTEST_F(RingtoneDataManagerUnitTest, dataManager_Query_Test_001, TestSize.Level0)
@@ -557,6 +622,35 @@ HWTEST_F(RingtoneDataManagerUnitTest, dataManager_OpenFile_Test_005, TestSize.Le
     RINGTONE_INFO_LOG("dataManager_OpenFile_Test_005::End");
 }
 
+HWTEST_F(RingtoneDataManagerUnitTest, dataManager_OpenFile_Test_006, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("dataManager_OpenFile_Test_006::Start");
+    Uri uri(VIBRATE_PATH_URI);
+    int errCode = 0;
+    RingtoneDataCommand cmd(uri, VIBRATE_TABLE, RingtoneOperationType::QUERY);
+    DataShare::DataSharePredicates queryPredicates;
+    queryPredicates.EqualTo(VIBRATE_COLUMN_VIBRATE_TYPE, to_string(TEST_VIBRATE_COLUMN_VIBRATE_TYPE));
+    vector<string> columns = { { VIBRATE_COLUMN_VIBRATE_ID }, { VIBRATE_COLUMN_DISPLAY_NAME },
+        { VIBRATE_COLUMN_DATA }, { VIBRATE_COLUMN_VIBRATE_TYPE } };
+    auto dataManager = RingtoneDataManager::GetInstance();
+    ASSERT_NE(dataManager, nullptr);
+    auto queryResultSet = dataManager->Query(cmd, columns, queryPredicates, errCode);
+    ASSERT_NE((queryResultSet == nullptr), true);
+    shared_ptr<AbilityRuntime::DataShareResultSet> resultSet =
+        make_shared<AbilityRuntime::DataShareResultSet>(queryResultSet);
+    auto results = make_unique<RingtoneFetchResult<VibrateAsset>>(move(resultSet));
+    ASSERT_NE(results, nullptr);
+    cout << "query count = " << to_string(results->GetCount()) << endl;
+
+    unique_ptr<VibrateAsset> vibrateAsset = results->GetFirstObject();
+    if (vibrateAsset != nullptr && vibrateAsset->GetPath() != RINGTONE_DEFAULT_STR) {
+        string uriStr = VIBRATE_PATH_URI + RINGTONE_SLASH_CHAR + to_string(vibrateAsset->GetId());
+        Uri ofUri(uriStr);
+        RingtoneDataCommand cmdOpen(ofUri, VIBRATE_TABLE, RingtoneOperationType::OPEN);
+        dataManager->OpenFile(cmdOpen, RINGTONE_FILEMODE_READWRITE);
+    }
+}
+  
 HWTEST_F(RingtoneDataManagerUnitTest, dataManager_Delete_Test_001, TestSize.Level0)
 {
     RINGTONE_INFO_LOG("dataManager_Delete_Test_001::Start");
@@ -629,6 +723,40 @@ HWTEST_F(RingtoneDataManagerUnitTest, dataManager_Delete_Test_005, TestSize.Leve
     auto retVal = dataManager->Delete(cmd, predicates);
     EXPECT_EQ(retVal, E_HAS_DB_ERROR);
     RINGTONE_INFO_LOG("dataManager_Delete_Test_005::End");
+}
+
+HWTEST_F(RingtoneDataManagerUnitTest, dataManager_Delete_Test_006, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("dataManager_Delete_Test_006::Start");
+    Uri uri(RINGTONE_PATH_URI);
+    DataShare::DataSharePredicates predicates;
+    RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::DELETE);
+    auto dataManager = RingtoneDataManager::GetInstance();
+    ASSERT_NE(dataManager, nullptr);
+    dataManager->ClearRingtoneDataMgr();
+    dataManager->refCnt_ = 0;
+    auto retVal = dataManager->Delete(cmd, predicates);
+    EXPECT_EQ(retVal, E_FAIL);
+    RINGTONE_INFO_LOG("dataManager_Delete_Test_006::retVal = %{public}d. End", retVal);
+}
+
+HWTEST_F(RingtoneDataManagerUnitTest, dataManager_Delete_Test_007, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("dataManager_Delete_Test_007::Start");
+    Uri uri(SIMCARD_SETTING_PATH_URI);
+    auto stageContext = std::make_shared<AbilityRuntime::ContextImpl>();
+    auto abilityContextImpl = std::make_shared<OHOS::AbilityRuntime::AbilityContextImpl>();
+    ASSERT_NE(abilityContextImpl, nullptr);
+    abilityContextImpl->SetStageContext(stageContext);
+    auto dataManager = RingtoneDataManager::GetInstance();
+    ASSERT_NE(dataManager, nullptr);
+    auto result = dataManager->Init(abilityContextImpl);
+    EXPECT_EQ(result, E_OK);
+    DataShare::DataSharePredicates predicates;
+    RingtoneDataCommand cmd(uri, SIMCARD_SETTING_TABLE, RingtoneOperationType::DELETE);
+    auto retVal = dataManager->Delete(cmd, predicates);
+    EXPECT_TRUE(retVal > 0);
+    RINGTONE_INFO_LOG("dataManager_Delete_Test_007::retVal = %{public}d. End", retVal);
 }
 
 HWTEST_F(RingtoneDataManagerUnitTest, dataManager_GetOwner_Test_001, TestSize.Level0)

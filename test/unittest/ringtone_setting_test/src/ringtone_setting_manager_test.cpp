@@ -431,5 +431,104 @@ HWTEST_F(RingtoneSettingManagerTest, settingMetadata_CommitSettingCompare_test_0
     ret = g_ringtoneSettingManager->CommitSettingCompare(settingType, toneType, sourceType);
     EXPECT_EQ(ret, E_OK);
 }
+
+/*
+ * Feature: Service
+ * Function: Test RingtoneSettingManager with CommitSettingCompare
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test CommitSettingCompare for abnormal branches
+ */
+HWTEST_F(RingtoneSettingManagerTest, settingMetadata_CommitSettingCompare_test_002, TestSize.Level0)
+{
+    int32_t settingType = static_cast<int32_t>(ToneSettingType::TONE_SETTING_TYPE_SHOT);
+    int32_t toneType = static_cast<int32_t>(ShotToneType::SHOT_TONE_TYPE_NOT);
+    int32_t sourceType = static_cast<int32_t>(SourceType::SOURCE_TYPE_CUSTOMISED);
+    auto ret = g_ringtoneSettingManager->CommitSettingCompare(settingType, toneType, sourceType);
+    EXPECT_EQ(ret, E_INVALID_ARGUMENTS);
+
+    toneType = static_cast<int32_t>(ShotToneType::SHOT_TONE_TYPE_MAX);
+    ret = g_ringtoneSettingManager->CommitSettingCompare(settingType, toneType, sourceType);
+    EXPECT_EQ(ret, E_INVALID_ARGUMENTS);
+}
+
+/*
+ * Feature: Service
+ * Function: Test RingtoneSettingManager with CommitSetting
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test CommitSetting when setting is existing
+ */
+HWTEST_F(RingtoneSettingManagerTest, settingMetadata_CommitSetting_test_002, TestSize.Level0)
+{
+    int32_t settingType = static_cast<int32_t>(ToneSettingType::TONE_SETTING_TYPE_SHOT);
+    int32_t toneType = static_cast<int32_t>(ShotToneType::SHOT_TONE_TYPE_SIM_CARD_BOTH);
+    int32_t sourceType = static_cast<int32_t>(SourceType::SOURCE_TYPE_PRESET);
+    int32_t toneId = 0;
+    string tonePath = "settingMetadata_CommitSetting_test_002";
+    auto ret = g_ringtoneSettingManager->CommitSetting(toneId, tonePath, settingType, toneType, sourceType);
+    EXPECT_EQ(ret, E_OK);
+
+    ret = g_ringtoneSettingManager->CommitSetting(toneId, tonePath, settingType, toneType, sourceType);
+    EXPECT_EQ(ret, E_FAIL);
+}
+
+/*
+ * Feature: Service
+ * Function: Test RingtoneSettingManager with FlushSettings
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test FlushSettings when ringtone rdb_ is nullptr
+ */
+HWTEST_F(RingtoneSettingManagerTest, settingMetadata_FlushSettings_test_001, TestSize.Level0)
+{
+    int32_t settingType = static_cast<int32_t>(ToneSettingType::TONE_SETTING_TYPE_SHOT);
+    int32_t toneType = static_cast<int32_t>(ShotToneType::SHOT_TONE_TYPE_SIM_CARD_BOTH);
+    int32_t sourceType = static_cast<int32_t>(SourceType::SOURCE_TYPE_PRESET);
+    g_ringtoneSettingManager->ringtoneRdb_ = nullptr;
+    auto ret = g_ringtoneSettingManager->CleanupSetting(settingType, toneType, sourceType);
+    EXPECT_EQ(ret, E_DB_FAIL);
+    g_ringtoneSettingManager->FlushSettings();
+}
+
+/*
+ * Feature: Service
+ * Function: Test RingtoneSettingManager with ExtractMetaFromColumn
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test ExtractMetaFromColumn when column name is invalid
+ */
+HWTEST_F(RingtoneSettingManagerTest, settingMetadata_ExtractMetaFromColumn_test_001, TestSize.Level0)
+{
+    std::unique_ptr<RingtoneMetadata> ringtoneMetadata = std::make_unique<RingtoneMetadata>();
+    std::shared_ptr<NativeRdb::ResultSet> results;
+    std::string columnName = "test";
+    g_ringtoneSettingManager->ExtractMetaFromColumn(results, ringtoneMetadata, columnName);
+    EXPECT_TRUE(ringtoneMetadata->memberFuncMap_.find(columnName) == ringtoneMetadata->memberFuncMap_.end());
+}
+
+/*
+ * Feature: Service
+ * Function: Test RingtoneSettingManager with Update
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test Update when ringtone rdb_ is nullptr
+ */
+HWTEST_F(RingtoneSettingManagerTest, settingMetadata_Update_test_001, TestSize.Level0)
+{
+    int changedRows = 0;
+    NativeRdb::ValuesBucket values;
+    const string name = "test_name";
+    values.PutString(RINGTONE_COLUMN_DISPLAY_NAME, name);
+    NativeRdb::AbsRdbPredicates predicates(RINGTONE_TABLE);
+    g_ringtoneSettingManager->ringtoneRdb_ = nullptr;
+    int32_t ret = g_ringtoneSettingManager->Update(changedRows, values, predicates);
+    EXPECT_EQ(ret, E_DB_FAIL);
+}
 } // namespace Media
 } // namespace OHOS

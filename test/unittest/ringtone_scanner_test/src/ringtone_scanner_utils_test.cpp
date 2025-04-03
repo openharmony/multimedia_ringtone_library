@@ -151,5 +151,20 @@ HWTEST_F(RingtoneScannerUtilsTest, ringtonelib_IsRegularFile_test_001, TestSize.
     ret = RingtoneScannerUtils::IsRegularFile(pathSecond);
     EXPECT_EQ(ret, true);
 }
+
+/*
+ * Feature: Service
+ * Function: Test RingtoneScannerUtils with GetFileNameFromUri
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test GetFileNameFromUri when the string is end with "/"
+ */
+HWTEST_F(RingtoneScannerUtilsTest, ringtonelib_GetFileNameFromUri_test_002, TestSize.Level0)
+{
+    string path = "ringtonelib_GetFileNameFromUri_test_002/";
+    string ret = RingtoneScannerUtils::GetFileNameFromUri(path);
+    EXPECT_EQ(ret, "");
+}
 } // namespace Media
 } // namespace OHOS

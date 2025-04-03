@@ -15,6 +15,7 @@ group("test") {
   testonly = true
 
   deps = [
+    "customised_tone_processor_test:customised_tone_processor_unittest",
     "ringtone_data_extension_test:ringtone_data_extension_unittest",
     "ringtone_dfx_test:ringtone_dfx_unittest",
     "ringtone_dualfwk_restore_test:ringtone_dualfwk_restore_unittest",

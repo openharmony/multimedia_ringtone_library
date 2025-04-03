@@ -22,6 +22,7 @@
 #include "rdb_store.h"
 #include "rdb_utils.h"
 #include "ringtone_errno.h"
+#include "ringtone_log.h"
 #include "ringtone_rdbstore.h"
 #define private public
 #include "ringtone_scanner.h"
@@ -169,6 +170,100 @@ HWTEST_F(RingtoneScannerTest, scanner_ScanDir_test_001, TestSize.Level0)
     ringtoneScannerObj.dir_ = "scanner_ScanDir_test_001/.test";
     ret = ringtoneScannerObj.ScanDir();
     EXPECT_EQ(ret, E_DIR_HIDDEN);
+}
+
+/*
+ * Feature: Service
+ * Function: Test RingtoneScanner with BuildVibrateData
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test BuildVibrateData for abnormal branches
+ */
+HWTEST_F(RingtoneScannerTest, scanner_BuildVibrateData_test_001, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("scanner_BuildVibrateData_test_001 start.");
+    struct stat statInfo = {};
+    statInfo.st_mode = S_IFDIR | 0755;
+    const string dir = "./scanner_ScanDir_test_001";
+    shared_ptr<IRingtoneScannerCallback> callback = nullptr;
+    RingtoneScannerObj ringtoneScannerObj(dir, callback, RingtoneScannerObj::DIRECTORY);
+    int32_t ret = ringtoneScannerObj.BuildVibrateData(statInfo);
+    EXPECT_EQ(ret, E_INVALID_ARGUMENTS);
+    RINGTONE_INFO_LOG("scanner_BuildVibrateData_test_001 end.");
+}
+
+/*
+ * Feature: Service
+ * Function: Test RingtoneScanner with ScanFileInternal
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test ScanFileInternal for abnormal branches
+ */
+HWTEST_F(RingtoneScannerTest, scanner_BuildVibrateData_test_002, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("scanner_BuildVibrateData_test_002 start.");
+    struct stat statInfo = {};
+    statInfo.st_mode = S_IFDIR | 0755;
+    const string dir = "./scanner_ScanDir_test_001";
+    shared_ptr<IRingtoneScannerCallback> callback = nullptr;
+    RingtoneScannerObj ringtoneScannerObj(dir, callback, RingtoneScannerObj::DIRECTORY);
+    ringtoneScannerObj.path_ = "/sys_prod/resource/media/haptics/map.json";
+    int32_t ret = ringtoneScannerObj.ScanFileInternal();
+    EXPECT_FALSE(ringtoneScannerObj.isVibrateFile_);
+
+    ringtoneScannerObj.path_ = "/sys_prod/resource/media/haptics/map.ogg";
+    ret = ringtoneScannerObj.ScanFileInternal();
+    EXPECT_EQ(ret, E_INVALID_PATH);
+    RINGTONE_INFO_LOG("scanner_BuildVibrateData_test_002 end.");
+}
+
+/*
+ * Feature: Service
+ * Function: Test RingtoneScanner with ScanVibrateFile
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test ScanVibrateFile when path is empty
+ */
+HWTEST_F(RingtoneScannerTest, scanner_ScanVibrateFile_test_001, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("scanner_ScanVibrateFile_test_001 start.");
+    const string dir = "./scanner_ScanDir_test_001";
+    shared_ptr<IRingtoneScannerCallback> callback = nullptr;
+    RingtoneScannerObj ringtoneScannerObj(dir, callback, RingtoneScannerObj::DIRECTORY);
+    ringtoneScannerObj.path_ = "";
+    int32_t ret = ringtoneScannerObj.ScanVibrateFile();
+    EXPECT_EQ(ret, E_INVALID_ARGUMENTS);
+    RINGTONE_INFO_LOG("scanner_ScanVibrateFile_test_001 end.");
+}
+
+/*
+ * Feature: Service
+ * Function: Test RingtoneScanner with Commit
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test Commit when scan vibrate files
+ */
+HWTEST_F(RingtoneScannerTest, scanner_Commit_test_001, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("scanner_Commit_test_001 start.");
+    const string dir = "./scanner_ScanDir_test_001";
+    shared_ptr<IRingtoneScannerCallback> callback = nullptr;
+    RingtoneScannerObj ringtoneScannerObj(dir, callback, RingtoneScannerObj::DIRECTORY);
+    ringtoneScannerObj.isVibrateFile_ = true;
+    ringtoneScannerObj.vibrateData_ = make_unique<VibrateMetadata>();
+    ASSERT_NE(ringtoneScannerObj.vibrateData_, nullptr);
+    ringtoneScannerObj.vibrateData_->SetVibrateId(FILE_ID_DEFAULT);
+    int32_t ret = ringtoneScannerObj.Commit();
+    EXPECT_EQ(ret, E_OK);
+
+    ringtoneScannerObj.vibrateData_->SetVibrateId(static_cast<int32_t>(64));
+    ret = ringtoneScannerObj.Commit();
+    EXPECT_EQ(ret, E_OK);
+    RINGTONE_INFO_LOG("scanner_Commit_test_001 end.");
 }
 } // namespace Media
 } // namespace OHOS
