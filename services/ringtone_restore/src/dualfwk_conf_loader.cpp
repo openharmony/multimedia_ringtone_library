@@ -20,6 +20,7 @@
 #include "ringtone_errno.h"
 #include "ringtone_file_utils.h"
 #include "ringtone_restore_db_utils.h"
+#include "ringtone_utils.h"
 
 namespace OHOS {
 namespace Media {
@@ -30,6 +31,20 @@ static const std::string SETTINGS_DATA_FIELD_KEY = "KEYWORD";
 static const std::string SETTINGS_DATA_FIELD_VAL = "VALUE";
 static std::vector<std::string> SETTINGS_COLUMNS = {SETTINGS_DATA_FIELD_VAL};
 static const int DEFAULT_USERID = 100;
+
+const int CHAR_LOWER_CASE_A = 97;
+const int CHAR_LOWER_CASE_D = 100;
+const int CHAR_LOWER_CASE_I = 105;
+const int CHAR_LOWER_CASE_N = 110;
+const int CHAR_LOWER_CASE_O = 111;
+const int CHAR_LOWER_CASE_R = 114;
+const std::string DUAL_NAME = std::string() + static_cast<char>(CHAR_LOWER_CASE_A) +
+    static_cast<char>(CHAR_LOWER_CASE_N) + static_cast<char>(CHAR_LOWER_CASE_D) +
+    static_cast<char>(CHAR_LOWER_CASE_R) + static_cast<char>(CHAR_LOWER_CASE_O) +
+    static_cast<char>(CHAR_LOWER_CASE_I) + static_cast<char>(CHAR_LOWER_CASE_D);
+static const std::string EXTERNAL_DB_NAME = "external.db";
+static const std::string EXTERNAL_DB_RESTORE_PATH =
+    "/data/storage/el2/base/.backup/restore/com." + DUAL_NAME + ".providers.media.module/ce/databases/external.db";
 
 DualFwkConfLoader::DualFwkConfLoader() {}
 
@@ -118,7 +133,7 @@ int32_t DualFwkConfLoader::Load(DualFwkConf &conf, const RestoreSceneType &type,
         conf.ringtone2Path = GetConf("ringtone2_path");
         conf.alarmAlertPath = GetConf("alarm_alert_path");
         conf.messagePath = GetConf("message_path");
-        conf.messageSub1 = GetConf("messageSub1");
+        conf.messageSub1 = GetConfPath("messageSub1");
     } else {
         RINGTONE_INFO_LOG("Load configurations for RestoreSceneType::RESTORE_SCENE_TYPE_DUAL_UPGRADE");
         conf.notificationSoundPath = GetConf("notification_sound_path");
@@ -126,7 +141,7 @@ int32_t DualFwkConfLoader::Load(DualFwkConf &conf, const RestoreSceneType &type,
         conf.ringtone2Path = GetConf("ringtone2_path");
         conf.alarmAlertPath = GetConf("alarm_alert_path");
         conf.messagePath = GetConf("message_path");
-        conf.messageSub1 = GetConf("message_sub1");
+        conf.messageSub1 = GetConfPath("messageSub1");
     }
     
     return E_OK;
@@ -173,6 +188,58 @@ std::string DualFwkConfLoader::GetConf(const std::string &key)
         RINGTONE_DEBUG_LOG("valueResult = %{public}s", valueResult.c_str());
     }
     return valueResult;
+}
+
+std::string DualFwkConfLoader::GetConfPath(const std::string &key)
+{
+    std::string value = GetConf(key);
+    size_t pos = value.find("content://media");
+    if (pos != 0) {
+        RINGTONE_INFO_LOG("key: %{public}s value: %{public}s", key.c_str(), value.c_str());
+        return value;
+    }
+
+    pos = value.rfind("/");
+    if (pos == std::string::npos) {
+        RINGTONE_ERR_LOG("Invalid value of key: %{public}s", key.c_str());
+        return value;
+    }
+
+    std::string fileId = value.substr(pos + 1);
+    if (!RingtoneUtils::IsNumber(fileId)) {
+        RINGTONE_INFO_LOG("Invalid file id %{public}s", fileId.c_str());
+        return value;
+    }
+
+    if (!RingtoneFileUtils::IsFileExists(EXTERNAL_DB_RESTORE_PATH)) {
+        RINGTONE_ERR_LOG("External db is not exist");
+        return value;
+    }
+
+    std::shared_ptr<NativeRdb::RdbStore> externalRdb = nullptr;
+    int32_t err = RingtoneRestoreDbUtils::InitDb(externalRdb, EXTERNAL_DB_NAME, EXTERNAL_DB_RESTORE_PATH,
+        RINGTONE_BUNDLE_NAME, true);
+    if (err != E_OK || externalRdb == nullptr) {
+        RINGTONE_ERR_LOG("Init externalRdb fail. err: %{public}d", err);
+        return value;
+    }
+
+    std::string querySql = "SELECT _data FROM files WHERE _id = ?";
+    std::vector<std::string> args = { fileId };
+    auto resultSet = externalRdb->QuerySql(querySql, args);
+    if (resultSet == nullptr || resultSet->GoToFirstRow() != NativeRdb::E_OK) {
+        RINGTONE_ERR_LOG("Query fail.");
+        return value;
+    }
+
+    std::string data;
+    if (resultSet->GetString(0, data) != NativeRdb::E_OK) {
+        RINGTONE_ERR_LOG("Get data from resultSet fail.");
+        return value;
+    }
+
+    RINGTONE_INFO_LOG("Get conf path success, data: %{public}s", data.c_str());
+    return data;
 }
 } // namespace Media
 } // namespace OHOS

@@ -121,7 +121,7 @@ int32_t CustomisedToneProcessor::GetCustomisedAudioPath(DualFwkConf &dualFwkConf
     dualFwkConf.ringtonePath = confLoader.GetConf("ringtone_path");
     dualFwkConf.ringtone2Path = confLoader.GetConf("ringtone2_path");
     dualFwkConf.messagePath = confLoader.GetConf("message_path");
-    dualFwkConf.messageSub1 = confLoader.GetConf("messageSub1");
+    dualFwkConf.messageSub1 = confLoader.GetConfPath("messageSub1");
     dualFwkConf.notificationSoundPath = confLoader.GetConf("notification_sound_path");
     dualFwkConf.alarmAlertPath = confLoader.GetConf("alarm_alert_path");
 
