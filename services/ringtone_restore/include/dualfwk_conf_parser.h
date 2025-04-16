@@ -38,6 +38,7 @@ class DualFwkConfParser {
 public:
     DualFwkConfParser(const std::string &path);
     ~DualFwkConfParser() {};
+    bool StringConverter(const std::string &str, int &result);
     int32_t Parse();
     void ConfTraval(std::function<void (std::unique_ptr<DualFwkConfRow> &)> func);
 private:
