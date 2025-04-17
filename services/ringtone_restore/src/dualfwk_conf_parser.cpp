@@ -15,6 +15,7 @@
 
 #include <dualfwk_conf_parser.h>
 
+#include <charconv>
 #include <functional>
 #include <string>
 #include <vector>
@@ -26,12 +27,19 @@
 #include "ringtone_errno.h"
 #include "ringtone_log.h"
 #include "ringtone_type.h"
+#include "ringtone_utils.h"
 
 namespace OHOS {
 namespace Media {
 DualFwkConfParser::DualFwkConfParser(const std::string &path)
     : version_(0), path_(path)
 {
+}
+
+bool DualFwkConfParser::StringConverter(const std::string &str, int &result)
+{
+    auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), result);
+    return ec == std::errc{} && ptr == str.data() + str.size();
 }
 
 int32_t DualFwkConfParser::Parse()
@@ -65,9 +73,13 @@ int32_t DualFwkConfParser::Parse()
         }
 
         if (xmlVersion != nullptr) {
-            version_ = std::stoi((const char *)xmlVersion);
-            RINGTONE_INFO_LOG("xml verison=%{public}d", version_);
-            xmlFree(xmlVersion);
+            int32_t value = 0;
+            if (RingtoneUtils::IsNumber((const char *)xmlVersion) &&
+                StringConverter((const char *)xmlVersion, value)) {
+                version_ = value;
+                RINGTONE_INFO_LOG("xml verison=%{public}d", version_);
+                xmlFree(xmlVersion);
+            }
         } else {
             RINGTONE_INFO_LOG("xml version is null");
         }
