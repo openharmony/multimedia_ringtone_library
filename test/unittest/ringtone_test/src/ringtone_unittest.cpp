@@ -442,7 +442,7 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareUpdate_test_002, TestSize.Level0)
     tracer.Start("DataShareUpdateColumn");
     for (int i = 0; i < 1; i++) {
         auto result = g_dataShareHelper->Update(uri, predicates, updateValues);
-        EXPECT_EQ(result, E_HAS_DB_ERROR);
+        EXPECT_EQ(result, E_PERMISSION_DENIED);
     }
     tracer.Finish();
     int64_t end = UTCTimeSeconds();
@@ -461,7 +461,7 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareUpdate_test_003, TestSize.Level0)
     tracer.Start("DataShareUpdate10Column");
     for (int i = 0; i < 1; i++) {
         auto result = g_dataShareHelper->Update(uri, predicates, updateValues);
-        EXPECT_EQ(result, E_INVALID_VALUES);
+        EXPECT_EQ(result, E_PERMISSION_DENIED);
     }
     tracer.Finish();
     int64_t end = UTCTimeSeconds();
@@ -492,7 +492,7 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareUpdate_test_004, TestSize.Level0)
     tracer.Start("DataShareUpdate10Column");
     for (int i = 0; i < 1; i++) {
         auto result = g_dataShareHelper->Update(uri, predicates, values);
-        EXPECT_EQ(result, E_HAS_DB_ERROR);
+        EXPECT_EQ(result, E_PERMISSION_DENIED);
     }
     tracer.Finish();
     int64_t end = UTCTimeSeconds();

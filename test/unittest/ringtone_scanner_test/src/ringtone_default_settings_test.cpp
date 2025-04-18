@@ -226,8 +226,7 @@ HWTEST_F(RingtoneDefaultSettingsTest, settings_GetTonePathByDisplayName_002, Tes
     Uri uri(RINGTONE_PATH_URI);
     RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::INSERT);
     NativeRdb::ValuesBucket values;
-    string name = "test_name";
-    string test = "test";
+    string name = "";
     values.PutString(RINGTONE_COLUMN_DISPLAY_NAME, name);
     const string data = "rdbStore_Insert_test_001";
     values.PutString(RINGTONE_COLUMN_DATA, data);
@@ -242,7 +241,7 @@ HWTEST_F(RingtoneDefaultSettingsTest, settings_GetTonePathByDisplayName_002, Tes
     auto rawRdb = uniStore->GetRaw();
     std::unique_ptr<RingtoneDefaultSetting> defaultSetting = RingtoneDefaultSetting::GetObj(rawRdb);
     ASSERT_NE(defaultSetting, nullptr);
-    defaultSetting->GetTonePathByDisplayName(test);
+    defaultSetting->GetTonePathByDisplayName(name);
 }
 } // namespace Media
 } // namespace OHOS

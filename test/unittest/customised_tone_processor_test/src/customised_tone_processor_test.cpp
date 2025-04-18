@@ -40,6 +40,12 @@ namespace OHOS {
 namespace Media {
 const string TEST_BACKUP_PATH = "/data/test/backup";
 const string TEST_BACKUP_DATA = "/data/local/tmp/test/Adara.ogg";
+const std::string TEST_RINGTONE_EXTERNAL_BASE_PATH = "/storage/emulated/0";
+const std::string TEST_RINGTONE_EXTERNAL_MUSIC_PATH = TEST_RINGTONE_EXTERNAL_BASE_PATH + "/Music";
+const std::string TEST_FILE_MANAGER_BASE_PATH = "/storage/media/local/files/Docs";
+const std::string TEST_FILE_MANAGER_MUSIC_PATH = TEST_FILE_MANAGER_BASE_PATH + "/Music";
+const std::string TEST_FILE_MANAGER_UPDATE_BACKUP_PATH = TEST_FILE_MANAGER_BASE_PATH + "/UpdateBackup";
+const std::string TEST_FILE_MANAGER_UPDATE_BACKUP_MUSIC_PATH = TEST_FILE_MANAGER_UPDATE_BACKUP_PATH + "/Music";
 
 unique_ptr<CustomisedToneProcessor> g_customisedToneProcess = nullptr;
 
@@ -67,7 +73,10 @@ void CustomisedToneProcessorTest::TearDownTestCase(void)
     system("rm -rf /data/local/tmp/test");
 }
 
-void CustomisedToneProcessorTest::SetUp() {}
+void CustomisedToneProcessorTest::SetUp()
+{
+    system("rm -rf /storage/media/local");
+}
 
 void CustomisedToneProcessorTest::TearDown() {}
 
@@ -104,6 +113,45 @@ HWTEST_F(CustomisedToneProcessorTest, customised_tone_processor_002, TestSize.Le
     dualFilePath = "/Music";
     ret = g_customisedToneProcess->BuildFileInfo(dualFilePath, toneType, ringtoneType, shotToneType, fileInfos);
     EXPECT_EQ(ret, E_FAIL);
+}
+
+HWTEST_F(CustomisedToneProcessorTest, customised_tone_processor_003, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("customised_tone_processor_003::Start");
+    DualFwkConf dualFwkConf;
+    int32_t ret = g_customisedToneProcess->GetCustomisedAudioPath(dualFwkConf);
+    EXPECT_EQ(ret, E_OK);
+ 
+    std::string ringtonePath = TEST_RINGTONE_EXTERNAL_BASE_PATH;
+    EXPECT_EQ(RingtoneFileUtils::CreateDirectory(TEST_FILE_MANAGER_BASE_PATH), true);
+    std::string ret1 = g_customisedToneProcess->ConvertCustomisedAudioPath(ringtonePath);
+    EXPECT_EQ(ret1, TEST_FILE_MANAGER_BASE_PATH);
+
+    ringtonePath = TEST_RINGTONE_EXTERNAL_MUSIC_PATH;
+    EXPECT_EQ(RingtoneFileUtils::CreateDirectory(TEST_FILE_MANAGER_BASE_PATH + "/Music"), true);
+    ret1 = g_customisedToneProcess->ConvertCustomisedAudioPath(ringtonePath);
+    EXPECT_EQ(ret1, TEST_FILE_MANAGER_MUSIC_PATH);
+
+    ringtonePath = TEST_RINGTONE_EXTERNAL_MUSIC_PATH;
+    EXPECT_EQ(RingtoneFileUtils::CreateDirectory(TEST_FILE_MANAGER_UPDATE_BACKUP_MUSIC_PATH), true);
+    ret1 = g_customisedToneProcess->ConvertCustomisedAudioPath(ringtonePath);
+    EXPECT_EQ(ret1, TEST_FILE_MANAGER_UPDATE_BACKUP_MUSIC_PATH);
+
+    RINGTONE_INFO_LOG("customised_tone_processor_003::End");
+}
+
+HWTEST_F(CustomisedToneProcessorTest, customised_tone_processor_004, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("customised_tone_processor_004::Start");
+    EXPECT_EQ(RingtoneFileUtils::CreateDirectory(TEST_FILE_MANAGER_BASE_PATH), true);
+    std::string dualFilePath = TEST_RINGTONE_EXTERNAL_BASE_PATH;
+    int32_t toneType = 2;
+    int32_t ringtoneType = 2;
+    int32_t shotToneType = 2;
+    std::vector<FileInfo> fileInfos;
+    int32_t ret = g_customisedToneProcess->BuildFileInfo(dualFilePath, toneType, ringtoneType, shotToneType, fileInfos);
+    EXPECT_EQ(ret, E_OK);
+    RINGTONE_INFO_LOG("customised_tone_processor_004::End");
 }
 } // namespace Media
 } // namespace OHOS

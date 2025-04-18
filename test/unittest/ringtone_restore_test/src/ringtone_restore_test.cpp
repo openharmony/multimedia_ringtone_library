@@ -375,6 +375,15 @@ HWTEST_F(RingtoneRestoreTest, restore_JSStartRestore_test_0001, TestSize.Level0)
     RINGTONE_INFO_LOG("ringtone_restore_test_0004 end");
 }
 
+HWTEST_F(RingtoneRestoreTest, restore_JSStartRestore_test_0002, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("restore_JSStartRestore_test_0002 start");
+    RestoreSceneType type = static_cast<RestoreSceneType>(-1);
+    auto ret = RingtoneRestoreFactory::CreateObj(type);
+    EXPECT_EQ(ret, nullptr);
+    RINGTONE_INFO_LOG("restore_JSStartRestore_test_0002 end");
+}
+
 HWTEST_F(RingtoneRestoreTest, ringtone_CheckSetting_test_0003, TestSize.Level0)
 {
     FileInfo info;
@@ -399,6 +408,21 @@ HWTEST_F(RingtoneRestoreTest, ringtone_CheckSetting_test_0003, TestSize.Level0)
     int64_t rowNum = 0;
     int32_t errCode = g_restoreService->BatchInsert(RINGTONE_TABLE, values, rowNum);
     EXPECT_EQ(errCode, Media::E_OK);
+}
+
+HWTEST_F(RingtoneRestoreTest, restore_Napi_test_0001, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("restore_Napi_test_0001 start");
+    uv_loop_s loop1;
+    uv_work_t *work1 = nullptr;
+    RingtoneRestoreNapi::UvQueueWork(&loop1, work1);
+    uv_loop_s *loop2 = nullptr;
+    RingtoneRestoreNapi::UvQueueWork(loop2, work1);
+    napi_env env = nullptr;
+    napi_callback_info info = nullptr;
+    napi_value result = RingtoneRestoreNapi::JSStartRestore(env, info);
+    EXPECT_EQ(result, nullptr);
+    RINGTONE_INFO_LOG("restore_Napi_test_0001 end");
 }
 } // namespace Media
 } // namespace OHOS

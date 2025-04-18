@@ -233,5 +233,79 @@ HWTEST_F(RingtoneDualFwkRestoreTest, ringtone_dualfwk_restore_test_0007, TestSiz
     EXPECT_EQ(ret, E_ERR);
     RINGTONE_INFO_LOG("ringtone_dualfwk_restore_test_0007 end");
 }
+
+HWTEST_F(RingtoneDualFwkRestoreTest, ringtone_dualfwk_restore_test_0008, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("ringtone_dualfwk_restore_test_0008 start");
+    DualFwkSettingItem dualFwkSettingItem;
+    string backupPath = "/data/test";
+    int32_t res = g_restoreDualFwkService->Init(backupPath);
+    ASSERT_EQ(res, E_SUCCESS);
+    ASSERT_NE(g_restoreDualFwkService->dualFwkSetting_, nullptr);
+    dualFwkSettingItem.settingType = static_cast<int32_t>(ToneSettingType::TONE_SETTING_TYPE_MAX);
+    dualFwkSettingItem.isTitle = true;
+    g_restoreDualFwkService->dualFwkSetting_->settings_.insert({1, dualFwkSettingItem});
+    std::vector<std::string> displayNames = g_restoreDualFwkService->dualFwkSetting_->GetDisplayNames();
+    EXPECT_FALSE(displayNames.empty());
+    RINGTONE_INFO_LOG("ringtone_dualfwk_restore_test_0008 end");
+}
+
+HWTEST_F(RingtoneDualFwkRestoreTest, ringtone_dualfwk_restore_test_0009, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("ringtone_dualfwk_restore_test_0009 start");
+    DualFwkSettingItem dualFwkSettingItem;
+    ASSERT_NE(g_restoreDualFwkService->dualFwkSetting_, nullptr);
+    std::unique_ptr<DualFwkConfRow> conf = nullptr;
+    int32_t ret = g_restoreDualFwkService->dualFwkSetting_->ProcessConfRow(conf);
+    EXPECT_EQ(ret, E_ERR);
+    RINGTONE_INFO_LOG("ringtone_dualfwk_restore_test_0009 end");
+}
+
+HWTEST_F(RingtoneDualFwkRestoreTest, ringtone_dualfwk_restore_test_0010, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("ringtone_dualfwk_restore_test_0009 start");
+    EXPECT_NE(g_restoreDualFwkService->dualFwkSetting_, nullptr);
+    g_restoreDualFwkService->StartRestore();
+    std::unique_ptr<DualFwkConfRow> conf = std::make_unique<DualFwkConfRow>();
+    string confName = "ringtone_test";
+    const string confValue = TEST_BACKUP_DATA;
+    const string isSysSet = "true";
+    conf->name = confName;
+    conf->defaultSysSet = isSysSet;
+    conf->value = confValue;
+    auto ret = g_restoreDualFwkService->dualFwkSetting_->ProcessConfRow(conf);
+    EXPECT_EQ(ret, E_ERR);
+    RINGTONE_INFO_LOG("ringtone_dualfwk_restore_test_0009 end");
+}
+
+HWTEST_F(RingtoneDualFwkRestoreTest, ringtone_dualfwk_restore_test_0011, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("ringtone_dualfwk_restore_test_0010 start");
+    NativeRdb::RdbStoreConfig config(RINGTONE_LIBRARY_DB_NAME);
+    config.SetPath("/data/app/el2/100/database/com.ohos.ringtonelibrary.ringtonelibrarydata/rdb/"
+        + RINGTONE_LIBRARY_DB_NAME);
+    config.SetBundleName("xx");
+    config.SetReadConSize(10);
+    config.SetSecurityLevel(NativeRdb::SecurityLevel::S3);
+
+    int32_t err;
+    RingtoneDataCallBack cb;
+    auto rdbStore = NativeRdb::RdbHelper::GetRdbStore(config, RINGTONE_RDB_VERSION, cb, err);
+    std::map<std::string,  std::vector<std::shared_ptr<FileInfo>>> resultFromRingtone;
+    auto restore = std::make_unique<RingtoneDualFwkRestoreClone>();
+    EXPECT_NE(restore, nullptr);
+    restore->Init("/");
+    auto stageContext = std::make_shared<AbilityRuntime::ContextImpl>();
+    auto abilityContextImpl = std::make_shared<OHOS::AbilityRuntime::AbilityContextImpl>();
+    abilityContextImpl->SetStageContext(stageContext);
+    shared_ptr<RingtoneUnistore> rUniStore  = RingtoneRdbStore::GetInstance(abilityContextImpl);
+    rUniStore->Stop();
+    int32_t ret = restore->QueryRingToneDbForFileInfo(rdbStore, {"Creek.ogg", "Dawn.ogg", "Flourish.ogg"},
+        resultFromRingtone, "display_name");
+    EXPECT_EQ(ret, E_FAIL);
+    ret = rUniStore->Init();
+    EXPECT_EQ(ret, E_OK);
+    RINGTONE_INFO_LOG("ringtone_dualfwk_restore_test_0010 start");
+}
 } // namespace Media
 } // namespace OHOS

@@ -22,6 +22,8 @@
 #include "ringtone_file_utils.h"
 #include "ringtone_log.h"
 #include "ringtone_type.h"
+#include "ringtone_utils.h"
+#include "ringtone_xcollie.h"
 
 using std::string;
 using namespace testing::ext;
@@ -30,6 +32,7 @@ namespace OHOS {
 namespace Media {
 const string PATH = "ringtone/audio";
 const string DEFAULT_STR = "";
+const int32_t MAX_SIZE = 9;
 
 void RingtoneFileUtilsTest::SetUpTestCase() {}
 void RingtoneFileUtilsTest::TearDownTestCase() {}
@@ -255,7 +258,6 @@ HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_GetSandboxPath_Test_001, TestS
     EXPECT_EQ(result, E_INVALID_URI);
 }
 
-
 HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_OpenVibrateFile_Test_001, TestSize.Level0)
 {
     string vibratePath1 = "vibrate/audio.json";
@@ -300,5 +302,141 @@ HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_GetFileExtension_Test_001, Tes
     EXPECT_EQ(str2, "");
 }
 
+HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_UrlDecode_Test_001, TestSize.Level0)
+{
+    string uri = "%";
+    string result = RingtoneFileUtils::UrlDecode(uri);
+    EXPECT_NE(result, "");
+}
+
+HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_MoveDirectory_Test_001, TestSize.Level0)
+{
+    string srcDir = "/data/test/moveDirectory/src";
+    string dstDir = "/data/test/moveDirectory/dst";
+    int32_t result = RingtoneFileUtils::MoveDirectory(srcDir, dstDir);
+    EXPECT_EQ(result, E_FAIL);
+
+    EXPECT_TRUE(RingtoneFileUtils::CreateDirectory(srcDir));
+    result = RingtoneFileUtils::MoveDirectory(srcDir, dstDir);
+    EXPECT_EQ(result, E_FAIL);
+
+    EXPECT_TRUE(RingtoneFileUtils::CreateDirectory(dstDir));
+    result = RingtoneFileUtils::MoveDirectory(srcDir, dstDir);
+    EXPECT_EQ(result, E_SUCCESS);
+
+    string fileUri = "/data/test/moveDirectory/src/test.ogg";
+    EXPECT_EQ(RingtoneFileUtils::CreateFile(fileUri), E_SUCCESS);
+    result = RingtoneFileUtils::MoveDirectory(srcDir, dstDir);
+    EXPECT_EQ(result, E_SUCCESS);
+
+    RingtoneFileUtils::MoveRingtoneFolder();
+    RingtoneFileUtils::AccessRingtoneDir();
+}
+
+HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_GetFileExtension_Test_002, TestSize.Level0)
+{
+    string path = "";
+    string result = RingtoneFileUtils::GetFileExtension(path);
+    EXPECT_EQ(result, "");
+}
+
+HWTEST_F(RingtoneFileUtilsTest, ringtoneUtils_ReplaceAll_Test_001, TestSize.Level0)
+{
+    string str = "";
+    string oldValue = "old";
+    string newValue = "new";
+    string result = RingtoneUtils::ReplaceAll(str, oldValue, newValue);
+    EXPECT_EQ(result, "");
+
+    str = "test";
+    result = RingtoneUtils::ReplaceAll(str, oldValue, newValue);
+    EXPECT_EQ(result, "test");
+
+    oldValue = "est";
+    newValue = "ese";
+    result = RingtoneUtils::ReplaceAll(str, oldValue, newValue);
+    EXPECT_EQ(result, "tese");
+
+    str = "test";
+    oldValue = "t";
+    newValue = "o";
+    result = RingtoneUtils::ReplaceAll(str, oldValue, newValue);
+    EXPECT_EQ(result, "oeso");
+
+    str = "test";
+    oldValue = "est";
+    newValue = "est1";
+    result = RingtoneUtils::ReplaceAll(str, oldValue, newValue);
+    EXPECT_EQ(result, "test1");
+
+    str = "test";
+    oldValue = "est";
+    newValue = "";
+    result = RingtoneUtils::ReplaceAll(str, oldValue, newValue);
+    EXPECT_EQ(result, "t");
+}
+
+HWTEST_F(RingtoneFileUtilsTest, ringtoneUtils_IsNumber_Test_001, TestSize.Level0)
+{
+    string str = "";
+    bool result = RingtoneUtils::IsNumber(str);
+    EXPECT_FALSE(result);
+
+    string longStr(MAX_SIZE + 1, '1');
+    result = RingtoneUtils::IsNumber(longStr);
+    EXPECT_FALSE(result);
+
+    str = "123abc123";
+    result = RingtoneUtils::IsNumber(str);
+    EXPECT_FALSE(result);
+}
+
+HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_Mkdir_Test_003, TestSize.Level0)
+{
+    const string path = "/data/local/tmp/test";
+    std::shared_ptr<int> errCodePtr = std::make_shared<int>();;
+    auto ret = RingtoneFileUtils::Mkdir(path);
+    EXPECT_EQ(ret, true);
+}
+
+HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_OpenVibrateFile_Test_003, TestSize.Level1)
+{
+    std::string filePath(PATH_MAX + 1, 'a');
+    std::string mode = RINGTONE_FILEMODE_READONLY;
+    int32_t result = RingtoneFileUtils::OpenVibrateFile(filePath, mode);
+    EXPECT_EQ(result, -209);
+}
+
+HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_OpenVibrateFile_Test_004, TestSize.Level1)
+{
+    std::string filePath = "/path/to/vibrate_file.json";
+    std::string mode = RINGTONE_FILEMODE_READONLY;
+
+    int32_t result = RingtoneFileUtils::OpenVibrateFile(filePath, mode);
+    EXPECT_EQ(result, E_ERR);
+}
+
+HWTEST_F(RingtoneFileUtilsTest, ringtoneUtils_MoveEL2DBToEL1DB_Test_001, TestSize.Level1)
+{
+    std::shared_ptr<RingtoneUtils> ringtoneutils = std::make_shared<RingtoneUtils>();
+    EXPECT_NE(ringtoneutils, nullptr);
+    bool ret = ringtoneutils->MoveEL2DBToEL1DB();
+    EXPECT_EQ(ret, true);
+    ret = ringtoneutils->SetMoveEL2DBToEL1();
+    EXPECT_EQ(ret, true);
+}
+
+HWTEST_F(RingtoneFileUtilsTest, ringtonexcollie_CancelXCollieTimer_Test_001, TestSize.Level1)
+{
+    std::string tag = "";
+    std::shared_ptr<RingtoneXCollie> ringtonexcollie = std::make_shared<RingtoneXCollie>(tag);
+    EXPECT_NE(ringtonexcollie, nullptr);
+    ringtonexcollie->id_ = 0;
+    ringtonexcollie->CancelXCollieTimer();
+    ringtonexcollie->id_ = 1;
+    ringtonexcollie->isCanceled_ = true;
+    ringtonexcollie->CancelXCollieTimer();
+    EXPECT_EQ(ringtonexcollie->isCanceled_, true);
+}
 } // namespace Media
 } // namespace OHOS

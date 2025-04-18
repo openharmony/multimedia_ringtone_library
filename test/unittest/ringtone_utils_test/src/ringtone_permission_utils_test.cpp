@@ -17,11 +17,17 @@
 
 #include <algorithm>
 
+#include "access_token.h"
+#include "accesstoken_kit.h"
+#include "ipc_skeleton.h"
+#include "nativetoken_kit.h"
+#include "os_account_manager.h"
 #define private public
 #include "permission_utils.h"
 #undef private
 #include "ringtone_errno.h"
 #include "ringtone_log.h"
+#include "token_setproc.h"
 
 using std::string;
 using namespace testing::ext;
@@ -33,8 +39,33 @@ const string DEFAULT_STR = "";
 void RingtonePermissionUtilsTest::SetUpTestCase() {}
 
 void RingtonePermissionUtilsTest::TearDownTestCase() {}
-void RingtonePermissionUtilsTest::SetUp() {}
+void RingtonePermissionUtilsTest::SetUp()
+{
+    const char *permis[1];
+    permis[0] = "ohos.permission.ACCESS_RINGTONE_RESOURCE";
+    NativeTokenInfoParams infoInstance = {
+        .dcapsNum = 0,
+        .permsNum = 1,
+        .aclsNum = 0,
+        .dcaps = NULL,
+        .perms = permis,
+        .acls = NULL,
+        .processName = "native_ringtone_tdd",
+        .aplStr = "system_basic",
+    };
+    uint64_t tokenId = GetAccessTokenId(&infoInstance);
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    int32_t userId = 0;
+    AccountSA::OsAccountManager::GetOsAccountLocalIdFromUid(uid, userId);
+    SetSelfTokenID(tokenId);
+    OHOS::Security::AccessToken::AccessTokenKit::ReloadNativeTokenInfo();
+}
 void RingtonePermissionUtilsTest::TearDown(void) {}
+
+class RingtoneUtilsTest : public AppExecFwk::IBundleMgr {
+    public:
+        sptr<IRemoteObject> AsObject() override { return nullptr; }
+    };
 
 HWTEST_F(RingtonePermissionUtilsTest, ringtonePermissionUtils_CheckCallerPermission_test_001, TestSize.Level0)
 {
@@ -90,7 +121,7 @@ HWTEST_F(RingtonePermissionUtilsTest, ringtonePermissionUtils_IsSystemApp_test_0
     bool ret = RingtonePermissionUtils::IsSystemApp();
     EXPECT_EQ(ret, false);
     ret = RingtonePermissionUtils::IsNativeSAApp();
-    EXPECT_EQ(ret, false);
+    EXPECT_TRUE(ret);
 }
 
 HWTEST_F(RingtonePermissionUtilsTest, ringtonePermissionUtils_CheckIsSystemAppByUid_test_001, TestSize.Level0)
@@ -104,6 +135,68 @@ HWTEST_F(RingtonePermissionUtilsTest, ringtonePermissionUtils_GetPackageNameByBu
     const string bundleName = "/com.ohos.ringtonelibrary.ringtonelibrarydata";
     string packageName = RingtonePermissionUtils::GetPackageNameByBundleName(bundleName);
     EXPECT_EQ(packageName, DEFAULT_STR);
+}
+
+/*
+ * Feature: Service
+ * Function: Test RingtonePermissionUtils with CheckCallerPermission
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test CheckCallerPermission for normal branches
+ */
+HWTEST_F(RingtonePermissionUtilsTest, ringtonePermissionUtils_CheckCallerPermission_test_003, TestSize.Level0)
+{
+    string permissions = "ohos.permission.ACCESS_RINGTONE_RESOURCE";
+    bool ret = RingtonePermissionUtils::CheckCallerPermission(permissions);
+    EXPECT_FALSE(ret);
+}
+
+/*
+ * Feature: Service
+ * Function: Test RingtonePermissionUtils with CheckHasPermission
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test CheckHasPermission for normal branches
+ */
+HWTEST_F(RingtonePermissionUtilsTest, ringtonePermissionUtils_CheckHasPermission_test_002, TestSize.Level0)
+{
+    std::vector<string> perms = { DEFAULT_STR, PERM_WRITE_RINGTONE, "ohos.permission.ACCESS_RINGTONE_RESOURCE" };
+    bool ret = RingtonePermissionUtils::CheckHasPermission(perms);
+    EXPECT_FALSE(ret);
+    std::vector<string> permissions = { "ohos.permission.ACCESS_RINGTONE_RESOURCE" };
+    ret = RingtonePermissionUtils::CheckCallerPermission(permissions);
+    EXPECT_FALSE(ret);
+}
+
+HWTEST_F(RingtonePermissionUtilsTest, ringtonePermissionUtils_GetSysBundleManager_test_002, TestSize.Level0)
+{
+    RingtonePermissionUtils::bundleManager_ = new RingtoneUtilsTest();
+    ASSERT_NE(RingtonePermissionUtils::bundleManager_, nullptr);
+    auto ret = RingtonePermissionUtils::GetSysBundleManager();
+    EXPECT_NE(ret, nullptr);
+}
+
+HWTEST_F(RingtonePermissionUtilsTest, ringtonePermissionUtils_GetPackageNameByBundleName_test_002, TestSize.Level0)
+{
+    RingtonePermissionUtils::bundleManager_ = new RingtoneUtilsTest();
+    ASSERT_NE(RingtonePermissionUtils::bundleManager_, nullptr);
+    auto ret = RingtonePermissionUtils::GetSysBundleManager();
+    EXPECT_NE(ret, nullptr);
+    const string bundleName = "/com.ohos.ringtonelibrary.ringtonelibrarydata";
+    auto ret1 = RingtonePermissionUtils::GetPackageNameByBundleName(bundleName);
+    EXPECT_EQ(ret1, "");
+}
+
+HWTEST_F(RingtonePermissionUtilsTest, ringtonePermissionUtils_CheckIsSystemAppByUid_test_002, TestSize.Level0)
+{
+    RingtonePermissionUtils::bundleManager_ = new RingtoneUtilsTest();
+    ASSERT_NE(RingtonePermissionUtils::bundleManager_, nullptr);
+    auto ret = RingtonePermissionUtils::GetSysBundleManager();
+    EXPECT_NE(ret, nullptr);
+    bool ret1 = RingtonePermissionUtils::CheckIsSystemAppByUid();
+    EXPECT_EQ(ret1, false);
 }
 } // namespace Media
 } // namespace OHOS

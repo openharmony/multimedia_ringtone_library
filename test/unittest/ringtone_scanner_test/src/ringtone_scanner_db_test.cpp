@@ -188,11 +188,11 @@ HWTEST_F(RingtoneScannerDbTest, scannerDb_UpdateScannerFlag_test_001, TestSize.L
 
 /*
  * Feature: Service
- * Function: Test ringtoneScannerDb with UpdateScannerFlag
+ * Function: Test ringtoneScannerDb with DeleteNotExist
  * SubFunction: NA
  * FunctionPoints: NA
  * EnvConditions: NA
- * CaseDescription: Test UpdateScannerFlag for Normal branches
+ * CaseDescription: Test DeleteNotExist for Normal branches
  */
 HWTEST_F(RingtoneScannerDbTest, scannerDb_DeleteNotExist_test_001, TestSize.Level0)
 {
@@ -278,6 +278,96 @@ HWTEST_F(RingtoneScannerDbTest, scannerDb_InsertVibrateMetadata_test_001, TestSi
     ret = ringtoneScannerDb.InsertVibrateMetadata(*metadata, tableName);
     EXPECT_NE(ret, 0);
     RINGTONE_INFO_LOG("scannerDb_InsertVibrateMetadata_test_001 end.");
+}
+
+HWTEST_F(RingtoneScannerDbTest, scannerDb_GetVibrateFileBasicInfo_test_001, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("scannerDb_GetVibrateFileBasicInfo_test_001 start.");
+    RingtoneScannerDb ringtoneScannerDb;
+    const string path = "scannerDb_GetVibrateFileBasicInfo_test_001";
+    unique_ptr<VibrateMetadata> metadata = make_unique<VibrateMetadata>();
+    EXPECT_NE(metadata, nullptr);
+    metadata->SetData(STORAGE_FILES_DIR);
+    metadata->SetDisplayName(RingtoneScannerUtils::GetFileNameFromUri(STORAGE_FILES_DIR));
+    metadata->SetTitle(RingtoneScannerUtils::GetFileTitle(metadata->GetDisplayName()));
+    g_uniStore->Stop();
+    int ret = ringtoneScannerDb.GetVibrateFileBasicInfo(path, metadata);
+    EXPECT_EQ(ret, E_DB_FAIL);
+    RINGTONE_INFO_LOG("scannerDb_GetVibrateFileBasicInfo_test_001 end.");
+}
+
+HWTEST_F(RingtoneScannerDbTest, scannerDb_UpdateRingtoneRdb_test_002, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("scannerDb_UpdateRingtoneRdb_test_002 start.");
+    RingtoneScannerDb ringtoneScannerDb;
+    NativeRdb::ValuesBucket valuesBucket;
+    valuesBucket.PutInt(RINGTONE_COLUMN_SCANNER_FLAG, 0);
+    string whereClause = RINGTONE_COLUMN_DISPLAY_NAME + " = ?";
+    vector<string> whereArgs = {};
+    whereArgs.push_back("RingtoneTest.ogg");
+    int ret = ringtoneScannerDb.UpdateRingtoneRdb(valuesBucket, whereClause, whereArgs);
+    EXPECT_EQ(ret, E_OK);
+    RINGTONE_INFO_LOG("scannerDb_UpdateRingtoneRdb_test_002 end.");
+}
+
+HWTEST_F(RingtoneScannerDbTest, scannerDb_UpdateMetadata_test_002, TestSize.Level0)
+{
+    RingtoneScannerDb ringtoneScannerDb;
+    RingtoneMetadata metadata;
+    string tableName;
+    metadata.SetToneId(1024);
+    int32_t ret = ringtoneScannerDb.UpdateMetadata(metadata, tableName);
+    EXPECT_EQ(ret, E_DB_FAIL);
+}
+
+HWTEST_F(RingtoneScannerDbTest, scannerDb_UpdateVibrateMetadata_test_002, TestSize.Level0)
+{
+    RingtoneScannerDb ringtoneScannerDb;
+    VibrateMetadata metadata;
+    string tableName;
+    metadata.SetVibrateId(1024);
+    int32_t ret = ringtoneScannerDb.UpdateVibrateMetadata(metadata, tableName);
+    EXPECT_EQ(ret, E_DB_FAIL);
+}
+
+HWTEST_F(RingtoneScannerDbTest, scannerDb_UpdateVibrateMetadata_test_001, TestSize.Level0)
+{
+    RingtoneScannerDb ringtoneScannerDb;
+    VibrateMetadata metadata;
+    string tableName;
+    g_uniStore->Stop();
+    int32_t ret = ringtoneScannerDb.UpdateVibrateMetadata(metadata, tableName);
+    EXPECT_EQ(ret, E_RDB);
+}
+
+HWTEST_F(RingtoneScannerDbTest, scannerDb_InsertVibrateMetadata_test_002, TestSize.Level0)
+{
+    RingtoneScannerDb ringtoneScannerDb;
+    VibrateMetadata metadata;
+    string tableName;
+    g_uniStore->Stop();
+    int32_t ret = ringtoneScannerDb.InsertVibrateMetadata(metadata, tableName);
+    EXPECT_EQ(ret, E_DB_FAIL);
+}
+
+HWTEST_F(RingtoneScannerDbTest, scannerDb_UpdateScannerFlag_test_002, TestSize.Level0)
+{
+    RingtoneScannerDb ringtoneScannerDb;
+    VibrateMetadata metadata;
+    string tableName;
+    g_uniStore->Stop();
+    bool ret = ringtoneScannerDb.UpdateScannerFlag();
+    EXPECT_FALSE(ret);
+}
+
+HWTEST_F(RingtoneScannerDbTest, scannerDb_DeleteNotExist_test_002, TestSize.Level0)
+{
+    RingtoneScannerDb ringtoneScannerDb;
+    VibrateMetadata metadata;
+    string tableName;
+    g_uniStore->Stop();
+    bool ret = ringtoneScannerDb.DeleteNotExist();
+    EXPECT_FALSE(ret);
 }
 } // namespace Media
 } // namespace OHOS
