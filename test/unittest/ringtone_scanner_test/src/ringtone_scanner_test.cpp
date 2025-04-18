@@ -265,5 +265,32 @@ HWTEST_F(RingtoneScannerTest, scanner_Commit_test_001, TestSize.Level0)
     EXPECT_EQ(ret, E_OK);
     RINGTONE_INFO_LOG("scanner_Commit_test_001 end.");
 }
+
+HWTEST_F(RingtoneScannerTest, scanner_BootScan_test_001, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("scanner_BootScan_test_001 start.");
+    const string dir = "./scanner_ScanDir_test_001";
+    shared_ptr<IRingtoneScannerCallback> callback = nullptr;
+    RingtoneScannerObj ringtoneScannerObj(dir, callback, RingtoneScannerObj::DIRECTORY);
+    std::shared_ptr<RingtoneUnistore> rdbStore = RingtoneRdbStore::GetInstance();
+    rdbStore->Stop();
+    int32_t res = ringtoneScannerObj.BootScan();
+    EXPECT_EQ(res, E_OK);
+    rdbStore->Init();
+    RINGTONE_INFO_LOG("scanner_BootScan_test_001 end.");
+}
+
+HWTEST_F(RingtoneScannerTest, scanner_ScanFileInTraversal_test_002, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("scanner_ScanFileInTraversal_test_002 start.");
+    shared_ptr<IRingtoneScannerCallback> callback = nullptr;
+    RingtoneScannerObj ringtoneScannerObj(STORAGE_FILES_DIR, callback, RingtoneScannerObj::DIRECTORY);
+    int32_t ret = ringtoneScannerObj.ScanFileInTraversal(STORAGE_FILES_DIR);
+    EXPECT_NE(ret, E_FILE_HIDDEN);
+    const string path = "/sys_prod/variant/region_comm/china/resource/media/haptics/test.ogg";
+    ret = ringtoneScannerObj.ScanFileInTraversal(path);
+    EXPECT_EQ(ret, E_OK);
+    RINGTONE_INFO_LOG("scanner_ScanFileInTraversal_test_002 start.");
+}
 } // namespace Media
 } // namespace OHOS

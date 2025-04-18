@@ -100,5 +100,17 @@ HWTEST_F(RingtonesublUnitTest, subscriber_OnReceiveEvent_test_005, TestSize.Leve
     ringtoneSubscriber.OnReceiveEvent(eventData);
     EXPECT_EQ(want.GetAction(), action);
 }
+
+HWTEST_F(RingtonesublUnitTest, subscriber_OnReceiveEvent_test_006, TestSize.Level0)
+{
+    RingtoneSubscriber ringtoneSubscriber;
+    EventFwk::CommonEventData eventData;
+    string action = EventFwk::CommonEventSupport::COMMON_EVENT_BOOT_COMPLETED;
+    AAFwk::Want want = eventData.GetWant();
+    want.SetAction(action);
+    eventData.SetWant(want);
+    ringtoneSubscriber.OnReceiveEvent(eventData);
+    EXPECT_EQ(want.GetAction(), action);
+}
 } // namespace Media
 } // namespace OHOS

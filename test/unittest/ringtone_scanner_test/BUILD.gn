@@ -34,10 +34,12 @@ ohos_unittest("ringtone_scanner_unittest") {
   ]
 
   sources = [
+    "../../../services/ringtone_scanner/src/ringtone_scan_executor.cpp",
     "../get_self_permissions/src/get_self_permissions.cpp",
     "../ringtone_unittest_utils/src/ringtone_unittest_utils.cpp",
     "./src/ringtone_default_settings_test.cpp",
     "./src/ringtone_metadata_extractor_test.cpp",
+    "./src/ringtone_scan_executor_test.cpp",
     "./src/ringtone_scanner_db_test.cpp",
     "./src/ringtone_scanner_test.cpp",
     "./src/ringtone_scanner_unit_test.cpp",
@@ -79,4 +81,10 @@ ohos_unittest("ringtone_scanner_unittest") {
   } else {
     external_deps += [ "hilog:libhilog" ]
   }
+
+  cflags = [
+    "-Wall",
+    "-Werror",
+    "-fno-access-control",
+  ]
 }

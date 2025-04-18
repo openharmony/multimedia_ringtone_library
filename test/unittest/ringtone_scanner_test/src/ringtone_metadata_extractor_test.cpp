@@ -20,6 +20,7 @@
 #include "ability_context_impl.h"
 #include "ringtone_data_manager.h"
 #include "ringtone_errno.h"
+#include "ringtone_log.h"
 #define private public
 #include "ringtone_metadata_extractor.h"
 #undef private
@@ -129,5 +130,19 @@ HWTEST_F(RingtoneMetadataExtractorTest, metadataExtractor_ExtractAudioMetadata_t
     ret = RingtoneMetadataExtractor::ExtractAudioMetadata(data);
     EXPECT_EQ((ret == E_SYSCALL || ret == E_AVMETADATA), true);
 }
+
+HWTEST_F(RingtoneMetadataExtractorTest, metadataExtractor_FillExtractedMetadata_test_003, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("metadataExtractor_FillExtractedMetadata_test_003 start.");
+    unique_ptr<RingtoneMetadata> data = make_unique<RingtoneMetadata>();
+    unordered_map<int32_t, std::string> resultMap;
+    const string timeKey = "1600-01-01 00:00:00";
+    resultMap = { { Media::AV_KEY_DURATION, "-123456" }, { Media::AV_KEY_DATE_TIME_FORMAT,  timeKey},
+        { Media::AV_KEY_MIME_TYPE, "a" }, { Media::AV_KEY_TITLE, "a" } };
+    RingtoneMetadataExtractor::FillExtractedMetadata(resultMap, data);
+    EXPECT_EQ(data->GetTitle(), "a");
+    RINGTONE_INFO_LOG("metadataExtractor_FillExtractedMetadata_test_003 end.");
+}
+
 } // namespace Media
 } // namespace OHOS

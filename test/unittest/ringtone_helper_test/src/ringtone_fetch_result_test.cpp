@@ -422,6 +422,50 @@ HWTEST_F(RingtoneFetchResultTest, fetchResult_GetObjectAtPosition_test_004, Test
 
 /*
  * Feature: Service
+ * Function: Test RingtoneFetchResult with GetObjectAtPosition
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test GetObjectAtPosition for VibrateAsset
+ */
+HWTEST_F(RingtoneFetchResultTest, fetchResult_GetObjectAtPosition_test_005, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("fetchResult_GetObjectAtPosition_test_005 start.");
+    Uri uri(VIBRATE_PATH_URI);
+    auto dataManager = RingtoneDataManager::GetInstance();
+    ASSERT_NE(dataManager, nullptr);
+    g_uniStore->ExecuteSql("INSERT INTO " + VIBRATE_TABLE +
+        " VALUES (last_insert_rowid()+1, '/data/storage/el2/base/files/Ringtone/ringtones/Carme.ogg'," +
+        " 26177, 'RingtoneTest.ogg', 'rainning', 'Chinese', 1, 1, 1505707241000, 1505707241846, 1505707241," +
+        " 1, 0)");
+    g_uniStore->ExecuteSql("INSERT INTO " + VIBRATE_TABLE +
+        " VALUES (last_insert_rowid()+1, '/data/storage/el2/base/files/Ringtone/ringtones/Carme.ogg2'," +
+        " 26177, 'RingtoneTest2.ogg', 'rainning', 'Chinese', 1, 1, 1505707241000, 1505707241846, 1505707241," +
+        " 1, 0)");
+    g_uniStore->ExecuteSql("INSERT INTO " + VIBRATE_TABLE +
+        " VALUES (last_insert_rowid()+1, '/data/storage/el2/base/files/Ringtone/ringtones/Carme.ogg3'," +
+        " 26177, 'RingtoneTest3.ogg', 'rainning', 'Chinese', 1, 1, 1505707241000, 1505707241846, 1505707241," +
+        " 1, 0)");
+    RingtoneDataCommand cmdQuery(uri, VIBRATE_TABLE, RingtoneOperationType::QUERY);
+    DataShare::DataSharePredicates queryPredicates;
+    queryPredicates.EqualTo(VIBRATE_COLUMN_TITLE, static_cast<string>(RAINNING));
+    vector<string> columns = { { VIBRATE_COLUMN_VIBRATE_ID }, { VIBRATE_COLUMN_DATA }, { VIBRATE_COLUMN_SIZE } };
+    int32_t errCode;
+    auto queryResultSet = dataManager->Query(cmdQuery, columns, queryPredicates, errCode);
+    ASSERT_NE(queryResultSet, nullptr);
+    shared_ptr<AbilityRuntime::DataShareResultSet> resultSet =
+        make_shared<AbilityRuntime::DataShareResultSet>(queryResultSet);
+    auto results = make_unique<RingtoneFetchResult<VibrateAsset>>(move(resultSet));
+    ASSERT_NE(results, nullptr);
+
+    auto ringtoneObject = results->GetObjectAtPosition(0);
+    ASSERT_NE(ringtoneObject, nullptr);
+    results->Close();
+    RINGTONE_INFO_LOG("fetchResult_GetObjectAtPosition_test_005 end.");
+}
+
+/*
+ * Feature: Service
  * Function: Test RingtoneFetchResult with GetFirstObject GetNextObject GetLastObject
  * SubFunction: NA
  * FunctionPoints: NA
@@ -460,6 +504,44 @@ HWTEST_F(RingtoneFetchResultTest, fetchResult_GetFirstObject_test_001, TestSize.
 
 /*
  * Feature: Service
+ * Function: Test RingtoneFetchResult with GetFirstObject GetNextObject GetLastObject
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test GetFirstObject GetNextObject GetLastObject for VibrateAsset when resultSet row is empty
+ */
+HWTEST_F(RingtoneFetchResultTest, fetchResult_GetFirstObject_test_002, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("fetchResult_GetFirstObject_test_002 start.");
+    Uri uri(VIBRATE_PATH_URI);
+    auto dataManager = RingtoneDataManager::GetInstance();
+    ASSERT_NE(dataManager, nullptr);
+
+    RingtoneDataCommand cmdQuery(uri, VIBRATE_TABLE, RingtoneOperationType::QUERY);
+    DataShare::DataSharePredicates queryPredicates;
+    queryPredicates.EqualTo(VIBRATE_COLUMN_TITLE, "test");
+    vector<string> columns = { { VIBRATE_COLUMN_VIBRATE_ID }, { VIBRATE_COLUMN_DATA }, { VIBRATE_COLUMN_SIZE } };
+    int32_t errCode;
+    auto queryResultSet = dataManager->Query(cmdQuery, columns, queryPredicates, errCode);
+    ASSERT_NE(queryResultSet, nullptr);
+    shared_ptr<AbilityRuntime::DataShareResultSet> resultSet =
+        make_shared<AbilityRuntime::DataShareResultSet>(queryResultSet);
+    auto results = make_unique<RingtoneFetchResult<VibrateAsset>>(move(resultSet));
+    ASSERT_NE(results, nullptr);
+    auto ringtoneObject = results->GetFirstObject();
+    EXPECT_EQ(ringtoneObject, nullptr);
+
+    ringtoneObject = results->GetNextObject();
+    EXPECT_EQ(ringtoneObject, nullptr);
+
+    ringtoneObject = results->GetLastObject();
+    EXPECT_EQ(ringtoneObject, nullptr);
+    results->Close();
+    RINGTONE_INFO_LOG("fetchResult_GetFirstObject_test_002 end.");
+}
+
+/*
+ * Feature: Service
  * Function: Test RingtoneFetchResult with IsAtLastRow
  * SubFunction: NA
  * FunctionPoints: NA
@@ -491,6 +573,41 @@ HWTEST_F(RingtoneFetchResultTest, fetchResult_IsAtLastRow_test_002, TestSize.Lev
     EXPECT_TRUE(ret);
     results->Close();
     RINGTONE_INFO_LOG("fetchResult_IsAtLastRow_test_002 end.");
+}
+
+/*
+ * Feature: Service
+ * Function: Test RingtoneFetchResult with IsAtLastRow
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test IsAtLastRow for VibrateAsset when resultSet row is not empty
+ */
+HWTEST_F(RingtoneFetchResultTest, fetchResult_IsAtLastRow_test_003, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("fetchResult_IsAtLastRow_test_003 start.");
+    Uri uri(VIBRATE_PATH_URI);
+    auto dataManager = RingtoneDataManager::GetInstance();
+    ASSERT_NE(dataManager, nullptr);
+
+    RingtoneDataCommand cmdQuery(uri, VIBRATE_TABLE, RingtoneOperationType::QUERY);
+    DataShare::DataSharePredicates queryPredicates;
+    queryPredicates.EqualTo(VIBRATE_COLUMN_TITLE, static_cast<string>(RAINNING));
+    vector<string> columns = { { VIBRATE_COLUMN_VIBRATE_ID }, { VIBRATE_COLUMN_DATA }, { VIBRATE_COLUMN_SIZE } };
+    int32_t errCode;
+    auto queryResultSet = dataManager->Query(cmdQuery, columns, queryPredicates, errCode);
+    ASSERT_NE(queryResultSet, nullptr);
+    shared_ptr<AbilityRuntime::DataShareResultSet> resultSet =
+        make_shared<AbilityRuntime::DataShareResultSet>(queryResultSet);
+    auto results = make_unique<RingtoneFetchResult<VibrateAsset>>(move(resultSet));
+    ASSERT_NE(results, nullptr);
+    auto ringtoneObject = results->GetLastObject();
+    EXPECT_NE(ringtoneObject, nullptr);
+
+    bool ret = results->IsAtLastRow();
+    EXPECT_TRUE(ret);
+    results->Close();
+    RINGTONE_INFO_LOG("fetchResult_IsAtLastRow_test_003 end.");
 }
 
 /*

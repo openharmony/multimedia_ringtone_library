@@ -18,6 +18,8 @@
 #define private public
 #include "ringtone_bundle_manager.h"
 #include "ringtone_data_command.h"
+#include "ipc_skeleton.h"
+#include "ringtone_errno.h"
 #undef private
 
 
@@ -70,6 +72,21 @@ HWTEST_F(RingtoneBundleManagerTest, dataCommand_GetResult_test_001, TestSize.Lev
     EXPECT_EQ(ret, result);
     auto type = cmd.GetOprnType();
     EXPECT_EQ(type, RingtoneOperationType::INSERT);
+}
+
+HWTEST_F(RingtoneBundleManagerTest, dataCommand_GetClientBundleName_test_002, TestSize.Level0)
+{
+    int32_t uid = 0;
+    auto& cacheList = g_bundleManager->cacheList_;
+    auto& cacheMap = g_bundleManager->cacheMap_;
+    cacheList.emplace_front(0, "bundle1");
+    cacheList.emplace_front(1, "bundle2");
+    cacheMap[uid] = cacheList.begin();
+    auto ret = g_bundleManager->GetClientBundleName();
+    EXPECT_EQ(ret, "bundle2");
+    g_bundleManager->Clear();
+    g_bundleManager = RingtoneBundleManager::GetInstance();
+    EXPECT_NE(g_bundleManager, nullptr);
 }
 } // namespace Media
 } // namespace OHOS

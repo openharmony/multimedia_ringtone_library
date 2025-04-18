@@ -119,7 +119,7 @@ HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_Update_test_001, Tes
     const AbilityRuntime::DataSharePredicates predicates;
     AbilityRuntime::DataShareValuesBucket values;
     auto ret = mediaDataShare->Update(uri, predicates, values);
-    EXPECT_EQ(ret, E_COMMON_START);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
 
     Uri uriError(RINGTONE_URI);
     ret = mediaDataShare->Update(uriError, predicates, values);
@@ -261,6 +261,48 @@ HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_IdExists_test_001, T
     id = 100;
     ret = mediaDataShare->IdExists(ids, id);
     EXPECT_TRUE(ret);
+}
+
+HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_IdExists_test_002, TestSize.Level0)
+{
+    const std::unique_ptr<AbilityRuntime::Runtime> runtime;
+    AbilityRuntime::RingtoneDataShareExtension *mediaDataShare;
+    mediaDataShare = AbilityRuntime::RingtoneDataShareExtension::Create(runtime);
+    EXPECT_NE(mediaDataShare, nullptr);
+
+    std::string ids = "100 101";
+    int32_t id = 101;
+    bool ret = mediaDataShare->IdExists(ids, id);
+    EXPECT_TRUE(ret);
+
+    ids = "100 101 102";
+    id = 102;
+    ret = mediaDataShare->IdExists(ids, id);
+    EXPECT_TRUE(ret);
+
+    ids = "100 101 102";
+    id = 101;
+    ret = mediaDataShare->IdExists(ids, id);
+    EXPECT_TRUE(ret);
+
+    ids = "100 101 102";
+    id = 100;
+    ret = mediaDataShare->IdExists(ids, id);
+    EXPECT_TRUE(ret);
+}
+
+HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_GetUserId_test_001, TestSize.Level0)
+{
+    const std::unique_ptr<AbilityRuntime::Runtime> runtime;
+    AbilityRuntime::RingtoneDataShareExtension *mediaDataShare;
+    mediaDataShare = AbilityRuntime::RingtoneDataShareExtension::Create(runtime);
+    EXPECT_NE(mediaDataShare, nullptr);
+
+    mediaDataShare->OnStop();
+    mediaDataShare->RingtoneScanner();
+    mediaDataShare->GetUserId();
+    auto ret1 = mediaDataShare->CheckCurrentUser();
+    EXPECT_EQ(ret1, true);
 }
 } // namespace Media
 } // namespace OHOS

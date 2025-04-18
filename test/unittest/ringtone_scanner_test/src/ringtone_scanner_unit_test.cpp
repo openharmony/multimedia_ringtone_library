@@ -262,5 +262,56 @@ HWTEST_F(RingtoneScannerUnitTest,  scannerManager_ScanDirSync_CanonicalPathtest_
     int result = g_ringtoneScannerManager->ScanDirSync(path, scannerCallback);
     EXPECT_EQ(result, E_INVALID_PATH);
 }
+
+HWTEST_F(RingtoneScannerUnitTest,  scannerManager_ScanFile_test_002, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("scannerManager_ScanFile_test_002 start.");
+    if (g_ringtoneScannerManager == nullptr) {
+        RINGTONE_ERR_LOG("g_ringtoneScannerManager invalid");
+        exit(1);
+    }
+
+    const string path = "/dev/null";
+
+    auto scannerCallback = make_shared<TestRingtoneScannerCallback>();
+    int result = g_ringtoneScannerManager->ScanFile(path, scannerCallback);
+    EXPECT_EQ(result, E_INVALID_PATH);
+    RINGTONE_INFO_LOG("scannerManager_ScanFile_test_002 end.");
+}
+
+HWTEST_F(RingtoneScannerUnitTest,  scannerManager_ScanFileSync_test_001, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("scannerManager_ScanFileSync_test_001 start.");
+    if (g_ringtoneScannerManager == nullptr) {
+        RINGTONE_ERR_LOG("g_ringtoneScannerManager invalid");
+        exit(1);
+    }
+
+    const string path = "/test1/test2/test3/test4/test5/test6/test7/test8/test9/";
+
+    auto scannerCallback = make_shared<TestRingtoneScannerCallback>();
+    int result = g_ringtoneScannerManager->ScanFileSync(path, scannerCallback, true);
+    EXPECT_EQ(result, E_INVALID_PATH);
+    RINGTONE_INFO_LOG("scannerManager_ScanFileSync_test_001 end.");
+}
+
+HWTEST_F(RingtoneScannerUnitTest,  scannerManager_ScanDir_test_003, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("scannerManager_ScanDir_test_003 start.");
+    if (g_ringtoneScannerManager == nullptr) {
+        RINGTONE_ERR_LOG("g_ringtoneScannerManager invalid");
+        exit(1);
+    }
+
+    const string path = "/dev/null";
+
+    auto scannerCallback = make_shared<TestRingtoneScannerCallback>();
+    int result = g_ringtoneScannerManager->ScanDir(path, scannerCallback);
+    EXPECT_EQ(result, E_INVALID_PATH);
+
+    result = g_ringtoneScannerManager->ScanDirSync(path, scannerCallback);
+    EXPECT_EQ(result, E_INVALID_PATH);
+    RINGTONE_INFO_LOG("scannerManager_ScanDir_test_003 end.");
+}
 } // namespace Media
 } // namespace OHOS

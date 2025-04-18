@@ -19,6 +19,7 @@
 
 #include "ability_context_impl.h"
 #include "ringtone_errno.h"
+#include "ringtone_log.h"
 #include "ringtone_rdbstore.h"
 #define private public
 #include "ringtone_setting_manager.h"
@@ -530,5 +531,49 @@ HWTEST_F(RingtoneSettingManagerTest, settingMetadata_Update_test_001, TestSize.L
     int32_t ret = g_ringtoneSettingManager->Update(changedRows, values, predicates);
     EXPECT_EQ(ret, E_DB_FAIL);
 }
+
+HWTEST_F(RingtoneSettingManagerTest, settingMetadata_CommitSettingCompare_test_003, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("settingMetadata_CommitSettingCompare_test_003 start.");
+    int32_t settingType = static_cast<int32_t>(ToneSettingType::TONE_SETTING_TYPE_RINGTONE);
+    int32_t toneType = static_cast<int32_t>(ShotToneType::SHOT_TONE_TYPE_NOT);
+    int32_t sourceType = static_cast<int32_t>(SourceType::SOURCE_TYPE_CUSTOMISED);
+    auto ret = g_ringtoneSettingManager->CommitSettingCompare(settingType, toneType, sourceType);
+    EXPECT_EQ(ret, E_INVALID_ARGUMENTS);
+
+    toneType = static_cast<int32_t>(ShotToneType::SHOT_TONE_TYPE_MAX);
+    ret = g_ringtoneSettingManager->CommitSettingCompare(settingType, toneType, sourceType);
+    EXPECT_EQ(ret, E_INVALID_ARGUMENTS);
+    RINGTONE_INFO_LOG("settingMetadata_CommitSettingCompare_test_003 end.");
+}
+
+HWTEST_F(RingtoneSettingManagerTest, settingMetadata_CommitSetting_test_003, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("settingMetadata_CommitSetting_test_003 start.");
+    int32_t settingType = static_cast<int32_t>(ToneSettingType::TONE_SETTING_TYPE_RINGTONE);
+    int32_t toneType = static_cast<int32_t>(ShotToneType::SHOT_TONE_TYPE_SIM_CARD_1);
+    int32_t sourceType = static_cast<int32_t>(SourceType::SOURCE_TYPE_CUSTOMISED);
+    int32_t toneId = 0;
+    string tonePath = "settingMetadata_CommitSetting_test_003";
+    
+    auto ret = g_ringtoneSettingManager->CommitSetting(toneId, tonePath, settingType, toneType, sourceType);
+    EXPECT_EQ(ret, E_OK);
+
+    sourceType = static_cast<int32_t>(SourceType::SOURCE_TYPE_PRESET);
+    ret = g_ringtoneSettingManager->CommitSetting(toneId, tonePath, settingType, toneType, sourceType);
+    EXPECT_EQ(ret, E_OK);
+    RINGTONE_INFO_LOG("settingMetadata_CommitSetting_test_003 end.");
+}
+
+HWTEST_F(RingtoneSettingManagerTest, settingMetadata_GetMetaDataFromResultSet_test_001, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("settingMetadata_GetMetaDataFromResultSet_test_001 start.");
+    shared_ptr<NativeRdb::ResultSet> resultSet = nullptr;
+    vector<shared_ptr<RingtoneMetadata>> metaDatas = {};
+    auto ret = g_ringtoneSettingManager->GetMetaDataFromResultSet(resultSet, metaDatas);
+    EXPECT_EQ(ret, E_INVALID_ARGUMENTS);
+    RINGTONE_INFO_LOG("settingMetadata_GetMetaDataFromResultSet_test_001 end.");
+}
+
 } // namespace Media
 } // namespace OHOS

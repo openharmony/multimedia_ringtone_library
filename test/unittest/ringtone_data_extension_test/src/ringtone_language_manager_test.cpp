@@ -15,11 +15,13 @@
 #include "ringtone_language_manager_test.h"
 
 #include "ability_context_impl.h"
+#include "parameter.h"
 #include "rdb_helper.h"
 #include "ringtone_errno.h"
+#include "ringtone_log.h"
 #include "ringtone_type.h"
-#include "ringtone_rdbstore.h"
 #define private public
+#include "ringtone_rdbstore.h"
 #include "ringtone_language_manager.h"
 #undef private
 
@@ -29,6 +31,12 @@ using namespace testing::ext;
 
 namespace OHOS {
 namespace Media {
+const char TEST_LANGUAGE_KEY[] = "persist.global.language";
+const char TEST_DEFAULT_LANGUAGE_KEY[] = "const.global.language";
+const char TEST_CHINESE_ABBREVIATION[] = "zh-Hans";
+const char TEST_ENGLISH_ABBREVIATION[] = "en-Latn-US";
+const char TEST_ABNORMAL_LANGUAGE[] = "";
+const int32_t TEST_SYSPARA_SIZE = 64;
 
 enum {
     DATA_INDEX = 0,
@@ -175,6 +183,19 @@ HWTEST_F(RingtoneLanguageManagerTest, languageManager_CheckLanguageTypeByRington
     EXPECT_EQ(rowCount, RINGTONE_DIFF_AMOUN);
 }
 
+HWTEST_F(RingtoneLanguageManagerTest, languageManager_CheckLanguageTypeByRingtone_test_003, TestSize.Level0)
+{
+    int32_t rowCount = 1;
+    std::shared_ptr<NativeRdb::ResultSet> resultSet;
+    g_ringtoneUniStore->Stop();
+    auto langMgr = RingtoneLanguageManager::GetInstance();
+    EXPECT_NE(langMgr, nullptr);
+    langMgr->ChangeLanguageDataToRingtone(rowCount, resultSet);
+    int32_t result = langMgr->CheckLanguageTypeByRingtone(rowCount, resultSet);
+    EXPECT_EQ(result, E_RDB);
+    g_ringtoneUniStore->Init();
+}
+
 HWTEST_F(RingtoneLanguageManagerTest, languageManager_ChangeLanguageDataToRingtone_test_001, TestSize.Level0)
 {
     auto langMgr = RingtoneLanguageManager::GetInstance();
@@ -237,6 +258,19 @@ HWTEST_F(RingtoneLanguageManagerTest, languageManager_CheckLanguageTypeByVibrati
     EXPECT_EQ(rowCount, VIBRATION_DIFF_AMOUN);
 }
 
+HWTEST_F(RingtoneLanguageManagerTest, languageManager_CheckLanguageTypeByVibration_test_003, TestSize.Level0)
+{
+    int32_t rowCount = 1;
+    std::shared_ptr<NativeRdb::ResultSet> resultSet;
+    g_ringtoneUniStore->Stop();
+    auto langMgr = RingtoneLanguageManager::GetInstance();
+    EXPECT_NE(langMgr, nullptr);
+    langMgr->ChangeLanguageDataToVibration(rowCount, resultSet);
+    int32_t result = langMgr->CheckLanguageTypeByVibration(rowCount, resultSet);
+    EXPECT_EQ(result, E_RDB);
+    g_ringtoneUniStore->Init();
+}
+
 HWTEST_F(RingtoneLanguageManagerTest, languageManager_ChangeLanguageDataToVibration_test_001, TestSize.Level0)
 {
     auto langMgr = RingtoneLanguageManager::GetInstance();
@@ -293,5 +327,117 @@ HWTEST_F(RingtoneLanguageManagerTest, languageManager_SyncAssetLanguage_test_001
     EXPECT_NE(langMgr->systemLanguage_, language);
 }
 
+/*
+ * Feature: Service
+ * Function: Test RingtoneLanguageManager with SyncAssetLanguage
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test SyncAssetLanguage when persist system language is zh-Hans
+ */
+HWTEST_F(RingtoneLanguageManagerTest, languageManager_SyncAssetLanguage_test_002, TestSize.Level0)
+{
+    char paramValue[TEST_SYSPARA_SIZE] = {0};
+    auto langMgr = RingtoneLanguageManager::GetInstance();
+    EXPECT_NE(langMgr, nullptr);
+    SetParameter(TEST_LANGUAGE_KEY, TEST_CHINESE_ABBREVIATION);
+    GetParameter(TEST_LANGUAGE_KEY, "", paramValue, TEST_SYSPARA_SIZE);
+    string language = langMgr->GetSystemLanguage();
+    EXPECT_EQ(language, TEST_CHINESE_ABBREVIATION);
+    cout << "language = " << language << endl;
+    langMgr->SyncAssetLanguage();
+    language = langMgr->GetSystemLanguage();
+    EXPECT_EQ(langMgr->systemLanguage_, language);
+}
+
+/*
+ * Feature: Service
+ * Function: Test RingtoneLanguageManager with SyncAssetLanguage
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test SyncAssetLanguage when persist system language is zh-Hans
+ */
+HWTEST_F(RingtoneLanguageManagerTest, languageManager_SyncAssetLanguage_test_003, TestSize.Level0)
+{
+    char paramValue[TEST_SYSPARA_SIZE] = {0};
+    auto langMgr = RingtoneLanguageManager::GetInstance();
+    EXPECT_NE(langMgr, nullptr);
+    SetParameter(TEST_LANGUAGE_KEY, TEST_ENGLISH_ABBREVIATION);
+    GetParameter(TEST_LANGUAGE_KEY, "", paramValue, TEST_SYSPARA_SIZE);
+    string language = langMgr->GetSystemLanguage();
+    EXPECT_EQ(language, TEST_ENGLISH_ABBREVIATION);
+    cout << "language = " << language << endl;
+    langMgr->SyncAssetLanguage();
+    language = langMgr->GetSystemLanguage();
+    EXPECT_EQ(langMgr->systemLanguage_, language);
+}
+
+/*
+ * Feature: Service
+ * Function: Test RingtoneLanguageManager with SyncAssetLanguage
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test SyncAssetLanguage when persist system language is en-Latn-US
+ */
+HWTEST_F(RingtoneLanguageManagerTest, languageManager_SyncAssetLanguage_test_004, TestSize.Level0)
+{
+    char paramValue[TEST_SYSPARA_SIZE] = {0};
+    auto langMgr = RingtoneLanguageManager::GetInstance();
+    EXPECT_NE(langMgr, nullptr);
+    SetParameter(TEST_LANGUAGE_KEY, TEST_CHINESE_ABBREVIATION);
+    GetParameter(TEST_LANGUAGE_KEY, "", paramValue, TEST_SYSPARA_SIZE);
+    string language = langMgr->GetSystemLanguage();
+    EXPECT_EQ(language, TEST_CHINESE_ABBREVIATION);
+    cout << "language = " << language << endl;
+    langMgr->SyncAssetLanguage();
+    language = langMgr->GetSystemLanguage();
+    EXPECT_EQ(langMgr->systemLanguage_, language);
+}
+
+/*
+ * Feature: Service
+ * Function: Test RingtoneLanguageManager with GetSystemLanguage
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test GetSystemLanguage when default system language
+ */
+HWTEST_F(RingtoneLanguageManagerTest, languageManager_GetSystemLanguage_test_001, TestSize.Level0)
+{
+    char paramValue[TEST_SYSPARA_SIZE] = {0};
+    auto langMgr = RingtoneLanguageManager::GetInstance();
+    EXPECT_NE(langMgr, nullptr);
+    SetParameter(TEST_LANGUAGE_KEY, TEST_ABNORMAL_LANGUAGE);
+    SetParameter(TEST_DEFAULT_LANGUAGE_KEY, TEST_CHINESE_ABBREVIATION);
+    GetParameter(TEST_DEFAULT_LANGUAGE_KEY, "", paramValue, TEST_SYSPARA_SIZE);
+    string language = langMgr->GetSystemLanguage();
+    EXPECT_EQ(language, TEST_CHINESE_ABBREVIATION);
+    cout << "language = " << language << endl;
+}
+
+HWTEST_F(RingtoneLanguageManagerTest, languageManager_ReadMultilingualResources_test_001, TestSize.Level0)
+{
+    auto langMgr = RingtoneLanguageManager::GetInstance();
+    ASSERT_NE(langMgr, nullptr);
+
+    string filePath = "data/createfile_001.";
+    ResourceFileType resourceFileType = VIBRATION_FILE;
+    auto ret = langMgr->ReadMultilingualResources(filePath, resourceFileType);
+    EXPECT_EQ(ret, false);
+}
+
+HWTEST_F(RingtoneLanguageManagerTest, languageManager_ParseMultilingualXml_test_001, TestSize.Level0)
+{
+    auto langMgr = RingtoneLanguageManager::GetInstance();
+    ASSERT_NE(langMgr, nullptr);
+
+    xmlNodePtr rootNode = new xmlNode();
+    ASSERT_NE(rootNode, nullptr);
+    ResourceFileType resourceFileType = VIBRATION_FILE;
+    auto ret = langMgr->ParseMultilingualXml(rootNode, resourceFileType);
+    EXPECT_EQ(ret, true);
+}
 } // namespace Media
 } // namespace OHOS

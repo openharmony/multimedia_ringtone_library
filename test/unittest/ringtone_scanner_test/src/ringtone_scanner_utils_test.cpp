@@ -166,5 +166,36 @@ HWTEST_F(RingtoneScannerUtilsTest, ringtonelib_GetFileNameFromUri_test_002, Test
     string ret = RingtoneScannerUtils::GetFileNameFromUri(path);
     EXPECT_EQ(ret, "");
 }
+
+HWTEST_F(RingtoneScannerUtilsTest, ringtonelib_GetFileNameFromUri_test_003, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("ringtonelib_GetFileNameFromUri_test_003 start.");
+    string path = "ringtonelib_GetFileNameFromUri_test_002";
+    string ret = RingtoneScannerUtils::GetFileNameFromUri(path);
+    EXPECT_EQ(ret, "");
+    RINGTONE_INFO_LOG("ringtonelib_GetFileNameFromUri_test_003 end.");
+}
+
+HWTEST_F(RingtoneScannerUtilsTest, ringtonelib_IsDirectory_test_002, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("ringtonelib_IsDirectory_test_002 start.");
+    const string path = "/dev/null";
+    bool ret = RingtoneScannerUtils::IsDirectory(path);
+    EXPECT_FALSE(ret);
+    RINGTONE_INFO_LOG("ringtonelib_IsDirectory_test_002 end.");
+}
+
+HWTEST_F(RingtoneScannerUtilsTest, ringtonelib_IsDirHidden_test_002, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("ringtonelib_IsDirHidden_test_002 start.");
+    const string path = "/storage/cloud/files/.nomedia";
+    EXPECT_TRUE(RingtoneUnitTestUtils::CreateFileFS(path));
+    
+    const string pathTest = "/storage/cloud/files/";
+    bool ret = RingtoneScannerUtils::IsDirHidden(pathTest);
+    EXPECT_TRUE(ret);
+    system("rm -rf /storage/cloud/files/.nomedia");
+    RINGTONE_INFO_LOG("ringtonelib_IsDirHidden_test_002 end.");
+}
 } // namespace Media
 } // namespace OHOS

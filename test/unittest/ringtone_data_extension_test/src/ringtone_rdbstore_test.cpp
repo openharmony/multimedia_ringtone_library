@@ -17,6 +17,7 @@
 #include "ringtone_rdbstore_test.h"
 
 #include "ability_context_impl.h"
+#include "ringtone_log.h"
 #include "rdb_store.h"
 #include "rdb_utils.h"
 #include "ringtone_errno.h"
@@ -49,6 +50,7 @@ void RingtoneRdbStorelUnitTest::SetUp()
     auto abilityContextImpl = std::make_shared<OHOS::AbilityRuntime::AbilityContextImpl>();
     abilityContextImpl->SetStageContext(stageContext);
     g_uniStore = RingtoneRdbStore::GetInstance(abilityContextImpl);
+    EXPECT_NE(g_uniStore, nullptr);
     int32_t ret = g_uniStore->Init();
     EXPECT_EQ(ret, E_OK);
 }
@@ -278,5 +280,129 @@ HWTEST_F(RingtoneRdbStorelUnitTest, dataCallBack_OnCreate_test_001, TestSize.Lev
     ret = rdbDataCallBack.OnUpgrade(*g_uniStore->GetRaw(), oldVersion, newVersion);
     EXPECT_EQ(ret, E_OK);
 }
+
+HWTEST_F(RingtoneRdbStorelUnitTest, dataCallBack_Stop_test_001, TestSize.Level0)
+{
+    if (g_uniStore == nullptr) {
+        exit(1);
+    }
+    Uri uri(RINGTONE_PATH_URI);
+    RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::QUERY);
+    vector<string> columns;
+    columns.push_back(RINGTONE_COLUMN_TITLE);
+    std::shared_ptr<OHOS::AbilityRuntime::Context> context = nullptr;
+    RingtoneRdbStore::GetInstance(context);
+    g_uniStore->Stop();
+    g_uniStore->Stop();
+    auto queryResultSet = g_uniStore->Query(cmd, columns);
+    EXPECT_EQ(queryResultSet, nullptr);
+}
+
+HWTEST_F(RingtoneRdbStorelUnitTest, dataCallBack_OnCreate_test_002, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("dataCallBack_OnCreate_test_002 start.");
+    RingtoneDataCallBack rdbDataCallBack;
+    g_uniStore->Init();
+    auto ret = rdbDataCallBack.OnCreate(*g_uniStore->GetRaw());
+    EXPECT_EQ(ret, E_OK);;
+    int32_t oldVersion = 16;
+    int32_t newVersion = 64;
+    ret = rdbDataCallBack.OnUpgrade(*g_uniStore->GetRaw(), oldVersion, newVersion);
+    EXPECT_EQ(ret, E_OK);
+    RINGTONE_INFO_LOG("dataCallBack_OnCreate_test_002 end.");
+}
+
+HWTEST_F(RingtoneRdbStorelUnitTest, dataCallBack_OnCreate_test_003, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("dataCallBack_OnCreate_test_003 start.");
+    Uri uri(RINGTONE_PATH_URI);
+    RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::INSERT);
+    NativeRdb::ValuesBucket values;
+    const string name = "test name";
+    values.PutString(RINGTONE_COLUMN_DISPLAY_NAME, name);
+    const string data = "dataCallBack_OnCreate_test_003";
+    values.PutString(RINGTONE_COLUMN_DATA, data);
+    const string title = "insert test";
+    values.PutString(RINGTONE_COLUMN_TITLE, title);
+    values.PutString(RINGTONE_COLUMN_MIME_TYPE, "application/octet-stream");
+    cmd.SetValueBucket(values);
+    g_uniStore->Init();
+    int64_t rowId = E_HAS_DB_ERROR;
+    int32_t ret = g_uniStore->Insert(cmd, rowId);
+    EXPECT_EQ(ret, E_OK);
+
+    RingtoneDataCallBack rdbDataCallBack;
+    g_uniStore->Init();
+    ret = rdbDataCallBack.OnCreate(*g_uniStore->GetRaw());
+    EXPECT_EQ(ret, E_OK);;
+    int32_t oldVersion = 0;
+    int32_t newVersion = 1;
+    ret = rdbDataCallBack.OnUpgrade(*g_uniStore->GetRaw(), oldVersion, newVersion);
+    EXPECT_EQ(ret, E_OK);
+    RINGTONE_INFO_LOG("dataCallBack_OnCreate_test_003 end.");
+}
+
+HWTEST_F(RingtoneRdbStorelUnitTest, dataCallBack_OnCreate_test_004, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("dataCallBack_OnCreate_test_004 start.");
+    Uri uri(RINGTONE_PATH_URI);
+    RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::INSERT);
+    NativeRdb::ValuesBucket values;
+    const string name = "test name";
+    values.PutString(RINGTONE_COLUMN_DISPLAY_NAME, name);
+    const string data = "/data/storage/test/test.ogg";
+    values.PutString(RINGTONE_COLUMN_DATA, data);
+    const string title = "insert test";
+    values.PutString(RINGTONE_COLUMN_TITLE, title);
+    values.PutString(RINGTONE_COLUMN_MIME_TYPE, "application/octet-stream");
+    values.PutInt(RINGTONE_COLUMN_MEDIA_TYPE, -1);
+    cmd.SetValueBucket(values);
+    g_uniStore->Init();
+    int64_t rowId = E_HAS_DB_ERROR;
+    int32_t ret = g_uniStore->Insert(cmd, rowId);
+    EXPECT_EQ(ret, E_OK);
+
+    RingtoneDataCallBack rdbDataCallBack;
+    g_uniStore->Init();
+    ret = rdbDataCallBack.OnCreate(*g_uniStore->GetRaw());
+    EXPECT_EQ(ret, E_OK);;
+    int32_t oldVersion = 0;
+    int32_t newVersion = 1;
+    ret = rdbDataCallBack.OnUpgrade(*g_uniStore->GetRaw(), oldVersion, newVersion);
+    EXPECT_EQ(ret, E_OK);
+    RINGTONE_INFO_LOG("dataCallBack_OnCreate_test_004 end.");
+}
+
+HWTEST_F(RingtoneRdbStorelUnitTest, dataCallBack_OnCreate_test_005, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("dataCallBack_OnCreate_test_005 start.");
+    Uri uri(RINGTONE_PATH_URI);
+    RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::INSERT);
+    NativeRdb::ValuesBucket values;
+    const string name = "test name";
+    values.PutString(RINGTONE_COLUMN_DISPLAY_NAME, name);
+    const string data = "/data/storage/test/test.ogg";
+    values.PutString(RINGTONE_COLUMN_DATA, data);
+    const string title = "insert test";
+    values.PutString(RINGTONE_COLUMN_TITLE, title);
+    values.PutString(RINGTONE_COLUMN_MIME_TYPE, "audio/ogg");
+    values.PutInt(RINGTONE_COLUMN_MEDIA_TYPE, -1);
+    cmd.SetValueBucket(values);
+    g_uniStore->Init();
+    int64_t rowId = E_HAS_DB_ERROR;
+    int32_t ret = g_uniStore->Insert(cmd, rowId);
+    EXPECT_EQ(ret, E_OK);
+
+    RingtoneDataCallBack rdbDataCallBack;
+    g_uniStore->Init();
+    ret = rdbDataCallBack.OnCreate(*g_uniStore->GetRaw());
+    EXPECT_EQ(ret, E_OK);;
+    int32_t oldVersion = 0;
+    int32_t newVersion = 1;
+    ret = rdbDataCallBack.OnUpgrade(*g_uniStore->GetRaw(), oldVersion, newVersion);
+    EXPECT_EQ(ret, E_OK);
+    RINGTONE_INFO_LOG("dataCallBack_OnCreate_test_005 end.");
+}
+
 } // namespace Media
 } // namespace OHOS
