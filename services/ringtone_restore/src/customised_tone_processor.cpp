@@ -43,10 +43,10 @@ CustomisedToneProcessor::CustomisedToneProcessor() {}
 static int32_t GetFileFd(const std::string &path, int &fd, struct stat64 &st)
 {
     std::error_code ec;
-    std::string realPath = path;
-    realPath = std::filesystem::weakly_canonical(realPath, ec);
-    if (ec.value() != E_SUCCESS) {
-        RINGTONE_ERR_LOG("GetFileTitle normalized realPath failed");
+    char realPath[PATH_MAX] = "";
+
+    if (realpath(path.c_str(), realPath) == nullptr) {
+        RINGTONE_ERR_LOG("Realpath input file failed");
         return E_FAIL;
     }
 
@@ -57,8 +57,8 @@ static int32_t GetFileFd(const std::string &path, int &fd, struct stat64 &st)
     }
 
     int mode = O_RDONLY;
-    fd = open(realPath.c_str(), mode);
-    CHECK_AND_RETURN_RET_LOG(fd > 0, E_FAIL, "open fail path: %{private}s", realPath.c_str());
+    fd = open(realPath, mode);
+    CHECK_AND_RETURN_RET_LOG(fd > 0, E_FAIL, "open fail path: %{private}s", realPath);
 
     int32_t ret = fstat64(fd, &st);
     if (ret != 0) {
@@ -82,7 +82,10 @@ static int32_t GetFileTitleAndDuration(const std::string &path, FileInfo &fileIn
     }
 
     shared_ptr<AVMetadataHelper> avMetadataHelper = AVMetadataHelperFactory::CreateAVMetadataHelper();
-    CHECK_AND_RETURN_RET_LOG(avMetadataHelper != nullptr, 0, "avMetadataHelper is nullptr");
+    if (avMetadataHelper == nullptr) {
+        close(fd);
+        return 0;
+    }
     int64_t fileLength = static_cast<int64_t>(st.st_size);
     int32_t ret = avMetadataHelper->SetSource(fd, 0, fileLength, AV_META_USAGE_META_ONLY);
     close(fd);
