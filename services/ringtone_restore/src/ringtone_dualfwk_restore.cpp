@@ -220,27 +220,38 @@ static void AddSettingsToFileInfo(const DualFwkSettingItem &setting, FileInfo &i
     }
 }
 
+bool IsRingtoneConsistent(const std::shared_ptr<FileInfo> &ringtoneInfo, const DualFwkSettingItem &setting)
+{
+    auto keyToneType = setting.settingType;
+    return ((ringtoneInfo->toneType == ToneType::TONE_TYPE_ALARM &&
+        keyToneType == ToneSettingType::TONE_SETTING_TYPE_ALARM) ||
+        (ringtoneInfo->toneType == ToneType::TONE_TYPE_RINGTONE &&
+        keyToneType == ToneSettingType::TONE_SETTING_TYPE_RINGTONE) ||
+        (ringtoneInfo->toneType == ToneType::TONE_TYPE_NOTIFICATION &&
+        keyToneType == ToneSettingType::TONE_SETTING_TYPE_NOTIFICATION) ||
+        (ringtoneInfo->toneType == ToneType::TONE_TYPE_NOTIFICATION &&
+        keyToneType == ToneSettingType::TONE_SETTING_TYPE_SHOT));
+}
+
 std::shared_ptr<FileInfo> GetRingtonebyDisplayName(std::vector<std::shared_ptr<FileInfo>>& results,
     const DualFwkSettingItem &setting, bool &doInsert)
 {
     auto keyName = setting.toneFileName;
-    auto keyToneType = setting.settingType;
     std::shared_ptr<FileInfo> infoPtr;
     for (const auto& ringtoneInfo : results) {
         if (ringtoneInfo == nullptr) {
             RINGTONE_ERR_LOG("ringtoneInfo from ringtone by display name is nullptr");
             continue;
         }
-        if ((ringtoneInfo->sourceType == SourceType::SOURCE_TYPE_PRESET) && ((ringtoneInfo->toneType ==
-            ToneType::TONE_TYPE_RINGTONE) || (ringtoneInfo->toneType == ToneType::TONE_TYPE_NOTIFICATION))) {
-            if (keyToneType == (ringtoneInfo->toneType + 1)) {
+        if (ringtoneInfo->sourceType == SourceType::SOURCE_TYPE_PRESET) {
+            if (IsRingtoneConsistent(ringtoneInfo, setting)) {
                 infoPtr = ringtoneInfo;
                 RINGTONE_INFO_LOG("found %{public}s in ringtone db", keyName.c_str());
                 doInsert = false;
                 break;
             } else {
                 RINGTONE_INFO_LOG("%{public}s is invalid", keyName.c_str());
-                return nullptr;
+                continue;
             }
         } else {
             infoPtr = ringtoneInfo;
