@@ -16,6 +16,7 @@
 
 #include "dfx_reporter.h"
 
+#include <cinttypes>
 #include "dfx_const.h"
 #include "dfx_manager.h"
 #include "hisysevent.h"
