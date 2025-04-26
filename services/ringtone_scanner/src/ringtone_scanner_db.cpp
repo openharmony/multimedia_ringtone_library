@@ -526,9 +526,9 @@ bool RingtoneScannerDb::DeleteNotExist()
     vibrateRdbPredicate.And();
     vibrateRdbPredicate.EqualTo(VIBRATE_COLUMN_SOURCE_TYPE, "1");
     result = rawRdb->Delete(deleteCount, vibrateRdbPredicate);
-    RINGTONE_INFO_LOG("Vibrate update operation end. Deleted %{public}d", deleteCount);
+    RINGTONE_INFO_LOG("Vibrate delete operation end. Deleted %{public}d", deleteCount);
     if (result != NativeRdb::E_OK || deleteCount < 0) {
-        RINGTONE_ERR_LOG("Vibrate update operation failed. Result %{public}d. Deleted %{public}d", result, deleteCount);
+        RINGTONE_ERR_LOG("Vibrate delete operation failed. Result %{public}d. Deleted %{public}d", result, deleteCount);
         return false;
     }
     return true;

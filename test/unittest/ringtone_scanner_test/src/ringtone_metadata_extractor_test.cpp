@@ -109,5 +109,25 @@ HWTEST_F(RingtoneMetadataExtractorTest, metadataExtractor_FillExtractedMetadata_
     RingtoneMetadataExtractor::FillExtractedMetadata(resultMap, data);
     EXPECT_EQ(data->GetTitle(), "a");
 }
+
+HWTEST_F(RingtoneMetadataExtractorTest, metadataExtractor_ExtractAudioMetadata_test_001, TestSize.Level0)
+{
+    unique_ptr<RingtoneMetadata> data = make_unique<RingtoneMetadata>();
+    unique_ptr<RingtoneScannerDb> ringtoneScannerDb;
+    ringtoneScannerDb->GetFileBasicInfo(STORAGE_FILES_DIR, data);
+    data->SetMediaType(static_cast<RingtoneMediaType>(RINGTONE_MEDIA_TYPE_AUDIO));
+    int32_t ret = RingtoneMetadataExtractor::ExtractAudioMetadata(data);
+    EXPECT_EQ(ret, E_AVMETADATA);
+    data->SetData(STORAGE_FILES_DIR);
+    ret = RingtoneMetadataExtractor::ExtractAudioMetadata(data);
+    EXPECT_NE(ret, E_OK);
+    data->SetData("ExtractAudioMetadata");
+    ret = RingtoneMetadataExtractor::ExtractAudioMetadata(data);
+    EXPECT_EQ((ret == E_SYSCALL || ret == E_AVMETADATA), true);
+    const string dataStr = "/system/etc/userfilemanager/userfilemanager_mimetypes.json";
+    data->SetData(dataStr);
+    ret = RingtoneMetadataExtractor::ExtractAudioMetadata(data);
+    EXPECT_EQ((ret == E_SYSCALL || ret == E_AVMETADATA), true);
+}
 } // namespace Media
 } // namespace OHOS

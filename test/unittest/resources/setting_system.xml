@@ -14,9 +14,6 @@
      limitations under the License.
 -->
 <settings version="205">
-
-  <setting id="1" name="volume_fm" value="5" package="adr" defaultValue="5" defaultSysSet="true" />
   <setting id="2" preserve_in_restore="true" />
   <setting id="1" name="setting" value="5" package="adr" defaultValue="5" defaultSysSet="true" />
-
 </settings>

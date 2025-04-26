@@ -40,6 +40,8 @@ void RingtoneScannerTest::SetUpTestCase()
 {
     auto stageContext = std::make_shared<AbilityRuntime::ContextImpl>();
     auto abilityContextImpl = std::make_shared<OHOS::AbilityRuntime::AbilityContextImpl>();
+    ASSERT_TRUE(abilityContextImpl != nullptr);
+
     abilityContextImpl->SetStageContext(stageContext);
     shared_ptr<RingtoneUnistore> uniStore = RingtoneRdbStore::GetInstance(abilityContextImpl);
     int32_t ret = uniStore->Init();

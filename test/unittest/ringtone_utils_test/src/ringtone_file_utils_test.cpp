@@ -230,7 +230,7 @@ HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_CopyFileUtil_Test_001, TestSiz
     RingtoneFileUtils::CopyFileUtil(filePath, newPath);
 }
 
-HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_GetSandboxPath_Test_001, TestSize.Level0)
+HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_GetSanboxPath_Test_001, TestSize.Level0)
 {
     string uri1 = "/data/app/el2/100/base/com.ohos.ringtonelibrary.ringtonelibrarydata/files/Ringtone";
     string uri2 = "/data/local/tmp/test";
@@ -239,7 +239,5 @@ HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_GetSandboxPath_Test_001, TestS
     result = GetAppSandboxPathFromUri(uri2);
     EXPECT_EQ(result, E_INVALID_URI);
 }
-
-
 } // namespace Media
 } // namespace OHOS

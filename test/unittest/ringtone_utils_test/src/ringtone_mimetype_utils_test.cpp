@@ -20,6 +20,7 @@
 #include "ringtone_errno.h"
 #include "ringtone_log.h"
 #include "ringtone_mimetype_utils.h"
+#include "ringtone_type.h"
 
 using std::string;
 using namespace testing::ext;
@@ -190,7 +191,6 @@ const std::map<string, RingtoneMediaType> g_testMimeType2MediaType = {
     { "application/vnd.ms-powerpoint", RINGTONE_MEDIA_TYPE_INVALID },
     { "application/vnd.ms-wpl", RINGTONE_MEDIA_TYPE_INVALID },
     { "application/vnd.stardivision.writer", RINGTONE_MEDIA_TYPE_INVALID },
-    { "application/vnd.youtube.yt", RINGTONE_MEDIA_TYPE_INVALID },
     { "application/x-font", RINGTONE_MEDIA_TYPE_INVALID },
     { "application/x-mobipocket-ebook", RINGTONE_MEDIA_TYPE_INVALID },
     { "application/x-pem-file", RINGTONE_MEDIA_TYPE_INVALID },
@@ -243,7 +243,6 @@ const std::map<string, RingtoneMediaType> g_testMimeType2MediaType = {
     { "video/mp4", RINGTONE_MEDIA_TYPE_INVALID },
     { "video/mp2t", RINGTONE_MEDIA_TYPE_INVALID },
     { "video/mp2ts", RINGTONE_MEDIA_TYPE_INVALID },
-    { "video/vnd.youtube.yt", RINGTONE_MEDIA_TYPE_INVALID },
     { "video/x-webex", RINGTONE_MEDIA_TYPE_INVALID },
     { "video/mpeg", RINGTONE_MEDIA_TYPE_INVALID },
     { "video/quicktime", RINGTONE_MEDIA_TYPE_INVALID },

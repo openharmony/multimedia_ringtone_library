@@ -402,7 +402,7 @@ string RingtoneDataManager::GetIdFromUri(Uri &uri, const std::string &uriPath)
 
 shared_ptr<RingtoneAsset> RingtoneDataManager::GetRingtoneAssetFromId(const string &id)
 {
-    if ((id.empty()) || (!IsNumber(id)) || (stoi(id) == -1)) {
+    if ((id.empty()) || (!IsNumber(id))) {
         RINGTONE_ERR_LOG("Id for the path is incorrect: %{private}s", id.c_str());
         return nullptr;
     }
@@ -426,7 +426,7 @@ shared_ptr<RingtoneAsset> RingtoneDataManager::GetRingtoneAssetFromId(const stri
 
 std::shared_ptr<VibrateAsset> RingtoneDataManager::GetVibrateAssetFromId(const std::string &id)
 {
-    if ((id.empty()) || (!IsNumber(id)) || (stoi(id) == -1)) {
+    if ((id.empty()) || (!IsNumber(id))) {
         RINGTONE_ERR_LOG("Id for the path is incorrect: %{private}s", id.c_str());
         return nullptr;
     }

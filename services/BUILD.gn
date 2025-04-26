@@ -22,6 +22,7 @@ config("ringtone_public_config") {
     "${RINGTONE_DFX_PATH}/include",
     "${RINGTONE_UTILS_PATH}/include",
     "${RINGTONE_INTERFACES_PATH}/inner_api/native",
+    "${RINGTONE_HELPER_PATH}/include",
     "${RINGTONE_SETTING_PATH}/include",
   ]
   ldflags = [ "-Wl,--gc-sections" ]
@@ -114,6 +115,7 @@ ohos_shared_library("ringtone_data_extension") {
     "ipc:ipc_core",
     "libxml2:libxml2",
     "napi:ace_napi",
+    "os_account:os_account_innerkits",
     "player_framework:media_client",
     "preferences:native_preferences",
     "relational_store:native_rdb",
@@ -166,11 +168,6 @@ ohos_shared_library("ringtonerestore") {
   configs = [ "//build/config/compiler:exceptions" ]
 
   ldflags = [ "-Wl" ]
-
-  cflags_cc = [
-    "-fvisibility-inlines-hidden",
-    "-Os",
-  ]
 
   deps = [
     ":ringtone_data_extension",
@@ -256,10 +253,7 @@ ohos_shared_library("ringtone_utils") {
     "-Os",
   ]
 
-  cflags_cc = [
-    "-fvisibility-inlines-hidden",
-    "-Os",
-  ]
+  cflags_cc = [ "-Os" ]
 
   external_deps = [
     "ability_base:want",
