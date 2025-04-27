@@ -116,8 +116,8 @@ void RingtoneDefaultSetting::RingToneDefaultSettings()
     char paramValue1[SYSPARA_SIZE] = {0};
     char paramValue2[SYSPARA_SIZE] = {0};
 
-    GetParameter(PARAM_RINGTONE_SETTING_RINGTONE, "Huawei_Tune_Harmony.ogg", paramValue1, SYSPARA_SIZE);
-    GetParameter(PARAM_RINGTONE_SETTING_RINGTONE2, "Huawei_Tune_Clean.ogg", paramValue2, SYSPARA_SIZE);
+    GetParameter(PARAM_RINGTONE_SETTING_RINGTONE, "", paramValue1, SYSPARA_SIZE);
+    GetParameter(PARAM_RINGTONE_SETTING_RINGTONE2, "", paramValue2, SYSPARA_SIZE);
 
     string tonePath = {};
     string strVal1 = {paramValue1};
