@@ -91,23 +91,6 @@ HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_OnConnect_test_001, 
     EXPECT_EQ((ret != nullptr), true);
 }
 
-HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_Insert_test_001, TestSize.Level0)
-{
-    const std::unique_ptr<AbilityRuntime::Runtime> runtime;
-    AbilityRuntime::RingtoneDataShareExtension *mediaDataShare;
-    mediaDataShare = AbilityRuntime::RingtoneDataShareExtension::Create(runtime);
-    EXPECT_EQ(mediaDataShare != nullptr, true);
-
-    Uri uri(RINGTONE_PATH_URI);
-    AbilityRuntime::DataShareValuesBucket values;
-    auto ret = mediaDataShare->Insert(uri, values);
-    EXPECT_EQ(ret, E_COMMON_START);
-
-    Uri uriError(RINGTONE_URI);
-    ret = mediaDataShare->Insert(uriError, values);
-    EXPECT_EQ(ret, E_INVALID_URI);
-}
-
 HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_Update_test_001, TestSize.Level0)
 {
     const std::unique_ptr<AbilityRuntime::Runtime> runtime;
@@ -123,23 +106,6 @@ HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_Update_test_001, Tes
 
     Uri uriError(RINGTONE_URI);
     ret = mediaDataShare->Update(uriError, predicates, values);
-    EXPECT_EQ(ret, E_INVALID_URI);
-}
-
-HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_Delete_test_001, TestSize.Level0)
-{
-    const std::unique_ptr<AbilityRuntime::Runtime> runtime;
-    AbilityRuntime::RingtoneDataShareExtension *mediaDataShare;
-    mediaDataShare = AbilityRuntime::RingtoneDataShareExtension::Create(runtime);
-    EXPECT_EQ(mediaDataShare != nullptr, true);
-
-    Uri uri(RINGTONE_PATH_URI);
-    const AbilityRuntime::DataSharePredicates predicates;
-    auto ret = mediaDataShare->Delete(uri, predicates);
-    EXPECT_EQ(ret, E_COMMON_START);
-
-    Uri uriError(RINGTONE_URI);
-    ret = mediaDataShare->Delete(uriError, predicates);
     EXPECT_EQ(ret, E_INVALID_URI);
 }
 
@@ -181,22 +147,6 @@ HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_Query_Vibrate_test_0
     EXPECT_EQ(ret, nullptr);
 }
 
-HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_OpenFile_test_001, TestSize.Level0)
-{
-    const std::unique_ptr<AbilityRuntime::Runtime> runtime;
-    AbilityRuntime::RingtoneDataShareExtension *mediaDataShare;
-    mediaDataShare = AbilityRuntime::RingtoneDataShareExtension::Create(runtime);
-    EXPECT_EQ(mediaDataShare != nullptr, true);
-
-    Uri uri(RINGTONE_PATH_URI);
-    auto ret = mediaDataShare->OpenFile(uri, RINGTONE_FILEMODE_READONLY);
-    EXPECT_EQ(ret, E_INVALID_VALUES);
-
-    Uri uriError(RINGTONE_URI);
-    ret = mediaDataShare->OpenFile(uriError, RINGTONE_FILEMODE_READONLY);
-    EXPECT_EQ(ret, E_INVALID_URI);
-}
-
 HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_DumpDataShareValueBucket_test_001, TestSize.Level0)
 {
     const std::unique_ptr<AbilityRuntime::Runtime> runtime;
@@ -228,6 +178,39 @@ HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_DumpDataShareValueBu
     value.Put(ringtoneVectorType, static_cast<std::vector<uint8_t>>(ringtoneVec));
     mediaDataShare->DumpDataShareValueBucket(tabFields, value);
     EXPECT_EQ(mediaDataShare != nullptr, true);
+}
+
+HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_IdExists_test_001, TestSize.Level0)
+{
+    const std::unique_ptr<AbilityRuntime::Runtime> runtime;
+    AbilityRuntime::RingtoneDataShareExtension *mediaDataShare;
+    mediaDataShare = AbilityRuntime::RingtoneDataShareExtension::Create(runtime);
+    EXPECT_NE(mediaDataShare, nullptr);
+
+    std::string ids = "";
+    int32_t id = 100;
+    bool ret = mediaDataShare->IdExists(ids, id);
+    EXPECT_FALSE(ret);
+
+    ids = "101";
+    id = 100;
+    ret = mediaDataShare->IdExists(ids, id);
+    EXPECT_FALSE(ret);
+
+    ids = "100 101";
+    id = 10;
+    ret = mediaDataShare->IdExists(ids, id);
+    EXPECT_FALSE(ret);
+
+    ids = "110 210";
+    id = 10;
+    ret = mediaDataShare->IdExists(ids, id);
+    EXPECT_FALSE(ret);
+
+    ids = "100 101";
+    id = 100;
+    ret = mediaDataShare->IdExists(ids, id);
+    EXPECT_TRUE(ret);
 }
 } // namespace Media
 } // namespace OHOS

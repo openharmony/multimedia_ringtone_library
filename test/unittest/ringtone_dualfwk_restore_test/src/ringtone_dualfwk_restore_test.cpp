@@ -45,6 +45,7 @@ namespace OHOS {
 namespace Media {
 const string TEST_BACKUP_PATH = "/data/test/backup";
 const string TEST_BACKUP_DATA = "/data/local/tmp/test/Adara.ogg";
+const string TEST_TOOL_QUERY_AUDIO = "datashare:///media/mediatool_audio_operation/tool_query_by_display_name";
 
 unique_ptr<RingtoneDualFwkRestore> g_restoreDualFwkService = nullptr;
 
@@ -143,7 +144,7 @@ HWTEST_F(RingtoneDualFwkRestoreTest, ringtone_dualfwk_restore_test_0003, TestSiz
     EXPECT_NE(restore, nullptr);
     restore->Init("/");
 #ifdef USE_MEDIA_LIBRARY
-    restore->QueryMediaLibForFileInfo({"sound.m4a", "common.mp3", "cc"}, resultFromMedia, TOOL_QUERY_AUDIO);
+    restore->QueryMediaLibForFileInfo({"sound.m4a", "common.mp3", "cc"}, resultFromMedia, TEST_TOOL_QUERY_AUDIO);
 #endif
     restore->QueryRingToneDbForFileInfo(rdbStore, {"Creek.ogg", "Dawn.ogg", "Flourish.ogg"}, resultFromRingtone);
     RINGTONE_INFO_LOG("ringtone_dualfwk_restore_test_0003 end");

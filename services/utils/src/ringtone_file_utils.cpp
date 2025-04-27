@@ -708,6 +708,7 @@ void RingtoneFileUtils::AccessRingtoneDir()
         }
         CreateRingtoneDir();
     } else { //rename and move file
+        RINGTONE_ERR_LOG("The directory is not empty and lacks group write permission.");
         if (MoveFile(RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH.c_str(),
             RINGTONE_CUSTOMIZED_BASE_RINGTONETMP_PATH.c_str())) {
             if (CreatePreloadFolder(RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH.c_str()) != E_SUCCESS) {

@@ -97,7 +97,7 @@ export default class RingtoneBackupExtAbility extends BackupExtensionAbility {
     const MOVE_ERR_CODE = 13900015;
     let conflictList = [];
     try {
-      console.log(TAG, `move dir from [${srcPath}] to [${destPath}]`);
+      console.log(TAG, `move dir`);
       await fs.copyDir(srcPath, destPath, 0);
     } catch (err) {
       console.log(TAG, `catch err: ${JSON.stringify(err)}`);

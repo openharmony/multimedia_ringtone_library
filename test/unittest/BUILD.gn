@@ -20,12 +20,12 @@ group("test") {
     "ringtone_dualfwk_restore_test:ringtone_dualfwk_restore_unittest",
     "ringtone_helper_test:ringtone_helper_unittest",
     "ringtone_restore_test:ringtone_restore_unittest",
-    "ringtone_scanner:ringtone_read_test",
-    "ringtone_scanner:ringtone_scanner_test",
-    "ringtone_scanner:ringtone_test",
     "ringtone_scanner_test:ringtone_scanner_unittest",
     "ringtone_setting_test:ringtone_setting_unittest",
     "ringtone_test:ringtone_unittest",
     "ringtone_utils_test:ringtone_utils_unittest",
+    "ringtone_scanner:ringtone_scanner_test",
+    "ringtone_scanner:ringtone_test",
+    "ringtone_scanner:ringtone_read_test",
   ]
 }

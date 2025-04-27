@@ -16,12 +16,14 @@
 
 #include "dfx_worker.h"
 
+#include <charconv>
 #include "dfx_const.h"
 #include "dfx_manager.h"
 #include "parameters.h"
 #include "preferences_helper.h"
 #include "ringtone_file_utils.h"
 #include "ringtone_log.h"
+#include "ringtone_utils.h"
 
 namespace OHOS {
 namespace Media {
@@ -38,8 +40,18 @@ shared_ptr<DfxWorker> DfxWorker::GetInstance()
 
 DfxWorker::DfxWorker()
 {
-    longTimeSec_ = stoi(system::GetParameter("persist.multimedia.ringtonelibrary.dfx.longtime", ONE_WEEK)) *
-        ONE_MINUTE * ONE_MINUTE;
+    string dfxLongTime = system::GetParameter("persist.multimedia.ringtonelibrary.dfx.longtime", ONE_WEEK);
+    int32_t value = 0;
+    if (RingtoneUtils::IsNumber(dfxLongTime)) {
+        auto [ptr, ec] = std::from_chars(dfxLongTime.data(), dfxLongTime.data() + dfxLongTime.size(), value);
+        if (ec == std::errc{} && ptr == dfxLongTime.data() + dfxLongTime.size()) {
+            longTimeSec_ = value * ONE_MINUTE * ONE_MINUTE;
+        } else {
+            RINGTONE_ERR_LOG("get logTimeSec failed");
+        }
+    } else {
+        RINGTONE_ERR_LOG("dfxLongTime is not number");
+    }
 }
 
 DfxWorker::~DfxWorker()

@@ -20,6 +20,7 @@
 #include "ringtone_errno.h"
 #include "ringtone_file_utils.h"
 #include "ringtone_restore_db_utils.h"
+#include "directory_ex.h"
 
 namespace OHOS {
 namespace Media {
@@ -74,13 +75,15 @@ static int32_t ParseBackupFile(const std::string &backupFile, const std::vector<
     std::map<std::string, std::string> &results)
 {
     RINGTONE_INFO_LOG("parse backupfile %{public}s uid=%{public}d", backupFile.c_str(), getuid());
-    if (RingtoneFileUtils::IsFileExists(backupFile)) {
-        RINGTONE_ERR_LOG("the file exists path: %{private}s", backupFile.c_str());
-        return E_FILE_EXIST;
+    std::string realPath;
+    if (!PathToRealPath(backupFile, realPath)) {
+        RINGTONE_ERR_LOG("the file not exists path: %{private}s", backupFile.c_str());
+        return E_INVALID_PATH;
     }
-    std::ifstream fs(backupFile);
+
+    std::ifstream fs(realPath);
     if (!fs.good()) {
-        RINGTONE_ERR_LOG("failed to open file %{private}s", backupFile.c_str());
+        RINGTONE_ERR_LOG("failed to open file %{private}s", realPath.c_str());
         return E_ERR;
     }
     

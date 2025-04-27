@@ -29,6 +29,7 @@ public:
     static int32_t CheckNeedScanner(const std::string &xmlFilePath);
     static bool MoveEL2DBToEL1DB();
     static bool SetMoveEL2DBToEL1();
+    static bool IsNumber(const std::string &str);
 };
 } // namespace Media
 } // namespace OHOS

@@ -61,6 +61,14 @@ const std::string CREATE_RINGTONE_TABLE = "CREATE TABLE IF NOT EXISTS " + RINGTO
     RINGTONE_COLUMN_DISPLAY_LANGUAGE_TYPE         + " TEXT              , " +
     RINGTONE_COLUMN_SCANNER_FLAG                  + " INT      DEFAULT 0  " + ")";
 
+const std::string CREATE_PRELOAD_CONF_TABLE = "CREATE TABLE IF NOT EXISTS " + PRELOAD_CONFIG_TABLE + "(" +
+    PRELOAD_CONFIG_COLUMN_RING_TONE_TYPE          + " INTEGER  PRIMARY KEY," +
+    PRELOAD_CONFIG_COLUMN_TONE_ID                 + " INTEGER             ," +
+    PRELOAD_CONFIG_COLUMN_DISPLAY_NAME            + " TEXT                 " + ")";
+
+const std::string INIT_PRELOAD_CONF_TABLE = "INSERT OR IGNORE INTO " + PRELOAD_CONFIG_TABLE + " (" +
+    PRELOAD_CONFIG_COLUMN_RING_TONE_TYPE + ") VALUES (1), (2), (3), (4), (5), (6);";
+
 const std::string CREATE_SIMCARD_SETTING_TABLE = "CREATE TABLE IF NOT EXISTS " + SIMCARD_SETTING_TABLE + "(" +
     SIMCARD_SETTING_COLUMN_MODE                   + " INTEGER            ," +
     SIMCARD_SETTING_COLUMN_RINGTONE_TYPE          + " INTEGER            ," +
@@ -91,13 +99,6 @@ const std::string CREATE_VIBRATE_TABLE = "CREATE TABLE IF NOT EXISTS " + VIBRATE
     VIBRATE_COLUMN_PLAY_MODE                      + " INT      DEFAULT 0, " +
     VIBRATE_COLUMN_SCANNER_FLAG                   + " INT      DEFAULT 0  " + ")";
 
-const std::string CREATE_PRELOAD_CONF_TABLE = "CREATE TABLE IF NOT EXISTS " + PRELOAD_CONFIG_TABLE + "(" +
-    PRELOAD_CONFIG_COLUMN_RING_TONE_TYPE          + " INTEGER  PRIMARY KEY," +
-    PRELOAD_CONFIG_COLUMN_TONE_ID                 + " INTEGER             ," +
-    PRELOAD_CONFIG_COLUMN_DISPLAY_NAME            + " TEXT                 " + ")";
-
-const std::string INIT_PRELOAD_CONF_TABLE = "INSERT OR IGNORE INTO " + PRELOAD_CONFIG_TABLE + " (" +
-    PRELOAD_CONFIG_COLUMN_RING_TONE_TYPE + ") VALUES (1), (2), (3), (4), (5), (6);";
 
 static const vector<string> g_initSqls = {
     CREATE_RINGTONE_TABLE,
@@ -105,7 +106,7 @@ static const vector<string> g_initSqls = {
     CREATE_SIMCARD_SETTING_TABLE,
     INIT_SIMCARD_SETTING_TABLE,
     CREATE_PRELOAD_CONF_TABLE,
-    INIT_PRELOAD_CONF_TABLE,
+    INIT_PRELOAD_CONF_TABLE
 };
 
 RingtoneDataCallBack::RingtoneDataCallBack(void)
@@ -156,27 +157,6 @@ static void AddDisplayLanguageColumn(NativeRdb::RdbStore &store)
         "ALTER TABLE " + RINGTONE_TABLE + " ADD COLUMN " + RINGTONE_COLUMN_DISPLAY_LANGUAGE_TYPE + " TEXT",
     };
     RINGTONE_INFO_LOG("Add display language column");
-    ExecSqls(sqls, store);
-}
-
-static void AddVibrateTable(NativeRdb::RdbStore &store)
-{
-    const vector<string> sqls = {
-        CREATE_VIBRATE_TABLE,
-        CREATE_SIMCARD_SETTING_TABLE,
-        INIT_SIMCARD_SETTING_TABLE,
-    };
-    int32_t errCode;
-    shared_ptr<NativePreferences::Preferences> prefs =
-        NativePreferences::PreferencesHelper::GetPreferences(COMMON_XML_EL1, errCode);
-    if (!prefs) {
-        RINGTONE_ERR_LOG("AddVibrateTable: update faild errCode=%{public}d", errCode);
-    } else {
-        prefs->PutInt(RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY, RINGTONE_PARAMETER_SCANNER_COMPLETED_FALSE);
-        prefs->FlushSync();
-    }
-
-    RINGTONE_INFO_LOG("Add vibrate table");
     ExecSqls(sqls, store);
 }
 
@@ -263,13 +243,31 @@ static void UpdateDefaultSystemTone(NativeRdb::RdbStore &store)
     }
 }
 
+static void AddVibrateTable(NativeRdb::RdbStore &store)
+{
+    const vector<string> sqls = {
+        CREATE_VIBRATE_TABLE,
+        CREATE_SIMCARD_SETTING_TABLE,
+        INIT_SIMCARD_SETTING_TABLE,
+    };
+    int32_t errCode;
+    shared_ptr<NativePreferences::Preferences> prefs =
+        NativePreferences::PreferencesHelper::GetPreferences(COMMON_XML_EL1, errCode);
+    if (!prefs) {
+        RINGTONE_ERR_LOG("AddVibrateTable:  update faild errCode=%{public}d", errCode);
+    } else {
+        prefs->PutInt(RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY, RINGTONE_PARAMETER_SCANNER_COMPLETED_FALSE);
+        prefs->FlushSync();
+    }
+
+    RINGTONE_INFO_LOG("Add vibrate table");
+    ExecSqls(sqls, store);
+}
+
 static void UpgradeExtension(NativeRdb::RdbStore &store, int32_t oldVersion)
 {
     if (oldVersion < VERSION_ADD_DISPLAY_LANGUAGE_COLUMN) {
         AddDisplayLanguageColumn(store);
-    }
-    if (oldVersion < VERSION_ADD_VIBRATE_TABLE) {
-        AddVibrateTable(store);
     }
     if (oldVersion < VERSION_UPDATE_MIME_TYPE) {
         UpdateMimeType(store);
@@ -277,6 +275,9 @@ static void UpgradeExtension(NativeRdb::RdbStore &store, int32_t oldVersion)
     if (oldVersion < VERSION_ADD_PRELOAD_CONF_TABLE) {
         AddPreloadConfTable(store);
         UpdateDefaultSystemTone(store);
+    }
+    if (oldVersion < VERSION_ADD_VIBRATE_TABLE) {
+        AddVibrateTable(store);
     }
     if (oldVersion < VERSION_UPDATE_WATCH_MIME_TYPE) {
         UpdateMimeType(store);

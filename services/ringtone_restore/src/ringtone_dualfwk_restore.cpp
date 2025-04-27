@@ -64,7 +64,7 @@ static std::shared_ptr<DataShare::DataShareHelper> CreateMediaDataShare(int32_t 
         RINGTONE_ERR_LOG("CreateDataShareHelper GetSystemAbility Service Failed.");
         return nullptr;
     }
-    return DataShare::DataShareHelper::Creator(remoteObj, MEDIALIBRARY_DATA_URI);
+    return DataShare::DataShareHelper::Creator(remoteObj, RINGTONE_MEDIALIBRARY_DATA_URI);
 }
 
 int32_t RingtoneDualFwkRestore::LoadDualFwkConf(const std::string &backupPath)
@@ -437,8 +437,8 @@ std::vector<FileInfo> RingtoneDualFwkRestore::BuildFileInfo()
     std::map<std::string, std::vector<std::shared_ptr<FileInfo>>> resultFromRingtoneByDisplayName;
 
 #ifdef USE_MEDIA_LIBRARY
-    QueryMediaLibForFileInfo(fileNames, resultFromMediaByDisplayName, UFM_QUERY_AUDIO, "display_name");
-    QueryMediaLibForFileInfo(fileNames, resultFromMediaByTitle, UFM_QUERY_AUDIO, "title");
+    QueryMediaLibForFileInfo(fileNames, resultFromMediaByDisplayName, RINGTONE_UFM_QUERY_AUDIO, "display_name");
+    QueryMediaLibForFileInfo(fileNames, resultFromMediaByTitle, RINGTONE_UFM_QUERY_AUDIO, "title");
 #endif
     QueryRingToneDbForFileInfo(GetBaseDb(), displayNames, resultFromRingtoneByDisplayName, "display_name");
 

@@ -20,6 +20,7 @@
 #include "datashare_ext_ability_context.h"
 #include "dfx_manager.h"
 #include "dfx_const.h"
+#include "os_account_manager.h"
 #include "parameter.h"
 #include "permission_utils.h"
 #include "preferences_helper.h"
@@ -47,6 +48,7 @@ using namespace OHOS::DataShare;
 const char RINGTONE_PARAMETER_SCANNER_FIRST_KEY[] = "ringtone.scanner.first";
 const char RINGTONE_PARAMETER_SCANNER_FIRST_TRUE[] = "true";
 const char RINGTONE_PARAMETER_SCANNER_FIRST_FALSE[] = "false";
+const char RINGTONE_PARAMETER_SCANNER_USERID_KEY[] = "ringtone.scanner.userId";
 const int32_t RINGTONEPARA_SIZE = 64;
 const std::string OLD_RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH = "/storage/media/local/files/Ringtone";
 const std::vector<std::string> RINGTONE_OPEN_WRITE_MODE_VECTOR = {
@@ -160,9 +162,7 @@ static int32_t CheckRingtonePerm(RingtoneDataCommand &cmd, bool isWrite)
     }
 
     if (isWrite) {
-        err = (RingtonePermissionUtils::CheckCallerPermission(PERM_WRITE_RINGTONE)||
-            (RingtonePermissionUtils::CheckCallerPermission(PERM_ACCESS_CUSTOM_RINGTONE)) ?
-            E_SUCCESS : E_PERMISSION_DENIED);
+        err = (RingtonePermissionUtils::CheckCallerPermission(PERM_WRITE_RINGTONE) ? E_SUCCESS : E_PERMISSION_DENIED);
     }
 
     return err;
@@ -341,7 +341,7 @@ int RingtoneDataShareExtension::Update(const Uri &uri, const DataSharePredicates
     }
 
     RingtoneDataCommand cmd(uri, tab, RingtoneOperationType::UPDATE);
-    err = CheckRingtonePerm(cmd, true);
+    err = CheckRingtonePerm(cmd, false);
     if (err < 0) {
         RINGTONE_ERR_LOG("Check Update-permission failed, errCode: %{public}d", err);
         return err;
@@ -428,6 +428,69 @@ int RingtoneDataShareExtension::OpenFile(const Uri &uri, const string &mode)
     return RingtoneDataManager::GetInstance()->OpenFile(cmd, unifyMode);
 }
 
+int32_t RingtoneDataShareExtension::GetUserId()
+{
+    RINGTONE_INFO_LOG("GetUserID Start.");
+    int32_t userId = 0;
+    std::vector<int> activeIds;
+    int ret = AccountSA::OsAccountManager::QueryActiveOsAccountIds(activeIds);
+    if (ret != 0) {
+        RINGTONE_ERR_LOG("QueryActiveOsAccountIds failed ret:%{public}d", ret);
+        return userId;
+    }
+    if (activeIds.empty()) {
+        RINGTONE_ERR_LOG("QueryActiveOsAccountIds activeIds empty");
+        return userId;
+    }
+    userId = activeIds[0];
+    RINGTONE_INFO_LOG("GetUserID End, userId: %{private}d", userId);
+    return userId;
+}
+
+bool RingtoneDataShareExtension::IdExists(const std::string &ids, int32_t id)
+{
+    RINGTONE_INFO_LOG("IdExists Start.");
+    if (ids.empty()) {
+        return false;
+    }
+    
+    size_t pos = 0;
+    std::string idStr = std::to_string(id);
+    
+    while ((pos = ids.find(idStr, pos)) != std::string::npos) {
+        bool startPos = (pos == 0) || (ids[pos - 1] == ' ');
+        bool endPos = (pos + idStr.length() == ids.length()) || (ids[pos + idStr.length()] == ' ');
+        if (startPos && endPos) {
+            return true;
+        }
+        pos += idStr.length();
+    }
+    RINGTONE_INFO_LOG("IdExists End.");
+    return false;
+}
+
+bool RingtoneDataShareExtension::CheckCurrentUser()
+{
+    RINGTONE_INFO_LOG("CheckCurrentUser Start.");
+    char paramValue[RINGTONEPARA_SIZE] = {0};
+    GetParameter(RINGTONE_PARAMETER_SCANNER_USERID_KEY, "", paramValue, RINGTONEPARA_SIZE);
+    std::string ids(paramValue);
+    RINGTONE_INFO_LOG("GetParameter end, paramValue: %{private}s .", ids.c_str());
+    int32_t currentUserId = GetUserId();
+    if (IdExists(ids, currentUserId)) {
+        return true;
+    }
+    if (!ids.empty() && ids.back() != ' ') {
+        ids += " ";
+    }
+    ids += std::to_string(currentUserId);
+    RINGTONE_INFO_LOG("CurrentUserIds: %{private}s .", ids.c_str());
+    const char* cstr = ids.c_str();
+    int result = SetParameter(RINGTONE_PARAMETER_SCANNER_USERID_KEY, cstr);
+    RINGTONE_INFO_LOG("CheckCurrentUser End. SetParameter end, result: %{public}d", result);
+    return false;
+}
+
 void RingtoneDataShareExtension::RingtoneScanner()
 {
     RingtoneTracer tracer;
@@ -436,6 +499,12 @@ void RingtoneDataShareExtension::RingtoneScanner()
     RingtoneFileUtils::AccessRingtoneDir();
     // ringtone scan
     char paramValue[RINGTONEPARA_SIZE] = {0};
+    bool currentFlag = CheckCurrentUser();
+    GetParameter(RINGTONE_PARAMETER_SCANNER_FIRST_KEY, "", paramValue, RINGTONEPARA_SIZE);
+    if (!currentFlag && strcmp(paramValue, RINGTONE_PARAMETER_SCANNER_FIRST_TRUE) == 0) {
+        int result = SetParameter(RINGTONE_PARAMETER_SCANNER_FIRST_KEY, RINGTONE_PARAMETER_SCANNER_FIRST_FALSE);
+        RINGTONE_INFO_LOG("CheckCurrentUser SetParameter end, result: %{public}d", result);
+    }
     GetParameter(RINGTONE_PARAMETER_SCANNER_FIRST_KEY, "", paramValue, RINGTONEPARA_SIZE);
     std::string parameter(paramValue);
     RINGTONE_INFO_LOG("GetParameter end, paramValue: %{public}s .", parameter.c_str());

@@ -45,7 +45,7 @@ RingtoneDefaultSetting::RingtoneDefaultSetting(shared_ptr<NativeRdb::RdbStore> &
 // liuxk just for debug
 static const std::string LOCAL_DIR = "/data/storage/el2/base/preload_data";
 #endif
-string RingtoneDefaultSetting::GetTonePathByDisplayName(const string &name)
+string RingtoneDefaultSetting::GetTonePathByDisplayName(string &name)
 {
     string pathStr = {};
     string querySql = "SELECT data FROM ToneFiles WHERE display_name = "s + "\"" + name + "\"";
@@ -78,43 +78,36 @@ void RingtoneDefaultSetting::ShotToneDefaultSettings()
     char paramValue1[SYSPARA_SIZE] = {0};
     char paramValue2[SYSPARA_SIZE] = {0};
 
-    GetParameter(PARAM_RINGTONE_SETTING_SHOT, "", paramValue1, SYSPARA_SIZE);
-    GetParameter(PARAM_RINGTONE_SETTING_SHOT2, "", paramValue2, SYSPARA_SIZE);
+    GetParameter(PARAM_RINGTONE_SETTING_SHOT, "Leap.ogg", paramValue1, SYSPARA_SIZE);
+    GetParameter(PARAM_RINGTONE_SETTING_SHOT2, "Leap.ogg", paramValue2, SYSPARA_SIZE);
 
-    if (strcmp(paramValue1, "")) {
-        string tonePath = {};
-        string strVal = {paramValue1};
-        tonePath = GetTonePathByDisplayName(strVal);
-        if (!tonePath.empty()) {
-            settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_SHOT, SHOT_TONE_TYPE_SIM_CARD_1,
-                SOURCE_TYPE_PRESET);
-        }
+    string tonePath = {};
+    string strVal1 = {paramValue1};
+    tonePath = GetTonePathByDisplayName(strVal1);
+    if (!tonePath.empty() && tonePath != "") {
+        settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_SHOT, SHOT_TONE_TYPE_SIM_CARD_1,
+            SOURCE_TYPE_PRESET);
     }
 
-    if (strcmp(paramValue2, "")) {
-        string tonePath = {};
-        string strVal = {paramValue2};
-        tonePath = GetTonePathByDisplayName(strVal);
-        if (!tonePath.empty()) {
-            settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_SHOT, SHOT_TONE_TYPE_SIM_CARD_2,
-                SOURCE_TYPE_PRESET);
-        }
+    string strVal2 = {paramValue2};
+    tonePath = GetTonePathByDisplayName(strVal2);
+    if (!tonePath.empty() && tonePath != "") {
+        settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_SHOT, SHOT_TONE_TYPE_SIM_CARD_2,
+            SOURCE_TYPE_PRESET);
     }
 }
 
 void RingtoneDefaultSetting::NotificationToneDefaultSettings()
 {
     char paramValue[SYSPARA_SIZE] = {0};
-    GetParameter(PARAM_RINGTONE_SETTING_NOTIFICATIONTONE, "", paramValue, SYSPARA_SIZE);
+    GetParameter(PARAM_RINGTONE_SETTING_NOTIFICATIONTONE, "Rise.ogg", paramValue, SYSPARA_SIZE);
 
-    if (strcmp(paramValue, "")) {
-        string tonePath = {};
-        string strVal = {paramValue};
-        tonePath = GetTonePathByDisplayName(strVal);
-        if (!tonePath.empty()) {
-            settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_NOTIFICATION,
-                NOTIFICATION_TONE_TYPE, SOURCE_TYPE_PRESET);
-        }
+    string tonePath = {};
+    string strVal = {paramValue};
+    tonePath = GetTonePathByDisplayName(strVal);
+    if (!tonePath.empty() && tonePath != "") {
+        settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_NOTIFICATION,
+            NOTIFICATION_TONE_TYPE, SOURCE_TYPE_PRESET);
     }
 }
 
@@ -126,40 +119,33 @@ void RingtoneDefaultSetting::RingToneDefaultSettings()
     GetParameter(PARAM_RINGTONE_SETTING_RINGTONE, "", paramValue1, SYSPARA_SIZE);
     GetParameter(PARAM_RINGTONE_SETTING_RINGTONE2, "", paramValue2, SYSPARA_SIZE);
 
-    if (strcmp(paramValue1, "")) {
-        string tonePath = {};
-        string strVal = {paramValue1};
-        tonePath = GetTonePathByDisplayName(strVal);
-        if (!tonePath.empty()) {
-            settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_RINGTONE, RING_TONE_TYPE_SIM_CARD_1,
-                SOURCE_TYPE_PRESET);
-        }
+    string tonePath = {};
+    string strVal1 = {paramValue1};
+    tonePath = GetTonePathByDisplayName(strVal1);
+    if (!tonePath.empty() && tonePath != "") {
+        settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_RINGTONE, RING_TONE_TYPE_SIM_CARD_1,
+            SOURCE_TYPE_PRESET);
     }
 
-    if (strcmp(paramValue2, "")) {
-        string tonePath = {};
-        string strVal = {paramValue2};
-        tonePath = GetTonePathByDisplayName(strVal);
-        if (!tonePath.empty()) {
-            settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_RINGTONE, RING_TONE_TYPE_SIM_CARD_2,
-                SOURCE_TYPE_PRESET);
-        }
+    string strVal2 = {paramValue2};
+    tonePath = GetTonePathByDisplayName(strVal2);
+    if (!tonePath.empty() && tonePath != "") {
+        settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_RINGTONE, RING_TONE_TYPE_SIM_CARD_2,
+            SOURCE_TYPE_PRESET);
     }
 }
 
 void RingtoneDefaultSetting::AlarmToneDefaultSettings()
 {
     char paramValue[SYSPARA_SIZE] = {0};
-    GetParameter(PARAM_RINGTONE_SETTING_ALARM, "", paramValue, SYSPARA_SIZE);
+    GetParameter(PARAM_RINGTONE_SETTING_ALARM, "Flourish.ogg", paramValue, SYSPARA_SIZE);
 
-    if (strcmp(paramValue, "")) {
-        string tonePath = {};
-        string strVal = {paramValue};
-        tonePath = GetTonePathByDisplayName(strVal);
-        if (!tonePath.empty()) {
-            settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_ALARM, ALARM_TONE_TYPE,
-                SOURCE_TYPE_PRESET);
-        }
+    string tonePath = {};
+    string strVal = {paramValue};
+    tonePath = GetTonePathByDisplayName(strVal);
+    if (!tonePath.empty()) {
+        settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_ALARM, ALARM_TONE_TYPE,
+            SOURCE_TYPE_PRESET);
     }
 }
 

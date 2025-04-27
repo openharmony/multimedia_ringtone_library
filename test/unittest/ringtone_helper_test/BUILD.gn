@@ -27,6 +27,7 @@ ohos_unittest("ringtone_helper_unittest") {
     "./include",
     "../ringtone_unittest_utils/include",
     "${RINGTONE_EXTENSION_PATH}/include",
+    "${RINGTONE_HELPER_PATH}/include",
     "${RINGTONE_INTERFACES_PATH}/inner_api/native",
     "${RINGTONE_UTILS_PATH}/include",
   ]
