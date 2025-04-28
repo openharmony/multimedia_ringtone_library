@@ -17,7 +17,9 @@
 
 #include "ringtone_scanner.h"
 
+#include "dfx_const.h"
 #include "directory_ex.h"
+#include "preferences_helper.h"
 #include "ringtone_default_setting.h"
 #include "ringtone_file_utils.h"
 #include "ringtone_log.h"
@@ -38,6 +40,9 @@ static const std::string PATH_VIBRATE_TYPE_GENTLE = "/gentle";
 static const std::string ALARMS_TYPE = "alarms";
 static const std::string RINGTONES_TYPE = "ringtones";
 static const std::string NOTIFICATIONS_TYPE = "notifications";
+static const char RINGTONE_RDB_SCANNER_FLAG_KEY[] = "RDBInitScanner";
+static const int RINGTONE_RDB_SCANNER_FLAG_KEY_TRUE = 1;
+static const int RINGTONE_RDB_SCANNER_FLAG_KEY_FALSE = 0;
 #ifndef OHOS_LOCAL_DEBUG_DISABLE
 // liuxk just for debug
 static const std::string LOCAL_DIR = "/data/storage/el2/base/preload_data";
@@ -207,12 +212,20 @@ int32_t RingtoneScannerObj::BootScan()
         }
     }
 
-    // reset ringtone default settings
-    auto rdbStore = RingtoneRdbStore::GetInstance();
-    if (rdbStore != nullptr) {
-        auto rawRdb = rdbStore->GetRaw();
-        if (rawRdb != nullptr) {
-            RingtoneDefaultSetting::GetObj(rawRdb)->Update();
+    int errCode = 0;
+    shared_ptr<NativePreferences::Preferences> prefs =
+        NativePreferences::PreferencesHelper::GetPreferences(COMMON_XML_EL1, errCode);
+    if (prefs) {
+        int isScanner = prefs->GetInt(RINGTONE_RDB_SCANNER_FLAG_KEY, RINGTONE_RDB_SCANNER_FLAG_KEY_FALSE);
+        // reset ringtone default settings
+        auto rdbStore = RingtoneRdbStore::GetInstance();
+        if (rdbStore != nullptr) {
+            auto rawRdb = rdbStore->GetRaw();
+            if (rawRdb != nullptr && !isScanner) {
+                RingtoneDefaultSetting::GetObj(rawRdb)->Update();
+                prefs->PutInt(RINGTONE_RDB_SCANNER_FLAG_KEY, RINGTONE_RDB_SCANNER_FLAG_KEY_TRUE);
+                prefs->FlushSync();
+            }
         }
     }
 
