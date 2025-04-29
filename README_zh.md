@@ -18,6 +18,7 @@
 - 存储和删除自定义铃音
 - 读取铃音列表，包含系统铃音和自定义铃音
 - 扫描系统预制铃音目录
+- 支持应用静默访问铃音库
 
 ## 目录<a name="section161941989596"></a>
 仓库目录结构如下：
@@ -179,7 +180,80 @@ std::shared_ptr<DataShare::DataShareHelper> datashareHelper = DataShare::DataSha
     };
     auto resultSet = dataShareHelper->Query(ringtoneUri, queryPredicates, columns, &businessError);
     ```
+
+### 静默访问能力
+- 能力描述
+  
+  为了降低数据提供方拉起次数，提高访问速度，OpenHarmony提供了一种不拉起数据提供方直接访问数据库的方式，即静默数据访问。
+  铃音库作为数据提供方在module.json5中的proxyData节点定义要共享的表的标识、读写权限、基本信息，在应用侧申请xx权限后，就可以实现不拉起铃音库进程访问铃音库数据
+
+- 数据提供方参数配置
+
+  module.json配置样例:
+
+  当应用适配requiredReadPermission && requiredWritePermission中所需要的权限后，通过uri即可对数据库进行读写操作。
+
+  ```cpp
+  "proxyDatas": [
+    {
+      "uri":"datashareproxy://com.ohos.ringtonelibrary.ringtonelibrarydata/entry/ringtone_library/SimCardSetting",
+      "requiredReadPermission":"ohos.permission.ACCESS_CUSTOM_RINGTONE",
+      "requiredWritePermission":"ohos.permission.ACCESS_CUSTOM_RINGTONE",
+      "metadata": {
+        "name": "dataProperties",
+        "resource": "$profile:rdb_meta_simcard_setting"
+      }
+    },
+  ]
+  ```
+
+  - 铃音库每张表的uri定义请参考ringtone_proxy_uri.h文件
+  
+  代码示例：
+  ```cpp
+  const std::string RINGTONE_LIBRARY_PROXY_DATA_URI_SIMCARD_SETTING =
+    "datashare:///com.ohos.ringtonelibrary.ringtonelibrarydata/entry/ringtone_library/SimCardSetting?Proxy=true";
+  ```
+- 数据访问方
+
+  铃音框架静默访问接口CreateDataShareHelperUri
+
+  铃音框架需要先去校验权限应用是否存在ACCESS_CUSTOM_RINGTONE权限，如果不存在该权限，则会使用dataShare方式拉起铃音库进程
+
+  铃音框架静默访问铃音库代码示例：
+  ```cpp
+    Uri RINGTONEURI_PROXY(RINGTONE_LIBRARY_PROXY_DATA_URI_TONE_FILES + "&user=" +
+        std::to_string(SystemSoundManagerUtils::GetCurrentUserId()));
+    auto resultSet = dataShareHelper->Query(RINGTONEURI_PROXY, queryPredicates, COLUMNS, &businessError);
+    int32_t errCode = businessError.GetCode();
+    Security::AccessToken::AccessTokenID tokenCaller = IPCSkeleton::GetCallingTokenID();
+    int32_t result = Security::AccessToken::AccessTokenKit::VerifyAccessToken(tokenCaller,
+        "ohos.permission.ACCESS_CUSTOM_RINGTONE");
+    MEDIA_LOGI("GetRingtoneAttrList:errCode:%{public}d, result :%{public}d ", errCode, result);
+    if (errCode != 0 || result != Security::AccessToken::PermissionState::PERMISSION_GRANTED  ||
+        !SystemSoundManagerUtils::GetScannerFirstParameter(RINGTONE_PARAMETER_SCANNER_FIRST_KEY, RINGTONEPARA_SIZE) ||
+        !SystemSoundManagerUtils::CheckCurrentUser()) {
+        dataShareHelper = SystemSoundManagerUtils::CreateDataShareHelper(STORAGE_MANAGER_MANAGER_ID);
+        CHECK_AND_RETURN_RET_LOG(dataShareHelper != nullptr, ringtoneAttrsArray_,
+            "Invalid dataShare, datashare or ringtone library error.");
+        resultSet = dataShareHelper->Query(RINGTONEURI, queryPredicates, COLUMNS, &businessError);
+    }
+  ```
+
+### 标准振动与弱振动
+  针对手机铃声，提供不同的振动方式。不同铃声类型支持的振动方式规格如下：
+  - 预制铃声：支持同步振动与非同步振动
+    - 同步振动
+      示例：振动方式与铃声同步，预制铃声选择 "A"，同步振动即为振动时直接使用"A"铃声所对应的标准或弱化振动方式。
+    - 非同步振动
+      示例：振动方式选中与铃声不同步，可选择振动列表中任何一个，比如：选择"B"，即振动时使用"B"对应的标准或弱化振动方式
+  - 自定义铃声
+      - 非同步振动
+        示例：铃声选择本地音乐，比如铃声为"ringtone.ogg"，选择振动列表中任何一个，比如选择"B"，振动时使用"B"对应的标准或弱化振动方式。
+
 ### RingtoneLibrary数据库表结构
+- 铃音表结构
+
 |字段名|类型|描述|
 |---|---|---|
 |ringtone_id|INTEGER|主键，数据库自增|
@@ -204,6 +278,23 @@ std::shared_ptr<DataShare::DataShareHelper> datashareHelper = DataShare::DataSha
 |alarm_tone_type|INTEGER|闹钟铃音类型： 非闹钟铃音(0)，闹钟铃音(1)|
 |alarm_tone_source_type|INTEGER|系统设置(1)，用户设置(2)|
 
+- 振动表结构
+
+|字段名|类型|描述|
+|---|---|---|
+|vibrate_id|INTEGER|主键，数据库自增|
+|data|TEXT|振动文件存储路径|
+|size|BITINT|振动文件大小|
+|display_name|TEXT|title+后缀|
+|title|TEXT|振动名称|
+|vibrate_type|INTEGER|振动类型：经典标准(1), 经典弱化(2)， 闹钟标准(3)， 来电标准(4)， 通知标准(5)， 闹钟弱化(6)， 来电弱化(7)， 通知弱化(8)|
+|display_language|TEXT|title语言类型|
+|source_type|INTEGER|系统预制(1)，用户自定义(2)|
+|date_added|BIGINT|时间戳，添加时间|
+|date_modified|BIGINT|时间戳，修改时间|
+|date_taken|BIGINT|时间戳，创建时间|
+|play_mode|INTEGER|播放模式：同步(1), 经典(2)|
+|scanner_flag|INTEGER|扫描标志位：默认为0，扫描过程中将其置1，扫描结束恢复为0|
 
 ## 相关仓<a name="section1533973044317"></a>
 **[multimedia/ringtone_library](https://gitee.com/openharmony/multimedia_ringtone_library)**
