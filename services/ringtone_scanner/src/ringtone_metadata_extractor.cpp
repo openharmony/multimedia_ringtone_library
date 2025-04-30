@@ -18,6 +18,7 @@
 
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include "directory_ex.h"
 #include "ringtone_file_utils.h"
