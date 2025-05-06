@@ -21,6 +21,7 @@
 namespace OHOS {
 namespace Media {
 constexpr int32_t ONE_MINUTE = 60;
+constexpr int32_t ONE_WEEK_TIME = 168;
 
 enum DfxType {
     RINGTONELIB_DFX_MESSAGE = 0,

@@ -47,9 +47,11 @@ DfxWorker::DfxWorker()
         if (ec == std::errc{} && ptr == dfxLongTime.data() + dfxLongTime.size()) {
             longTimeSec_ = value * ONE_MINUTE * ONE_MINUTE;
         } else {
+            longTimeSec_ = ONE_WEEK_TIME * ONE_MINUTE * ONE_MINUTE;
             RINGTONE_ERR_LOG("get logTimeSec failed");
         }
     } else {
+        longTimeSec_ = ONE_WEEK_TIME * ONE_MINUTE * ONE_MINUTE;
         RINGTONE_ERR_LOG("dfxLongTime is not number");
     }
 }
