@@ -50,7 +50,8 @@ static int32_t GetFileFd(const std::string &path, int &fd, struct stat64 &st)
         return E_FAIL;
     }
 
-    std::filesystem::exists(realPath, ec);
+    string filePath(realPath);
+    std::filesystem::exists(filePath, ec);
     if (ec.value() != E_SUCCESS) {
         RINGTONE_ERR_LOG("GetFileTitle normalized fd failed");
         return E_FAIL;
