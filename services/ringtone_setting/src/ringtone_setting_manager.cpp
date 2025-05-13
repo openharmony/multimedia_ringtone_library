@@ -220,10 +220,6 @@ int32_t RingtoneSettingManager::GetMetaDataFromResultSet(shared_ptr<NativeRdb::R
 int32_t RingtoneSettingManager::UpdateShotSetting(shared_ptr<RingtoneMetadata> &meta, int32_t toneType,
     int32_t sourceType)
 {
-    if (meta->GetShotToneType() == 0 && meta->GetShotToneSourceType() == -1) {
-        RINGTONE_INFO_LOG("The current shot setting is no ringtone");
-        return E_OK;
-    }
     int32_t val = meta->GetShotToneType();
     if (val != SHOT_TONE_TYPE_NOT && val != toneType) {
         val = SHOT_TONE_TYPE_SIM_CARD_BOTH;
@@ -247,10 +243,6 @@ int32_t RingtoneSettingManager::UpdateShotSetting(shared_ptr<RingtoneMetadata> &
 int32_t RingtoneSettingManager::UpdateRingtoneSetting(shared_ptr<RingtoneMetadata> &meta, int32_t toneType,
     int32_t sourceType)
 {
-    if (meta->GetRingToneType() == 0 && meta->GetRingToneSourceType() == -1) {
-        RINGTONE_INFO_LOG("The current ringtone setting is no ringtone");
-        return E_OK;
-    }
     int32_t val = meta->GetRingToneType();
     if (val != RING_TONE_TYPE_NOT && val != toneType) {
         val = RING_TONE_TYPE_SIM_CARD_BOTH;
@@ -274,10 +266,6 @@ int32_t RingtoneSettingManager::UpdateRingtoneSetting(shared_ptr<RingtoneMetadat
 int32_t RingtoneSettingManager::UpdateNotificationSetting(shared_ptr<RingtoneMetadata> &meta, int32_t toneType,
     int32_t sourceType)
 {
-    if (meta->GetNotificationToneType() == 0 && meta->GetNotificationToneSourceType() == -1) {
-        RINGTONE_INFO_LOG("The current notification setting is no ringtone");
-        return E_OK;
-    }
     string updateSql = "UPDATE ToneFiles SET " +
         RINGTONE_COLUMN_NOTIFICATION_TONE_TYPE + " = " + to_string(toneType) + ", " +
         RINGTONE_COLUMN_NOTIFICATION_TONE_SOURCE_TYPE + " = " + to_string(sourceType) +
@@ -295,10 +283,6 @@ int32_t RingtoneSettingManager::UpdateNotificationSetting(shared_ptr<RingtoneMet
 int32_t RingtoneSettingManager::UpdateAlarmSetting(shared_ptr<RingtoneMetadata> &meta, int32_t toneType,
     int32_t sourceType)
 {
-    if (meta->GetAlarmToneType() == 0 && meta->GetAlarmToneSourceType() == -1) {
-        RINGTONE_INFO_LOG("The current alarm setting is no ringtone");
-        return E_OK;
-    }
     string updateSql = "UPDATE ToneFiles SET " +
         RINGTONE_COLUMN_ALARM_TONE_TYPE + " = " + to_string(toneType) + ", " +
         RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE + " = " + to_string(sourceType) +

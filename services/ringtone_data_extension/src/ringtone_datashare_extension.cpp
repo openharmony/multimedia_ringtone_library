@@ -66,6 +66,10 @@ std::map<std::string, std::string> VALID_URI_TO_TABLE {
     {VIBRATE_PATH_URI, VIBRATE_TABLE}
 };
 
+static const char RINGTONE_RDB_SCANNER_FLAG_KEY[] = "RDBInitScanner";
+static const int RINGTONE_RDB_SCANNER_FLAG_KEY_TRUE = 1;
+static const int RINGTONE_RDB_SCANNER_FLAG_KEY_FALSE = 0;
+
 RingtoneDataShareExtension *RingtoneDataShareExtension::Create(const unique_ptr<Runtime> &runtime)
 {
     return new RingtoneDataShareExtension(static_cast<Runtime&>(*runtime));
@@ -89,6 +93,26 @@ void RingtoneDataShareExtension::Init(const shared_ptr<AbilityLocalRecord> &reco
     DataShareExtAbility::Init(record, application, handler, token);
 }
 
+static void CheckRingtoneDbPath()
+{
+    int errCode = 0;
+    shared_ptr<NativePreferences::Preferences> prefs =
+        NativePreferences::PreferencesHelper::GetPreferences(COMMON_XML_EL1, errCode);
+    if (!prefs) {
+        RINGTONE_ERR_LOG("get preferences error: %{public}d", errCode);
+        return;
+    }
+    int isScanner = prefs->GetInt(RINGTONE_RDB_SCANNER_FLAG_KEY, RINGTONE_RDB_SCANNER_FLAG_KEY_FALSE);
+    if (isScanner == RINGTONE_RDB_SCANNER_FLAG_KEY_TRUE) {
+        return;
+    }
+    string dbPath = RINGTONE_LIBRARY_DB_PATH_EL1 + "/rdb" + "/" + RINGTONE_LIBRARY_DB_NAME;
+    if (RingtoneFileUtils::IsFileExists(dbPath)) {
+        prefs->PutInt(RINGTONE_RDB_SCANNER_FLAG_KEY, RINGTONE_RDB_SCANNER_FLAG_KEY_TRUE);
+        prefs->FlushSync();
+    }
+}
+
 void RingtoneDataShareExtension::OnStart(const AAFwk::Want &want)
 {
     RINGTONE_DEBUG_LOG("begin.");
@@ -100,6 +124,7 @@ void RingtoneDataShareExtension::OnStart(const AAFwk::Want &want)
         return;
     }
     RINGTONE_INFO_LOG("runtime language %{public}d", runtime_.GetLanguage());
+    CheckRingtoneDbPath();
     auto dataManager = RingtoneDataManager::GetInstance();
     if (dataManager == nullptr) {
         RINGTONE_ERR_LOG("Failed to get dataManager");
