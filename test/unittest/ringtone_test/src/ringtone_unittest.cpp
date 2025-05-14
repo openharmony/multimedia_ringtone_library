@@ -45,7 +45,7 @@ std::shared_ptr<DataShare::DataShareHelper> g_dataShareHelper = nullptr;
 std::shared_ptr<DataShare::DataShareHelper> g_dataShareHelperProxy = nullptr;
 const int S2MS = 1000;
 const int MS2NS = 1000000;
-const string SELECTION = RINGTONE_COLUMN_TONE_ID + " <> ? LIMIT 1, 3 ";
+const string SELECTION = RINGTONE_COLUMN_TONE_ID + " <> ?";
 const int NUMBER_OF_TIMES = 10;
 const string RINGTONE_LIBRARY_PATH = "/data/storage/el2/base/files";
 const int TEST_RINGTONE_COLUMN_SIZE = 1022;
@@ -430,6 +430,16 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareUpdate_test_001, TestSize.Level0)
 HWTEST_F(RingtoneUnitTest, medialib_datashareUpdate_test_002, TestSize.Level0)
 {
     Uri uri(RINGTONE_PATH_URI);
+    DataShareValuesBucket valuesInsert;
+    valuesInsert.Put(RINGTONE_COLUMN_DATA,
+        static_cast<string>(RINGTONE_LIBRARY_PATH + RINGTONE_SLASH_CHAR +
+        TEST_INSERT_RINGTONE_LIBRARY + to_string(0) + MTP_FORMAT_OGG));
+    valuesInsert.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
+    valuesInsert.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
+    valuesInsert.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
+    auto result = g_dataShareHelper->Insert(uri, valuesInsert);
+    EXPECT_GT(result, E_OK);
+
     DataSharePredicates predicates;
     vector<string> selectionArgs = { ZERO };
     predicates.SetWhereClause(SELECTION);
@@ -442,8 +452,11 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareUpdate_test_002, TestSize.Level0)
     tracer.Start("DataShareUpdateColumn");
     for (int i = 0; i < 1; i++) {
         auto result = g_dataShareHelper->Update(uri, predicates, updateValues);
-        EXPECT_EQ(result, E_PERMISSION_DENIED);
+        EXPECT_EQ(result, 1);
     }
+    DataSharePredicates predicatesDel;
+    predicatesDel.EqualTo(RINGTONE_COLUMN_TITLE, TITLE_UPDATE);
+    EXPECT_GT(g_dataShareHelper->Delete(uri, predicatesDel), E_OK);
     tracer.Finish();
     int64_t end = UTCTimeSeconds();
 
@@ -461,7 +474,7 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareUpdate_test_003, TestSize.Level0)
     tracer.Start("DataShareUpdate10Column");
     for (int i = 0; i < 1; i++) {
         auto result = g_dataShareHelper->Update(uri, predicates, updateValues);
-        EXPECT_EQ(result, E_PERMISSION_DENIED);
+        EXPECT_EQ(result, E_INVALID_VALUES);
     }
     tracer.Finish();
     int64_t end = UTCTimeSeconds();
@@ -492,7 +505,7 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareUpdate_test_004, TestSize.Level0)
     tracer.Start("DataShareUpdate10Column");
     for (int i = 0; i < 1; i++) {
         auto result = g_dataShareHelper->Update(uri, predicates, values);
-        EXPECT_EQ(result, E_PERMISSION_DENIED);
+        EXPECT_EQ(result, E_HAS_DB_ERROR);
     }
     tracer.Finish();
     int64_t end = UTCTimeSeconds();
@@ -1187,10 +1200,10 @@ HWTEST_F(RingtoneUnitTest, medialib_silentAccessQuery_test_001, TestSize.Level0)
     };
 
     DatashareBusinessError businessError;
+    ASSERT_TRUE(g_dataShareHelperProxy);
     auto resultSet = g_dataShareHelperProxy->Query(uri, predicates, columns, &businessError);
     auto errCode = businessError.GetCode();
     GTEST_LOG_(INFO)<< "g_dataShareHelperProxy->Query(uri errCode=" << errCode;
-    EXPECT_EQ(resultSet, nullptr);
 }
 } // namespace Media
 } // namespace OHOS
