@@ -402,7 +402,7 @@ bool RingtoneLanguageManager::ReadMultilingualResources(const string &filePath, 
         xmlReadFile(filePath.c_str(), nullptr, XML_PARSE_NOBLANKS), xmlFreeDoc);
     if (docPtr == nullptr) {
         RINGTONE_ERR_LOG("failed to read xml file [%{public}s]", filePath.c_str());
-        xmlErrorPtr error = xmlGetLastError();
+        const xmlError *error = xmlGetLastError();
         if (error != nullptr) {
             RINGTONE_ERR_LOG("Error: %{public}s (line %{public}d): %{public}s",
                 error->file, error->line, error->message);
