@@ -75,6 +75,7 @@ static const std::unordered_map<std::string, std::vector<std::string>> RINGTONE_
     { "audio/x-matroska", { "mka" } },
     { "audio/x-pn-realaudio", { "ra" } },
     { "audio/x-mpeg", { "mp3" } },
+    { "audio/ffmpeg", { "ape" } },
     { "audio/aac", { "aac", "adts", "adt" } },
     { "audio/basic", { "snd" } },
     { "audio/flac", { "flac" } },
