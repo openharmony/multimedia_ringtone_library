@@ -56,6 +56,7 @@ ohos_unittest("ringtone_setting_unittest") {
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "data_share:datashare_common",
+    "data_share:datashare_common_lite",
     "hitrace:hitrace_meter",
     "ipc:ipc_single",
     "napi:ace_napi",
