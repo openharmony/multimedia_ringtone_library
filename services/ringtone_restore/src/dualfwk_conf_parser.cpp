@@ -103,45 +103,53 @@ int32_t DualFwkConfParser::ParseConf(xmlNodePtr node)
 {
     auto conf = std::make_unique<DualFwkConfRow>();
     xmlChar* xmlAttrVal = xmlGetProp(node, BAD_CAST"id");
-
-    try {
-        int num = std::stoi((const char *)xmlAttrVal);
-        conf->id = num;
-    } catch (const std::invalid_argument& e) {
-        conf->id = -1;
-        RINGTONE_INFO_LOG("invalid argument: %{public}s", e.what());
-    } catch (const std::out_of_range& e) {
-        conf->id = -1;
-        RINGTONE_INFO_LOG("out of range: %{public}s", e.what());
+    if (xmlAttrVal) {
+        try {
+            int num = std::stoi((const char *)xmlAttrVal);
+            conf->id = num;
+        } catch (const std::invalid_argument& e) {
+            conf->id = -1;
+            RINGTONE_INFO_LOG("invalid argument: %{public}s", e.what());
+        } catch (const std::out_of_range& e) {
+            conf->id = -1;
+            RINGTONE_INFO_LOG("out of range: %{public}s", e.what());
+        }
+        xmlFree(xmlAttrVal);
     }
     auto strVal = reinterpret_cast<char*>(xmlGetProp(node, BAD_CAST"name"));
     if (strVal != nullptr) {
         conf->name = std::string(strVal);
+        xmlFree(strVal);
     }
 
     strVal = reinterpret_cast<char*>(xmlGetProp(node, BAD_CAST"value"));
     if (strVal != nullptr) {
         conf->value = std::string(strVal);
+        xmlFree(strVal);
     }
 
     strVal = reinterpret_cast<char*>(xmlGetProp(node, BAD_CAST"package"));
     if (strVal != nullptr) {
         conf->package = std::string(strVal);
+        xmlFree(strVal);
     }
 
     strVal = reinterpret_cast<char*>(xmlGetProp(node, BAD_CAST"defaultValue"));
     if (strVal != nullptr) {
         conf->defaultValue = std::string(strVal);
+        xmlFree(strVal);
     }
 
     strVal = reinterpret_cast<char*>(xmlGetProp(node, BAD_CAST"defaultSysSet"));
     if (strVal != nullptr) {
         conf->defaultSysSet = std::string(strVal);
+        xmlFree(strVal);
     }
 
     strVal = reinterpret_cast<char*>(xmlGetProp(node, BAD_CAST"preserve_in_restore"));
     if (strVal != nullptr) {
         conf->preserveInRestore = (std::string(strVal) == "true" ? true : false);
+        xmlFree(strVal);
     }
 
     dualFwkConfs_.push_back(std::move(conf));

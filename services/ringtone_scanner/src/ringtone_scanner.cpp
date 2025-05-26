@@ -381,9 +381,11 @@ int32_t RingtoneScannerObj::WalkFileTree(const string &path)
             continue;
         }
         if (strncpy_s(fName + len, FILENAME_MAX - len, ent->d_name, FILENAME_MAX - len)) {
+            RINGTONE_ERR_LOG("Failed to copy file name %{private}s", fName);
             continue;
         }
         if (lstat(fName, &statInfo) == -1) {
+            RINGTONE_ERR_LOG("Failed to get info of directory %{private}s", fName);
             continue;
         }
         string currentPath = fName;
