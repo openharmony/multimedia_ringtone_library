@@ -103,45 +103,53 @@ int32_t DualFwkConfParser::ParseConf(xmlNodePtr node)
 {
     auto conf = std::make_unique<DualFwkConfRow>();
     xmlChar* xmlAttrVal = xmlGetProp(node, BAD_CAST"id");
-
-    try {
-        int num = std::stoi((const char *)xmlAttrVal);
-        conf->id = num;
-    } catch (const std::invalid_argument& e) {
-        conf->id = -1;
-        RINGTONE_INFO_LOG("invalid argument: %{public}s", e.what());
-    } catch (const std::out_of_range& e) {
-        conf->id = -1;
-        RINGTONE_INFO_LOG("out of range: %{public}s", e.what());
+    if (xmlAttrVal) {
+        try {
+            int num = std::stoi((const char *)xmlAttrVal);
+            conf->id = num;
+        } catch (const std::invalid_argument& e) {
+            conf->id = -1;
+            RINGTONE_INFO_LOG("invalid argument: %{public}s", e.what());
+        } catch (const std::out_of_range& e) {
+            conf->id = -1;
+            RINGTONE_INFO_LOG("out of range: %{public}s", e.what());
+        }
+        xmlFree(xmlAttrVal);
     }
-    auto strVal = reinterpret_cast<char*>(xmlGetProp(node, BAD_CAST"name"));
-    if (strVal != nullptr) {
-        conf->name = std::string(strVal);
+    auto strName = reinterpret_cast<char*>(xmlGetProp(node, BAD_CAST"name"));
+    if (strName != nullptr) {
+        conf->name = std::string(strName);
+        xmlFree(strName);
     }
 
-    strVal = reinterpret_cast<char*>(xmlGetProp(node, BAD_CAST"value"));
+    auto strVal = reinterpret_cast<char*>(xmlGetProp(node, BAD_CAST"value"));
     if (strVal != nullptr) {
         conf->value = std::string(strVal);
+        xmlFree(strVal);
     }
 
-    strVal = reinterpret_cast<char*>(xmlGetProp(node, BAD_CAST"package"));
-    if (strVal != nullptr) {
-        conf->package = std::string(strVal);
+    auto strPackage = reinterpret_cast<char*>(xmlGetProp(node, BAD_CAST"package"));
+    if (strPackage != nullptr) {
+        conf->package = std::string(strPackage);
+        xmlFree(strPackage);
     }
 
-    strVal = reinterpret_cast<char*>(xmlGetProp(node, BAD_CAST"defaultValue"));
-    if (strVal != nullptr) {
-        conf->defaultValue = std::string(strVal);
+    auto strDefaultVal = reinterpret_cast<char*>(xmlGetProp(node, BAD_CAST"defaultValue"));
+    if (strDefaultVal != nullptr) {
+        conf->defaultValue = std::string(strDefaultVal);
+        xmlFree(strDefaultVal);
     }
 
-    strVal = reinterpret_cast<char*>(xmlGetProp(node, BAD_CAST"defaultSysSet"));
-    if (strVal != nullptr) {
-        conf->defaultSysSet = std::string(strVal);
+    auto strDefaultSysSet = reinterpret_cast<char*>(xmlGetProp(node, BAD_CAST"defaultSysSet"));
+    if (strDefaultSysSet != nullptr) {
+        conf->defaultSysSet = std::string(strDefaultSysSet);
+        xmlFree(strDefaultSysSet);
     }
 
-    strVal = reinterpret_cast<char*>(xmlGetProp(node, BAD_CAST"preserve_in_restore"));
-    if (strVal != nullptr) {
-        conf->preserveInRestore = (std::string(strVal) == "true" ? true : false);
+    auto strPreserve = reinterpret_cast<char*>(xmlGetProp(node, BAD_CAST"preserve_in_restore"));
+    if (strPreserve != nullptr) {
+        conf->preserveInRestore = (std::string(strPreserve) == "true" ? true : false);
+        xmlFree(strPreserve);
     }
 
     dualFwkConfs_.push_back(std::move(conf));

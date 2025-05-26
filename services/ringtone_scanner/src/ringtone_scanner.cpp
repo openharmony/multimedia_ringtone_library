@@ -347,9 +347,7 @@ int32_t RingtoneScannerObj::WalkFileTree(const string &path)
         return ERR_INCORRECT_PATH;
     }
     auto fName = (char *)calloc(FILENAME_MAX, sizeof(char));
-    if (fName == nullptr) {
-        return E_NO_MEMORY;
-    }
+    CHECK_AND_RETURN_RET_LOG(fName != nullptr, E_NO_MEMORY, "fName is nullptr");
     if (strcpy_s(fName, FILENAME_MAX, path.c_str()) != ERR_SUCCESS) {
         free(fName);
         return E_ERR;
@@ -368,9 +366,11 @@ int32_t RingtoneScannerObj::WalkFileTree(const string &path)
             continue;
         }
         if (strncpy_s(fName + len, FILENAME_MAX - len, ent->d_name, FILENAME_MAX - len)) {
+            RINGTONE_ERR_LOG("Failed to copy file name %{private}s", fName);
             continue;
         }
         if (lstat(fName, &statInfo) == -1) {
+            RINGTONE_ERR_LOG("Failed to get info of directory %{private}s", fName);
             continue;
         }
         string currentPath = fName;
