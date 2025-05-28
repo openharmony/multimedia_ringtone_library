@@ -368,7 +368,7 @@ int RingtoneDataShareExtension::Update(const Uri &uri, const DataSharePredicates
     }
 
     RingtoneDataCommand cmd(uri, tab, RingtoneOperationType::UPDATE);
-    err = CheckRingtonePerm(cmd, true);
+    err = CheckRingtonePerm(cmd, false);
     if (err < 0) {
         RINGTONE_ERR_LOG("Check Update-permission failed, errCode: %{public}d", err);
         return err;
