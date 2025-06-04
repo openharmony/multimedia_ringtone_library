@@ -68,6 +68,7 @@ HWTEST_F(RingtoneDefaultSettingsTest, settings_ShotToneDefaultSettings_001, Test
     const string title = "insert test";
     values.PutString(RINGTONE_COLUMN_TITLE, title);
     values.Put(RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, static_cast<int>(1));
+    values.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
     cmd.SetValueBucket(values);
     uniStore->Init();
     int64_t rowId = E_HAS_DB_ERROR;
@@ -101,6 +102,7 @@ HWTEST_F(RingtoneDefaultSettingsTest, settings_NotificationToneDefaultSettings_0
     const string title = "insert test";
     values.PutString(RINGTONE_COLUMN_TITLE, title);
     values.Put(RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, static_cast<int>(1));
+    values.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
     cmd.SetValueBucket(values);
     uniStore->Init();
     int64_t rowId = E_HAS_DB_ERROR;
@@ -134,6 +136,7 @@ HWTEST_F(RingtoneDefaultSettingsTest, settings_RingToneDefaultSettings_001, Test
     const string title = "insert test";
     values.PutString(RINGTONE_COLUMN_TITLE, title);
     values.Put(RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, static_cast<int>(1));
+    values.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
     cmd.SetValueBucket(values);
     uniStore->Init();
     int64_t rowId = E_HAS_DB_ERROR;
@@ -163,6 +166,7 @@ HWTEST_F(RingtoneDefaultSettingsTest, settings_GetTonePathByDisplayName_001, Tes
     const string title = "insert test";
     values.PutString(RINGTONE_COLUMN_TITLE, title);
     values.Put(RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, static_cast<int>(1));
+    values.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
     cmd.SetValueBucket(values);
     uniStore->Init();
     int64_t rowId = E_HAS_DB_ERROR;
@@ -195,6 +199,7 @@ HWTEST_F(RingtoneDefaultSettingsTest, settings_AlarmToneDefaultSettings_001, Tes
     const string title = "insert test";
     values.PutString(RINGTONE_COLUMN_TITLE, title);
     values.Put(RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, static_cast<int>(1));
+    values.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
     cmd.SetValueBucket(values);
     uniStore->Init();
     int64_t rowId = E_HAS_DB_ERROR;
@@ -233,6 +238,7 @@ HWTEST_F(RingtoneDefaultSettingsTest, settings_GetTonePathByDisplayName_002, Tes
     const string title = "insert test";
     values.PutString(RINGTONE_COLUMN_TITLE, title);
     values.Put(RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, static_cast<int>(1));
+    values.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
     cmd.SetValueBucket(values);
     uniStore->Init();
     int64_t rowId = E_HAS_DB_ERROR;

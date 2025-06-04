@@ -43,6 +43,9 @@ public:
     EXPORT const std::string &GetTitle() const;
     EXPORT void SetTitle(const std::string &title);
 
+    EXPORT int32_t GetMediaType() const;
+    EXPORT void SetMediaType(int32_t mediaType);
+
     EXPORT const std::string &GetMimeType() const;
     EXPORT void SetMimeType(const std::string &mimeType);
 

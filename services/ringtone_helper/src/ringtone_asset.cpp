@@ -79,6 +79,16 @@ void RingtoneAsset::SetTitle(const string &title)
     member_[RINGTONE_COLUMN_TITLE] = title;
 }
 
+int32_t RingtoneAsset::GetMediaType() const
+{
+    return GetInt32Member(RINGTONE_COLUMN_MEDIA_TYPE);
+}
+
+void RingtoneAsset::SetMediaType(int32_t mediaType)
+{
+    member_[RINGTONE_COLUMN_MEDIA_TYPE] = mediaType;
+}
+
 const string &RingtoneAsset::GetMimeType() const
 {
     return GetStrMember(RINGTONE_COLUMN_MIME_TYPE);

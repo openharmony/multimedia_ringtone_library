@@ -72,6 +72,8 @@ constexpr int32_t E_IS_IN_COMMIT            = RINGTONE_ERR(E_COMMON_OFFSET, 30);
 constexpr int32_t E_IS_IN_REVERT            = RINGTONE_ERR(E_COMMON_OFFSET, 31);
 constexpr int32_t E_GET_PRAMS_FAIL          = RINGTONE_ERR(E_COMMON_OFFSET, 32);
 constexpr int32_t E_DATASHARE_END           = RINGTONE_ERR(E_COMMON_OFFSET, 33);
+constexpr int32_t E_NOT_ENOUGH_ROM          = RINGTONE_ERR(E_COMMON_OFFSET, 34);
+constexpr int32_t E_VIDEOS_NUM_EXCEEDS_SPECIFICATION    = RINGTONE_ERR(E_COMMON_OFFSET, 35);
 constexpr int32_t E_COMMON_END              = RINGTONE_ERR(E_COMMON_OFFSET, 1799);
 
 // ringtone directory and file type control { 2000, 2099 }

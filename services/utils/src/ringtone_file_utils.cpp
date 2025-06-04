@@ -73,7 +73,8 @@ const vector<string> EXIF_SUPPORTED_EXTENSION = {
     RINGTONE_CONTAINER_TYPE_MPA,
     RINGTONE_CONTAINER_TYPE_M4R,
     RINGTONE_CONTAINER_TYPE_WAV,
-    RINGTONE_CONTAINER_TYPE_OGG
+    RINGTONE_CONTAINER_TYPE_OGG,
+    RINGTONE_CONTAINER_TYPE_VIDEO_MP4
 };
 
 static bool IsTargetExtension(const string &path)
@@ -82,6 +83,8 @@ static bool IsTargetExtension(const string &path)
     std::string mimeType = RingtoneMimeTypeUtils::GetMimeTypeFromExtension(ext);
     int32_t mime = RingtoneMimeTypeUtils::GetMediaTypeFromMimeType(mimeType);
     if (mime == RINGTONE_MEDIA_TYPE_AUDIO) {
+        return true;
+    } else if (mime == RINGTONE_MEDIA_TYPE_VIDEO) {
         return true;
     }
     RINGTONE_ERR_LOG("MimeType error:%{public}s,%{public}s", ext.c_str(), mimeType.c_str());

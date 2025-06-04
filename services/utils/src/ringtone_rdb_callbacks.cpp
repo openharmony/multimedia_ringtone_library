@@ -227,6 +227,37 @@ static void UpdateMimeType(NativeRdb::RdbStore &store)
     resultSet->Close();
 }
 
+static void UpdateMediaType(NativeRdb::RdbStore &store)
+{
+    RINGTONE_INFO_LOG("Update MediaType Begin");
+    RingtoneMimeTypeUtils::InitMimeTypeMap();
+    const string sql = "SELECT * FROM " + RINGTONE_TABLE +  " WHERE " + RINGTONE_COLUMN_MEDIA_TYPE + " = 0";
+    auto resultSet = store.QuerySql(sql);
+    if (resultSet == nullptr) {
+        RINGTONE_ERR_LOG("error query sql %{public}s", sql.c_str());
+        return;
+    }
+    while (resultSet->GoToNextRow() == NativeRdb::E_OK) {
+        string displayName = GetStringVal(RINGTONE_COLUMN_DISPLAY_NAME, resultSet);
+        int32_t toneid = GetInt32Val(RINGTONE_COLUMN_TONE_ID, resultSet);
+        string extension = RingtoneFileUtils::GetFileExtension(displayName);
+        string mimeType = RingtoneMimeTypeUtils::GetMimeTypeFromExtension(extension);
+        int32_t mediaType = RingtoneMimeTypeUtils::GetMediaTypeFromMimeType(mimeType);
+
+        NativeRdb::ValuesBucket values;
+        values.PutInt(RINGTONE_COLUMN_MEDIA_TYPE, mediaType);
+        NativeRdb::AbsRdbPredicates absRdbPredicates(RINGTONE_TABLE);
+        absRdbPredicates.EqualTo(RINGTONE_COLUMN_TONE_ID, toneid);
+        int32_t changedRows;
+        int32_t result = store.Update(changedRows, values, absRdbPredicates);
+        if (result != E_OK || changedRows <= 0) {
+            RINGTONE_ERR_LOG("Update operation failed. Result %{public}d. Updated %{public}d", result, changedRows);
+        }
+    }
+    resultSet->Close();
+    RINGTONE_INFO_LOG("Update MediaType End");
+}
+
 static void AddPreloadConfTable(NativeRdb::RdbStore &store)
 {
     const vector<string> sqls = {
@@ -283,6 +314,9 @@ static void UpgradeExtension(NativeRdb::RdbStore &store, int32_t oldVersion)
     }
     if (oldVersion < VERSION_ADD_SCANNER_FLAG) {
         AddScannerFlagColumn(store);
+    }
+    if (oldVersion < VERSION_UPDATE_MEDIA_TYPE_VIDEO) {
+        UpdateMediaType(store);
     }
 }
 

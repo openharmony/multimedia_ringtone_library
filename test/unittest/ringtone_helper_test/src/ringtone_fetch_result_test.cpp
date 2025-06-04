@@ -180,6 +180,7 @@ HWTEST_F(RingtoneFetchResultTest, fetchResult_GetRowValFromColumn_test_002, Test
     valuesBucket.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
     valuesBucket.Put(RINGTONE_COLUMN_TONE_TYPE, static_cast<int>(TEST_RINGTONE_COLUMN_TONE_TYPE));
     valuesBucket.Put(RINGTONE_COLUMN_MIME_TYPE, MP3); // todo construct by us
+    valuesBucket.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
     RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::INSERT);
     auto dataManager = RingtoneDataManager::GetInstance();
     EXPECT_NE(dataManager, nullptr);
@@ -222,6 +223,7 @@ HWTEST_F(RingtoneFetchResultTest, fetchResult_GetNextObject_test_001, TestSize.L
     valuesBucket.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
     valuesBucket.Put(RINGTONE_COLUMN_TONE_TYPE, static_cast<int>(TEST_RINGTONE_COLUMN_TONE_TYPE));
     valuesBucket.Put(RINGTONE_COLUMN_MIME_TYPE, MP3); // todo construct by us
+    valuesBucket.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
     RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::INSERT);
     auto dataManager = RingtoneDataManager::GetInstance();
     EXPECT_NE(dataManager, nullptr);
@@ -231,6 +233,7 @@ HWTEST_F(RingtoneFetchResultTest, fetchResult_GetNextObject_test_001, TestSize.L
     valuesBucketInsert.Put(RINGTONE_COLUMN_DATA,
         static_cast<string>(RINGTONE_LIBRARY_PATH + SLASH_STR +
         TEST_INSERT_RINGTONE_LIBRARY + to_string(1) + MTP_FORMAT_MP3));
+    valuesBucketInsert.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
     retVal = dataManager->Insert(cmd, valuesBucketInsert);
     EXPECT_EQ((retVal > 0), true);
 
@@ -332,6 +335,7 @@ HWTEST_F(RingtoneFetchResultTest, fetchResult_GetObjectAtPosition_test_002, Test
         values.Put(RINGTONE_COLUMN_MIME_TYPE, MP3);
         values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_MP3);
         values.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
+        values.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
         RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::INSERT);
         auto retVal = dataManager->Insert(cmd, values);
         EXPECT_EQ((retVal > 0), true);
