@@ -57,6 +57,7 @@ private:
     int32_t DeleteRingtoneRowById(int32_t toneId);
     int32_t OpenRingtoneFile(RingtoneDataCommand &cmd, const std::string &mode);
     int32_t OpenVibrateFile(RingtoneDataCommand &cmd, const std::string &mode);
+    int32_t CheckVideoRingtoneSize(RingtoneDataCommand &cmd, const DataShare::DataShareValuesBucket &value);
 
     std::shared_mutex mgrSharedMutex_;
     std::shared_ptr<OHOS::AbilityRuntime::Context> context_ = nullptr;

@@ -138,6 +138,7 @@ HWTEST_F(RingtoneSettingManagerTest, settingMetadata_UpdateSettingsByPath_test_0
     values.PutString(RINGTONE_COLUMN_DATA, data);
     const string title = "insert test";
     values.PutString(RINGTONE_COLUMN_TITLE, title);
+    values.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
     cmd.SetValueBucket(values);
     int64_t rowId = E_HAS_DB_ERROR;
     auto ret = g_uniStore->Insert(cmd, rowId);
@@ -243,6 +244,7 @@ HWTEST_F(RingtoneSettingManagerTest, settingMetadata_CleanupSetting_test_001, Te
     values.PutString(RINGTONE_COLUMN_TITLE, title);
     values.Put(RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE, static_cast<int32_t>(SourceType::SOURCE_TYPE_PRESET));
     values.Put(RINGTONE_COLUMN_SHOT_TONE_TYPE, static_cast<int32_t>(ShotToneType::SHOT_TONE_TYPE_SIM_CARD_1));
+    values.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
     cmd.SetValueBucket(values);
     int64_t rowId = E_HAS_DB_ERROR;
     auto ret = g_uniStore->Insert(cmd, rowId);
@@ -292,6 +294,7 @@ HWTEST_F(RingtoneSettingManagerTest, settingMetadata_CleanupSetting_test_002, Te
     values.PutString(RINGTONE_COLUMN_TITLE, title);
     values.Put(RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, static_cast<int32_t>(SourceType::SOURCE_TYPE_PRESET));
     values.Put(RINGTONE_COLUMN_RING_TONE_TYPE, static_cast<int32_t>(RingToneType::RING_TONE_TYPE_SIM_CARD_1));
+    values.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
     cmd.SetValueBucket(values);
     int64_t rowId = E_HAS_DB_ERROR;
     auto ret = g_uniStore->Insert(cmd, rowId);
@@ -341,6 +344,7 @@ HWTEST_F(RingtoneSettingManagerTest, settingMetadata_CleanupSetting_test_003, Te
     values.PutString(RINGTONE_COLUMN_TITLE, title);
     values.Put(RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE, static_cast<int32_t>(SourceType::SOURCE_TYPE_PRESET));
     values.Put(RINGTONE_COLUMN_ALARM_TONE_TYPE, static_cast<int32_t>(AlarmToneType::ALARM_TONE_TYPE));
+    values.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
     cmd.SetValueBucket(values);
     int64_t rowId = E_HAS_DB_ERROR;
     auto ret = g_uniStore->Insert(cmd, rowId);

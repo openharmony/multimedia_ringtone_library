@@ -128,6 +128,7 @@ void InitTestData()
         values.Put(RINGTONE_COLUMN_DISPLAY_NAME, item[DISPLAY_NAME_INDEX]);
         values.Put(RINGTONE_COLUMN_TITLE, item[TITLE_INDEX]);
         values.Put(RINGTONE_COLUMN_SOURCE_TYPE, stoi(item[SOURCE_TYPE_INDEX]));
+        values.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
         if (!item[DISPLAY_LANGUAGE_TYPE_INDEX].empty()) {
             values.Put(RINGTONE_COLUMN_DISPLAY_LANGUAGE_TYPE, item[DISPLAY_LANGUAGE_TYPE_INDEX]);
         }

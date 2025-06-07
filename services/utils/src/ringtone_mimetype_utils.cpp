@@ -172,8 +172,10 @@ RingtoneMediaType RingtoneMimeTypeUtils::GetMediaTypeFromMimeType(const string &
     string prefix = mimeType.substr(0, pos);
     if (prefix == "audio") {
         return RINGTONE_MEDIA_TYPE_AUDIO;
+    } else if (prefix == "video") {
+        return RINGTONE_MEDIA_TYPE_VIDEO;
     } else {
-        RINGTONE_ERR_LOG("Invalid mime type: %{public}s", mimeType.c_str());
+        RINGTONE_WARN_LOG("Invalid mime type: %{public}s", mimeType.c_str());
         return RINGTONE_MEDIA_TYPE_INVALID;
     }
 }

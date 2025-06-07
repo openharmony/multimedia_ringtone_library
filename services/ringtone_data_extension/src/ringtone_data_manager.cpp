@@ -118,6 +118,9 @@ int32_t RingtoneDataManager::Insert(RingtoneDataCommand &cmd, const DataShareVal
         return E_INVALID_VALUES;
     }
     cmd.SetValueBucket(value);
+    int32_t err = CheckVideoRingtoneSize(cmd, dataShareValue);
+    CHECK_AND_RETURN_RET_LOG(err == E_SUCCESS, err,
+        "Check video ringtone size failed, errCode: %{public}d", err);
 
     int64_t outRowId = E_HAS_DB_ERROR;
     auto retRdb = g_uniStore->Insert(cmd, outRowId);
@@ -441,6 +444,53 @@ void RingtoneDataManager::ClearRingtoneDataMgr()
     }
 
     extension_ = nullptr;
+}
+
+int32_t RingtoneDataManager::CheckVideoRingtoneSize(RingtoneDataCommand &cmd, const DataShareValuesBucket &value)
+{
+    if (value.IsEmpty()) {
+        RINGTONE_ERR_LOG("CheckVideoRingtoneSize failed, value is empty");
+        return E_INVALID_VALUES;
+    }
+    if (cmd.GetTableName().compare(RINGTONE_TABLE) != 0) {
+        return E_OK;
+    }
+    bool isValid = false;
+    int32_t mediaType = value.Get(RINGTONE_COLUMN_MEDIA_TYPE, isValid);
+    if (!isValid) {
+        RINGTONE_ERR_LOG("CheckVideoRingtoneSize failed, media type is not valid");
+        return E_INVALID_VALUES;
+    }
+    if (mediaType == RINGTONE_MEDIA_TYPE_VIDEO) {
+        if (!RingtoneUtils::CheckRemainSpaceMeetCondition()) {
+            RINGTONE_ERR_LOG("CheckVideoRingtoneSize failed, not enough space");
+            return E_NOT_ENOUGH_ROM;
+        }
+        std::vector<std::string> columns = { "count(1) AS count" };
+        Uri uri("");
+        RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::QUERY);
+        cmd.GetAbsRdbPredicates()->EqualTo(RINGTONE_COLUMN_MEDIA_TYPE, RINGTONE_MEDIA_TYPE_VIDEO);
+        auto resultSet = g_uniStore->Query(cmd, columns);
+        if (resultSet == nullptr || resultSet->GoToFirstRow() != NativeRdb::E_OK) {
+            RINGTONE_ERR_LOG("Query video ringtone count failed");
+            return E_INVALID_VALUES;
+        }
+        int isIndex = -1;
+        int32_t num = 0;
+        resultSet->GetColumnIndex("count", isIndex);
+        resultSet->GetInt(isIndex, num);
+        resultSet->Close();
+        if (num > RINGTONE_VIDEO_MAX_COUNT) {
+            RINGTONE_ERR_LOG("CheckVideoRingtoneSize failed, video ringtone count exceeds limit");
+            return E_VIDEOS_NUM_EXCEEDS_SPECIFICATION;
+        }
+    } else if (mediaType == RINGTONE_MEDIA_TYPE_AUDIO) {
+        return E_OK;
+    } else {
+        RINGTONE_ERR_LOG("CheckVideoRingtoneSize failed, media type is not video or audio");
+        return E_INVALID_VALUES;
+    }
+    return E_OK;
 }
 }  // namespace Media
 }  // namespace OHOS

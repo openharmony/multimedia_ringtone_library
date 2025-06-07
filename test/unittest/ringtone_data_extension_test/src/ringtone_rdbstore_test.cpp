@@ -71,6 +71,7 @@ HWTEST_F(RingtoneRdbStorelUnitTest, rdbStore_Insert_test_001, TestSize.Level0)
     values.PutString(RINGTONE_COLUMN_DATA, data);
     const string title = "insert test";
     values.PutString(RINGTONE_COLUMN_TITLE, title);
+    values.PutInt(RINGTONE_COLUMN_MEDIA_TYPE, 2);
     cmd.SetValueBucket(values);
     g_uniStore->Init();
     int64_t rowId = E_HAS_DB_ERROR;
@@ -90,6 +91,7 @@ HWTEST_F(RingtoneRdbStorelUnitTest, rdbStore_Insert_test_002, TestSize.Level0)
     values.PutString(RINGTONE_COLUMN_DISPLAY_NAME, name);
     const string displayname = "rdbStore_Insert_test_002/test";
     values.PutString(RINGTONE_COLUMN_DISPLAY_NAME, displayname);
+    values.PutInt(RINGTONE_COLUMN_MEDIA_TYPE, 2);
     cmd.SetValueBucket(values);
     int64_t rowId = E_HAS_DB_ERROR;
     int32_t ret = g_uniStore->Insert(cmd, rowId);
@@ -118,6 +120,7 @@ HWTEST_F(RingtoneRdbStorelUnitTest, rdbStore_Insert_test_004, TestSize.Level0)
     NativeRdb::ValuesBucket values;
     const string name = "rdbStore_Insert_test_004";
     values.PutString(RINGTONE_COLUMN_DISPLAY_NAME, name);
+    values.PutInt(RINGTONE_COLUMN_MEDIA_TYPE, 2);
     cmd.SetValueBucket(values);
     g_uniStore->Stop();
     int64_t rowId = E_HAS_DB_ERROR;
@@ -325,6 +328,7 @@ HWTEST_F(RingtoneRdbStorelUnitTest, dataCallBack_OnCreate_test_003, TestSize.Lev
     const string title = "insert test";
     values.PutString(RINGTONE_COLUMN_TITLE, title);
     values.PutString(RINGTONE_COLUMN_MIME_TYPE, "application/octet-stream");
+    values.PutInt(RINGTONE_COLUMN_MEDIA_TYPE, 2);
     cmd.SetValueBucket(values);
     g_uniStore->Init();
     int64_t rowId = E_HAS_DB_ERROR;
@@ -356,6 +360,7 @@ HWTEST_F(RingtoneRdbStorelUnitTest, dataCallBack_OnCreate_test_004, TestSize.Lev
     values.PutString(RINGTONE_COLUMN_TITLE, title);
     values.PutString(RINGTONE_COLUMN_MIME_TYPE, "application/octet-stream");
     values.PutInt(RINGTONE_COLUMN_MEDIA_TYPE, -1);
+    values.PutInt(RINGTONE_COLUMN_MEDIA_TYPE, 2);
     cmd.SetValueBucket(values);
     g_uniStore->Init();
     int64_t rowId = E_HAS_DB_ERROR;
@@ -387,6 +392,7 @@ HWTEST_F(RingtoneRdbStorelUnitTest, dataCallBack_OnCreate_test_005, TestSize.Lev
     values.PutString(RINGTONE_COLUMN_TITLE, title);
     values.PutString(RINGTONE_COLUMN_MIME_TYPE, "audio/ogg");
     values.PutInt(RINGTONE_COLUMN_MEDIA_TYPE, -1);
+    values.PutInt(RINGTONE_COLUMN_MEDIA_TYPE, 2);
     cmd.SetValueBucket(values);
     g_uniStore->Init();
     int64_t rowId = E_HAS_DB_ERROR;

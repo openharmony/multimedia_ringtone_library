@@ -49,6 +49,7 @@ enum RingtoneResultSetDataType : int32_t {
 enum RingtoneMediaType : int32_t {
     RINGTONE_MEDIA_TYPE_INVALID = -1,
     RINGTONE_MEDIA_TYPE_AUDIO = 2,
+    RINGTONE_MEDIA_TYPE_VIDEO = 3,
     RINGTONE_MEDIA_TYPE_MAX
 };
 
@@ -147,6 +148,8 @@ constexpr int32_t RINGTONE_DEFAULT_INT32 = 0;
 constexpr int64_t RINGTONE_DEFAULT_INT64 = 0;
 const std::string RINGTONE_DEFAULT_STR = "";
 
+constexpr int32_t RINGTONE_VIDEO_MAX_COUNT = 20;
+
 /** Supported ringtone types */
 const std::string RINGTONE_CONTAINER_TYPE_3GA   = "3ga";
 const std::string RINGTONE_CONTAINER_TYPE_AC3   = "ac3";
@@ -179,6 +182,7 @@ const std::string RINGTONE_CONTAINER_TYPE_MPA   = "mpa";
 const std::string RINGTONE_CONTAINER_TYPE_M4R   = "m4r";
 const std::string RINGTONE_CONTAINER_TYPE_WAV   = "wav";
 const std::string RINGTONE_CONTAINER_TYPE_OGG   = "ogg";
+const std::string RINGTONE_CONTAINER_TYPE_VIDEO_MP4   = "mp4";
 } // namespace Media
 } // namespace OHOS
 

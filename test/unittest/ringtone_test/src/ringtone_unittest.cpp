@@ -302,6 +302,7 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareInsert_test_001, TestSize.Level0)
         values.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
         values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
         values.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
+        values.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
         auto result = g_dataShareHelper->Insert(uri, values);
         EXPECT_EQ((result > 0), true);
     }
@@ -344,6 +345,7 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareInsert_test_003, TestSize.Level0)
     values.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
     values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
     values.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
+    values.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
     auto result = g_dataShareHelper->Insert(uri, values);
     EXPECT_EQ(result, E_INVALID_URI);
     tracer.Finish();
@@ -367,6 +369,7 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareInsert_test_004, TestSize.Level0)
     values.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
     values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
     values.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
+    values.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
     auto result = g_dataShareHelper->Insert(uri, values);
     EXPECT_EQ(result, E_ERR);
     tracer.Finish();
@@ -388,6 +391,7 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareInsert_test_005, TestSize.Level0)
     values.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
     values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
     values.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
+    values.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
     auto result = g_dataShareHelper->Insert(uri, values);
     EXPECT_EQ(result, E_INVALID_URI);
     tracer.Finish();
@@ -405,6 +409,7 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareUpdate_test_001, TestSize.Level0)
     values.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
     values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
     values.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
+    values.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
     auto result = g_dataShareHelper->Insert(uri, values);
     EXPECT_EQ((result > 0), true);
 
@@ -437,6 +442,7 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareUpdate_test_002, TestSize.Level0)
     valuesInsert.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
     valuesInsert.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
     valuesInsert.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
+    valuesInsert.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
     auto result = g_dataShareHelper->Insert(uri, valuesInsert);
     EXPECT_GT(result, E_OK);
 
@@ -553,6 +559,7 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareDelete_test_001, TestSize.Level0)
     values.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
     values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
     values.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
+    values.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
     auto result = g_dataShareHelper->Insert(uri, values);
     EXPECT_EQ((result > 0), true);
 
@@ -620,6 +627,7 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareOpenFile_test_001, TestSize.Level0)
     values.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
     values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
     values.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
+    values.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
     auto result = g_dataShareHelper->Insert(uri, values);
     EXPECT_EQ((result > 0), true);
 
@@ -712,6 +720,7 @@ HWTEST_F(RingtoneUnitTest, medialib_ringtoneRead_test_001, TestSize.Level0)
     values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
     values.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
     values.Put(RINGTONE_COLUMN_SOURCE_TYPE, static_cast<int>(2));
+    values.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
     auto result = g_dataShareHelper->Insert(uri, values);
     cout << "Insert result=" << result << endl;
     EXPECT_EQ((result > 0), true);
@@ -749,6 +758,7 @@ HWTEST_F(RingtoneUnitTest, medialib_ringtoneRead_test_002, TestSize.Level0)
     values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
     values.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
     values.Put(RINGTONE_COLUMN_SOURCE_TYPE, static_cast<int>(1));
+    values.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
     auto result = g_dataShareHelper->Insert(uri, values);
     cout << "Insert result=" << result << endl;
     EXPECT_EQ((result > 0), true);
@@ -786,6 +796,7 @@ HWTEST_F(RingtoneUnitTest, medialib_ringtoneRead_test_003, TestSize.Level0)
     values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
     values.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
     values.Put(RINGTONE_COLUMN_SOURCE_TYPE, static_cast<int>(2));
+    values.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
     auto result = g_dataShareHelper->Insert(uri, values);
     cout << "Insert result=" << result << endl;
     EXPECT_EQ((result > 0), true);
@@ -797,6 +808,7 @@ HWTEST_F(RingtoneUnitTest, medialib_ringtoneRead_test_003, TestSize.Level0)
     valuesInsert.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
     valuesInsert.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
     valuesInsert.Put(RINGTONE_COLUMN_SOURCE_TYPE, static_cast<int>(1));
+    valuesInsert.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
     result = g_dataShareHelper->Insert(uri, valuesInsert);
     cout << "Insert2 result=" << result << endl;
     EXPECT_EQ((result > 0), true);
@@ -835,6 +847,7 @@ HWTEST_F(RingtoneUnitTest, medialib_ringtoneRead_test_004, TestSize.Level0)
     values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
     values.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
     values.Put(RINGTONE_COLUMN_SOURCE_TYPE, static_cast<int>(2));
+    values.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
     auto result = g_dataShareHelper->Insert(uri, values);
     cout << "Insert result=" << result << endl;
     EXPECT_EQ((result > 0), true);
@@ -846,6 +859,7 @@ HWTEST_F(RingtoneUnitTest, medialib_ringtoneRead_test_004, TestSize.Level0)
     valuesInsert.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
     valuesInsert.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
     valuesInsert.Put(RINGTONE_COLUMN_SOURCE_TYPE, static_cast<int>(1));
+    valuesInsert.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
     result = g_dataShareHelper->Insert(uri, valuesInsert);
     cout << "Insert2 result=" << result << endl;
     EXPECT_EQ((result > 0), true);
@@ -884,6 +898,7 @@ HWTEST_F(RingtoneUnitTest, medialib_ringtoneRead_test_005, TestSize.Level0)
     values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
     values.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
     values.Put(RINGTONE_COLUMN_SOURCE_TYPE, static_cast<int>(2));
+    values.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
     auto result = g_dataShareHelper->Insert(uri, values);
     cout << "Insert result=" << result << endl;
     EXPECT_EQ((result > 0), true);
@@ -917,6 +932,7 @@ HWTEST_F(RingtoneUnitTest, medialib_ringtoneRead_test_006, TestSize.Level0)
     valuesInsert.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
     valuesInsert.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
     valuesInsert.Put(RINGTONE_COLUMN_SOURCE_TYPE, static_cast<int>(1));
+    valuesInsert.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
     auto result = g_dataShareHelper->Insert(uri, valuesInsert);
     cout << "Insert2 result=" << result << endl;
     EXPECT_EQ((result > 0), true);
@@ -1028,6 +1044,7 @@ HWTEST_F(RingtoneUnitTest, medialib_deleteRingtone_test_001, TestSize.Level0)
     values.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
     values.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
     values.Put(RINGTONE_COLUMN_SOURCE_TYPE, static_cast<int>(SourceType::SOURCE_TYPE_CUSTOMISED));
+    values.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
     auto result = g_dataShareHelper->Insert(uri, values);
     EXPECT_EQ((result > 0), true);
 

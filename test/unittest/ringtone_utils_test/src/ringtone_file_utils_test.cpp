@@ -426,6 +426,24 @@ HWTEST_F(RingtoneFileUtilsTest, ringtoneUtils_MoveEL2DBToEL1DB_Test_001, TestSiz
     EXPECT_EQ(ret, true);
 }
 
+HWTEST_F(RingtoneFileUtilsTest, ringtoneUtils_GetTotalSize_Test_001, TestSize.Level1)
+{
+    int64_t totalSize = RingtoneUtils::GetTotalSize();
+    EXPECT_GT(totalSize, 0);
+}
+
+HWTEST_F(RingtoneFileUtilsTest, ringtoneUtils_GetFreeSize_Test_001, TestSize.Level1)
+{
+    int64_t freeSize = RingtoneUtils::GetFreeSize();
+    EXPECT_GT(freeSize, 0);
+}
+
+HWTEST_F(RingtoneFileUtilsTest, ringtoneUtils_CheckRemainSpaceMeetCondition_Test_001, TestSize.Level1)
+{
+    bool result = RingtoneUtils::CheckRemainSpaceMeetCondition();
+    EXPECT_TRUE(result);
+}
+
 HWTEST_F(RingtoneFileUtilsTest, ringtonexcollie_CancelXCollieTimer_Test_001, TestSize.Level1)
 {
     std::string tag = "";
