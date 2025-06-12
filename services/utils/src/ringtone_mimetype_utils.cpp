@@ -28,7 +28,6 @@ using namespace nlohmann;
 using MimeTypeMap = unordered_map<string, vector<string>>;
 
 MimeTypeMap RingtoneMimeTypeUtils::mediaJsonMap_;
-const string MIMETYPE_JSON_PATH = "/system/etc/userfilemanager/userfilemanager_mimetypes.json";
 const string DEFAULT_MIME_TYPE = "application/octet-stream";
 
 static const std::unordered_map<std::string, std::vector<std::string>> RINGTONE_MIME_TYPE_MAP = {
@@ -102,20 +101,7 @@ static const std::unordered_map<std::string, std::vector<std::string>> RINGTONE_
     { "image/png", { "png" } },
     { "image/svg+xml", { "svg" } },
     { "image/x-dcraw", { "raw" } },
-    { "video/3gpp2", { "3gpp2", "3gp2", "3g2" } },
-    { "video/3gpp", { "3gpp", "3gp" } },
-    { "video/mp4", { "m4v", "f4v", "mp4v", "mpeg4", "mp4" }},
-    { "video/mp2t", { "m2ts", "mts"} },
-    { "video/mp2ts", { "ts" } },
-    { "video/vnd.youtube.yt", { "yt" } },
-    { "video/x-webex", { "wrf" } },
-    { "video/mpeg", { "mpeg", "mpeg2", "mpv2", "mp2v", "m2v", "m2t", "mpeg1", "mpv1", "mp1v", "m1v", "mpg" } },
-    { "video/quicktime", { "mov" } },
-    { "video/x-matroska", { "mkv" } },
-    { "video/webm", { "webm" } },
-    { "video/H264", { "h264" } },
-    { "video/x-flv", { "flv" } },
-    { "video/avi", { "avi" } },
+    { "video/mp4", { "mp4" } },
     { "text/comma-separated-values", { "csv" } },
     { "text/plain", { "diff", "po", "txt" } },
     { "text/rtf", { "rtf" } },
