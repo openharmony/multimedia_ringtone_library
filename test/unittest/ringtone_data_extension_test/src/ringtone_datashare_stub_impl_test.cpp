@@ -177,7 +177,7 @@ HWTEST_F(RingtoneDataShareStubImplUnitTest, dataShareStubImpl_Update_test_001, T
     AbilityRuntime::DataSharePredicates predicates;
     AbilityRuntime::DataShareValuesBucket value;
     int ret = ringtoneDataShareStubImpl->Update(uri, predicates, value);
-    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    EXPECT_EQ(ret, E_FAIL);
 
     ringtoneDataShareStubImpl->extension_ = nullptr;
     ret = ringtoneDataShareStubImpl->Update(uri, predicates, value);

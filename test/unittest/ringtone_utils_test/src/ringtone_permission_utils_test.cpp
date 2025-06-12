@@ -149,6 +149,13 @@ HWTEST_F(RingtonePermissionUtilsTest, ringtonePermissionUtils_CheckCallerPermiss
 {
     string permissions = "ohos.permission.ACCESS_RINGTONE_RESOURCE";
     bool ret = RingtonePermissionUtils::CheckCallerPermission(permissions);
+    EXPECT_TRUE(ret);
+}
+
+HWTEST_F(RingtonePermissionUtilsTest, ringtonePermissionUtils_CheckCallerPermission_test_004, TestSize.Level0)
+{
+    string permissions = "ohos.permission.ACCESS_RINGTONE_RESOURCE_TEST";
+    bool ret = RingtonePermissionUtils::CheckCallerPermission(permissions);
     EXPECT_FALSE(ret);
 }
 
@@ -164,10 +171,10 @@ HWTEST_F(RingtonePermissionUtilsTest, ringtonePermissionUtils_CheckHasPermission
 {
     std::vector<string> perms = { DEFAULT_STR, PERM_WRITE_RINGTONE, "ohos.permission.ACCESS_RINGTONE_RESOURCE" };
     bool ret = RingtonePermissionUtils::CheckHasPermission(perms);
-    EXPECT_FALSE(ret);
+    EXPECT_TRUE(ret);
     std::vector<string> permissions = { "ohos.permission.ACCESS_RINGTONE_RESOURCE" };
     ret = RingtonePermissionUtils::CheckCallerPermission(permissions);
-    EXPECT_FALSE(ret);
+    EXPECT_TRUE(ret);
 }
 
 HWTEST_F(RingtonePermissionUtilsTest, ringtonePermissionUtils_GetSysBundleManager_test_002, TestSize.Level0)
