@@ -148,7 +148,7 @@ constexpr int32_t RINGTONE_DEFAULT_INT32 = 0;
 constexpr int64_t RINGTONE_DEFAULT_INT64 = 0;
 const std::string RINGTONE_DEFAULT_STR = "";
 
-constexpr int32_t RINGTONE_VIDEO_MAX_COUNT = 20;
+constexpr int32_t RINGTONE_VIDEO_MAX_COUNT = 40;
 
 /** Supported ringtone types */
 const std::string RINGTONE_CONTAINER_TYPE_3GA   = "3ga";
