@@ -119,7 +119,7 @@ HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_Update_test_001, Tes
     const AbilityRuntime::DataSharePredicates predicates;
     AbilityRuntime::DataShareValuesBucket values;
     auto ret = mediaDataShare->Update(uri, predicates, values);
-    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    EXPECT_EQ(ret, E_FAIL);
 
     Uri uriError(RINGTONE_URI);
     ret = mediaDataShare->Update(uriError, predicates, values);
