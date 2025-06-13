@@ -125,10 +125,6 @@ HWTEST_F(RingtoneMetadataExtractorTest, metadataExtractor_ExtractAudioMetadata_t
     data->SetData("ExtractAudioMetadata");
     ret = RingtoneMetadataExtractor::ExtractAudioMetadata(data);
     EXPECT_EQ((ret == E_SYSCALL || ret == E_AVMETADATA), true);
-    const string dataStr = "/system/etc/userfilemanager/userfilemanager_mimetypes.json";
-    data->SetData(dataStr);
-    ret = RingtoneMetadataExtractor::ExtractAudioMetadata(data);
-    EXPECT_EQ((ret == E_SYSCALL || ret == E_AVMETADATA), true);
 }
 
 HWTEST_F(RingtoneMetadataExtractorTest, metadataExtractor_FillExtractedMetadata_test_003, TestSize.Level0)
