@@ -480,7 +480,7 @@ int32_t RingtoneDataManager::CheckVideoRingtoneSize(RingtoneDataCommand &cmd, co
         resultSet->GetColumnIndex("count", isIndex);
         resultSet->GetInt(isIndex, num);
         resultSet->Close();
-        if (num > RINGTONE_VIDEO_MAX_COUNT) {
+        if (num >= RINGTONE_VIDEO_MAX_COUNT) {
             RINGTONE_ERR_LOG("CheckVideoRingtoneSize failed, video ringtone count exceeds limit");
             return E_VIDEOS_NUM_EXCEEDS_SPECIFICATION;
         }
