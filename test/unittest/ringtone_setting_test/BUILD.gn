@@ -58,6 +58,7 @@ ohos_unittest("ringtone_setting_unittest") {
     "data_share:datashare_common",
     "data_share:datashare_common_lite",
     "hitrace:hitrace_meter",
+    "image_framework:image_native",
     "ipc:ipc_single",
     "napi:ace_napi",
     "relational_store:native_rdb",

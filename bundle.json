@@ -33,6 +33,7 @@
           "hicollie",
           "hisysevent",
           "hitrace",
+          "image_framework",
           "init",
           "ipc",
           "kv_store",
@@ -42,7 +43,8 @@
           "relational_store",
           "samgr",
           "preferences",
-          "os_account"
+          "os_account",
+          "safwk"
         ],
         "third_party": []
       },

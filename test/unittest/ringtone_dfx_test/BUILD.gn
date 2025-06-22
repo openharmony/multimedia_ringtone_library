@@ -43,6 +43,7 @@ ohos_unittest("ringtone_dfx_unittest") {
     "c_utils:utils",
     "data_share:datashare_common",
     "data_share:datashare_provider",
+    "image_framework:image_native",
     "ipc:ipc_single",
     "napi:ace_napi",
     "preferences:native_preferences",
