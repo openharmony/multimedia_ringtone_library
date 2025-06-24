@@ -22,7 +22,7 @@ ohos_executable("ringtone_scanner_test") {
   deps = []
   defines = []
 
-  if (build_variant == "root") {
+  if (build_variant == "root" || build_variant == "user") {
     include_dirs += [
       "./include",
       "../get_self_permissions/include",
@@ -79,7 +79,7 @@ ohos_executable("ringtone_test") {
   deps = []
   defines = []
 
-  if (build_variant == "root") {
+  if (build_variant == "root" || build_variant == "user") {
     include_dirs += [
       "./include",
       "../get_self_permissions/include",
@@ -136,7 +136,7 @@ ohos_executable("ringtone_read_test") {
   deps = []
   defines = []
 
-  if (build_variant == "root") {
+  if (build_variant == "root" || build_variant == "user") {
     include_dirs += [
       "./include",
       "../get_self_permissions/include",
