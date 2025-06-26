@@ -22,6 +22,7 @@
 #include <fstream>
 #include <sstream>
 #include <sys/sendfile.h>
+#include <system_error>
 #include <unistd.h>
 #include <iostream>
 
@@ -668,7 +669,14 @@ void RingtoneFileUtils::MoveRingtoneFolder()
         RINGTONE_ERR_LOG("Copy ringtone folder failed");
         return;
     }
-    std::filesystem::remove_all(oldPath);
+    if (std::filesystem::exists(oldPath)) {
+        std::error_code ec;
+        std::filesystem::remove_all(oldPath, ec);
+        if (ec) {
+            RINGTONE_ERR_LOG("remove old ringtone folder failed, errno is %{public}d", ec.value());
+            return;
+        }
+    }
     if (std::filesystem::exists(OLD_RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH)) {
         RINGTONE_ERR_LOG("remove ringtone folder failed, errno is %{public}d", errno);
         return;
