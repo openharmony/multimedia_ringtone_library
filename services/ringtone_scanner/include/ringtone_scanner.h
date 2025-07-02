@@ -63,6 +63,7 @@ public:
 private:
     /* boot scan */
     EXPORT int32_t BootScan();
+    EXPORT void UpdateDefaultTone();
 
     /* file */
     EXPORT int32_t ScanFile();

@@ -175,11 +175,11 @@ void RingtoneDefaultSetting::Update()
     } else {
         RINGTONE_ERR_LOG("ringtone setting mgr is nullptr");
     }
-    UpdateDefaultSystemTone();
 }
 
 void RingtoneDefaultSetting::UpdateDefaultSystemTone()
 {
+    CHECK_AND_RETURN_LOG(settingMgr_ != nullptr, "ringtone setting mgr is nullptr");
     RINGTONE_INFO_LOG("setting system tone begin");
     auto infos = RingtoneUtils::GetDefaultSystemtoneInfo();
     for (auto info : infos) {
