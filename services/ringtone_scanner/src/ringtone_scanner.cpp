@@ -189,9 +189,32 @@ void RingtoneScannerObj::Scan()
     }
 }
 
+void RingtoneScannerObj::UpdateDefaultTone()
+{
+    auto rdbStore = RingtoneRdbStore::GetInstance();
+    if (rdbStore != nullptr) {
+        auto rawRdb = rdbStore->GetRaw();
+        CHECK_AND_RETURN_LOG(rawRdb != nullptr, "rawRdb is nullptr");
+        RingtoneDefaultSetting::GetObj(rawRdb)->UpdateDefaultSystemTone();
+        int errCode = 0;
+        shared_ptr<NativePreferences::Preferences> prefs =
+            NativePreferences::PreferencesHelper::GetPreferences(COMMON_XML_EL1, errCode);
+        if (prefs) {
+            int isScanner = prefs->GetInt(RINGTONE_RDB_SCANNER_FLAG_KEY, RINGTONE_RDB_SCANNER_FLAG_KEY_FALSE);
+            CHECK_AND_RETURN_LOG(isScanner == RINGTONE_RDB_SCANNER_FLAG_KEY_FALSE, "no need to update default tone");
+            // reset ringtone default settings
+            RingtoneDefaultSetting::GetObj(rawRdb)->Update();
+            prefs->PutInt(RINGTONE_RDB_SCANNER_FLAG_KEY, RINGTONE_RDB_SCANNER_FLAG_KEY_TRUE);
+            prefs->FlushSync();
+        }
+    }
+}
+
 int32_t RingtoneScannerObj::BootScan()
 {
     int64_t scanStart = RingtoneFileUtils::UTCTimeMilliSeconds();
+    int32_t err = E_OK;
+    bool res = true;
     for (auto &dir : g_preloadDirs) {
         RINGTONE_INFO_LOG("start to scan realpath %{private}s", dir.c_str());
         string realPath;
@@ -205,36 +228,30 @@ int32_t RingtoneScannerObj::BootScan()
 
         if (RingtoneScannerUtils::IsDirectory(realPath)) {
             dir_ = move(realPath);
-            (void)ScanDir();
+            err = ScanDir();
         } else if (RingtoneScannerUtils::IsRegularFile(realPath)) {
             path_ = move(realPath);
-            (void)ScanFile();
+            err = ScanFile();
+        }
+        if (err != E_OK) {
+            RINGTONE_ERR_LOG("BootScan err %{public}d", err);
+            res = RingtoneScannerDb::UpdateScannerFlag();
+            if (!res) {
+                RINGTONE_ERR_LOG("UpdateScannerFlag operation failed, res: %{public}d", res);
+            }
+            unique_lock<mutex> lock(scannerLock_);
+            scannerCv_.notify_one();
+            return err;
         }
     }
 
-    int errCode = 0;
-    shared_ptr<NativePreferences::Preferences> prefs =
-        NativePreferences::PreferencesHelper::GetPreferences(COMMON_XML_EL1, errCode);
-    if (prefs) {
-        int isScanner = prefs->GetInt(RINGTONE_RDB_SCANNER_FLAG_KEY, RINGTONE_RDB_SCANNER_FLAG_KEY_FALSE);
-        // reset ringtone default settings
-        auto rdbStore = RingtoneRdbStore::GetInstance();
-        if (rdbStore != nullptr) {
-            auto rawRdb = rdbStore->GetRaw();
-            if (rawRdb != nullptr && !isScanner) {
-                RingtoneDefaultSetting::GetObj(rawRdb)->Update();
-                prefs->PutInt(RINGTONE_RDB_SCANNER_FLAG_KEY, RINGTONE_RDB_SCANNER_FLAG_KEY_TRUE);
-                prefs->FlushSync();
-            }
-        }
-    }
+    UpdateDefaultTone();
 
     int64_t scanEnd = RingtoneFileUtils::UTCTimeMilliSeconds();
     RINGTONE_INFO_LOG("total preload tone files count:%{public}d, scanned: %{public}d, costed-time:%{public}"
         PRId64 " ms", tonesScannedCount_, tonesScannedCount_, scanEnd - scanStart);
     unique_lock<mutex> lock(scannerLock_);
     scannerCv_.notify_one();
-    bool res = true;
     res = RingtoneScannerDb::DeleteNotExist();
     if (!res) {
         RINGTONE_ERR_LOG("DeleteNotExist operation failed, res: %{public}d", res);
