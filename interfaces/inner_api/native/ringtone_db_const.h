@@ -63,7 +63,7 @@ const std::string RINGTONE_LIBRARY_DB_PATH_EL1 = "/data/storage/el1/database";
 const std::string RINGTONE_LIBRARY_DB_NAME = "ringtone_library.db";
 
 // ringtone db version
-const int32_t RINGTONE_RDB_VERSION = 8;
+const int32_t RINGTONE_RDB_VERSION = 9;
 enum {
     VERSION_ADD_DISPLAY_LANGUAGE_COLUMN = 2,
     VERSION_ADD_VIBRATE_TABLE = 3,
@@ -71,7 +71,8 @@ enum {
     VERSION_ADD_PRELOAD_CONF_TABLE = 5,
     VERSION_UPDATE_WATCH_MIME_TYPE = 6,
     VERSION_ADD_SCANNER_FLAG = 7,
-    VERSION_UPDATE_MEDIA_TYPE_VIDEO = 8
+    VERSION_UPDATE_MEDIA_TYPE_VIDEO = 8,
+    VERSION_UPDATE_DATA_URI = 9,
 };
 
 // ringtone table name

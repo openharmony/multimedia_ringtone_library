@@ -294,6 +294,87 @@ static void UpdateDefaultSystemTone(NativeRdb::RdbStore &store)
     }
 }
 
+static bool CheckAndGetDataUri(const string &displayName, const string &dataUri,
+    int32_t toneType, string &newDataUri)
+{
+    if (displayName.empty() || dataUri.empty()) {
+        return true;
+    }
+    string ringDirName;
+    if (toneType == TONE_TYPE_ALARM) {
+        ringDirName = "alarms";
+    } else if (toneType == TONE_TYPE_RINGTONE) {
+        ringDirName = "ringtones";
+    } else if (toneType == TONE_TYPE_NOTIFICATION) {
+        ringDirName = "notifications";
+    } else if (toneType == TONE_TYPE_CONTACTS) {
+        ringDirName = "contacts";
+    } else {
+        RINGTONE_ERR_LOG("error tone type, displayName:%{public}s", displayName.c_str());
+        return true;
+    }
+    auto lastPos = dataUri.find_last_of(RINGTONE_SLASH_CHAR);
+    if (lastPos == std::string::npos) {
+        return true;
+    }
+    string fileName = dataUri.substr(lastPos + 1);
+    string filePath = dataUri.substr(0, lastPos);
+    lastPos = filePath.find_last_of(RINGTONE_SLASH_CHAR);
+    if (lastPos == std::string::npos) {
+        return true;
+    }
+    string dirName = filePath.substr(lastPos + 1);
+    if (dirName == ringDirName && fileName == displayName) {
+        return true;
+    } else {
+        size_t start_pos = 0;
+        if ((start_pos = dataUri.find(RINGTONE_CUSTOMIZED_BASE_PATH)) != std::string::npos) {
+            newDataUri = RINGTONE_CUSTOMIZED_BASE_PATH + "/Ringtone/" + ringDirName + "/" + displayName;
+            if (RingtoneFileUtils::IsFileExists(newDataUri)) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+static void UpdateDataUri(NativeRdb::RdbStore &store)
+{
+    RINGTONE_INFO_LOG("Update Data Uri Begin");
+    const string querySql = "SELECT " + RINGTONE_COLUMN_DISPLAY_NAME + " , " + RINGTONE_COLUMN_DATA +
+        " , " + RINGTONE_COLUMN_TONE_ID + " , " + RINGTONE_COLUMN_TONE_TYPE + " FROM " + RINGTONE_TABLE +
+        " WHERE " + RINGTONE_COLUMN_SOURCE_TYPE + " = 2";
+    auto resultSet = store.QuerySql(querySql);
+    CHECK_AND_RETURN_LOG(resultSet != nullptr, "error query sql %{public}s", querySql.c_str());
+    while (resultSet->GoToNextRow() == NativeRdb::E_OK) {
+        string displayName = GetStringVal(RINGTONE_COLUMN_DISPLAY_NAME, resultSet);
+        string dataUri = GetStringVal(RINGTONE_COLUMN_DATA, resultSet);
+        int32_t toneid = GetInt32Val(RINGTONE_COLUMN_TONE_ID, resultSet);
+        int32_t toneType = GetInt32Val(RINGTONE_COLUMN_TONE_TYPE, resultSet);
+        string newDataUri = "";
+        if (CheckAndGetDataUri(displayName, dataUri, toneType, newDataUri)) {
+            RINGTONE_INFO_LOG("check data path ok. toneid %{public}d", toneid);
+            continue;
+        }
+        if (newDataUri.empty()) {
+            RINGTONE_ERR_LOG("new data path err. toneid %{public}d", toneid);
+            continue;
+        }
+        RINGTONE_INFO_LOG("need update uri toneid:%{public}d, displayName:%{public}s", toneid, displayName.c_str());
+        NativeRdb::ValuesBucket values;
+        values.PutString(RINGTONE_COLUMN_DATA, newDataUri);
+        NativeRdb::AbsRdbPredicates absRdbPredicates(RINGTONE_TABLE);
+        absRdbPredicates.EqualTo(RINGTONE_COLUMN_TONE_ID, toneid);
+        int32_t changedRows;
+        int32_t result = store.Update(changedRows, values, absRdbPredicates);
+        if (result != E_OK || changedRows <= 0) {
+            RINGTONE_ERR_LOG("Update operation failed. Result %{public}d. Updated %{public}d", result, changedRows);
+        }
+    }
+    resultSet->Close();
+    RINGTONE_INFO_LOG("Update Data Uri End");
+}
+
 static void UpgradeExtension(NativeRdb::RdbStore &store, int32_t oldVersion)
 {
     if (oldVersion < VERSION_ADD_DISPLAY_LANGUAGE_COLUMN) {
@@ -317,6 +398,9 @@ static void UpgradeExtension(NativeRdb::RdbStore &store, int32_t oldVersion)
     }
     if (oldVersion < VERSION_UPDATE_MEDIA_TYPE_VIDEO) {
         UpdateMediaType(store);
+    }
+    if (oldVersion < VERSION_UPDATE_DATA_URI) {
+        UpdateDataUri(store);
     }
 }
 
