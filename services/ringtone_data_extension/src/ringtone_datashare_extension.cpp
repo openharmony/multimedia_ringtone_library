@@ -283,10 +283,9 @@ void RingtoneDataShareExtension::DumpDataShareValueBucket(const std::vector<stri
 
 void RingtoneDataShareExtension::UpdataRdbPathData()
 {
-    RingtoneFileUtils::MoveRingtoneFolder();
-    std::string oldPath;
-    std::string newPath;
-    DataShare::DataShareValuesBucket valuesBucket;
+    auto result = RingtoneFileUtils::MoveRingtoneFolder();
+    CHECK_AND_RETURN_LOG(result, "MoveRingtoneFolder failed");
+
     Uri uri(RINGTONE_LIBRARY_PROXY_DATA_URI_TONE_FILES);
 
     DataSharePredicates predicates;
@@ -295,40 +294,39 @@ void RingtoneDataShareExtension::UpdataRdbPathData()
     predicates.SetWhereClause(selection);
     predicates.SetWhereArgs(selectionArgs);
 
-    vector<string> columns {
-        RINGTONE_COLUMN_DATA
-    };
+    vector<string> columns { RINGTONE_COLUMN_DATA, RINGTONE_COLUMN_TONE_ID };
     DatashareBusinessError businessError;
     auto resultSet = Query(uri, predicates, columns, businessError);
-    if (resultSet == nullptr) {
-        return;
-    }
+    CHECK_AND_RETURN_LOG(resultSet != nullptr, "query is nullptr");
+ 
     auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
     unique_ptr<RingtoneAsset> ringtoneAsset = results->GetFirstObject();
-    if (ringtoneAsset == nullptr) {
-        RINGTONE_ERR_LOG("ringtoneAsset is nullptr");
-        return;
-    }
+    CHECK_AND_RETURN_LOG(ringtoneAsset != nullptr, "ringtoneAsset is nullptr");
 
     while (ringtoneAsset != nullptr) {
-        oldPath = ringtoneAsset->GetPath();
-        newPath = oldPath;
+        int toneId = ringtoneAsset->GetId();
+        std::string oldPath = ringtoneAsset->GetPath();
+        std::string newPath = oldPath;
         size_t start_pos = 0;
         if ((start_pos = newPath.find("/storage/media/local/files/Ringtone/")) != std::string::npos) {
             newPath.replace(start_pos, std::string("/storage/media/local/files/Ringtone").length(),
                 "/data/storage/el2/base/files/Ringtone");
         }
-
         if (!RingtoneFileUtils::IsFileExists(newPath)) {
-            RINGTONE_ERR_LOG("the file is not exists, path: %{private}s", newPath.c_str());
-            return;
+            RINGTONE_ERR_LOG("the file is not exists, path: %{public}s", newPath.c_str());
+            ringtoneAsset = results->GetNextObject();
+            continue;
         }
-        RINGTONE_INFO_LOG("the file exists, path: %{private}s", newPath.c_str());
+        DataSharePredicates predicates;
+        const std::string selection = RINGTONE_COLUMN_TONE_ID + " = ? ";
+        predicates.SetWhereClause(selection);
+        predicates.SetWhereArgs({to_string(toneId)});
+        DataShare::DataShareValuesBucket valuesBucket;
         valuesBucket.Put(RINGTONE_COLUMN_DATA, newPath);
         Update(uri, predicates, valuesBucket);
         ringtoneAsset = results->GetNextObject();
     }
-
+    RingtoneFileUtils::RemoveRingtoneFolder(OLD_RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH);
     return;
 }
 

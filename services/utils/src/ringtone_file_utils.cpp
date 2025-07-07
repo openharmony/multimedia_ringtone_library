@@ -657,32 +657,20 @@ bool CopyRingtoneFolder(const std::filesystem::path& sourcePath, const std::file
     return true;
 }
 
-void RingtoneFileUtils::MoveRingtoneFolder()
+bool RingtoneFileUtils::MoveRingtoneFolder()
 {
     const std::filesystem::path oldPath("/storage/media/local/files/Ringtone");
     const std::filesystem::path newPath("/data/storage/el2/base/files/Ringtone");
     if (!(std::filesystem::exists(RINGTONE_CUSTOMIZED_BASE_PATH))) {
         RINGTONE_ERR_LOG("Target path is not exists");
-        return;
+        return false;
     }
     if (!CopyRingtoneFolder(oldPath, newPath)) {
         RINGTONE_ERR_LOG("Copy ringtone folder failed");
-        return;
-    }
-    if (std::filesystem::exists(oldPath)) {
-        std::error_code ec;
-        std::filesystem::remove_all(oldPath, ec);
-        if (ec) {
-            RINGTONE_ERR_LOG("remove old ringtone folder failed, errno is %{public}d", ec.value());
-            return;
-        }
-    }
-    if (std::filesystem::exists(OLD_RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH)) {
-        RINGTONE_ERR_LOG("remove ringtone folder failed, errno is %{public}d", errno);
-        return;
+        return false;
     }
     RINGTONE_INFO_LOG("Ringtone folder move successfully");
-    return;
+    return true;
 }
 
 void RingtoneFileUtils::AccessRingtoneDir()
@@ -751,6 +739,19 @@ string RingtoneFileUtils::GetFileExtension(const string &path)
  
     RINGTONE_ERR_LOG("Failed to obtain file extension because given pathname is empty");
     return "";
+}
+
+void RingtoneFileUtils::RemoveRingtoneFolder(const std::string &path)
+{
+    CHECK_AND_RETURN_LOG(!path.empty(), "Path is empty, cannot remove folder");
+    if (std::filesystem::exists(path)) {
+        std::error_code ec;
+        std::filesystem::remove_all(path, ec);
+        if (ec) {
+            RINGTONE_ERR_LOG("remove old ringtone folder failed, errno is %{public}d", ec.value());
+            return;
+        }
+    }
 }
 } // namespace Media
 } // namespace OHOS
