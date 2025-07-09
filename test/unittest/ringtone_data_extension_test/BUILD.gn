@@ -67,6 +67,7 @@ ohos_unittest("ringtone_data_extension_unittest") {
     "data_share:datashare_common",
     "data_share:datashare_consumer",
     "data_share:datashare_provider",
+    "ipc:ipc_napi",
     "ipc:ipc_single",
     "libxml2:libxml2",
     "napi:ace_napi",
