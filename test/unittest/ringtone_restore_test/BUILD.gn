@@ -79,6 +79,7 @@ ohos_unittest("ringtone_restore_unittest") {
     "data_share:datashare_provider",
     "hitrace:hitrace_meter",
     "init:libbegetutil",
+    "ipc:ipc_napi",
     "ipc:ipc_single",
     "libxml2:libxml2",
     "napi:ace_napi",
