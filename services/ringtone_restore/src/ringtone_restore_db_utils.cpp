@@ -28,6 +28,7 @@ const static int32_t CONNECT_SIZE = 10;
 const std::string CUSTOM_COUNT = "count";
 const std::string PRAGMA_TABLE_NAME = "name";
 const std::string PRAGMA_TABLE_TYPE = "type";
+const int RDB_AREA_EL1 = 0;
 int32_t RingtoneRestoreDbUtils::InitDb(std::shared_ptr<NativeRdb::RdbStore> &rdbStore, const std::string &dbName,
     const std::string &dbPath, const std::string &bundleName, bool isMediaLibrary)
 {
@@ -36,6 +37,7 @@ int32_t RingtoneRestoreDbUtils::InitDb(std::shared_ptr<NativeRdb::RdbStore> &rdb
     config.SetBundleName(bundleName);
     config.SetReadConSize(CONNECT_SIZE);
     config.SetSecurityLevel(NativeRdb::SecurityLevel::S3);
+    config.SetArea(RDB_AREA_EL1);
 
     int32_t err;
     RingtoneDataCallBack cb;

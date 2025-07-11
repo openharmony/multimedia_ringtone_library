@@ -134,8 +134,26 @@ bool RingtoneRestoreBase::NeedCommitSetting(const std::string &typeColumn, const
 
     int32_t count = RingtoneRestoreDbUtils::QueryInt(localRdb_, queryCountSql, "count");
     RINGTONE_INFO_LOG("got count = %{public}d", count);
+    if (count > 0) {
+        return false;
+    }
+    return !DetermineNoRingtone(typeColumn, sourceColumn, type, allSetType, localRdb_);
+}
 
-    return !(count>0);
+bool RingtoneRestoreBase::DetermineNoRingtone(const std::string &typeColumn,
+    const std::string &sourceColumn, int type, int allSetType, const std::shared_ptr<NativeRdb::RdbStore> &rdbStore)
+{
+    string queryCountSql = "SELECT count(1) as count FROM " + RINGTONE_TABLE + " WHERE " + sourceColumn +
+        " > 0 AND ( " + typeColumn + " = " + to_string(type) + " OR " + typeColumn + " = " +
+        to_string(allSetType) + " );";
+    RINGTONE_INFO_LOG("queryCountSql: %{public}s", queryCountSql.c_str());
+    int32_t count = RingtoneRestoreDbUtils::QueryInt(rdbStore, queryCountSql, "count");
+    RINGTONE_INFO_LOG("got no ringtone count = %{public}d", count);
+    if (count == 0) {
+        RINGTONE_INFO_LOG("no ringtone sound");
+        return true;
+    }
+    return false;
 }
 
 void RingtoneRestoreBase::CheckSetting(FileInfo &info)
@@ -353,6 +371,42 @@ int32_t RingtoneRestoreBase::PopulateMetadata(const shared_ptr<NativeRdb::Result
     }
 
     return E_OK;
+}
+
+void RingtoneRestoreBase::SetNotRingtone(const string &columnType, const string &columnSourceType, int32_t simCard)
+{
+    CHECK_AND_RETURN_LOG(localRdb_ != nullptr, "localRdb_ is null, can not set not ringtone");
+    int32_t changeRows = 0;
+    NativeRdb::ValuesBucket valuesBucket;
+    valuesBucket.PutInt(columnType, RING_TONE_TYPE_NOT);
+    valuesBucket.PutInt(columnSourceType, SOURCE_TYPE_NOT_SET);
+    NativeRdb::AbsRdbPredicates absRdbPredicates(RINGTONE_TABLE);
+    string whereClause = columnType + "= ? AND " + columnSourceType + " = 1";
+    vector<string> whereArgs;
+    whereArgs.push_back(to_string(simCard));
+    absRdbPredicates.SetWhereClause(whereClause);
+    absRdbPredicates.SetWhereArgs(whereArgs);
+    localRdb_->Update(changeRows, valuesBucket, absRdbPredicates);
+    RINGTONE_INFO_LOG("update end changeRows = %{public}d", changeRows);
+
+    CHECK_AND_RETURN_LOG(columnType != RINGTONE_COLUMN_NOTIFICATION_TONE_TYPE, "set ok for notification tone");
+    if (simCard == SIM_CARD_1) {
+        simCard = SIM_CARD_2;
+    } else {
+        simCard = SIM_CARD_1;
+    }
+    changeRows = 0;
+    NativeRdb::ValuesBucket valuesBucketBoth;
+    valuesBucketBoth.PutInt(columnType, simCard);
+    valuesBucketBoth.PutInt(columnSourceType, SOURCE_TYPE_PRESET);
+    NativeRdb::AbsRdbPredicates absRdbPredicatesBoth(RINGTONE_TABLE);
+    string whereClauseBoth = columnType + "= ? AND " + columnSourceType + " = 1";
+    vector<string> whereArgsBoth;
+    whereArgsBoth.push_back(to_string(SIM_CARD_BOTH));
+    absRdbPredicatesBoth.SetWhereClause(whereClauseBoth);
+    absRdbPredicatesBoth.SetWhereArgs(whereArgsBoth);
+    localRdb_->Update(changeRows, valuesBucketBoth, absRdbPredicatesBoth);
+    RINGTONE_INFO_LOG("update both end changeRows = %{public}d", changeRows);
 }
 } // namespace Media
 } // namespace OHOS
