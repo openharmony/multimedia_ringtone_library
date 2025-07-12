@@ -269,14 +269,10 @@ HWTEST_F(RingtoneScannerTest, scanner_Commit_test_001, TestSize.Level0)
 HWTEST_F(RingtoneScannerTest, scanner_BootScan_test_001, TestSize.Level0)
 {
     RINGTONE_INFO_LOG("scanner_BootScan_test_001 start.");
-    const string dir = "./scanner_ScanDir_test_001";
-    shared_ptr<IRingtoneScannerCallback> callback = nullptr;
-    RingtoneScannerObj ringtoneScannerObj(dir, callback, RingtoneScannerObj::DIRECTORY);
+    RingtoneScannerObj ringtoneScannerObj(RingtoneScannerObj::START);
     std::shared_ptr<RingtoneUnistore> rdbStore = RingtoneRdbStore::GetInstance();
-    rdbStore->Stop();
     int32_t res = ringtoneScannerObj.BootScan();
     EXPECT_EQ(res, E_OK);
-    rdbStore->Init();
     RINGTONE_INFO_LOG("scanner_BootScan_test_001 end.");
 }
 
