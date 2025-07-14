@@ -130,6 +130,7 @@ int32_t RingtoneRestore::StartRestore()
     if (ret != E_OK) {
         return ret;
     }
+    CheckNotRingtoneRestore();
     auto infos = QueryFileInfos(INVALID_QUERY_OFFSET);
     if ((!infos.empty()) && (infos.size() != 0)) {
         CheckRestoreFileInfos(infos);
@@ -199,6 +200,55 @@ void RingtoneRestore::OnFinished(vector<FileInfo> &infos)
     if (!RingtoneFileUtils::RemoveDirectory(backupPath_)) {
         RINGTONE_ERR_LOG("cleanup backup dir failed, restorepath=%{public}s, err: %{public}s",
             backupPath_.c_str(), strerror(errno));
+    }
+}
+
+void RingtoneRestore::CheckNotRingtoneRestore()
+{
+    // SIM_CARD_1 ring no ringtone
+    if (RingtoneRestoreBase::DetermineNoRingtone(RINGTONE_COLUMN_RING_TONE_TYPE,
+        RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, RING_TONE_TYPE_SIM_CARD_1, RING_TONE_TYPE_SIM_CARD_BOTH, restoreRdb_) &&
+        RingtoneRestoreBase::NeedCommitSetting(RINGTONE_COLUMN_RING_TONE_TYPE,
+            RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, RING_TONE_TYPE_SIM_CARD_1, RING_TONE_TYPE_SIM_CARD_BOTH)) {
+        RINGTONE_INFO_LOG("no ringtone sound for ringtone sim card 1");
+        RingtoneRestoreBase::SetNotRingtone(RINGTONE_COLUMN_RING_TONE_TYPE,
+            RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, SIM_CARD_1);
+    }
+    // SIM_CARD_2 ring no ringtone
+    if (RingtoneRestoreBase::DetermineNoRingtone(RINGTONE_COLUMN_RING_TONE_TYPE,
+        RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, RING_TONE_TYPE_SIM_CARD_2, RING_TONE_TYPE_SIM_CARD_BOTH, restoreRdb_) &&
+        RingtoneRestoreBase::NeedCommitSetting(RINGTONE_COLUMN_RING_TONE_TYPE,
+            RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, RING_TONE_TYPE_SIM_CARD_2, RING_TONE_TYPE_SIM_CARD_BOTH)) {
+        RINGTONE_INFO_LOG("no ringtone sound for ringtone sim card 2");
+        RingtoneRestoreBase::SetNotRingtone(RINGTONE_COLUMN_RING_TONE_TYPE,
+            RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, SIM_CARD_2);
+    }
+    // SIM_CARD_1 shot no ringtone
+    if (RingtoneRestoreBase::DetermineNoRingtone(RINGTONE_COLUMN_SHOT_TONE_TYPE,
+        RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE, SHOT_TONE_TYPE_SIM_CARD_1, SHOT_TONE_TYPE_SIM_CARD_BOTH, restoreRdb_) &&
+        RingtoneRestoreBase::NeedCommitSetting(RINGTONE_COLUMN_SHOT_TONE_TYPE,
+            RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE, SHOT_TONE_TYPE_SIM_CARD_1, SHOT_TONE_TYPE_SIM_CARD_BOTH)) {
+        RINGTONE_INFO_LOG("no shot sound for shot sim card 1");
+        RingtoneRestoreBase::SetNotRingtone(RINGTONE_COLUMN_SHOT_TONE_TYPE,
+            RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE, SIM_CARD_1);
+    }
+    // SIM_CARD_2 shot no ringtone
+    if (RingtoneRestoreBase::DetermineNoRingtone(RINGTONE_COLUMN_SHOT_TONE_TYPE,
+        RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE, SHOT_TONE_TYPE_SIM_CARD_2, SHOT_TONE_TYPE_SIM_CARD_BOTH, restoreRdb_) &&
+        RingtoneRestoreBase::NeedCommitSetting(RINGTONE_COLUMN_SHOT_TONE_TYPE,
+            RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE, SHOT_TONE_TYPE_SIM_CARD_2, SHOT_TONE_TYPE_SIM_CARD_BOTH)) {
+        RINGTONE_INFO_LOG("no shot sound for shot sim card 2");
+        RingtoneRestoreBase::SetNotRingtone(RINGTONE_COLUMN_SHOT_TONE_TYPE,
+            RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE, SIM_CARD_2);
+    }
+    // notification
+    if (RingtoneRestoreBase::DetermineNoRingtone(RINGTONE_COLUMN_NOTIFICATION_TONE_TYPE,
+        RINGTONE_COLUMN_NOTIFICATION_TONE_SOURCE_TYPE, NOTIFICATION_TONE_TYPE, NOTIFICATION_TONE_TYPE, restoreRdb_) &&
+        RingtoneRestoreBase::NeedCommitSetting(RINGTONE_COLUMN_NOTIFICATION_TONE_TYPE,
+            RINGTONE_COLUMN_NOTIFICATION_TONE_SOURCE_TYPE, NOTIFICATION_TONE_TYPE, NOTIFICATION_TONE_TYPE)) {
+        RINGTONE_INFO_LOG("no notification sound for notification");
+        RingtoneRestoreBase::SetNotRingtone(RINGTONE_COLUMN_NOTIFICATION_TONE_TYPE,
+            RINGTONE_COLUMN_NOTIFICATION_TONE_SOURCE_TYPE, SIM_CARD_1);
     }
 }
 } // namespace Media

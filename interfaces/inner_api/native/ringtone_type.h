@@ -33,6 +33,7 @@ enum ToneType : int32_t {
 
 enum SourceType : int32_t {
     SOURCE_TYPE_INVALID = -1,
+    SOURCE_TYPE_NOT_SET = 0,  // not set
     SOURCE_TYPE_PRESET = 1,  // system preset
     SOURCE_TYPE_CUSTOMISED,  // user customised
     SOURCE_TYPE_MAX,

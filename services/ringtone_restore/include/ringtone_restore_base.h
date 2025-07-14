@@ -23,6 +23,10 @@
 
 namespace OHOS {
 namespace Media {
+static const int32_t SIM_CARD_1 = 1;
+static const int32_t SIM_CARD_2 = 2;
+static const int32_t SIM_CARD_BOTH = 3;
+
 class RingtoneRestoreBase : public RestoreInterface {
 public:
     RingtoneRestoreBase() = default;
@@ -47,13 +51,15 @@ protected:
     int32_t PopulateMetadata(const std::shared_ptr<NativeRdb::ResultSet> &resultSet,
         std::unique_ptr<RingtoneMetadata> &metaData);
     virtual void FlushSettings();
+    bool DetermineNoRingtone(const std::string &typeColumn, const std::string &sourceColumn,
+        int type, int allSetType, const std::shared_ptr<NativeRdb::RdbStore> &rdbStore);
+    bool NeedCommitSetting(const std::string &typeColumn, const std::string &sourceColumn,
+        int type, int allSetType);
+    void SetNotRingtone(const std::string &typeColumn, const std::string &sourceColumn, int32_t simCard);
 private:
     static std::string GetRestoreDir(const int32_t toneType);
     static NativeRdb::ValuesBucket SetInsertValue(const FileInfo &fileInfo);
     int32_t BatchInsert(const std::string &tableName, std::vector<NativeRdb::ValuesBucket> &values, int64_t &rowNum);
-    bool NeedCommitSetting(const std::string &typeColumn, const std::string &sourceColumn,
-        int type, int allSetType);
-
     std::shared_ptr<NativeRdb::RdbStore> localRdb_ = nullptr;
     std::unique_ptr<RingtoneSettingManager> settingMgr_ = nullptr;
 };

@@ -37,6 +37,8 @@ private:
     std::vector<FileInfo> QueryFileInfos(int32_t offset);
     std::vector<FileInfo> ConvertToFileInfos(std::vector<std::shared_ptr<RingtoneMetadata>> &metaDatas);
     void UpdateRestoreFileInfo(FileInfo &info);
+    void CheckNotRingtoneRestore();
+    void SetNotRingtone(const std::string &typeColumn, const std::string &sourceColumn, int32_t simCard);
 private:
     std::shared_ptr<NativeRdb::RdbStore> restoreRdb_ = nullptr;
     std::string backupPath_ = {};
