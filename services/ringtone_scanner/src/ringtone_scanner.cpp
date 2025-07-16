@@ -215,6 +215,9 @@ int32_t RingtoneScannerObj::BootScan()
     int64_t scanStart = RingtoneFileUtils::UTCTimeMilliSeconds();
     int32_t err = E_OK;
     bool res = true;
+    res = RingtoneScannerDb::UpdateScannerFlag();
+    CHECK_AND_RETURN_RET_LOG(res, E_HAS_DB_ERROR, "UpdateScannerFlag operation failed, res: %{public}d",
+        E_HAS_DB_ERROR);
     for (auto &dir : g_preloadDirs) {
         RINGTONE_INFO_LOG("start to scan realpath %{private}s", dir.c_str());
         string realPath;
@@ -235,10 +238,6 @@ int32_t RingtoneScannerObj::BootScan()
         }
         if (err != E_OK) {
             RINGTONE_ERR_LOG("BootScan err %{public}d", err);
-            res = RingtoneScannerDb::UpdateScannerFlag();
-            if (!res) {
-                RINGTONE_ERR_LOG("UpdateScannerFlag operation failed, res: %{public}d", res);
-            }
             unique_lock<mutex> lock(scannerLock_);
             scannerCv_.notify_one();
             return err;
@@ -255,10 +254,6 @@ int32_t RingtoneScannerObj::BootScan()
     res = RingtoneScannerDb::DeleteNotExist();
     if (!res) {
         RINGTONE_ERR_LOG("DeleteNotExist operation failed, res: %{public}d", res);
-    }
-    res = RingtoneScannerDb::UpdateScannerFlag();
-    if (!res) {
-        RINGTONE_ERR_LOG("UpdateScannerFlag operation failed, res: %{public}d", res);
     }
     return E_OK;
 }
