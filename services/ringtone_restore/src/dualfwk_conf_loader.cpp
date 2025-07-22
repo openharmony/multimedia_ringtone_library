@@ -29,6 +29,7 @@ static const std::string SETTINGS_DATA_URI_BASE =
     "datashare:///com.ohos.settingsdata/entry/settingsdata/USER_SETTINGSDATA_";
 static const std::string SETTINGS_DATA_FIELD_KEY = "KEYWORD";
 static const std::string SETTINGS_DATA_FIELD_VAL = "VALUE";
+static const std::string ERR_CONFIG_VALUE = "";
 static std::vector<std::string> SETTINGS_COLUMNS = {SETTINGS_DATA_FIELD_VAL};
 static const int DEFAULT_USERID = 100;
 
@@ -199,21 +200,22 @@ std::string DualFwkConfLoader::GetConfPath(const std::string &key)
         return value;
     }
 
+    size_t posExternal = value.find("external");
     pos = value.rfind("/");
-    if (pos == std::string::npos) {
+    if (pos == std::string::npos || posExternal == std::string::npos) {
         RINGTONE_ERR_LOG("Invalid value of key: %{public}s", key.c_str());
-        return value;
+        return ERR_CONFIG_VALUE;
     }
 
     std::string fileId = value.substr(pos + 1);
     if (!RingtoneUtils::IsNumber(fileId)) {
         RINGTONE_INFO_LOG("Invalid file id %{public}s", fileId.c_str());
-        return value;
+        return ERR_CONFIG_VALUE;
     }
 
     if (!RingtoneFileUtils::IsFileExists(EXTERNAL_DB_RESTORE_PATH)) {
         RINGTONE_ERR_LOG("External db is not exist");
-        return value;
+        return ERR_CONFIG_VALUE;
     }
 
     std::shared_ptr<NativeRdb::RdbStore> externalRdb = nullptr;
@@ -221,7 +223,7 @@ std::string DualFwkConfLoader::GetConfPath(const std::string &key)
         RINGTONE_BUNDLE_NAME, true);
     if (err != E_OK || externalRdb == nullptr) {
         RINGTONE_ERR_LOG("Init externalRdb fail. err: %{public}d", err);
-        return value;
+        return ERR_CONFIG_VALUE;
     }
 
     std::string querySql = "SELECT _data FROM files WHERE _id = ?";
@@ -229,13 +231,13 @@ std::string DualFwkConfLoader::GetConfPath(const std::string &key)
     auto resultSet = externalRdb->QuerySql(querySql, args);
     if (resultSet == nullptr || resultSet->GoToFirstRow() != NativeRdb::E_OK) {
         RINGTONE_ERR_LOG("Query fail.");
-        return value;
+        return ERR_CONFIG_VALUE;
     }
 
     std::string data;
     if (resultSet->GetString(0, data) != NativeRdb::E_OK) {
         RINGTONE_ERR_LOG("Get data from resultSet fail.");
-        return value;
+        return ERR_CONFIG_VALUE;
     }
 
     RINGTONE_INFO_LOG("Get conf path success, data: %{public}s", data.c_str());
