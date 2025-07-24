@@ -549,10 +549,10 @@ static DataShare::DataShareExtAbility *RingtoneDataShareCreator(const unique_ptr
 
 __attribute__((constructor)) void RegisterDataShareCreator()
 {
-    RINGTONE_ERR_LOG("entry");
+    RINGTONE_DEBUG_LOG("entry");
     DataShare::DataShareExtAbility::SetCreator(RingtoneDataShareCreator);
 
-    RINGTONE_ERR_LOG("End");
+    RINGTONE_DEBUG_LOG("End");
 }
 } // namespace AbilityRuntime
 } // namespace OHOS
