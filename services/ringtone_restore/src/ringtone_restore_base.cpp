@@ -156,23 +156,60 @@ bool RingtoneRestoreBase::DetermineNoRingtone(const std::string &typeColumn,
     return false;
 }
 
-void RingtoneRestoreBase::CheckSetting(FileInfo &info)
+void RingtoneRestoreBase::CheckShotSetting(FileInfo &info)
 {
-    RINGTONE_INFO_LOG("checking setting: %{public}s", info.toString().c_str());
-    if ((info.shotToneType > SHOT_TONE_TYPE_NOT) && (info.shotToneType < SHOT_TONE_TYPE_MAX) &&
+    if (info.shotToneType == SHOT_TONE_TYPE_SIM_CARD_BOTH && info.shotToneSourceType == SOURCE_TYPE_CUSTOMISED) {
+        if (NeedCommitSetting(RINGTONE_COLUMN_SHOT_TONE_TYPE, RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE,
+            SHOT_TONE_TYPE_SIM_CARD_1, SHOT_TONE_TYPE_SIM_CARD_BOTH)) {
+            settingMgr_->CommitSetting(info.toneId, info.restorePath, TONE_SETTING_TYPE_SHOT,
+                SHOT_TONE_TYPE_SIM_CARD_1, info.shotToneSourceType);
+            RINGTONE_INFO_LOG("commit as card1 shottone");
+        }
+        if (NeedCommitSetting(RINGTONE_COLUMN_SHOT_TONE_TYPE, RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE,
+            SHOT_TONE_TYPE_SIM_CARD_2, SHOT_TONE_TYPE_SIM_CARD_BOTH)) {
+            settingMgr_->CommitSetting(info.toneId, info.restorePath, TONE_SETTING_TYPE_SHOT,
+                SHOT_TONE_TYPE_SIM_CARD_2, info.shotToneSourceType);
+            RINGTONE_INFO_LOG("commit as card2 shottone");
+        }
+    } else if ((info.shotToneType > SHOT_TONE_TYPE_NOT) && (info.shotToneType < SHOT_TONE_TYPE_SIM_CARD_BOTH) &&
             (info.shotToneSourceType == SOURCE_TYPE_CUSTOMISED) && NeedCommitSetting(RINGTONE_COLUMN_SHOT_TONE_TYPE,
             RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE, info.shotToneType, SHOT_TONE_TYPE_SIM_CARD_BOTH)) {
         settingMgr_->CommitSetting(info.toneId, info.restorePath, TONE_SETTING_TYPE_SHOT, info.shotToneType,
             info.shotToneSourceType);
         RINGTONE_INFO_LOG("commit as shottone");
     }
-    if (info.ringToneType > RING_TONE_TYPE_NOT && info.ringToneType < RING_TONE_TYPE_MAX &&
+}
+
+void RingtoneRestoreBase::CheckRingtoneSetting(FileInfo &info)
+{
+    if (info.ringToneType == RING_TONE_TYPE_SIM_CARD_BOTH && info.ringToneSourceType == SOURCE_TYPE_CUSTOMISED) {
+        if (NeedCommitSetting(RINGTONE_COLUMN_RING_TONE_TYPE, RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE,
+            RING_TONE_TYPE_SIM_CARD_1, RING_TONE_TYPE_SIM_CARD_BOTH)) {
+            settingMgr_->CommitSetting(info.toneId, info.restorePath, TONE_SETTING_TYPE_RINGTONE,
+                RING_TONE_TYPE_SIM_CARD_1, info.ringToneSourceType);
+            RINGTONE_INFO_LOG("commit as card1 ringtone");
+        }
+        if (NeedCommitSetting(RINGTONE_COLUMN_RING_TONE_TYPE, RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE,
+            RING_TONE_TYPE_SIM_CARD_2, RING_TONE_TYPE_SIM_CARD_BOTH)) {
+            settingMgr_->CommitSetting(info.toneId, info.restorePath, TONE_SETTING_TYPE_RINGTONE,
+                RING_TONE_TYPE_SIM_CARD_2, info.ringToneSourceType);
+            RINGTONE_INFO_LOG("commit as card2 ringtone");
+        }
+    } else if (info.ringToneType > RING_TONE_TYPE_NOT && info.ringToneType < RING_TONE_TYPE_SIM_CARD_BOTH &&
             info.ringToneSourceType == SOURCE_TYPE_CUSTOMISED && NeedCommitSetting(RINGTONE_COLUMN_RING_TONE_TYPE,
             RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, info.ringToneType, RING_TONE_TYPE_SIM_CARD_BOTH)) {
         settingMgr_->CommitSetting(info.toneId, info.restorePath, TONE_SETTING_TYPE_RINGTONE, info.ringToneType,
             info.ringToneSourceType);
         RINGTONE_INFO_LOG("commit as ringtone");
     }
+}
+
+void RingtoneRestoreBase::CheckSetting(FileInfo &info)
+{
+    RINGTONE_INFO_LOG("checking setting: %{public}s", info.toString().c_str());
+    CheckShotSetting(info);
+    CheckRingtoneSetting(info);
+
     if (info.notificationToneType == NOTIFICATION_TONE_TYPE &&
             info.notificationToneSourceType == SOURCE_TYPE_CUSTOMISED &&
             NeedCommitSetting(RINGTONE_COLUMN_NOTIFICATION_TONE_TYPE,

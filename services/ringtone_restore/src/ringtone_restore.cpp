@@ -51,14 +51,14 @@ int32_t RingtoneRestore::Init(const std::string &backupPath)
         }
     }
     backupPath_ = backupPath;
-    if (RingtoneRestoreBase::Init(backupPath) != E_OK) {
-        return E_FAIL;
-    }
     int32_t err = RingtoneRestoreDbUtils::InitDb(restoreRdb_, RINGTONE_LIBRARY_DB_NAME, dbPath_,
         RINGTONE_BUNDLE_NAME, true);
     if (err != E_OK) {
         RINGTONE_ERR_LOG("ringtone rdb fail, err = %{public}d", err);
         return E_HAS_DB_ERROR;
+    }
+    if (RingtoneRestoreBase::Init(backupPath) != E_OK) {
+        return E_FAIL;
     }
 
     RINGTONE_INFO_LOG("Init db successfully");
