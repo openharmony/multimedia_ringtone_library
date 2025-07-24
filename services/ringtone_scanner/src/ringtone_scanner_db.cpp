@@ -166,7 +166,7 @@ void RingtoneScannerDb::ExtractMetaFromColumn(const shared_ptr<NativeRdb::Result
         dataType = itr->second.first;
         requestFunc = itr->second.second;
     } else {
-        RINGTONE_ERR_LOG("invalid column name %{private}s", col.c_str());
+        RINGTONE_DEBUG_LOG("invalid column name %{public}s", col.c_str());
         return;
     }
 
@@ -189,7 +189,7 @@ void RingtoneScannerDb::ExtractVibrateMetaFromColumn(const shared_ptr<NativeRdb:
         dataType = itr->second.first;
         requestFunc = itr->second.second;
     } else {
-        RINGTONE_ERR_LOG("invalid column name %{private}s", col.c_str());
+        RINGTONE_DEBUG_LOG("invalid column name %{public}s", col.c_str());
         return;
     }
 

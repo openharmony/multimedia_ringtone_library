@@ -43,18 +43,8 @@ static const std::string NOTIFICATIONS_TYPE = "notifications";
 static const char RINGTONE_RDB_SCANNER_FLAG_KEY[] = "RDBInitScanner";
 static const int RINGTONE_RDB_SCANNER_FLAG_KEY_TRUE = 1;
 static const int RINGTONE_RDB_SCANNER_FLAG_KEY_FALSE = 0;
-#ifndef OHOS_LOCAL_DEBUG_DISABLE
-// liuxk just for debug
-static const std::string LOCAL_DIR = "/data/storage/el2/base/preload_data";
-#endif
+
 static std::unordered_map<std::string, std::pair<int32_t, int32_t>> g_typeMap = {
-#ifndef OHOS_LOCAL_DEBUG_DISABLE
-    // liuxk just for debug
-    {LOCAL_DIR + "/alarms", {SOURCE_TYPE_CUSTOMISED, TONE_TYPE_ALARM}},
-    {LOCAL_DIR + "/ringtones", {SOURCE_TYPE_PRESET, TONE_TYPE_RINGTONE}},
-    {LOCAL_DIR + "/notifications", {SOURCE_TYPE_CUSTOMISED, TONE_TYPE_NOTIFICATION}},
-    {LOCAL_DIR + "/contacts", {SOURCE_TYPE_CUSTOMISED, TONE_TYPE_CONTACTS}},
-#endif
     // customized tones map
     {RINGTONE_CUSTOMIZED_ALARM_PATH, {SOURCE_TYPE_CUSTOMISED, TONE_TYPE_ALARM}},
     {RINGTONE_CUSTOMIZED_RINGTONE_PATH, {SOURCE_TYPE_CUSTOMISED, TONE_TYPE_RINGTONE}},
@@ -201,7 +191,10 @@ void RingtoneScannerObj::UpdateDefaultTone()
             NativePreferences::PreferencesHelper::GetPreferences(COMMON_XML_EL1, errCode);
         if (prefs) {
             int isScanner = prefs->GetInt(RINGTONE_RDB_SCANNER_FLAG_KEY, RINGTONE_RDB_SCANNER_FLAG_KEY_FALSE);
-            CHECK_AND_RETURN_LOG(isScanner == RINGTONE_RDB_SCANNER_FLAG_KEY_FALSE, "no need to update default tone");
+            if (isScanner == RINGTONE_RDB_SCANNER_FLAG_KEY_TRUE) {
+                RINGTONE_INFO_LOG("default tone already updated, no need to update again");
+                return;
+            }
             // reset ringtone default settings
             RingtoneDefaultSetting::GetObj(rawRdb)->Update();
             prefs->PutInt(RINGTONE_RDB_SCANNER_FLAG_KEY, RINGTONE_RDB_SCANNER_FLAG_KEY_TRUE);
@@ -222,7 +215,7 @@ int32_t RingtoneScannerObj::BootScan()
         RINGTONE_INFO_LOG("start to scan realpath %{private}s", dir.c_str());
         string realPath;
         if (!PathToRealPath(dir, realPath)) {
-            RINGTONE_ERR_LOG("failed to get realpath %{private}s, errno %{public}d", dir.c_str(), errno);
+            RINGTONE_INFO_LOG("failed to get realpath %{private}s, errno %{public}d", dir.c_str(), errno);
             continue;
         }
 
