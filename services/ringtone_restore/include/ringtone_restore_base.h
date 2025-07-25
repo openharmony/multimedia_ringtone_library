@@ -44,6 +44,8 @@ protected:
     virtual int32_t InsertTones(std::vector<FileInfo> &infos);
     virtual int32_t LoadDualFwkConf(const std::string &backupPath) { return -1; }
     virtual void CheckSetting(FileInfo &info);
+    void CheckShotSetting(FileInfo &info);
+    void CheckRingtoneSetting(FileInfo &info);
     static bool MoveFile(const std::string &src, const std::string &dst);
     static int32_t MoveDirectory(const std::string &srcDir, const std::string &dstDir);
     void ExtractMetaFromColumn(const std::shared_ptr<NativeRdb::ResultSet> &resultSet,

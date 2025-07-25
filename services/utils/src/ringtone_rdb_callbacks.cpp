@@ -326,13 +326,11 @@ static bool CheckAndGetDataUri(const string &displayName, const string &dataUri,
     string dirName = filePath.substr(lastPos + 1);
     if (dirName == ringDirName && fileName == displayName) {
         return true;
-    } else {
-        size_t start_pos = 0;
-        if ((start_pos = dataUri.find(RINGTONE_CUSTOMIZED_BASE_PATH)) != std::string::npos) {
-            newDataUri = RINGTONE_CUSTOMIZED_BASE_PATH + "/Ringtone/" + ringDirName + "/" + displayName;
-            if (RingtoneFileUtils::IsFileExists(newDataUri)) {
-                return false;
-            }
+    }
+    if (dataUri.find(RINGTONE_CUSTOMIZED_BASE_PATH) != std::string::npos) {
+        newDataUri = RINGTONE_CUSTOMIZED_BASE_PATH + "/Ringtone/" + ringDirName + "/" + displayName;
+        if (RingtoneFileUtils::IsFileExists(newDataUri)) {
+            return false;
         }
     }
     return true;
