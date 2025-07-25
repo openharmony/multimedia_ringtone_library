@@ -64,6 +64,7 @@ ohos_shared_library("ringtone_data_helper") {
     "data_share:datashare_consumer",
     "hilog:libhilog",
     "hitrace:hitrace_meter",
+    "ipc:ipc_single",
     "kv_store:distributeddata_inner",
     "relational_store:native_rdb",
   ]
