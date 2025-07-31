@@ -1222,5 +1222,31 @@ HWTEST_F(RingtoneUnitTest, medialib_silentAccessQuery_test_001, TestSize.Level0)
     auto errCode = businessError.GetCode();
     GTEST_LOG_(INFO)<< "g_dataShareHelperProxy->Query(uri errCode=" << errCode;
 }
+
+HWTEST_F(RingtoneUnitTest, medialib_GetCustomRingtoneCurrentPath_test_001, TestSize.Level0)
+{
+    string testUri = "/data/storage/el2/base/files/Ringtone/ringtones/onlineRingtone-1-testuri.ogg";
+    string resultUri = RingtoneCheckUtils::GetCustomRingtoneCurrentPath(testUri);
+    string expectedUri = RINGTONE_CUSTOMIZED_BASE_PATH + "/Ringtone/ringtones/onlineRingtone-1-testuri.ogg";
+    EXPECT_EQ(resultUri, expectedUri);
+    GTEST_LOG_(INFO)<< "medialib_GetCustomRingtoneCurrentPath_test_001: out: " << testUri;
+}
+
+HWTEST_F(RingtoneUnitTest, medialib_GetCustomRingtoneCurrentPath_test_002, TestSize.Level0)
+{
+    string testUri = "/storage/media/local/files/Ringtone/ringtones/onlineRingtone-1-testuri.ogg";
+    string resultUri = RingtoneCheckUtils::GetCustomRingtoneCurrentPath(testUri);
+    string expectedUri = RINGTONE_CUSTOMIZED_BASE_PATH + "/Ringtone/ringtones/onlineRingtone-1-testuri.ogg";
+    EXPECT_EQ(resultUri, expectedUri);
+    GTEST_LOG_(INFO)<< "medialib_GetCustomRingtoneCurrentPath_test_002: out: " << testUri;
+}
+
+HWTEST_F(RingtoneUnitTest, medialib_GetCustomRingtoneCurrentPath_test_003, TestSize.Level0)
+{
+    string testUri = "testuri";
+    string resultUri = RingtoneCheckUtils::GetCustomRingtoneCurrentPath(testUri);
+    EXPECT_EQ(resultUri, "testuri");
+    GTEST_LOG_(INFO)<< "medialib_GetCustomRingtoneCurrentPath_test_003: out: " << testUri;
+}
 } // namespace Media
 } // namespace OHOS
