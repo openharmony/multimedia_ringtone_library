@@ -71,6 +71,7 @@ ohos_unittest("ringtone_data_extension_unittest") {
     "ipc:ipc_single",
     "libxml2:libxml2",
     "napi:ace_napi",
+    "preferences:native_preferences",
     "relational_store:native_rdb",
     "relational_store:rdb_data_share_adapter",
   ]

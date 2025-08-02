@@ -19,6 +19,7 @@
 
 #include "dfx_const.h"
 #include "directory_ex.h"
+#include "parameter.h"
 #include "preferences_helper.h"
 #include "ringtone_default_setting.h"
 #include "ringtone_file_utils.h"
@@ -43,6 +44,8 @@ static const std::string NOTIFICATIONS_TYPE = "notifications";
 static const char RINGTONE_RDB_SCANNER_FLAG_KEY[] = "RDBInitScanner";
 static const int RINGTONE_RDB_SCANNER_FLAG_KEY_TRUE = 1;
 static const int RINGTONE_RDB_SCANNER_FLAG_KEY_FALSE = 0;
+static const char RINGTONE_PARAMETER_SCANNER_FIRST_KEY[] = "ringtone.scanner.first";
+static const char RINGTONE_PARAMETER_SCANNER_FIRST_TRUE[] = "true";
 
 static std::unordered_map<std::string, std::pair<int32_t, int32_t>> g_typeMap = {
     // customized tones map
@@ -179,34 +182,34 @@ void RingtoneScannerObj::Scan()
     }
 }
 
-void RingtoneScannerObj::UpdateDefaultTone()
+int32_t RingtoneScannerObj::UpdateDefaultTone()
 {
     auto rdbStore = RingtoneRdbStore::GetInstance();
-    if (rdbStore != nullptr) {
-        auto rawRdb = rdbStore->GetRaw();
-        CHECK_AND_RETURN_LOG(rawRdb != nullptr, "rawRdb is nullptr");
+    CHECK_AND_RETURN_RET_LOG(rdbStore != nullptr, E_ERR, "rdbStore is nullptr");
+    auto rawRdb = rdbStore->GetRaw();
+    CHECK_AND_RETURN_RET_LOG(rawRdb != nullptr, E_ERR, "rawRdb is nullptr");
+    int errCode = 0;
+    shared_ptr<NativePreferences::Preferences> prefs =
+        NativePreferences::PreferencesHelper::GetPreferences(COMMON_XML_EL1, errCode);
+    CHECK_AND_RETURN_RET_LOG(prefs, E_ERR, "Preferences is null");
+    int isScanner = prefs->GetInt(RINGTONE_RDB_SCANNER_FLAG_KEY, RINGTONE_RDB_SCANNER_FLAG_KEY_FALSE);
+    if (isScanner == RINGTONE_RDB_SCANNER_FLAG_KEY_TRUE) {
         RingtoneDefaultSetting::GetObj(rawRdb)->UpdateDefaultSystemTone();
-        int errCode = 0;
-        shared_ptr<NativePreferences::Preferences> prefs =
-            NativePreferences::PreferencesHelper::GetPreferences(COMMON_XML_EL1, errCode);
-        if (prefs) {
-            int isScanner = prefs->GetInt(RINGTONE_RDB_SCANNER_FLAG_KEY, RINGTONE_RDB_SCANNER_FLAG_KEY_FALSE);
-            if (isScanner == RINGTONE_RDB_SCANNER_FLAG_KEY_TRUE) {
-                RINGTONE_INFO_LOG("default tone already updated, no need to update again");
-                return;
-            }
-            // reset ringtone default settings
-            RingtoneDefaultSetting::GetObj(rawRdb)->Update();
-            prefs->PutInt(RINGTONE_RDB_SCANNER_FLAG_KEY, RINGTONE_RDB_SCANNER_FLAG_KEY_TRUE);
-            prefs->FlushSync();
-        }
+        RINGTONE_INFO_LOG("The default ringtone has been set, no need to be configured again");
+        return E_OK;
     }
+    // reset ringtone default settings
+    RingtoneDefaultSetting::GetObj(rawRdb)->Update();
+    RingtoneDefaultSetting::GetObj(rawRdb)->UpdateDefaultSystemTone();
+    prefs->PutInt(RINGTONE_RDB_SCANNER_FLAG_KEY, RINGTONE_RDB_SCANNER_FLAG_KEY_TRUE);
+    prefs->FlushSync();
+    return E_OK;
 }
 
-int32_t RingtoneScannerObj::BootScan()
+int32_t RingtoneScannerObj::BootScanProcess()
 {
     int64_t scanStart = RingtoneFileUtils::UTCTimeMilliSeconds();
-    int32_t err = E_OK;
+    int32_t ret = E_OK;
     bool res = true;
     res = RingtoneScannerDb::UpdateScannerFlag();
     CHECK_AND_RETURN_RET_LOG(res, E_HAS_DB_ERROR, "UpdateScannerFlag operation failed, res: %{public}d",
@@ -224,31 +227,36 @@ int32_t RingtoneScannerObj::BootScan()
 
         if (RingtoneScannerUtils::IsDirectory(realPath)) {
             dir_ = move(realPath);
-            err = ScanDir();
+            ret = ScanDir();
         } else if (RingtoneScannerUtils::IsRegularFile(realPath)) {
             path_ = move(realPath);
-            err = ScanFile();
+            ret = ScanFile();
         }
-        if (err != E_OK) {
-            RINGTONE_ERR_LOG("BootScan err %{public}d", err);
-            unique_lock<mutex> lock(scannerLock_);
-            scannerCv_.notify_one();
-            return err;
-        }
+        CHECK_AND_RETURN_RET_LOG(ret == E_OK, ret, "BootScan err, ret: %{public}d", ret);
     }
 
-    UpdateDefaultTone();
+    ret = UpdateDefaultTone();
+    CHECK_AND_RETURN_RET_LOG(ret == E_OK, ret, "UpdateDefaultTone operation failed, ret: %{public}d", ret);
 
     int64_t scanEnd = RingtoneFileUtils::UTCTimeMilliSeconds();
     RINGTONE_INFO_LOG("total preload tone files count:%{public}d, scanned: %{public}d, costed-time:%{public}"
         PRId64 " ms", tonesScannedCount_, tonesScannedCount_, scanEnd - scanStart);
+    res = RingtoneScannerDb::DeleteNotExist();
+    CHECK_AND_RETURN_RET_LOG(res, E_ERR, "DeleteNotExist operation failed, res: %{public}d", res);
+    return ret;
+}
+
+int32_t RingtoneScannerObj::BootScan()
+{
+    RINGTONE_INFO_LOG("start to BootScan");
+    int32_t ret = BootScanProcess();
     unique_lock<mutex> lock(scannerLock_);
     scannerCv_.notify_one();
-    res = RingtoneScannerDb::DeleteNotExist();
-    if (!res) {
-        RINGTONE_ERR_LOG("DeleteNotExist operation failed, res: %{public}d", res);
+    if (ret == E_OK) {
+        int result = SetParameter(RINGTONE_PARAMETER_SCANNER_FIRST_KEY, RINGTONE_PARAMETER_SCANNER_FIRST_TRUE);
+        RINGTONE_INFO_LOG("SetParameter scan end, result: %{public}d", result);
     }
-    return E_OK;
+    return ret;
 }
 
 void RingtoneScannerObj::WaitFor()

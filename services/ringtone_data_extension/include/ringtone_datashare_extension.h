@@ -137,6 +137,7 @@ private:
     EXPORT static bool CheckCurrentUser();
     EXPORT void UpdataRdbPathData();
     EXPORT void RingtoneScanner();
+    EXPORT static void CheckRingtoneDbDefaultSettings();
     Runtime &runtime_;
 };
 } // namespace AbilityRuntime

@@ -15,17 +15,22 @@
 
 #include "ringtone_datashare_extension_test.h"
 
+#include "ability_context_impl.h"
 #include "ability_handler.h"
 #include "ability_info.h"
 #include "datashare_ext_ability.h"
+#include "dfx_const.h"
 #include "get_self_permissions.h"
 #include "ohos_application.h"
+#include "preferences_helper.h"
 #define private public
+#include "ringtone_data_manager.h"
 #include "ringtone_datashare_stub_impl.h"
 #undef private
 #include "ringtone_db_const.h"
 #include "ringtone_errno.h"
 #include "ringtone_file_utils.h"
+#include "ringtone_rdbstore.h"
 #include "ringtone_type.h"
 #include "runtime.h"
 
@@ -36,6 +41,10 @@ using namespace testing::ext;
 
 namespace OHOS {
 namespace Media {
+
+static const char RINGTONE_RDB_SCANNER_FLAG_KEY[] = "RDBInitScanner";
+static const int RINGTONE_RDB_SCANNER_FLAG_KEY_TRUE = 1;
+static const int RINGTONE_RDB_SCANNER_FLAG_KEY_FALSE = 0;
 
 void RingtoneDataShareExtensionTest::SetUpTestCase()
 {
@@ -303,6 +312,46 @@ HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_GetUserId_test_001, 
     mediaDataShare->GetUserId();
     auto ret1 = mediaDataShare->CheckCurrentUser();
     EXPECT_EQ(ret1, true);
+}
+
+HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_CheckRingtoneDbDefaultSettings_test_001, TestSize.Level0)
+{
+    const std::unique_ptr<AbilityRuntime::Runtime> runtime;
+    AbilityRuntime::RingtoneDataShareExtension *mediaDataShare;
+    mediaDataShare = AbilityRuntime::RingtoneDataShareExtension::Create(runtime);
+    ASSERT_NE(mediaDataShare, nullptr);
+    int errCode = 0;
+    shared_ptr<NativePreferences::Preferences> prefs =
+        NativePreferences::PreferencesHelper::GetPreferences(COMMON_XML_EL1, errCode);
+    ASSERT_NE(prefs, nullptr);
+    prefs->PutInt(RINGTONE_RDB_SCANNER_FLAG_KEY, RINGTONE_RDB_SCANNER_FLAG_KEY_FALSE);
+    prefs->FlushSync();
+
+    auto dataManager = RingtoneDataManager::GetInstance();
+    ASSERT_NE(dataManager, nullptr);
+    auto stageContext = std::make_shared<AbilityRuntime::ContextImpl>();
+    auto abilityContextImpl = std::make_shared<OHOS::AbilityRuntime::AbilityContextImpl>();
+    ASSERT_NE(abilityContextImpl, nullptr);
+    abilityContextImpl->SetStageContext(stageContext);
+    auto result = dataManager->Init(abilityContextImpl);
+    EXPECT_EQ(result, E_OK);
+    shared_ptr<RingtoneUnistore> uniStore = RingtoneRdbStore::GetInstance();
+    ASSERT_NE(uniStore, nullptr);
+    auto rawRdb = uniStore->GetRaw();
+    ASSERT_NE(rawRdb, nullptr);
+    NativeRdb::ValuesBucket values;
+    values.PutString(PRELOAD_CONFIG_COLUMN_DISPLAY_NAME, "Harmony.ogg");
+    values.PutInt(PRELOAD_CONFIG_COLUMN_TONE_ID, 1);
+    NativeRdb::AbsRdbPredicates absRdbPredicates(PRELOAD_CONFIG_TABLE);
+    absRdbPredicates.EqualTo(PRELOAD_CONFIG_COLUMN_RING_TONE_TYPE, "1");
+
+    int32_t changedRows = 0;
+    int32_t updateResult = rawRdb->Update(changedRows, values, absRdbPredicates);
+    EXPECT_EQ(updateResult == E_OK && changedRows >= 0, true);
+
+    mediaDataShare->CheckRingtoneDbDefaultSettings();
+    int isScanner = prefs->GetInt(RINGTONE_RDB_SCANNER_FLAG_KEY, RINGTONE_RDB_SCANNER_FLAG_KEY_FALSE);
+    EXPECT_EQ(isScanner, RINGTONE_RDB_SCANNER_FLAG_KEY_TRUE);
 }
 } // namespace Media
 } // namespace OHOS
