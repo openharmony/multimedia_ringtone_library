@@ -25,11 +25,13 @@
 #include "permission_utils.h"
 #include "preferences_helper.h"
 #include "ipc_skeleton.h"
+#include "result_set_utils.h"
 #include "ringtone_data_manager.h"
 #include "ringtone_datashare_stub_impl.h"
 #include "ringtone_file_utils.h"
 #include "ringtone_language_manager.h"
 #include "ringtone_log.h"
+#include "ringtone_rdbstore.h"
 #include "ringtone_scanner_manager.h"
 #include "ringtone_tracer.h"
 #include "runtime.h"
@@ -69,6 +71,7 @@ std::map<std::string, std::string> VALID_URI_TO_TABLE {
 static const char RINGTONE_RDB_SCANNER_FLAG_KEY[] = "RDBInitScanner";
 static const int RINGTONE_RDB_SCANNER_FLAG_KEY_TRUE = 1;
 static const int RINGTONE_RDB_SCANNER_FLAG_KEY_FALSE = 0;
+const std::string PRELOAD_RINGTONE_TYPE = "1";
 
 RingtoneDataShareExtension *RingtoneDataShareExtension::Create(const unique_ptr<Runtime> &runtime)
 {
@@ -93,7 +96,7 @@ void RingtoneDataShareExtension::Init(const shared_ptr<AbilityLocalRecord> &reco
     DataShareExtAbility::Init(record, application, handler, token);
 }
 
-static void CheckRingtoneDbPath()
+void RingtoneDataShareExtension::CheckRingtoneDbDefaultSettings()
 {
     int errCode = 0;
     shared_ptr<NativePreferences::Preferences> prefs =
@@ -106,11 +109,27 @@ static void CheckRingtoneDbPath()
     if (isScanner == RINGTONE_RDB_SCANNER_FLAG_KEY_TRUE) {
         return;
     }
-    string dbPath = RINGTONE_LIBRARY_DB_PATH_EL1 + "/rdb" + "/" + RINGTONE_LIBRARY_DB_NAME;
-    if (RingtoneFileUtils::IsFileExists(dbPath)) {
+    auto rdbStore = RingtoneRdbStore::GetInstance();
+    CHECK_AND_RETURN_LOG(rdbStore != nullptr, "rdbstore is nullptr");
+    auto rawRdb = rdbStore->GetRaw();
+    CHECK_AND_RETURN_LOG(rawRdb != nullptr, "rawRdb is nullptr");
+    string sql = "SELECT " + PRELOAD_CONFIG_COLUMN_DISPLAY_NAME + " FROM " +
+        PRELOAD_CONFIG_TABLE + " WHERE " + PRELOAD_CONFIG_COLUMN_RING_TONE_TYPE + " = " + PRELOAD_RINGTONE_TYPE;
+    auto resultSet = rawRdb->QuerySql(sql);
+    CHECK_AND_RETURN_LOG(resultSet != nullptr, "resultSet is nullptr");
+    if (resultSet->GoToFirstRow() != NativeRdb::E_OK) {
+        resultSet->Close();
+        RINGTONE_INFO_LOG("Query operation failed, no resultSet");
+        return;
+    }
+    string displayName = GetStringVal(PRELOAD_CONFIG_COLUMN_DISPLAY_NAME, resultSet);
+    if (!displayName.empty()) {
+        RINGTONE_INFO_LOG("The default ringtone has been set. ringtone=%{public}s", displayName.c_str());
         prefs->PutInt(RINGTONE_RDB_SCANNER_FLAG_KEY, RINGTONE_RDB_SCANNER_FLAG_KEY_TRUE);
         prefs->FlushSync();
     }
+    resultSet->Close();
+    return;
 }
 
 void RingtoneDataShareExtension::OnStart(const AAFwk::Want &want)
@@ -124,7 +143,7 @@ void RingtoneDataShareExtension::OnStart(const AAFwk::Want &want)
         return;
     }
     RINGTONE_INFO_LOG("runtime language %{public}d", runtime_.GetLanguage());
-    CheckRingtoneDbPath();
+
     auto dataManager = RingtoneDataManager::GetInstance();
     if (dataManager == nullptr) {
         RINGTONE_ERR_LOG("Failed to get dataManager");
@@ -141,6 +160,7 @@ void RingtoneDataShareExtension::OnStart(const AAFwk::Want &want)
     auto dfxMgr = DfxManager::GetInstance();
     dfxMgr->Init(context);
 
+    CheckRingtoneDbDefaultSettings();
     RingtoneScanner();
     
     if (RingtoneFileUtils::IsFileExists(OLD_RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH)) {
@@ -535,8 +555,6 @@ void RingtoneDataShareExtension::RingtoneScanner()
     RINGTONE_INFO_LOG("GetParameter end, paramValue: %{public}s .", parameter.c_str());
     if (strcmp(paramValue, RINGTONE_PARAMETER_SCANNER_FIRST_FALSE) == 0) {
         RingtoneScannerManager::GetInstance()->Start(false);
-        int result = SetParameter(RINGTONE_PARAMETER_SCANNER_FIRST_KEY, RINGTONE_PARAMETER_SCANNER_FIRST_TRUE);
-        RINGTONE_INFO_LOG("SetParameter end, result: %{public}d", result);
     }
     RINGTONE_INFO_LOG("Ringtone Scanner End.");
 }
