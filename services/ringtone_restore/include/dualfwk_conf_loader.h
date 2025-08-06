@@ -50,6 +50,7 @@ public:
     void ShowConf(const DualFwkConf &conf);
     std::string GetConf(const std::string &key);
     std::string GetConfPath(const std::string &key);
+    int32_t ValueToDBFileID(const std::string &value, std::string &dbName, std::string &dbPath, std::string &fileId);
 
 private:
     std::shared_ptr<DataShare::DataShareHelper> dataShareHelper_;

@@ -46,6 +46,9 @@ const std::string DUAL_NAME = std::string() + static_cast<char>(CHAR_LOWER_CASE_
 static const std::string EXTERNAL_DB_NAME = "external.db";
 static const std::string EXTERNAL_DB_RESTORE_PATH =
     "/data/storage/el2/base/.backup/restore/com." + DUAL_NAME + ".providers.media.module/ce/databases/external.db";
+static const std::string INTERNAL_DB_NAME = "internal.db";
+static const std::string INTERNAL_DB_RESTORE_PATH =
+    "/data/storage/el2/base/.backup/restore/com." + DUAL_NAME + ".providers.media.module/ce/databases/internal.db";
 
 DualFwkConfLoader::DualFwkConfLoader() {}
 
@@ -191,8 +194,40 @@ std::string DualFwkConfLoader::GetConf(const std::string &key)
     return valueResult;
 }
 
+int32_t DualFwkConfLoader::ValueToDBFileID(const std::string &value, std::string &dbName, std::string &dbPath,
+    std::string &fileId)
+{
+    size_t posExternal = value.find("external");
+    if (posExternal != std::string::npos) {
+        dbName = EXTERNAL_DB_NAME;
+        dbPath = EXTERNAL_DB_RESTORE_PATH;
+    }
+
+    size_t posInternal = value.find("internal");
+    if (posInternal != std::string::npos) {
+        dbName = INTERNAL_DB_NAME;
+        dbPath = INTERNAL_DB_RESTORE_PATH;
+    }
+
+    size_t pos = value.rfind("/");
+    if (pos == std::string::npos || (posExternal == std::string::npos && posInternal == std::string::npos)) {
+        RINGTONE_ERR_LOG("Invalid value");
+        return E_ERR;
+    }
+
+    fileId = value.substr(pos + 1);
+    if (!RingtoneUtils::IsNumber(fileId)) {
+        RINGTONE_INFO_LOG("Invalid file id %{public}s", fileId.c_str());
+        return E_ERR;
+    }
+    return E_OK;
+}
+
 std::string DualFwkConfLoader::GetConfPath(const std::string &key)
 {
+    std::string dbName;
+    std::string dbPath;
+    std::string fileId;
     std::string value = GetConf(key);
     size_t pos = value.find("content://media");
     if (pos != 0) {
@@ -200,35 +235,26 @@ std::string DualFwkConfLoader::GetConfPath(const std::string &key)
         return value;
     }
 
-    size_t posExternal = value.find("external");
-    pos = value.rfind("/");
-    if (pos == std::string::npos || posExternal == std::string::npos) {
-        RINGTONE_ERR_LOG("Invalid value of key: %{public}s", key.c_str());
+    int32_t ret = ValueToDBFileID(value, dbName, dbPath, fileId);
+    if (ret != E_OK) {
         return ERR_CONFIG_VALUE;
     }
 
-    std::string fileId = value.substr(pos + 1);
-    if (!RingtoneUtils::IsNumber(fileId)) {
-        RINGTONE_INFO_LOG("Invalid file id %{public}s", fileId.c_str());
+    if (!RingtoneFileUtils::IsFileExists(dbPath)) {
+        RINGTONE_ERR_LOG("%{public}s is not exist", dbName.c_str());
         return ERR_CONFIG_VALUE;
     }
 
-    if (!RingtoneFileUtils::IsFileExists(EXTERNAL_DB_RESTORE_PATH)) {
-        RINGTONE_ERR_LOG("External db is not exist");
-        return ERR_CONFIG_VALUE;
-    }
-
-    std::shared_ptr<NativeRdb::RdbStore> externalRdb = nullptr;
-    int32_t err = RingtoneRestoreDbUtils::InitDb(externalRdb, EXTERNAL_DB_NAME, EXTERNAL_DB_RESTORE_PATH,
-        RINGTONE_BUNDLE_NAME, true);
-    if (err != E_OK || externalRdb == nullptr) {
-        RINGTONE_ERR_LOG("Init externalRdb fail. err: %{public}d", err);
+    std::shared_ptr<NativeRdb::RdbStore> rdbStore = nullptr;
+    int32_t err = RingtoneRestoreDbUtils::InitDb(rdbStore, dbName, dbPath, RINGTONE_BUNDLE_NAME, true);
+    if (err != E_OK || rdbStore == nullptr) {
+        RINGTONE_ERR_LOG("Init rdbStore fail. err: %{public}d", err);
         return ERR_CONFIG_VALUE;
     }
 
     std::string querySql = "SELECT _data FROM files WHERE _id = ?";
     std::vector<std::string> args = { fileId };
-    auto resultSet = externalRdb->QuerySql(querySql, args);
+    auto resultSet = rdbStore->QuerySql(querySql, args);
     if (resultSet == nullptr || resultSet->GoToFirstRow() != NativeRdb::E_OK) {
         RINGTONE_ERR_LOG("Query fail.");
         return ERR_CONFIG_VALUE;
