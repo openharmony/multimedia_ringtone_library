@@ -185,28 +185,6 @@ const std::string RINGTONE_CONTAINER_TYPE_M4R   = "m4r";
 const std::string RINGTONE_CONTAINER_TYPE_WAV   = "wav";
 const std::string RINGTONE_CONTAINER_TYPE_OGG   = "ogg";
 const std::string RINGTONE_CONTAINER_TYPE_VIDEO_MP4   = "mp4";
-
-const std::string RINGTONE_CUSTOM_PATH_FIRST = "/storage/media/local/files";
-const std::string RINGTONE_CUSTOM_PATH_SECOND = "/data/storage/el2/base/files";
-#define EXPORT __attribute__ ((visibility ("default")))
-class RingtoneCheckUtils {
-public:
-    EXPORT RingtoneCheckUtils() = default;
-    EXPORT virtual ~RingtoneCheckUtils() = default;
-    EXPORT static std::string GetCustomRingtoneCurrentPath(const std::string &uri)
-    {
-        std::string uriCopy = uri;
-        if (uriCopy.compare(0, RINGTONE_CUSTOM_PATH_FIRST.size(), RINGTONE_CUSTOM_PATH_FIRST) == 0) {
-            uriCopy.replace(0, RINGTONE_CUSTOM_PATH_FIRST.size(), RINGTONE_CUSTOMIZED_BASE_PATH);
-            return uriCopy;
-        }
-        if (uriCopy.compare(0, RINGTONE_CUSTOM_PATH_SECOND.size(), RINGTONE_CUSTOM_PATH_SECOND) == 0) {
-            uriCopy.replace(0, RINGTONE_CUSTOM_PATH_SECOND.size(), RINGTONE_CUSTOMIZED_BASE_PATH);
-            return uriCopy;
-        }
-        return uriCopy;
-    }
-};
 } // namespace Media
 } // namespace OHOS
 

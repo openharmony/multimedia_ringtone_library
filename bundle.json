@@ -75,6 +75,7 @@
                 "header_base": "//foundation/multimedia/ringtone_library/interfaces/inner_api/native",
                 "header_files": [
                   "ringtone_asset.h",
+                  "ringtone_check_utils.h",
                   "ringtone_fetch_result.h",
                   "simcard_setting_asset.h",
                   "vibrate_asset.h"

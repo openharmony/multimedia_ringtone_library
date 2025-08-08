@@ -19,6 +19,7 @@
 #include "iservice_registry.h"
 #include "get_self_permissions.h"
 #include "ringtone_asset.h"
+#include "ringtone_check_utils.h"
 #include "ringtone_db_const.h"
 #include "ringtone_errno.h"
 #include "ringtone_fetch_result.h"
@@ -1230,6 +1231,7 @@ HWTEST_F(RingtoneUnitTest, medialib_GetCustomRingtoneCurrentPath_test_001, TestS
     string expectedUri = RINGTONE_CUSTOMIZED_BASE_PATH + "/Ringtone/ringtones/onlineRingtone-1-testuri.ogg";
     EXPECT_EQ(resultUri, expectedUri);
     GTEST_LOG_(INFO)<< "medialib_GetCustomRingtoneCurrentPath_test_001: out: " << testUri;
+    GTEST_LOG_(INFO)<< "medialib_GetCustomRingtoneCurrentPath_test_001: out: " << resultUri;
 }
 
 HWTEST_F(RingtoneUnitTest, medialib_GetCustomRingtoneCurrentPath_test_002, TestSize.Level0)
@@ -1239,6 +1241,7 @@ HWTEST_F(RingtoneUnitTest, medialib_GetCustomRingtoneCurrentPath_test_002, TestS
     string expectedUri = RINGTONE_CUSTOMIZED_BASE_PATH + "/Ringtone/ringtones/onlineRingtone-1-testuri.ogg";
     EXPECT_EQ(resultUri, expectedUri);
     GTEST_LOG_(INFO)<< "medialib_GetCustomRingtoneCurrentPath_test_002: out: " << testUri;
+    GTEST_LOG_(INFO)<< "medialib_GetCustomRingtoneCurrentPath_test_002: out: " << resultUri;
 }
 
 HWTEST_F(RingtoneUnitTest, medialib_GetCustomRingtoneCurrentPath_test_003, TestSize.Level0)
@@ -1247,6 +1250,7 @@ HWTEST_F(RingtoneUnitTest, medialib_GetCustomRingtoneCurrentPath_test_003, TestS
     string resultUri = RingtoneCheckUtils::GetCustomRingtoneCurrentPath(testUri);
     EXPECT_EQ(resultUri, "testuri");
     GTEST_LOG_(INFO)<< "medialib_GetCustomRingtoneCurrentPath_test_003: out: " << testUri;
+    GTEST_LOG_(INFO)<< "medialib_GetCustomRingtoneCurrentPath_test_003: out: " << resultUri;
 }
 } // namespace Media
 } // namespace OHOS
