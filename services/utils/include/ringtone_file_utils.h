@@ -76,6 +76,7 @@ public:
     EXPORT static void AccessRingtoneDir();
     EXPORT static std::string GetFileExtension(const std::string &path);
     EXPORT static void RemoveRingtoneFolder(const std::string &path);
+    EXPORT static bool IsTargetExtension(const std::string &filePath);
 };
 } // namespace Media
 } // namespace OHOS
