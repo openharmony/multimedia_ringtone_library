@@ -171,6 +171,10 @@ bool RingtoneRestore::OnPrepare(FileInfo &info, const std::string &destPath)
         RINGTONE_ERR_LOG("src file base name is null");
         return false;
     }
+    if (!RingtoneFileUtils::IsTargetExtension(info.data)) {
+        RINGTONE_INFO_LOG("invalid target baseName:%{public}s", baseName.c_str());
+        return false;
+    }
     string extensionName = RingtoneFileUtils::GetExtensionFromPath(info.data);
 
     int32_t repeatCount = 1;

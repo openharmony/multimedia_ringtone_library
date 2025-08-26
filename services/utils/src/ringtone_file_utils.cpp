@@ -78,7 +78,7 @@ const vector<string> EXIF_SUPPORTED_EXTENSION = {
     RINGTONE_CONTAINER_TYPE_VIDEO_MP4
 };
 
-static bool IsTargetExtension(const string &path)
+bool RingtoneFileUtils::IsTargetExtension(const string &path)
 {
     const string ext = RingtoneFileUtils::GetExtensionFromPath(path);
     std::string mimeType = RingtoneMimeTypeUtils::GetMimeTypeFromExtension(ext);
@@ -287,7 +287,7 @@ int32_t RingtoneFileUtils::OpenFile(const string &filePath, const string &mode)
         return errCode;
     }
 
-    if (!IsTargetExtension(filePath)) {
+    if (!RingtoneFileUtils::IsTargetExtension(filePath)) {
         return E_INVALID_PATH;
     }
 
@@ -394,7 +394,7 @@ int32_t RingtoneFileUtils::CreateFile(const string &filePath)
         return E_VIOLATION_PARAMETERS;
     }
 
-    if (!IsTargetExtension(filePath)) {
+    if (!RingtoneFileUtils::IsTargetExtension(filePath)) {
         return E_INVALID_PATH;
     }
 
