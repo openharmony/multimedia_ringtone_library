@@ -632,13 +632,19 @@ int32_t RingtoneFileUtils::MoveDirectory(const std::string &srcDir, const std::s
     }
     return ret;
 }
+
 bool CopyRingtoneFolder(const std::filesystem::path& sourcePath, const std::filesystem::path& destinationPath)
 {
     if (!std::filesystem::exists(sourcePath)) {
         RINGTONE_ERR_LOG("source path is not exists, errno is %{public}d", errno);
         return false;
     }
-    for (const auto& entry : std::filesystem::directory_iterator(sourcePath)) {
+    std::error_code ec;
+    for (const auto& entry : std::filesystem::directory_iterator(sourcePath, ec)) {
+        if (ec) {
+            RINGTONE_ERR_LOG("directory_iterator failed, errno is %{public}d", ec.value());
+            return false;
+        }
         std::filesystem::path srcPath = entry.path();
         std::filesystem::path dstPath = destinationPath / srcPath.filename();
 
