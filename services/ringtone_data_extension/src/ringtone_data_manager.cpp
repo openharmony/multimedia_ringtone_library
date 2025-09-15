@@ -63,7 +63,7 @@ shared_ptr<RingtoneDataManager> RingtoneDataManager::GetInstance()
 
 int32_t RingtoneDataManager::Init(const shared_ptr<OHOS::AbilityRuntime::Context> &context)
 {
-    RINGTONE_DEBUG_LOG("start");
+    RINGTONE_DEBUG_LOG("Init start");
     lock_guard<shared_mutex> lock(mgrSharedMutex_);
 
     if (refCnt_.load() > 0) {
@@ -82,7 +82,7 @@ int32_t RingtoneDataManager::Init(const shared_ptr<OHOS::AbilityRuntime::Context
     RingtoneMimeTypeUtils::InitMimeTypeMap();
     refCnt_++;
 
-    RINGTONE_DEBUG_LOG("end");
+    RINGTONE_DEBUG_LOG("Init end");
     return E_OK;
 }
 
