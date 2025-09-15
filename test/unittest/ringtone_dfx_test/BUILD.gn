@@ -37,6 +37,7 @@ ohos_unittest("ringtone_dfx_unittest") {
   deps = [ "${RINGTONE_ROOT_PATH}/services:ringtone_data_extension" ]
 
   external_deps = [
+    "ability_runtime:ability_connect_callback_stub",
     "ability_runtime:ability_context_native",
     "ability_runtime:ability_manager",
     "ability_runtime:app_context",
