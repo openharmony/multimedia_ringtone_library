@@ -510,13 +510,17 @@ int64_t RingtoneFileUtils::UTCTimeSeconds()
 
 string RingtoneFileUtils::StrCreateTimeByMilliseconds(const string &format, int64_t time)
 {
-    char strTime[DEFAULT_TIME_SIZE] = "";
-    int64_t times = time / MSEC_TO_SEC;
-    auto tm = localtime(&times);
-    if (tm == nullptr) {
+    if (time <= 0) {
         return "";
     }
-    (void)strftime(strTime, sizeof(strTime), format.c_str(), tm);
+    char strTime[DEFAULT_TIME_SIZE] = "";
+    time_t times = static_cast<time_t>(time / MSEC_TO_SEC);
+    struct tm tm_info;
+    tzset();
+    if (localtime_r(&times, &tm_info) == nullptr) {
+        return "";
+    }
+    (void)strftime(strTime, sizeof(strTime), format.c_str(), &tm_info);
     return strTime;
 }
 
