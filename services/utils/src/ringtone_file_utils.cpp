@@ -325,6 +325,10 @@ int32_t RingtoneFileUtils::OpenFile(const string &filePath, const string &mode)
         return errCode;
     }
     RINGTONE_INFO_LOG("File absFilePath is %{private}s", absFilePath.c_str());
+    if (absFilePath.size() >= PATH_MAX) {
+        RINGTONE_ERR_LOG("abs file path too long %{public}d", (int)absFilePath.size());
+        return errCode;
+    }
     return open(absFilePath.c_str(), RINGTONE_OPEN_MODE_MAP.at(mode));
 }
 
@@ -640,7 +644,7 @@ int32_t RingtoneFileUtils::MoveDirectory(const std::string &srcDir, const std::s
 bool CopyRingtoneFolder(const std::filesystem::path& sourcePath, const std::filesystem::path& destinationPath)
 {
     if (!std::filesystem::exists(sourcePath)) {
-        RINGTONE_ERR_LOG("source path is not exists, errno is %{public}d", errno);
+        RINGTONE_ERR_LOG("source path is not exists");
         return false;
     }
     std::error_code ec;
@@ -659,7 +663,7 @@ bool CopyRingtoneFolder(const std::filesystem::path& sourcePath, const std::file
         } else {
             std::filesystem::copy_file(srcPath, dstPath, std::filesystem::copy_options::overwrite_existing);
             if (!std::filesystem::exists(dstPath)) {
-                RINGTONE_ERR_LOG("copy file failed, dstPath : %{public}s, errno is %{public}d", dstPath.c_str(), errno);
+                RINGTONE_ERR_LOG("copy file failed, dstPath : %{public}s", dstPath.c_str());
                 return false;
             }
         }
