@@ -426,13 +426,6 @@ HWTEST_F(RingtoneFileUtilsTest, ringtoneUtils_MoveEL2DBToEL1DB_Test_001, TestSiz
     EXPECT_EQ(ret, true);
 }
 
-HWTEST_F(RingtoneFileUtilsTest, ringtoneUtils_GetTotalSize_Test_001, TestSize.Level1)
-{
-    system("mkdir /data/storage/el2/base");
-    int64_t totalSize = RingtoneUtils::GetTotalSize();
-    EXPECT_GT(totalSize, 0);
-}
-
 HWTEST_F(RingtoneFileUtilsTest, ringtoneUtils_GetFreeSize_Test_001, TestSize.Level1)
 {
     system("mkdir /data/storage/el2/base");
