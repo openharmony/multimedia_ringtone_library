@@ -41,11 +41,7 @@ static const int32_t NO_NEED_SCANNER = 1;
 static const int32_t RDB_AREA_EL2 = 2;
 constexpr int32_t MAX_SIZE = 9;
 const std::string DATA_PATH = "/data/storage/el2/base";
-const int32_t VIDEO_FREE_SIZE_LIMIT_10 = 10;
-const int64_t UNIT = 1000;
-const int64_t STD_UNIT = 1024;
-const int64_t THRESHOLD = 512;
-const int64_t PERCENTAGE = 100;
+const int64_t STORAGE_500MB = 500000000;
 
 std::string RingtoneUtils::ReplaceAll(std::string str, const std::string &oldValue, const std::string &newValue)
 {
@@ -211,57 +207,24 @@ bool RingtoneUtils::IsNumber(const std::string &str)
     return true;
 }
 
-static int64_t GetRoundSize(int64_t size)
-{
-    uint64_t val = 1;
-    int64_t multple = UNIT;
-    int64_t stdMultiple = STD_UNIT;
-    while (static_cast<int64_t>(val) * stdMultiple < size) {
-        val <<= 1;
-        if (val > THRESHOLD) {
-            val = 1;
-            multple *= UNIT;
-            stdMultiple *= STD_UNIT;
-        }
-    }
-    return static_cast<int64_t>(val) * multple;
-}
-
-int64_t RingtoneUtils::GetTotalSize()
-{
-    struct statvfs diskInfo;
-    int ret = statvfs(DATA_PATH.c_str(), &diskInfo);
-    CHECK_AND_RETURN_RET_LOG(ret == 0, E_ERR, "Get total size failed, errno:%{public}d", errno);
-    int64_t totalSize = static_cast<long long>(diskInfo.f_bsize) * static_cast<long long>(diskInfo.f_blocks);
-    CHECK_AND_RETURN_RET_LOG(totalSize > 0, E_ERR, "Get total size failed, totalSize:%{public}" PRId64, totalSize);
-    totalSize = GetRoundSize(totalSize);
-    return totalSize;
-}
-
 int64_t RingtoneUtils::GetFreeSize()
 {
     struct statvfs diskInfo;
     int ret = statvfs(DATA_PATH.c_str(), &diskInfo);
     CHECK_AND_RETURN_RET_LOG(ret == 0, E_ERR, "Get free size failed, errno:%{public}d", errno);
-    int64_t freeSize = static_cast<int64_t>(diskInfo.f_bsize) * static_cast<int64_t>(diskInfo.f_bfree);
+    int64_t freeSize = static_cast<int64_t>(diskInfo.f_frsize) * static_cast<int64_t>(diskInfo.f_bavail);
+    RINGTONE_INFO_LOG("freeSize:%{public}" PRId64, freeSize);
     return freeSize;
 }
 
 bool RingtoneUtils::CheckRemainSpaceMeetCondition()
 {
-    static int64_t totalSize = RingtoneUtils::GetTotalSize();
-    if (totalSize <= 0) {
-        totalSize = RingtoneUtils::GetTotalSize();
+    static int64_t freeSize = RingtoneUtils::GetFreeSize();
+    if (freeSize <= 0) {
+        freeSize = RingtoneUtils::GetFreeSize();
     }
-    CHECK_AND_RETURN_RET_LOG(totalSize > 0, false, "Get total size failed, totalSize:%{public}" PRId64, totalSize);
-    int64_t freeSize = RingtoneUtils::GetFreeSize();
-    CHECK_AND_RETURN_RET_LOG(freeSize > 0, false, "Get free size failed, freeSize:%{public}" PRId64, freeSize);
-    int32_t freeSizePercent = 0;
-    if (totalSize != 0) {
-        freeSizePercent = static_cast<int32_t>(freeSize * PERCENTAGE / totalSize);
-    }
-    CHECK_AND_RETURN_RET_LOG(freeSizePercent > VIDEO_FREE_SIZE_LIMIT_10, false,
-        "Check free size failed, totalSize:%{public}" PRId64 ", freeSize:%{public}" PRId64, totalSize, freeSize);
+    CHECK_AND_RETURN_RET_LOG(freeSize > STORAGE_500MB, false, "Check free size failed, freeSize:%{public}" PRId64,
+        freeSize);
     return true;
 }
 } // namespace Media

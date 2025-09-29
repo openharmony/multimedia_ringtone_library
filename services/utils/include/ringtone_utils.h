@@ -30,7 +30,6 @@ public:
     static bool MoveEL2DBToEL1DB();
     static bool SetMoveEL2DBToEL1();
     static bool IsNumber(const std::string &str);
-    static int64_t GetTotalSize();
     static int64_t GetFreeSize();
     static bool CheckRemainSpaceMeetCondition();
 };
