@@ -40,6 +40,8 @@ const std::string RINGTONE_CUSTOMIZED_ALARM_PATH         = RINGTONE_CUSTOMIZED_B
 const std::string RINGTONE_CUSTOMIZED_RINGTONE_PATH      = RINGTONE_CUSTOMIZED_BASE_PATH + "/Ringtone/ringtones";
 const std::string RINGTONE_CUSTOMIZED_NOTIFICATIONS_PATH = RINGTONE_CUSTOMIZED_BASE_PATH + "/Ringtone/notifications";
 const std::string RINGTONE_CUSTOMIZED_CONTACTS_PATH      = RINGTONE_CUSTOMIZED_BASE_PATH + "/Ringtone/contacts";
+const std::string RINGTONE_CUSTOMIZED_APP_NOTIFICATIONS_PATH = RINGTONE_CUSTOMIZED_BASE_PATH +
+    "/Ringtone/app_notifications";
 
 const std::string RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH = "/data/storage/el2/base/files/Ringtone";
 const std::string RINGTONE_CUSTOMIZED_BASE_RINGTONETMP_PATH = "/data/storage/el2/base/files/RingtoneTmp";

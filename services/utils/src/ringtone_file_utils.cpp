@@ -603,7 +603,8 @@ void RingtoneFileUtils::CreateRingtoneDir()
 {
     static const vector<string> userPreloadDirs = {
         { RINGTONE_CUSTOMIZED_ALARM_PATH }, { RINGTONE_CUSTOMIZED_RINGTONE_PATH },
-        { RINGTONE_CUSTOMIZED_NOTIFICATIONS_PATH }, { RINGTONE_CUSTOMIZED_CONTACTS_PATH }
+        { RINGTONE_CUSTOMIZED_NOTIFICATIONS_PATH }, { RINGTONE_CUSTOMIZED_CONTACTS_PATH },
+        { RINGTONE_CUSTOMIZED_APP_NOTIFICATIONS_PATH }
     };
 
     for (const auto &dir: userPreloadDirs) {
@@ -683,6 +684,21 @@ bool RingtoneFileUtils::MoveRingtoneFolder()
     return true;
 }
 
+void RingtoneFileUtils::CheckAndCreateCustomRingtoneDir()
+{
+    static const vector<string> customDirs = {{ RINGTONE_CUSTOMIZED_CONTACTS_PATH },
+        { RINGTONE_CUSTOMIZED_APP_NOTIFICATIONS_PATH }
+    };
+
+    for (const auto &dir: customDirs) {
+        if (access(dir.c_str(), F_OK) != 0) {
+            if (CreatePreloadFolder(dir) != E_SUCCESS) {
+                RINGTONE_ERR_LOG("create %{public}s dir failed!", dir.c_str());
+            }
+        }
+    }
+}
+
 void RingtoneFileUtils::AccessRingtoneDir()
 {
     if (access(RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH.c_str(), F_OK) != 0) {
@@ -690,12 +706,7 @@ void RingtoneFileUtils::AccessRingtoneDir()
         return;
     }
 
-    // 检查contacts目录是否创建
-    if (access(RINGTONE_CUSTOMIZED_CONTACTS_PATH.c_str(), F_OK) != 0) {
-        if (CreatePreloadFolder(RINGTONE_CUSTOMIZED_CONTACTS_PATH) != E_SUCCESS) {
-            RINGTONE_ERR_LOG("create contacts dir failed!");
-        }
-    }
+    CheckAndCreateCustomRingtoneDir();
 
     struct stat fileStat;
     if (stat(RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH.c_str(), &fileStat) != 0) {
