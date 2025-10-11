@@ -74,6 +74,7 @@ public:
     EXPORT static int32_t MoveDirectory(const std::string &srcDir, const std::string &dstDir);
     EXPORT static bool MoveRingtoneFolder();
     EXPORT static void AccessRingtoneDir();
+    EXPORT static void CheckAndCreateCustomRingtoneDir();
     EXPORT static std::string GetFileExtension(const std::string &path);
     EXPORT static void RemoveRingtoneFolder(const std::string &path);
     EXPORT static bool IsTargetExtension(const std::string &filePath);

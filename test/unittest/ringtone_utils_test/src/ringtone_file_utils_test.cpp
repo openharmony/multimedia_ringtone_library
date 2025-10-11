@@ -309,6 +309,13 @@ HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_UrlDecode_Test_001, TestSize.L
     EXPECT_NE(result, "");
 }
 
+HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_CreateCustomDirectory_Test_001, TestSize.Level0)
+{
+    RingtoneFileUtils::CheckAndCreateCustomRingtoneDir();
+    EXPECT_EQ(RingtoneFileUtils::IsFileExists(RINGTONE_CUSTOMIZED_CONTACTS_PATH), true);
+    EXPECT_EQ(RingtoneFileUtils::IsFileExists(RINGTONE_CUSTOMIZED_APP_NOTIFICATIONS_PATH), true);
+}
+
 HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_MoveDirectory_Test_001, TestSize.Level0)
 {
     string srcDir = "/data/test/moveDirectory/src";
