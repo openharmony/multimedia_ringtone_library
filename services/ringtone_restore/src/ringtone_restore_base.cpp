@@ -286,6 +286,8 @@ string RingtoneRestoreBase::GetRestoreDir(const int32_t toneType)
         path = RINGTONE_CUSTOMIZED_RINGTONE_PATH;
     } else if (toneType == TONE_TYPE_NOTIFICATION) {
         path = RINGTONE_CUSTOMIZED_NOTIFICATIONS_PATH;
+    } else if (toneType == TONE_TYPE_APP_NOTIFICATION) {
+        path = RINGTONE_CUSTOMIZED_APP_NOTIFICATIONS_PATH;
     } else {
         path = {};
     }
