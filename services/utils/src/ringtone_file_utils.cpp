@@ -214,7 +214,7 @@ static int32_t UnlinkCb(const char *fpath, const struct stat *sb, int32_t typefl
 {
     CHECK_AND_RETURN_RET_LOG(fpath != nullptr, E_FAIL, "fpath == nullptr");
     int32_t errRet = remove(fpath);
-    if (errRet) {
+    if (errRet != 0) {
         RINGTONE_ERR_LOG("Failed to remove errno: %{public}d, path: %{private}s", errno, fpath);
     }
 
@@ -656,15 +656,30 @@ bool CopyRingtoneFolder(const std::filesystem::path& sourcePath, const std::file
         }
         std::filesystem::path srcPath = entry.path();
         std::filesystem::path dstPath = destinationPath / srcPath.filename();
+        bool isDirectory = std::filesystem::is_directory(srcPath, ec);
+        if (ec) {
+            RINGTONE_ERR_LOG("failed to check file type for path: %{public}s, error: %{public}s",
+                srcPath.c_str(), ec.message().c_str());
+            return false;
+        }
 
-        if (std::filesystem::is_directory(srcPath)) {
+        if (isDirectory) {
             if (!CopyRingtoneFolder(srcPath, dstPath)) {
                 return false;
             }
         } else {
-            std::filesystem::copy_file(srcPath, dstPath, std::filesystem::copy_options::overwrite_existing);
-            if (!std::filesystem::exists(dstPath)) {
-                RINGTONE_ERR_LOG("copy file failed, dstPath : %{public}s", dstPath.c_str());
+            if (!RingtoneFileUtils::IsFileExists(srcPath.c_str())) {
+                RINGTONE_ERR_LOG("file is not exists, path: %{public}s", srcPath.c_str());
+                return false;
+            }
+            if (!RingtoneFileUtils::CopyFileUtil(srcPath.c_str(), dstPath.c_str())) {
+                RINGTONE_ERR_LOG("copy file failed, dstPath: %{public}s, err: %{public}s",
+                    srcPath.c_str(), strerror(errno));
+                return false;
+            }
+            if (!RingtoneFileUtils::IsFileExists(dstPath.c_str())) {
+                RINGTONE_ERR_LOG("file is not exists, dstPath : %{public}s, errno is %{public}d",
+                    dstPath.c_str(), errno);
                 return false;
             }
         }
@@ -691,7 +706,8 @@ bool RingtoneFileUtils::MoveRingtoneFolder()
 void RingtoneFileUtils::CheckAndCreateCustomRingtoneDir()
 {
     static const vector<string> customDirs = {{ RINGTONE_CUSTOMIZED_CONTACTS_PATH },
-        { RINGTONE_CUSTOMIZED_APP_NOTIFICATIONS_PATH }
+        { RINGTONE_CUSTOMIZED_APP_NOTIFICATIONS_PATH }, { RINGTONE_CUSTOMIZED_NOTIFICATIONS_PATH },
+        { RINGTONE_CUSTOMIZED_RINGTONE_PATH }, { RINGTONE_CUSTOMIZED_ALARM_PATH }
     };
 
     for (const auto &dir: customDirs) {
@@ -774,6 +790,7 @@ void RingtoneFileUtils::RemoveRingtoneFolder(const std::string &path)
         std::filesystem::remove_all(path, ec);
         if (ec) {
             RINGTONE_ERR_LOG("remove old ringtone folder failed, errno is %{public}d", ec.value());
+            RemoveDirectory(path);
             return;
         }
     }
