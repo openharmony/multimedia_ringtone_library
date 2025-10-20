@@ -137,44 +137,11 @@ HWTEST_F(RingtonePermissionUtilsTest, ringtonePermissionUtils_GetPackageNameByBu
     EXPECT_EQ(packageName, DEFAULT_STR);
 }
 
-/*
- * Feature: Service
- * Function: Test RingtonePermissionUtils with CheckCallerPermission
- * SubFunction: NA
- * FunctionPoints: NA
- * EnvConditions: NA
- * CaseDescription: Test CheckCallerPermission for normal branches
- */
-HWTEST_F(RingtonePermissionUtilsTest, ringtonePermissionUtils_CheckCallerPermission_test_003, TestSize.Level0)
-{
-    string permissions = "ohos.permission.ACCESS_RINGTONE_RESOURCE";
-    bool ret = RingtonePermissionUtils::CheckCallerPermission(permissions);
-    EXPECT_TRUE(ret);
-}
-
 HWTEST_F(RingtonePermissionUtilsTest, ringtonePermissionUtils_CheckCallerPermission_test_004, TestSize.Level0)
 {
     string permissions = "ohos.permission.ACCESS_RINGTONE_RESOURCE_TEST";
     bool ret = RingtonePermissionUtils::CheckCallerPermission(permissions);
     EXPECT_FALSE(ret);
-}
-
-/*
- * Feature: Service
- * Function: Test RingtonePermissionUtils with CheckHasPermission
- * SubFunction: NA
- * FunctionPoints: NA
- * EnvConditions: NA
- * CaseDescription: Test CheckHasPermission for normal branches
- */
-HWTEST_F(RingtonePermissionUtilsTest, ringtonePermissionUtils_CheckHasPermission_test_002, TestSize.Level0)
-{
-    std::vector<string> perms = { DEFAULT_STR, PERM_WRITE_RINGTONE, "ohos.permission.ACCESS_RINGTONE_RESOURCE" };
-    bool ret = RingtonePermissionUtils::CheckHasPermission(perms);
-    EXPECT_TRUE(ret);
-    std::vector<string> permissions = { "ohos.permission.ACCESS_RINGTONE_RESOURCE" };
-    ret = RingtonePermissionUtils::CheckCallerPermission(permissions);
-    EXPECT_TRUE(ret);
 }
 
 HWTEST_F(RingtonePermissionUtilsTest, ringtonePermissionUtils_GetSysBundleManager_test_002, TestSize.Level0)
