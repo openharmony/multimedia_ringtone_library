@@ -211,9 +211,10 @@ HWTEST_F(RingtoneLanguageManagerTest, languageManager_ChangeLanguageDataToRingto
     langMgr->ringtoneTranslate_ = g_translationResource;
     langMgr->ChangeLanguageDataToRingtone(rowCount, resultSet);
 
-    ret = langMgr->CheckLanguageTypeByRingtone(rowCount, resultSet);
+    int rowCountUpdate=-1;
+    ret = langMgr->CheckLanguageTypeByRingtone(rowCountUpdate, resultSet);
     EXPECT_EQ(ret, E_OK);
-    EXPECT_EQ(rowCount, 0);
+    EXPECT_EQ(rowCountUpdate, 0);
 }
 
 HWTEST_F(RingtoneLanguageManagerTest, languageManager_ChangeLanguageDataToRingtone_test_002, TestSize.Level0)
@@ -230,9 +231,10 @@ HWTEST_F(RingtoneLanguageManagerTest, languageManager_ChangeLanguageDataToRingto
     langMgr->ringtoneTranslate_ = g_translationResource;
     langMgr->ChangeLanguageDataToRingtone(rowCount, resultSet);
 
-    ret = langMgr->CheckLanguageTypeByRingtone(rowCount, resultSet);
+    int rowCountUpdate=-1;
+    ret = langMgr->CheckLanguageTypeByRingtone(rowCountUpdate, resultSet);
     EXPECT_EQ(ret, E_OK);
-    EXPECT_EQ(rowCount, 0);
+    EXPECT_EQ(rowCountUpdate, 0);
 }
 
 HWTEST_F(RingtoneLanguageManagerTest, languageManager_CheckLanguageTypeByVibration_test_001, TestSize.Level0)
@@ -286,9 +288,10 @@ HWTEST_F(RingtoneLanguageManagerTest, languageManager_ChangeLanguageDataToVibrat
     langMgr->vibrationTranslate_ = g_translationResource;
     langMgr->ChangeLanguageDataToVibration(rowCount, resultSet);
 
-    ret = langMgr->CheckLanguageTypeByVibration(rowCount, resultSet);
+    int rowCountUpdate=-1;
+    ret = langMgr->CheckLanguageTypeByVibration(rowCountUpdate, resultSet);
     EXPECT_EQ(ret, E_OK);
-    EXPECT_EQ(rowCount, 0);
+    EXPECT_EQ(rowCountUpdate, 0);
 }
 
 HWTEST_F(RingtoneLanguageManagerTest, languageManager_ChangeLanguageDataToVibration_test_002, TestSize.Level0)
@@ -305,9 +308,10 @@ HWTEST_F(RingtoneLanguageManagerTest, languageManager_ChangeLanguageDataToVibrat
     langMgr->vibrationTranslate_ = g_translationResource;
     langMgr->ChangeLanguageDataToVibration(rowCount, resultSet);
 
-    ret = langMgr->CheckLanguageTypeByVibration(rowCount, resultSet);
+    int rowCountUpdate=-1;
+    ret = langMgr->CheckLanguageTypeByVibration(rowCountUpdate, resultSet);
     EXPECT_EQ(ret, E_OK);
-    EXPECT_EQ(rowCount, 0);
+    EXPECT_EQ(rowCountUpdate, 0);
 }
 
 /*
