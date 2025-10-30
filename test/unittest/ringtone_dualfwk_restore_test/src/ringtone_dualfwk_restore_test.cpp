@@ -107,10 +107,10 @@ HWTEST_F(RingtoneDualFwkRestoreTest, ringtone_dualfwk_restore_test_0002, TestSiz
 
     shared_ptr<DualFwkConfLoader> confLoaderPtr = make_shared<DualFwkConfLoader>();
     EXPECT_NE(confLoaderPtr, nullptr);
-    if (confLoaderPtr->Init() != E_OK) {
-        RINGTONE_ERR_LOG("Failed to initialize DualFwkConfLoader.");
-        return;
-    }
+
+    ASSERT_EQ(confLoaderPtr->Init(), E_OK)
+        << "Failed to initialize DualFwkConfLoader.";
+
     auto confVal = confLoaderPtr->GetConf("SETTINGSDATA_CreatedTime");
     std::cout << "conf value of SETTINGSDATA_CreatedTime = " << confVal << std::endl;
     DualFwkConf conf;

@@ -22,7 +22,6 @@ export default function abilityTest() {
       let a = 'abc'
       let b = 'b'
       expect(a).assertContain(b)
-      expect(a).assertEqual(a)
     })
   })
 }
