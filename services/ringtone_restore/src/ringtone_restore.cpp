@@ -114,7 +114,7 @@ void RingtoneRestore::CheckRestoreFileInfos(vector<FileInfo> &infos)
                 CheckSetting(*it);
             }
             RINGTONE_INFO_LOG("warnning:backup file is not exist, path=%{private}s", srcPath.c_str());
-            infos.erase(it);
+            it = infos.erase(it);
         } else {
             it++;
         }
