@@ -28,18 +28,17 @@
 namespace OHOS {
 namespace Media {
 struct DualFwkSettingItem {
-    std::string toneFileName {};
-    int32_t settingType {TONE_SETTING_TYPE_INVALID};
-    int32_t toneType {0};
+    ToneFileInfo toneSetting{};
     bool defaultSysSet {false};
     bool setFlag {false};
     bool isTitle {false};
+    VibrateFileInfo vibrateSetting{};
 };
 
 class DualFwkSoundSetting {
 public:
-    DualFwkSoundSetting();
     ~DualFwkSoundSetting() = default;
+    DualFwkSoundSetting();
     int32_t ProcessConfRow(std::unique_ptr<DualFwkConfRow> &conf);
     void SettingsTraval(std::function<void (DualFwkSettingItem &)> func);
     void ProcessConf(const DualFwkConf &conf);
@@ -47,7 +46,10 @@ public:
     std::vector<std::string> GetDisplayNames() const;
     std::vector<DualFwkSettingItem> GetSettings() const;
 private:
-    std::unordered_map<int32_t, DualFwkSettingItem> settings_;
+    void AddSetting(const ToneFileInfo &toneConf, const VibrateFileInfo &vibrateConf);
+    VibratePlayMode ExtractVibrateMode(const std::string &input);
+    std::string ExtractFileName(const std::string &input);
+    std::vector<DualFwkSettingItem> settings_;
 };
 
 } // namespace Media

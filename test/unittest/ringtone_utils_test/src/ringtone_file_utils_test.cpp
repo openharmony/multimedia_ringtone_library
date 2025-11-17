@@ -458,5 +458,19 @@ HWTEST_F(RingtoneFileUtilsTest, ringtonexcollie_CancelXCollieTimer_Test_001, Tes
     ringtonexcollie->CancelXCollieTimer();
     EXPECT_EQ(ringtonexcollie->isCanceled_, true);
 }
+
+HWTEST_F(RingtoneFileUtilsTest, ringtoneUtils_CopyFileFromFd_Test_001, TestSize.Level1)
+{
+    string oldPath = "/data/local/tmp/test/copy_file_utils1.ogg";
+    string newPath = "/data/local/tmp/test/copy_file_utils2.ogg";
+    EXPECT_EQ(RingtoneFileUtils::CreateFile(oldPath), E_SUCCESS);
+    int32_t fd = RingtoneFileUtils::OpenFile(oldPath, RINGTONE_FILEMODE_READONLY);
+    EXPECT_GT(fd, 0);
+    EXPECT_EQ(RingtoneFileUtils::CopyFileFromFd(fd, newPath), E_OK);
+
+    RingtoneFileUtils::DeleteFile(oldPath);
+    RingtoneFileUtils::DeleteFile(newPath);
+}
+
 } // namespace Media
 } // namespace OHOS

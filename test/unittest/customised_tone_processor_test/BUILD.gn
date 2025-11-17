@@ -56,6 +56,7 @@ ohos_unittest("customised_tone_processor_unittest") {
     "${RINGTONE_ROOT_PATH}/services:ringtone_setting",
     "${RINGTONE_ROOT_PATH}/services:ringtone_utils",
     "${RINGTONE_ROOT_PATH}/services:ringtonerestore",
+    "${RINGTONE_ROOT_PATH}/services/ringtone_helper:ringtone_data_helper",
   ]
 
   external_deps = [

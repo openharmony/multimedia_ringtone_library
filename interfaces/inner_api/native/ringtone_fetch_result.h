@@ -53,8 +53,6 @@ public:
     EXPORT std::unique_ptr<T> GetNextObject();
     EXPORT std::unique_ptr<T> GetLastObject();
     EXPORT std::unique_ptr<T> GetObject();
-
-private:
     EXPORT std::unique_ptr<T> GetObject(std::shared_ptr<NativeRdb::ResultSet> &resultSet);
     EXPORT std::variant<int32_t, int64_t, std::string, double> GetRowValFromColumn(const std::string &columnName,
         RingtoneResultSetDataType dataType, std::shared_ptr<NativeRdb::ResultSet> &resultSet);

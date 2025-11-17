@@ -439,7 +439,7 @@ HWTEST_F(RingtoneRestoreTest, ringtone_SetNotRingtone_test_0001, TestSize.Level0
 {
     ASSERT_NE(g_restoreService, nullptr);
     g_restoreService->SetNotRingtone(RINGTONE_COLUMN_RING_TONE_TYPE,
-            RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, SIM_CARD_1);
+            RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, SIMCARD_MODE_1);
     vector<NativeRdb::ValuesBucket> values;
     int64_t rowNum = 0;
     int32_t errCode = g_restoreService->BatchInsert(RINGTONE_TABLE, values, rowNum);
@@ -450,7 +450,7 @@ HWTEST_F(RingtoneRestoreTest, ringtone_SetNotRingtone_test_0002, TestSize.Level0
 {
     ASSERT_NE(g_restoreService, nullptr);
     g_restoreService->SetNotRingtone(RINGTONE_COLUMN_RING_TONE_TYPE,
-            RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, SIM_CARD_1);
+            RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, SIMCARD_MODE_1);
     vector<NativeRdb::ValuesBucket> values;
     int64_t rowNum = 0;
     int32_t errCode = g_restoreService->BatchInsert(RINGTONE_TABLE, values, rowNum);
@@ -461,7 +461,7 @@ HWTEST_F(RingtoneRestoreTest, ringtone_SetNotRingtone_test_0003, TestSize.Level0
 {
     ASSERT_NE(g_restoreService, nullptr);
     g_restoreService->SetNotRingtone(RINGTONE_COLUMN_RING_TONE_TYPE,
-            RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, SIM_CARD_2);
+            RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, SIMCARD_MODE_2);
     vector<NativeRdb::ValuesBucket> values;
     int64_t rowNum = 0;
     int32_t errCode = g_restoreService->BatchInsert(RINGTONE_TABLE, values, rowNum);
@@ -472,7 +472,7 @@ HWTEST_F(RingtoneRestoreTest, ringtone_SetNotRingtone_test_0004, TestSize.Level0
 {
     ASSERT_NE(g_restoreService, nullptr);
     g_restoreService->SetNotRingtone(RINGTONE_COLUMN_SHOT_TONE_TYPE,
-            RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE, SIM_CARD_1);
+            RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE, SIMCARD_MODE_1);
     vector<NativeRdb::ValuesBucket> values;
     int64_t rowNum = 0;
     int32_t errCode = g_restoreService->BatchInsert(RINGTONE_TABLE, values, rowNum);
@@ -483,11 +483,79 @@ HWTEST_F(RingtoneRestoreTest, ringtone_SetNotRingtone_test_0005, TestSize.Level0
 {
     ASSERT_NE(g_restoreService, nullptr);
     g_restoreService->SetNotRingtone(RINGTONE_COLUMN_SHOT_TONE_TYPE,
-            RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE, SIM_CARD_2);
+            RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE, SIMCARD_MODE_2);
     vector<NativeRdb::ValuesBucket> values;
     int64_t rowNum = 0;
     int32_t errCode = g_restoreService->BatchInsert(RINGTONE_TABLE, values, rowNum);
     EXPECT_EQ(errCode, Media::E_OK);
+}
+
+HWTEST_F(RingtoneRestoreTest, ringtone_VibrateSettingClone_test_0001, TestSize.Level0)
+{
+    ASSERT_NE(g_restoreService, nullptr);
+    ASSERT_NE(g_restoreService->localRdb_, nullptr);
+
+    int32_t testMode1 = VIBRATE_PLAYMODE_INVALID;
+    int32_t mode = testMode1;
+    VibratePlayMode testMode2 = VIBRATE_PLAYMODE_NONE;
+    FileInfo info;
+    SimcardMode sim1 = SIMCARD_MODE_1;
+    ToneSettingType ringtoneSetting = TONE_SETTING_TYPE_RINGTONE;
+
+    auto queryFunc = [&]() {
+        string querySql = "SELECT * FROM " + SIMCARD_SETTING_TABLE + " WHERE " +  SIMCARD_SETTING_COLUMN_MODE +
+            " = " + std::to_string(sim1) + " AND " + SIMCARD_SETTING_COLUMN_RINGTONE_TYPE +
+            " = " + std::to_string(ringtoneSetting);
+        mode = RingtoneRestoreDbUtils::QueryInt(g_restoreService->localRdb_, querySql,
+            SIMCARD_SETTING_COLUMN_RING_MODE);
+    };
+    g_restoreService->CheckUpdateVibrateSetting(info);
+    queryFunc();
+    EXPECT_NE(mode, testMode1);
+
+    VibrateFileInfo vibrateFileInfo{sim1, ringtoneSetting,
+        TONE_TYPE_RINGTONE, VIBRATE_TYPE_STANDARD, testMode2};
+    
+    info.vibrateInfo = vibrateFileInfo;
+    g_restoreService->CheckUpdateVibrateSetting(info);
+    queryFunc();
+    EXPECT_EQ(mode, testMode2);
+}
+
+HWTEST_F(RingtoneRestoreTest, ringtone_VibrateSettingClone_test_0002, TestSize.Level0)
+{
+    ASSERT_NE(g_restoreService, nullptr);
+    FileInfo info1;
+    info1.simcard = SIMCARD_MODE_1;
+    info1.shotToneType = SHOT_TONE_TYPE_NOT;
+    info1.shotToneSourceType = SOURCE_TYPE_INVALID;
+    info1.ringToneType = RING_TONE_TYPE_NOT;
+    info1.ringToneSourceType = SOURCE_TYPE_INVALID;
+    info1.notificationToneType = NOTIFICATION_TONE_TYPE_NOT;
+    info1.notificationToneSourceType = SOURCE_TYPE_INVALID;
+    info1.alarmToneType = ALARM_TONE_TYPE_NOT;
+    info1.alarmToneSourceType = SOURCE_TYPE_INVALID;
+
+    g_restoreService->CheckSetting(info1);
+    NativeRdb::AbsRdbPredicates absRdbPredicates1(RINGTONE_TABLE);
+    absRdbPredicates1.EqualTo(RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, SOURCE_TYPE_INVALID);
+    auto toneFile = g_restoreService->QuerySingleColumn(RINGTONE_COLUMN_DATA, absRdbPredicates1);
+    EXPECT_TRUE(!toneFile.empty());
+
+    NativeRdb::AbsRdbPredicates absRdbPredicates2(RINGTONE_TABLE);
+    absRdbPredicates2.EqualTo(RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE, SOURCE_TYPE_INVALID);
+    toneFile = g_restoreService->QuerySingleColumn(RINGTONE_COLUMN_DATA, absRdbPredicates2);
+    EXPECT_TRUE(!toneFile.empty());
+
+    NativeRdb::AbsRdbPredicates absRdbPredicates3(RINGTONE_TABLE);
+    absRdbPredicates3.EqualTo(RINGTONE_COLUMN_NOTIFICATION_TONE_SOURCE_TYPE, SOURCE_TYPE_INVALID);
+    toneFile = g_restoreService->QuerySingleColumn(RINGTONE_COLUMN_DATA, absRdbPredicates3);
+    EXPECT_TRUE(!toneFile.empty());
+
+    NativeRdb::AbsRdbPredicates absRdbPredicates4(RINGTONE_TABLE);
+    absRdbPredicates4.EqualTo(RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE, SOURCE_TYPE_INVALID);
+    toneFile = g_restoreService->QuerySingleColumn(RINGTONE_COLUMN_DATA, absRdbPredicates4);
+    EXPECT_TRUE(!toneFile.empty());
 }
 } // namespace Media
 } // namespace OHOS

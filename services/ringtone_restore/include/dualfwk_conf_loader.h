@@ -39,6 +39,17 @@ struct DualFwkConf {
     std::string messagePath;
     // 卡2 短信
     std::string messageSub1;
+    std::string ringtone;
+    std::string ringtone2;
+    std::string message;
+    std::string notificationSound;
+    std::string alarmAlert;
+    DualFwkVibrateConf vibrateConf;
+};
+
+enum SettingTblType {
+    SETTING_TBL_TYPE_SYSTEM,
+    SETTING_TBL_TYPE_SECURE,
 };
 
 class DualFwkConfLoader {
@@ -48,13 +59,15 @@ public:
     ~DualFwkConfLoader() {};
     int32_t Load(DualFwkConf &conf, const RestoreSceneType &type, const std::string &backupFile);
     void ShowConf(const DualFwkConf &conf);
-    std::string GetConf(const std::string &key);
-    std::string GetConfPath(const std::string &key);
+    std::string GetConf(const std::string &key, SettingTblType tblType = SETTING_TBL_TYPE_SYSTEM);
+    std::string GetConfPath(const std::string &key, SettingTblType tblType = SETTING_TBL_TYPE_SYSTEM);
     int32_t ValueToDBFileID(const std::string &value, std::string &dbName, std::string &dbPath, std::string &fileId);
 
 private:
     std::shared_ptr<DataShare::DataShareHelper> dataShareHelper_;
     std::string settingsDataUri_;
+    std::shared_ptr<DataShare::DataShareHelper> secureSetting_;
+    std::string settingsSecureDataUri_;
 };
 } // namespace Media
 } // namespace OHOS

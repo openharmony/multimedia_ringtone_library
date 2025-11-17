@@ -24,12 +24,19 @@
 #include "ringtone_db_const.h"
 #include "ringtone_type.h"
 #include "ringtone_metadata.h"
+#include "vibrate_type.h"
 
 namespace OHOS {
 namespace Media {
 
 const std::string RINGTONE_BACKUP_SUFFIX_DIR = "/data/storage/el2/base/files/Ringtone";
 const std::string RINGTONE_RESTORE_DIR = "/data/storage/el2/base/files/Ringtone";
+static const std::string DUALFWK_CONF_VALUE_NULL = "null";
+static const std::string DUALFWK_CONF_VIBRATE_MODE_STD = "standard_vibrator";
+static const std::string DUALFWK_CONF_VIBRATE_MODE_NULL = "null_vibrator";
+static const std::string DUALFWK_CONF_VIBRATE_MODE_FOLLOW = "follow_system_ringtone";
+static const std::string VIBRATE_FILE_NAME_STD = "Classic.json";
+static const std::string VIBRATE_FILE_SUFFIX = ".json";
 
 enum RestoreSceneType : int32_t {
     RESTORE_SCENE_TYPE_INVILID = -1,
@@ -37,6 +44,32 @@ enum RestoreSceneType : int32_t {
     RESTORE_SCENE_TYPE_SINGLE_CLONE,
     RESTORE_SCENE_TYPE_DUAL_CLONE,
     RESTORE_SCENE_TYPE_MAX,
+};
+
+struct DualFwkVibrateConf {
+    std::string ringtone;
+    std::string ringtone2;
+    std::string message;
+    std::string message2;
+    std::string notification;
+    std::string alarm;
+};
+
+struct ToneFileInfo {
+    SimcardMode simcard{SIMCARD_MODE_INVALID};
+    ToneSettingType settingType{TONE_SETTING_TYPE_INVALID};
+    int32_t toneType{TONE_TYPE_INVALID};
+    std::string tonePath{};
+    int32_t toneSourceType{SOURCE_TYPE_NOT_SET};
+};
+
+struct VibrateFileInfo {
+    SimcardMode simcard {SIMCARD_MODE_INVALID};
+    ToneSettingType settingType{TONE_SETTING_TYPE_INVALID};
+    ToneType toneType{TONE_TYPE_INVALID};
+    VibrateType vibrateType{VIBRATE_TYPE_INVALID};
+    VibratePlayMode vibrateMode{VIBRATE_PLAYMODE_INVALID};
+    std::string displayName;
 };
 
 struct FileInfo {
@@ -64,7 +97,9 @@ struct FileInfo {
     std::string restorePath {};
     int32_t scannerFlag {0};
     bool doInsert {true};
-    
+    SimcardMode simcard {SIMCARD_MODE_INVALID};
+    VibrateFileInfo vibrateInfo{};
+
     FileInfo() = default;
     FileInfo(const RingtoneMetadata &meta): toneId(meta.GetToneId()),
         data(meta.GetData()),
@@ -100,7 +135,7 @@ struct FileInfo {
             "|ringToneType=" + std::to_string(ringToneType) +
             "|ringToneSourceType=" + std::to_string(ringToneSourceType) +
             "|doInsert=" + std::to_string(doInsert) +
-            "|restorePath=" + restorePath;
+            "|restorePath=" + restorePath + "|simcard=" + std::to_string(simcard);
     }
 };
 } // namespace Media

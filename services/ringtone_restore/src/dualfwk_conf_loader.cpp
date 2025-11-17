@@ -27,6 +27,8 @@ namespace Media {
 
 static const std::string SETTINGS_DATA_URI_BASE =
     "datashare:///com.ohos.settingsdata/entry/settingsdata/USER_SETTINGSDATA_";
+static const std::string SETTINGS_SECURE_DATA_URI_BASE =
+    "datashare:///com.ohos.settingsdata/entry/settingsdata/USER_SETTINGSDATA_SECURE_";
 static const std::string SETTINGS_DATA_FIELD_KEY = "KEYWORD";
 static const std::string SETTINGS_DATA_FIELD_VAL = "VALUE";
 static const std::string ERR_CONFIG_VALUE = "";
@@ -49,7 +51,19 @@ static const std::string EXTERNAL_DB_RESTORE_PATH =
 static const std::string INTERNAL_DB_NAME = "internal.db";
 static const std::string INTERNAL_DB_RESTORE_PATH =
     "/data/storage/el2/base/.backup/restore/com." + DUAL_NAME + ".providers.media.module/ce/databases/internal.db";
-
+static const std::string DUALFWK_CONF_RINGTONE = "ringtone";
+static const std::string DUALFWK_CONF_RINGTONE2 = "ringtone2";
+static const std::string DUALFWK_CONF_MESSAGE = "message";
+static const std::string DUALFWK_CONF_MESSAGE2 = "messageSub1";
+static const std::string DUALFWK_CONF_NOTIFICATION = "notification_sound";
+static const std::string DUALFWK_CONF_ALARM = "alarm_alert";
+static const std::string DUALFWK_CONF_VIBRATE_TONETYPE_RINGTONE = "phone_vibrator_card1";
+static const std::string DUALFWK_CONF_VIBRATE_TONETYPE_RINGTONE2 = "phone_vibrator_card2";
+static const std::string DUALFWK_CONF_VIBRATE_TONETYPE_MESSAGE = "message_vibrator_card1";
+static const std::string DUALFWK_CONF_VIBRATE_TONETYPE_MESSAGE2 = "message_vibrator_card2";
+static const std::string DUALFWK_CONF_VIBRATE_TONETYPE_NOTIFICATION = "notification_vibrator_setting";
+static const std::string DUALFWK_CONF_VIBRATE_TONETYPE_ALARM = "clock_vibrator";
+    
 DualFwkConfLoader::DualFwkConfLoader() {}
 
 int32_t DualFwkConfLoader::Init()
@@ -62,13 +76,18 @@ int32_t DualFwkConfLoader::Init()
         userId = DEFAULT_USERID;
     }
     settingsDataUri_ = SETTINGS_DATA_URI_BASE + std::to_string(userId);
-    RINGTONE_DEBUG_LOG("Getting data share helper with SETTINGS_DATA_URI = %{public}s", settingsDataUri_.c_str());
+    settingsSecureDataUri_ = SETTINGS_SECURE_DATA_URI_BASE + std::to_string(userId);
+    RINGTONE_DEBUG_LOG("SETTINGS_DATA_URI:%{public}s, SETTINGS_SECURE_DATA_URI:%{public}s",
+        settingsDataUri_.c_str(), settingsSecureDataUri_.c_str());
 
     dataShareHelper_ = DataShare::DataShareHelper::Creator(settingsDataUri_, options);
     if (dataShareHelper_ == nullptr) {
         RINGTONE_WARN_LOG("dataShareHelper_ is null, failed to get data share helper");
         return E_ERR;
     }
+
+    secureSetting_ = DataShare::DataShareHelper::Creator(settingsSecureDataUri_, options);
+    CHECK_AND_RETURN_RET_LOG(secureSetting_ != nullptr, E_ERR, "data share for secure setting create faield");
 
     RINGTONE_INFO_LOG("Successfully initialized.");
     return E_OK;
@@ -130,24 +149,25 @@ int32_t DualFwkConfLoader::Load(DualFwkConf &conf, const RestoreSceneType &type,
         RINGTONE_WARN_LOG("Failed to parse backup file %{public}s", backupFile.c_str());
     }
 
-    if (type == RestoreSceneType::RESTORE_SCENE_TYPE_DUAL_CLONE) {
-        RINGTONE_INFO_LOG("Load configurations for RestoreSceneType::RESTORE_SCENE_TYPE_DUAL_CLONE");
-        conf.notificationSoundPath = GetConf("notification_sound_path");
-        conf.ringtonePath = GetConf("ringtone_path");
-        conf.ringtone2Path = GetConf("ringtone2_path");
-        conf.alarmAlertPath = GetConf("alarm_alert_path");
-        conf.messagePath = GetConf("message_path");
-        conf.messageSub1 = GetConfPath("messageSub1");
-    } else {
-        RINGTONE_INFO_LOG("Load configurations for RestoreSceneType::RESTORE_SCENE_TYPE_DUAL_UPGRADE");
-        conf.notificationSoundPath = GetConf("notification_sound_path");
-        conf.ringtonePath = GetConf("ringtone_path");
-        conf.ringtone2Path = GetConf("ringtone2_path");
-        conf.alarmAlertPath = GetConf("alarm_alert_path");
-        conf.messagePath = GetConf("message_path");
-        conf.messageSub1 = GetConfPath("messageSub1");
-    }
-    
+    RINGTONE_INFO_LOG("Load configurations for type:%{public}d", type);
+    conf.notificationSoundPath = GetConf("notification_sound_path");
+    conf.ringtonePath = GetConf("ringtone_path");
+    conf.ringtone2Path = GetConf("ringtone2_path");
+    conf.alarmAlertPath = GetConf("alarm_alert_path");
+    conf.messagePath = GetConf("message_path");
+    conf.messageSub1 = GetConfPath("messageSub1");
+    conf.ringtone = GetConf(DUALFWK_CONF_RINGTONE);
+    conf.ringtone2 = GetConf(DUALFWK_CONF_RINGTONE2);
+    conf.message = GetConf(DUALFWK_CONF_MESSAGE);
+    conf.notificationSound = GetConf(DUALFWK_CONF_NOTIFICATION);
+    conf.alarmAlert = GetConfPath(DUALFWK_CONF_ALARM);
+
+    conf.vibrateConf.ringtone = GetConf(DUALFWK_CONF_VIBRATE_TONETYPE_RINGTONE, SETTING_TBL_TYPE_SECURE);
+    conf.vibrateConf.ringtone2 = GetConf(DUALFWK_CONF_VIBRATE_TONETYPE_RINGTONE2, SETTING_TBL_TYPE_SECURE);
+    conf.vibrateConf.message = GetConf(DUALFWK_CONF_VIBRATE_TONETYPE_MESSAGE, SETTING_TBL_TYPE_SECURE);
+    conf.vibrateConf.message2 = GetConf(DUALFWK_CONF_VIBRATE_TONETYPE_MESSAGE2, SETTING_TBL_TYPE_SECURE);
+    conf.vibrateConf.notification = GetConf(DUALFWK_CONF_VIBRATE_TONETYPE_NOTIFICATION, SETTING_TBL_TYPE_SECURE);
+    conf.vibrateConf.alarm = GetConf(DUALFWK_CONF_VIBRATE_TONETYPE_ALARM, SETTING_TBL_TYPE_SECURE);
     return E_OK;
 }
 
@@ -163,12 +183,20 @@ void DualFwkConfLoader::ShowConf(const DualFwkConf &conf)
     RINGTONE_DEBUG_LOG("===================================================");
 }
 
-std::string DualFwkConfLoader::GetConf(const std::string &key)
+std::string DualFwkConfLoader::GetConf(const std::string &key, SettingTblType tblType)
 {
+    std::shared_ptr<DataShare::DataShareHelper> dataShareHelper;
+    if (tblType == SettingTblType::SETTING_TBL_TYPE_SYSTEM) {
+        dataShareHelper = dataShareHelper_;
+    } else if (tblType == SettingTblType::SETTING_TBL_TYPE_SECURE) {
+        dataShareHelper = secureSetting_;
+    }
+    CHECK_AND_RETURN_RET_LOG(dataShareHelper != nullptr, "", "type:[%{public}d] datashare is null", tblType);
+
     DataShare::DataSharePredicates dataSharePredicates;
     dataSharePredicates.EqualTo(SETTINGS_DATA_FIELD_KEY, key);
     Uri uri(settingsDataUri_);
-    auto resultSet = dataShareHelper_->Query(uri, dataSharePredicates, SETTINGS_COLUMNS);
+    auto resultSet = dataShareHelper->Query(uri, dataSharePredicates, SETTINGS_COLUMNS);
     if (resultSet == nullptr) {
         RINGTONE_DEBUG_LOG("resultSet is null, failed to get value of key = %{public}s", key.c_str());
         return "";
@@ -223,12 +251,12 @@ int32_t DualFwkConfLoader::ValueToDBFileID(const std::string &value, std::string
     return E_OK;
 }
 
-std::string DualFwkConfLoader::GetConfPath(const std::string &key)
+std::string DualFwkConfLoader::GetConfPath(const std::string &key, SettingTblType tblType)
 {
     std::string dbName;
     std::string dbPath;
     std::string fileId;
-    std::string value = GetConf(key);
+    std::string value = GetConf(key, tblType);
     size_t pos = value.find("content://media");
     if (pos != 0) {
         RINGTONE_INFO_LOG("key: %{public}s value: %{public}s", key.c_str(), value.c_str());

@@ -38,6 +38,7 @@ private:
     std::vector<FileInfo> ConvertToFileInfos(std::vector<std::shared_ptr<RingtoneMetadata>> &metaDatas);
     void UpdateRestoreFileInfo(FileInfo &info);
     void CheckNotRingtoneRestore();
+    void UpdateSettingInfos();
 private:
     std::shared_ptr<NativeRdb::RdbStore> restoreRdb_ = nullptr;
     std::string backupPath_ = {};

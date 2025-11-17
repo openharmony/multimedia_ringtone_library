@@ -102,6 +102,13 @@ enum DefaultSystemToneType : int32_t {
     DEFAULT_ALARM_TYPE,
 };
 
+enum SimcardMode : int32_t {
+    SIMCARD_MODE_INVALID = 0,
+    SIMCARD_MODE_1,
+    SIMCARD_MODE_2,
+    SIMCARD_MODE_BOTH,
+};
+
 inline int GetAppSandboxPathFromUri(std::string &uri)
 {
     const std::string prefixPart = "/data/app/el2/";

@@ -49,7 +49,7 @@ enum DualFwkConfRowType : int32_t {
 struct DualFwkRowTypeInfo {
     SettingItemType item;
     DualFwkConfRowType rowType;
-    int32_t settingType;
+    ToneSettingType settingType;
     int32_t toneType;
 };
 
@@ -91,7 +91,7 @@ DualFwkSoundSetting::DualFwkSoundSetting()
 void DualFwkSoundSetting::SettingsTraval(std::function<void (DualFwkSettingItem &)> func)
 {
     for (auto setting : settings_) {
-        func(setting.second);
+        func(setting);
     }
 }
 
@@ -99,7 +99,7 @@ std::vector<std::string> DualFwkSoundSetting::GetFileNames() const
 {
     std::vector<std::string> fileNames;
     for (auto setting : settings_) {
-        fileNames.push_back(setting.second.toneFileName);
+        fileNames.push_back(setting.toneSetting.tonePath);
     }
     return fileNames;
 }
@@ -108,11 +108,11 @@ std::vector<std::string> DualFwkSoundSetting::GetDisplayNames() const
 {
     std::vector<std::string> fileNames;
     for (auto setting : settings_) {
-        if (setting.second.isTitle) {
-            std::string fileName = RingtoneUtils::ReplaceAll(setting.second.toneFileName + ".ogg", " ", "_");
+        if (setting.isTitle) {
+            std::string fileName = RingtoneUtils::ReplaceAll(setting.toneSetting.tonePath + ".ogg", " ", "_");
             fileNames.push_back(fileName);
         } else {
-            fileNames.push_back(setting.second.toneFileName);
+            fileNames.push_back(setting.toneSetting.tonePath);
         }
     }
     return fileNames;
@@ -122,7 +122,7 @@ std::vector<DualFwkSettingItem> DualFwkSoundSetting::GetSettings() const
 {
     std::vector<DualFwkSettingItem> settings;
     for (auto setting : settings_) {
-        settings.push_back(setting.second);
+        settings.push_back(setting);
     }
     return settings;
 }
@@ -138,8 +138,8 @@ int32_t DualFwkSoundSetting::ProcessConfRow(std::unique_ptr<DualFwkConfRow> &con
     auto found = g_dualFwkInfoMap.find(conf->name);
     if (found != g_dualFwkInfoMap.end()) {
         if (found->second.rowType == DUALFWK_CONFROW_BASE) {
-            settings_[found->second.item].settingType = found->second.settingType;
-            settings_[found->second.item].toneType = found->second.toneType;
+            settings_[found->second.item].toneSetting.settingType = found->second.settingType;
+            settings_[found->second.item].toneSetting.toneType = found->second.toneType;
             settings_[found->second.item].defaultSysSet = (conf->defaultSysSet == "true" ? true : false);
         } else if (found->second.rowType == DUALFWK_CONFROW_SET) {
             try {
@@ -152,7 +152,7 @@ int32_t DualFwkSoundSetting::ProcessConfRow(std::unique_ptr<DualFwkConfRow> &con
                 RINGTONE_INFO_LOG("out of range: %s", e.what());
             }
         } else if (found->second.rowType == DUALFWK_CONFROW_PATH) {
-            settings_[found->second.item].toneFileName = RingtoneFileUtils::GetFileNameFromPath(conf->value);
+            settings_[found->second.item].toneSetting.tonePath = RingtoneFileUtils::GetFileNameFromPath(conf->value);
         } else {
             ret = E_ERR;
         }
@@ -166,44 +166,105 @@ int32_t DualFwkSoundSetting::ProcessConfRow(std::unique_ptr<DualFwkConfRow> &con
 
 void DualFwkSoundSetting::ProcessConf(const DualFwkConf &conf)
 {
-    bool isTitle = false;
-    std::string toneFile;
-    if (!conf.notificationSoundPath.empty()) {
-        toneFile = RingtoneFileUtils::GetFileNameFromPathOrUri(conf.notificationSoundPath, isTitle);
-        settings_[SETTING_ITEM_NOTIFICATION] = {
-            toneFile, TONE_SETTING_TYPE_NOTIFICATION, NOTIFICATION_TONE_TYPE, false, true, isTitle
-        };
-    }
-    if (!conf.ringtonePath.empty()) {
-        toneFile = RingtoneFileUtils::GetFileNameFromPathOrUri(conf.ringtonePath, isTitle);
-        settings_[SETTING_ITEM_RINGTONE] = {
-            toneFile, TONE_SETTING_TYPE_RINGTONE, RING_TONE_TYPE_SIM_CARD_1, false, true, isTitle
-        };
-    }
-    if (!conf.ringtone2Path.empty()) {
-        toneFile = RingtoneFileUtils::GetFileNameFromPathOrUri(conf.ringtone2Path, isTitle);
-        settings_[SETTING_ITEM_RINGTONE2] = {
-            toneFile, TONE_SETTING_TYPE_RINGTONE, RING_TONE_TYPE_SIM_CARD_2, false, true, isTitle
-        };
-    }
-    if (!conf.alarmAlertPath.empty()) {
-        toneFile = RingtoneFileUtils::GetFileNameFromPathOrUri(conf.alarmAlertPath, isTitle);
-        settings_[SETTING_ITEM_ALARM] = {
-            toneFile, TONE_SETTING_TYPE_ALARM, ALARM_TONE_TYPE,  false, true, isTitle
-        };
-    }
-    if (!conf.messagePath.empty()) {
-        toneFile = RingtoneFileUtils::GetFileNameFromPathOrUri(conf.messagePath, isTitle);
-        settings_[SETTING_ITEM_MESSAGE] = {
-            toneFile, TONE_SETTING_TYPE_SHOT, SHOT_TONE_TYPE_SIM_CARD_1, false, true, isTitle
-        };
-    }
-    if (!conf.messageSub1.empty()) {
-        toneFile = RingtoneFileUtils::GetFileNameFromPathOrUri(conf.messageSub1, isTitle);
-        settings_[SETTING_ITEM_MESSAGE2] = {
-            toneFile, TONE_SETTING_TYPE_SHOT, SHOT_TONE_TYPE_SIM_CARD_2, false, true, isTitle
-        };
-    }
+    bool noRingtone = conf.ringtone == DUALFWK_CONF_VALUE_NULL;
+    bool noRingtone2 = conf.ringtone2 == DUALFWK_CONF_VALUE_NULL;
+    bool noMessage = conf.message == DUALFWK_CONF_VALUE_NULL;
+    bool noMessage2 = conf.messageSub1 == DUALFWK_CONF_VALUE_NULL;
+    bool noNotification = conf.notificationSound == DUALFWK_CONF_VALUE_NULL;
+    bool noAlarm = conf.alarmAlert == DUALFWK_CONF_VALUE_NULL;
+
+    int32_t toneType = noRingtone ? RING_TONE_TYPE_NOT : RING_TONE_TYPE_SIM_CARD_1;
+    int32_t sourceType = noRingtone ? SOURCE_TYPE_INVALID : SOURCE_TYPE_NOT_SET;
+    AddSetting({SIMCARD_MODE_1, TONE_SETTING_TYPE_RINGTONE, toneType, conf.ringtonePath, sourceType},
+        {SIMCARD_MODE_1, TONE_SETTING_TYPE_RINGTONE, TONE_TYPE_RINGTONE, VIBRATE_TYPE_SRINGTONE,
+            ExtractVibrateMode(conf.vibrateConf.ringtone), ExtractFileName(conf.vibrateConf.ringtone)});
+
+    toneType = noRingtone2 ? RING_TONE_TYPE_NOT : RING_TONE_TYPE_SIM_CARD_2;
+    sourceType = noRingtone2 ? SOURCE_TYPE_INVALID : SOURCE_TYPE_NOT_SET;
+    AddSetting({SIMCARD_MODE_2, TONE_SETTING_TYPE_RINGTONE, toneType, conf.ringtone2Path, sourceType},
+        {SIMCARD_MODE_2, TONE_SETTING_TYPE_RINGTONE, TONE_TYPE_RINGTONE, VIBRATE_TYPE_SRINGTONE,
+            ExtractVibrateMode(conf.vibrateConf.ringtone2), ExtractFileName(conf.vibrateConf.ringtone2)});
+
+    toneType = noMessage ? SHOT_TONE_TYPE_NOT : SHOT_TONE_TYPE_SIM_CARD_1;
+    sourceType = noMessage ? SOURCE_TYPE_INVALID : SOURCE_TYPE_NOT_SET;
+    AddSetting({SIMCARD_MODE_1, TONE_SETTING_TYPE_SHOT, toneType, conf.messagePath, sourceType},
+        {SIMCARD_MODE_1, TONE_SETTING_TYPE_SHOT, TONE_TYPE_NOTIFICATION, VIBRATE_TYPE_SNOTIFICATION,
+            ExtractVibrateMode(conf.vibrateConf.message), ExtractFileName(conf.vibrateConf.message)});
+
+    toneType = noMessage2 ? SHOT_TONE_TYPE_NOT : SHOT_TONE_TYPE_SIM_CARD_2;
+    sourceType = noMessage2 ? SOURCE_TYPE_INVALID : SOURCE_TYPE_NOT_SET;
+    AddSetting({SIMCARD_MODE_2, TONE_SETTING_TYPE_SHOT, toneType, conf.messageSub1, sourceType},
+        {SIMCARD_MODE_2, TONE_SETTING_TYPE_SHOT, TONE_TYPE_NOTIFICATION, VIBRATE_TYPE_SNOTIFICATION,
+            ExtractVibrateMode(conf.vibrateConf.message2), ExtractFileName(conf.vibrateConf.message2)});
+
+    toneType = noNotification ? NOTIFICATION_TONE_TYPE_NOT : NOTIFICATION_TONE_TYPE;
+    sourceType = noNotification ? SOURCE_TYPE_INVALID : SOURCE_TYPE_NOT_SET;
+    AddSetting({SIMCARD_MODE_1, TONE_SETTING_TYPE_NOTIFICATION, toneType, conf.notificationSoundPath, sourceType},
+        {SIMCARD_MODE_1, TONE_SETTING_TYPE_NOTIFICATION, TONE_TYPE_NOTIFICATION, VIBRATE_TYPE_SNOTIFICATION,
+            ExtractVibrateMode(conf.vibrateConf.notification), ExtractFileName(conf.vibrateConf.notification)});
+
+    toneType = noAlarm ? ALARM_TONE_TYPE_NOT : ALARM_TONE_TYPE;
+    sourceType = noAlarm ? SOURCE_TYPE_INVALID : SOURCE_TYPE_NOT_SET;
+    AddSetting({SIMCARD_MODE_1, TONE_SETTING_TYPE_ALARM, toneType, conf.alarmAlertPath, sourceType},
+        {SIMCARD_MODE_1, TONE_SETTING_TYPE_ALARM, TONE_TYPE_ALARM, VIBRATE_TYPE_SALARM,
+            ExtractVibrateMode(conf.vibrateConf.alarm), ExtractFileName(conf.vibrateConf.alarm)});
 }
+
+VibratePlayMode DualFwkSoundSetting::ExtractVibrateMode(const std::string &input)
+{
+    VibratePlayMode playMode = VIBRATE_PLAYMODE_INVALID;
+    do {
+        auto pos = input.find(DUALFWK_CONF_VIBRATE_MODE_STD);
+        if (pos != std::string::npos) {
+            playMode = VIBRATE_PLAYMODE_CLASSIC;
+            break;
+        }
+        pos = input.find(DUALFWK_CONF_VIBRATE_MODE_NULL);
+        if (pos != std::string::npos) {
+            playMode = VIBRATE_PLAYMODE_NONE;
+            break;
+        }
+        pos = input.find(DUALFWK_CONF_VIBRATE_MODE_FOLLOW);
+        if (pos != std::string::npos) {
+            playMode = VIBRATE_PLAYMODE_SYNC;
+        }
+    } while (false);
+    return playMode;
+}
+
+std::string DualFwkSoundSetting::ExtractFileName(const std::string &input)
+{
+    std::string ret{};
+    if (input == DUALFWK_CONF_VIBRATE_MODE_NULL ||
+        input == DUALFWK_CONF_VIBRATE_MODE_FOLLOW) {
+        return ret;
+    }
+
+    auto pos = input.find(DUALFWK_CONF_VIBRATE_MODE_STD);
+    if (pos != std::string::npos) {
+        return ret;
+    }
+
+    pos = input.find('_', pos + DUALFWK_CONF_VIBRATE_MODE_STD.length());
+    if (pos == std::string::npos) {
+        return VIBRATE_FILE_NAME_STD;
+    }
+    ret = input.substr(pos + 1);
+    if (!ret.empty()) {
+        ret += VIBRATE_FILE_SUFFIX;
+    }
+    return ret;
+}
+
+void DualFwkSoundSetting::AddSetting(const ToneFileInfo &toneConf, const VibrateFileInfo &vibrateConf)
+{
+    ToneFileInfo newToneConf = toneConf;
+    bool isTitle = false;
+    if (!toneConf.tonePath.empty()) {
+        newToneConf.tonePath = RingtoneFileUtils::GetFileNameFromPathOrUri(toneConf.tonePath, isTitle);
+    }
+    settings_.push_back({newToneConf, false, true, isTitle, vibrateConf});
+}
+
 } // namespace Media
 } // namespace OHOS

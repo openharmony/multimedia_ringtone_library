@@ -38,6 +38,7 @@
           "ipc",
           "kv_store",
           "libxml2",
+          "media_library",
           "napi",
           "player_framework",
           "relational_store",

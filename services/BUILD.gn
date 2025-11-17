@@ -179,6 +179,7 @@ ohos_shared_library("ringtonerestore") {
     ":ringtone_data_extension",
     ":ringtone_setting",
     ":ringtone_utils",
+    "${RINGTONE_ROOT_PATH}/services/ringtone_helper:ringtone_data_helper",
   ]
 
   external_deps = [
@@ -210,7 +211,13 @@ ohos_shared_library("ringtonerestore") {
     "samgr:samgr_proxy",
   ]
 
-  defines = []
+  if (ringtone_media_library_enable) {
+    defines = [ "USE_MEDIA_LIBRARY" ]
+    external_deps += [
+      "media_library:media_library",
+      "media_library:media_library_manager", 
+    ]
+  }
 
   sanitize = {
     cfi = true
