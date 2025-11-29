@@ -303,11 +303,7 @@ void RingtoneDataShareExtension::DumpDataShareValueBucket(const std::vector<stri
 
 void RingtoneDataShareExtension::UpdataRdbPathData()
 {
-    auto result = RingtoneFileUtils::MoveRingtoneFolder();
-    CHECK_AND_RETURN_LOG(result, "MoveRingtoneFolder failed");
-
     Uri uri(RINGTONE_LIBRARY_PROXY_DATA_URI_TONE_FILES);
-
     DataSharePredicates predicates;
     const std::string selection = RINGTONE_COLUMN_DATA + " LIKE ? ";
     std::vector<std::string> selectionArgs = {"%/storage/media/local/files/%"};
@@ -322,7 +318,7 @@ void RingtoneDataShareExtension::UpdataRdbPathData()
     auto results = make_unique<RingtoneFetchResult<RingtoneAsset>>(move(resultSet));
     unique_ptr<RingtoneAsset> ringtoneAsset = results->GetFirstObject();
     CHECK_AND_RETURN_LOG(ringtoneAsset != nullptr, "ringtoneAsset is nullptr");
-
+    bool bRemoveRingtoneFolder = true;
     while (ringtoneAsset != nullptr) {
         int toneId = ringtoneAsset->GetId();
         std::string oldPath = ringtoneAsset->GetPath();
@@ -332,8 +328,10 @@ void RingtoneDataShareExtension::UpdataRdbPathData()
             newPath.replace(start_pos, std::string("/storage/media/local/files/Ringtone").length(),
                 "/data/storage/el2/base/files/Ringtone");
         }
-        if (!RingtoneFileUtils::IsFileExists(newPath)) {
-            RINGTONE_ERR_LOG("the file is not exists, path: %{public}s", newPath.c_str());
+        if (RingtoneFileUtils::CopyFileUtil(oldPath, newPath) == false) {
+            RINGTONE_ERR_LOG("copy file fail, src: %{public}s, dest: %{public}s", oldPath.c_str(),
+                newPath.c_str());
+            bRemoveRingtoneFolder = false;
             ringtoneAsset = results->GetNextObject();
             continue;
         }
@@ -346,7 +344,9 @@ void RingtoneDataShareExtension::UpdataRdbPathData()
         Update(uri, predicates, valuesBucket);
         ringtoneAsset = results->GetNextObject();
     }
-    RingtoneFileUtils::RemoveRingtoneFolder(OLD_RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH);
+    if (bRemoveRingtoneFolder) {
+        RingtoneFileUtils::RemoveRingtoneFolder(OLD_RINGTONE_CUSTOMIZED_BASE_RINGTONE_PATH);
+    }
     return;
 }
 
