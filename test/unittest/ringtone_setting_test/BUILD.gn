@@ -54,6 +54,7 @@ ohos_unittest("ringtone_setting_unittest") {
     "access_token:libaccesstoken_sdk",
     "access_token:libprivacy_sdk",
     "access_token:libtokenid_sdk",
+    "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "data_share:datashare_common",
