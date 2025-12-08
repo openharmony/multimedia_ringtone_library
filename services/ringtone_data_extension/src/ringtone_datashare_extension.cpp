@@ -134,7 +134,7 @@ void RingtoneDataShareExtension::CheckRingtoneDbDefaultSettings()
 
 void RingtoneDataShareExtension::OnStart(const AAFwk::Want &want)
 {
-    RINGTONE_DEBUG_LOG("begin.");
+    RINGTONE_INFO_LOG("Ringtone OnStart begin.");
     Extension::OnStart(want);
     auto context = AbilityRuntime::Context::GetApplicationContext();
     if (context == nullptr) {
@@ -168,18 +168,18 @@ void RingtoneDataShareExtension::OnStart(const AAFwk::Want &want)
     }
 
     RingtoneLanguageManager::GetInstance()->SyncAssetLanguage();
-    RINGTONE_DEBUG_LOG("end.");
+    RINGTONE_INFO_LOG("Ringtone OnStart end.");
 }
 
 void RingtoneDataShareExtension::OnStop()
 {
-    RINGTONE_DEBUG_LOG("begin.");
+    RINGTONE_INFO_LOG("begin.");
     auto scannerManager = RingtoneScannerManager::GetInstance();
     if (scannerManager != nullptr) {
         scannerManager->Stop();
     }
     RingtoneDataManager::GetInstance()->ClearRingtoneDataMgr();
-    RINGTONE_DEBUG_LOG("end.");
+    RINGTONE_INFO_LOG("end.");
 }
 
 sptr<IRemoteObject> RingtoneDataShareExtension::OnConnect(const AAFwk::Want &want)
