@@ -217,16 +217,16 @@ HWTEST_F(RingtoneDualFwkRestoreTest, ringtone_dualfwk_restore_test_0007, TestSiz
     FileInfo info;
     DualFwkSettingItem dualFwkSettingItem;
     ASSERT_NE(g_restoreDualFwkService->dualFwkSetting_, nullptr);
-    dualFwkSettingItem.settingType = static_cast<int32_t>(ToneSettingType::TONE_SETTING_TYPE_MAX);
-    g_restoreDualFwkService->dualFwkSetting_->settings_.insert({1, dualFwkSettingItem});
+    dualFwkSettingItem.toneSetting.settingType = ToneSettingType::TONE_SETTING_TYPE_MAX;
+    g_restoreDualFwkService->dualFwkSetting_->settings_.push_back(dualFwkSettingItem);
     g_restoreDualFwkService->BuildFileInfo();
-    dualFwkSettingItem.settingType = static_cast<int32_t>(ToneSettingType::TONE_SETTING_TYPE_ALARM);
+    dualFwkSettingItem.toneSetting.settingType = ToneSettingType::TONE_SETTING_TYPE_ALARM;
     g_restoreDualFwkService->BuildFileInfo();
-    dualFwkSettingItem.settingType = static_cast<int32_t>(ToneSettingType::TONE_SETTING_TYPE_RINGTONE);
+    dualFwkSettingItem.toneSetting.settingType = ToneSettingType::TONE_SETTING_TYPE_RINGTONE;
     g_restoreDualFwkService->BuildFileInfo();
-    dualFwkSettingItem.settingType = static_cast<int32_t>(ToneSettingType::TONE_SETTING_TYPE_SHOT);
+    dualFwkSettingItem.toneSetting.settingType = ToneSettingType::TONE_SETTING_TYPE_SHOT;
     g_restoreDualFwkService->BuildFileInfo();
-    dualFwkSettingItem.settingType = static_cast<int32_t>(ToneSettingType::TONE_SETTING_TYPE_NOTIFICATION);
+    dualFwkSettingItem.toneSetting.settingType = ToneSettingType::TONE_SETTING_TYPE_NOTIFICATION;
     g_restoreDualFwkService->BuildFileInfo();
     g_restoreDualFwkService->dualFwkSetting_ = nullptr;
     int32_t ret = g_restoreDualFwkService->StartRestore();
@@ -242,9 +242,9 @@ HWTEST_F(RingtoneDualFwkRestoreTest, ringtone_dualfwk_restore_test_0008, TestSiz
     int32_t res = g_restoreDualFwkService->Init(backupPath);
     ASSERT_EQ(res, E_SUCCESS);
     ASSERT_NE(g_restoreDualFwkService->dualFwkSetting_, nullptr);
-    dualFwkSettingItem.settingType = static_cast<int32_t>(ToneSettingType::TONE_SETTING_TYPE_MAX);
+    dualFwkSettingItem.toneSetting.settingType = ToneSettingType::TONE_SETTING_TYPE_MAX;
     dualFwkSettingItem.isTitle = true;
-    g_restoreDualFwkService->dualFwkSetting_->settings_.insert({1, dualFwkSettingItem});
+    g_restoreDualFwkService->dualFwkSetting_->settings_.push_back(dualFwkSettingItem);
     std::vector<std::string> displayNames = g_restoreDualFwkService->dualFwkSetting_->GetDisplayNames();
     EXPECT_FALSE(displayNames.empty());
     RINGTONE_INFO_LOG("ringtone_dualfwk_restore_test_0008 end");
@@ -306,6 +306,37 @@ HWTEST_F(RingtoneDualFwkRestoreTest, ringtone_dualfwk_restore_test_0011, TestSiz
     ret = rUniStore->Init();
     EXPECT_EQ(ret, E_OK);
     RINGTONE_INFO_LOG("ringtone_dualfwk_restore_test_0010 start");
+}
+
+HWTEST_F(RingtoneDualFwkRestoreTest, ringtone_VibrateSettingClone_test_0001, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("ringtone_VibrateSettingClone_test_0001 start");
+    auto dualSetting = std::make_unique<DualFwkSoundSetting>();
+    EXPECT_NE(dualSetting, nullptr);
+    DualFwkConf conf;
+    string testVibrate1 = "emergency";
+    string testVibrate2 = "emergency" + VIBRATE_FILE_SUFFIX;
+    VibratePlayMode testVibrateMode1 = VIBRATE_PLAYMODE_CLASSIC;
+    conf.ringtone2="content://media/internal/audio/media/65";
+    conf.message="content://media/internal/audio/media/66";
+    conf.vibrateConf.ringtone = DUALFWK_CONF_VIBRATE_MODE_FOLLOW;
+    conf.vibrateConf.ringtone2 = DUALFWK_CONF_VIBRATE_MODE_FOLLOW;
+    conf.vibrateConf.message = DUALFWK_CONF_VIBRATE_MODE_NULL;
+    conf.vibrateConf.message2 = DUALFWK_CONF_VIBRATE_MODE_NULL;
+    conf.vibrateConf.notification = DUALFWK_CONF_VIBRATE_MODE_STD;
+    conf.vibrateConf.alarm = DUALFWK_CONF_VIBRATE_MODE_STD + "_" + testVibrate1;
+
+    dualSetting->ProcessConf(conf);
+    auto settings = dualSetting->GetSettings();
+    DualFwkSettingItem item;
+    for (auto &setting : settings) {
+        if (item.toneSetting.settingType == TONE_SETTING_TYPE_ALARM) {
+            item = setting;
+        }
+    }
+    EXPECT_EQ(item.vibrateSetting.displayName, testVibrate2);
+    EXPECT_EQ(item.vibrateSetting.vibrateMode, testVibrateMode1);
+    RINGTONE_INFO_LOG("ringtone_dualfwk_restore_test_0006 end");
 }
 } // namespace Media
 } // namespace OHOS

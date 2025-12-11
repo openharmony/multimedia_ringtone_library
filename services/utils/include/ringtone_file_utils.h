@@ -64,6 +64,7 @@ public:
     EXPORT static bool DeleteFile(const std::string &fileName);
     EXPORT static bool MoveFile(const std::string &oldPath, const std::string &newPath);
     EXPORT static bool CopyFileUtil(const std::string &filePath, const std::string &newPath);
+    EXPORT static int32_t CopyFileFromFd(int32_t srcFd, const std::string &newPath);
     EXPORT static int32_t RemoveDirectory(const std::string &path);
     EXPORT static bool Mkdir(const std::string &subStr, std::shared_ptr<int> errCodePtr = nullptr);
     EXPORT static bool IsDirectory(const std::string &dirName, std::shared_ptr<int> errCodePtr = nullptr);

@@ -39,6 +39,9 @@
 #include "ringtone_type.h"
 #include "ringtone_utils.h"
 #include "customised_tone_processor.h"
+#ifdef USE_MEDIA_LIBRARY
+#include "media_library_manager.h"
+#endif
 
 namespace OHOS {
 namespace Media {
@@ -194,26 +197,30 @@ int32_t RingtoneDualFwkRestore::QueryRingToneDbForFileInfo(std::shared_ptr<Nativ
 
 static void AddSettingsToFileInfo(const DualFwkSettingItem &setting, FileInfo &info)
 {
-    switch (setting.settingType) {
+    int32_t sourceType = setting.toneSetting.toneSourceType == SOURCE_TYPE_INVALID ?
+        SOURCE_TYPE_INVALID : SOURCE_TYPE_CUSTOMISED;
+    info.simcard = setting.toneSetting.simcard;
+    info.vibrateInfo = setting.vibrateSetting;
+    switch (setting.toneSetting.settingType) {
         case TONE_SETTING_TYPE_ALARM:
             info.toneType = TONE_TYPE_ALARM;
-            info.alarmToneType = setting.toneType;
-            info.alarmToneSourceType = SOURCE_TYPE_CUSTOMISED;
+            info.alarmToneType = setting.toneSetting.toneType;
+            info.alarmToneSourceType = sourceType;
             break;
         case TONE_SETTING_TYPE_RINGTONE:
             info.toneType = TONE_TYPE_RINGTONE;
-            info.ringToneType = setting.toneType;
-            info.ringToneSourceType = SOURCE_TYPE_CUSTOMISED;
+            info.ringToneType = setting.toneSetting.toneType;
+            info.ringToneSourceType = sourceType;
             break;
         case TONE_SETTING_TYPE_SHOT:
             info.toneType = TONE_TYPE_NOTIFICATION;
-            info.shotToneType = setting.toneType;
-            info.shotToneSourceType = SOURCE_TYPE_CUSTOMISED;
+            info.shotToneType = setting.toneSetting.toneType;
+            info.shotToneSourceType = sourceType;
             break;
         case TONE_SETTING_TYPE_NOTIFICATION:
             info.toneType = TONE_TYPE_NOTIFICATION;
-            info.notificationToneType = setting.toneType;
-            info.notificationToneSourceType = SOURCE_TYPE_CUSTOMISED;
+            info.notificationToneType = setting.toneSetting.toneType;
+            info.notificationToneSourceType = sourceType;
             break;
         default:
             break;
@@ -222,7 +229,7 @@ static void AddSettingsToFileInfo(const DualFwkSettingItem &setting, FileInfo &i
 
 bool IsRingtoneConsistent(const std::shared_ptr<FileInfo> &ringtoneInfo, const DualFwkSettingItem &setting)
 {
-    auto keyToneType = setting.settingType;
+    auto keyToneType = setting.toneSetting.settingType;
     return ((ringtoneInfo->toneType == ToneType::TONE_TYPE_ALARM &&
         keyToneType == ToneSettingType::TONE_SETTING_TYPE_ALARM) ||
         (ringtoneInfo->toneType == ToneType::TONE_TYPE_RINGTONE &&
@@ -236,7 +243,7 @@ bool IsRingtoneConsistent(const std::shared_ptr<FileInfo> &ringtoneInfo, const D
 std::shared_ptr<FileInfo> GetRingtonebyDisplayName(std::vector<std::shared_ptr<FileInfo>>& results,
     const DualFwkSettingItem &setting, bool &doInsert)
 {
-    auto keyName = setting.toneFileName;
+    auto keyName = setting.toneSetting.tonePath;
     std::shared_ptr<FileInfo> infoPtr;
     for (const auto& ringtoneInfo : results) {
         if (ringtoneInfo == nullptr) {
@@ -266,7 +273,7 @@ std::shared_ptr<FileInfo> GetRingtonebyDisplayName(std::vector<std::shared_ptr<F
 std::shared_ptr<FileInfo> GetRingtoneInfo(std::vector<std::shared_ptr<FileInfo>>& results,
     const DualFwkSettingItem &setting, bool &doInsert)
 {
-    auto keyName = setting.toneFileName;
+    auto keyName = setting.toneSetting.tonePath;
     std::shared_ptr<FileInfo> infoPtr;
     for (const auto& ringtoneInfo : results) {
         if (ringtoneInfo == nullptr) {
@@ -289,7 +296,7 @@ static std::shared_ptr<FileInfo> MergeQueries(const DualFwkSettingItem &setting,
     std::shared_ptr<FileInfo> infoPtr;
     std::vector<std::shared_ptr<FileInfo>> results;
     doInsert = true;
-    auto keyName = setting.toneFileName;
+    auto keyName = setting.toneSetting.tonePath;
     if (resultFromFileMgr.find(keyName) != resultFromFileMgr.end()) {
         infoPtr = resultFromFileMgr[keyName];
         RINGTONE_INFO_LOG("found %{public}s in filemgr", keyName.c_str());
@@ -366,6 +373,10 @@ int32_t RingtoneDualFwkRestore::StartRestore()
 
 int32_t RingtoneDualFwkRestore::DupToneFile(FileInfo &info)
 {
+    if (RingtoneFileUtils::IsFileExists(info.restorePath)) {
+        return E_SUCCESS;
+    }
+
     RINGTONE_INFO_LOG("DupToneFile from %{private}s to %{private}s", info.data.c_str(), info.restorePath.c_str());
     std::string absDstPath = info.restorePath;
     RINGTONE_INFO_LOG("converted dst path from %{private}s to realpath %{private}s", info.restorePath.c_str(),
@@ -441,14 +452,14 @@ bool RingtoneDualFwkRestore::OnPrepare(FileInfo &info, const std::string &dstPat
             return false;
         }
         if (info.size == dstStatInfo.st_size) {
-            CheckSetting(info);
-            RINGTONE_ERR_LOG("samefile: srcPath=%{private}s, dstPath=%{private}s", info.data.c_str(),
+            RINGTONE_INFO_LOG("samefile: srcPath=%{private}s, dstPath=%{private}s", info.data.c_str(),
                 info.restorePath.c_str());
-            return false;
+            break;
         }
         info.restorePath = dstPath + "/" + baseName + "(" + to_string(repeatCount++) + ")" + "." + extensionName;
     }
 
+    RINGTONE_ERR_LOG("info.restorePath=%{private}s ", info.restorePath.c_str());
     if (DupToneFile(info) != E_SUCCESS) {
         return false;
     }

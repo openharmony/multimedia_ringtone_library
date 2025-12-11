@@ -19,6 +19,9 @@
 #include <string>
 
 #include "dualfwk_conf_loader.h"
+#ifdef USE_MEDIA_LIBRARY
+#include "media_library_manager.h"
+#endif
 
 namespace OHOS {
 namespace Media {
@@ -26,6 +29,7 @@ const std::string RINGTONE_EXTERNAL_BASE_PATH = "/storage/emulated/0";
 const std::string RINGTONE_EXTERNAL_MUSIC_PATH = RINGTONE_EXTERNAL_BASE_PATH + "/Music";
 const std::string FILE_MANAGER_BASE_PATH = "/storage/media/local/files/Docs";
 const std::string FILE_MANAGER_UPDATE_BACKUP_PATH = FILE_MANAGER_BASE_PATH + "/UpdateBackup";
+constexpr int STORAGE_MANAGER_MANAGER_ID = 5003;
 
 class CustomisedToneProcessor {
 public:
@@ -39,6 +43,11 @@ private:
     int32_t BuildFileInfo(const std::string &dualFilePath, int32_t toneType, int32_t ringtoneType,
         int32_t shotToneType, std::vector<FileInfo> &fileInfo);
     std::vector<FileInfo> BuildFileInfos();
+    std::string GetNewUri(int32_t toneType, const std::string &oldUri);
+#ifdef USE_MEDIA_LIBRARY
+    std::string GetFileAssetPathByUri(const std::string &uri);
+    MediaLibraryManager *manager_ = nullptr;
+#endif
 };
 } // namespace Media
 } // namespace OHOS

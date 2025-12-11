@@ -33,7 +33,8 @@ enum VibrateType : int32_t {
 };
 
 enum VibratePlayMode : int32_t {
-    VIBRATE_PLAYMODE_NONE = 0,
+    VIBRATE_PLAYMODE_INVALID = -1,
+    VIBRATE_PLAYMODE_NONE,
     VIBRATE_PLAYMODE_SYNC,
     VIBRATE_PLAYMODE_CLASSIC,
 };

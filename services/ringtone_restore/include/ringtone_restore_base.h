@@ -20,13 +20,10 @@
 #include "ringtone_restore_type.h"
 #include "ringtone_rdb_transaction.h"
 #include "ringtone_setting_manager.h"
+#include "simcard_setting_asset.h"
 
 namespace OHOS {
 namespace Media {
-static const int32_t SIM_CARD_1 = 1;
-static const int32_t SIM_CARD_2 = 2;
-static const int32_t SIM_CARD_BOTH = 3;
-
 class RingtoneRestoreBase : public RestoreInterface {
 public:
     RingtoneRestoreBase() = default;
@@ -37,6 +34,7 @@ public:
     {
         return localRdb_;
     }
+    static std::string GetRestoreDir(const int32_t toneType);
 protected:
     virtual bool OnPrepare(FileInfo &info, const std::string &destPath) = 0;
     virtual void OnFinished(std::vector<FileInfo> &fileInfos) = 0;
@@ -58,8 +56,11 @@ protected:
     bool NeedCommitSetting(const std::string &typeColumn, const std::string &sourceColumn,
         int type, int allSetType);
     void SetNotRingtone(const std::string &typeColumn, const std::string &sourceColumn, int32_t simCard);
+    void UpdateSettingTable(const SimcardSettingAsset &asset);
 private:
-    static std::string GetRestoreDir(const int32_t toneType);
+    void CheckUpdateVibrateSetting(const FileInfo &info);
+    std::string QuerySingleColumn(const std::string &dataColumn,
+        const NativeRdb::AbsRdbPredicates &predicates);
     static NativeRdb::ValuesBucket SetInsertValue(const FileInfo &fileInfo);
     int32_t BatchInsert(const std::string &tableName, std::vector<NativeRdb::ValuesBucket> &values, int64_t &rowNum);
     std::shared_ptr<NativeRdb::RdbStore> localRdb_ = nullptr;

@@ -35,6 +35,7 @@
 #include "ringtone_xcollie.h"
 #include "vibrate_type.h"
 #include "securec.h"
+#include "unique_fd.h"
 
 namespace OHOS {
 namespace Media {
@@ -484,6 +485,34 @@ bool RingtoneFileUtils::CopyFileUtil(const string &filePath, const string &newPa
     close(dest);
 
     return ret;
+}
+
+int32_t RingtoneFileUtils::CopyFileFromFd(int32_t srcFd, const std::string &newPath)
+{
+    CHECK_AND_RETURN_RET_LOG(!RingtoneFileUtils::IsFileExists(newPath), E_HAS_FS_ERROR,
+        "error file exists:%{public}s", newPath.c_str());
+    int32_t dest = open(newPath.c_str(), O_WRONLY | O_CREAT, MODE_RW_USR);
+    CHECK_AND_RETURN_RET_LOG(dest > 0, E_ERR, "Open failed for destination file %{public}d", errno);
+
+    OHOS::UniqueFd destFd(dest);
+    constexpr size_t bufferSize = 4096;
+    char buffer[bufferSize];
+    ssize_t bytesRead;
+    ssize_t bytesWritten;
+    while ((bytesRead = read(srcFd, buffer, bufferSize)) > 0) {
+        bytesWritten = write(destFd.Get(), buffer, bytesRead);
+        if (bytesWritten != bytesRead) {
+            RINGTONE_ERR_LOG("Failed to copy file from srcFd=%{public}d to destFd=%{public}d, errno=%{public}d",
+                srcFd, destFd.Get(), errno);
+            return E_HAS_FS_ERROR;
+        }
+    }
+
+    if (bytesRead < 0) {
+        RINGTONE_ERR_LOG("Failed to read from srcFd=%{public}d, errno=%{public}d", srcFd, errno);
+        return E_HAS_FS_ERROR;
+    }
+    return E_OK;
 }
 
 int64_t RingtoneFileUtils::Timespec2Millisecond(const struct timespec &time)

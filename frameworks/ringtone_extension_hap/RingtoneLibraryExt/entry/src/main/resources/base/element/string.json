@@ -27,6 +27,10 @@
     {
       "name": "permission_file_access_manager",
       "value": "Allows app read write files in file manager app."
+    },
+    {
+      "name": "permission_access_media_asset",
+      "value": "Allows app read assets from media library."
     }
   ]
 }

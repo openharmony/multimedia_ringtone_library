@@ -22,7 +22,7 @@ using namespace std;
 namespace OHOS {
 namespace Media {
 
-const string RingtoneRestoreRdbOpenCb::CREATE_RINGTONE_TABLE = "CREATE TABLE IF NOT EXISTS " + RINGTONE_TABLE + "(" +
+static const string CREATE_RINGTONE_TABLE = "CREATE TABLE IF NOT EXISTS " + RINGTONE_TABLE + "(" +
     RINGTONE_COLUMN_TONE_ID                       + " INTEGER  PRIMARY KEY AUTOINCREMENT, " +
     RINGTONE_COLUMN_DATA                          + " TEXT              , " +
     RINGTONE_COLUMN_SIZE                          + " BIGINT   DEFAULT 0, " +
@@ -46,9 +46,35 @@ const string RingtoneRestoreRdbOpenCb::CREATE_RINGTONE_TABLE = "CREATE TABLE IF 
     RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE        + " INT      DEFAULT 0, " +
     RINGTONE_COLUMN_SCANNER_FLAG                  + " INT      DEFAULT 0  " + ")";
 
+
+static const std::string CREATE_SIMCARD_SETTING_TABLE = "CREATE TABLE IF NOT EXISTS " + SIMCARD_SETTING_TABLE + "(" +
+    SIMCARD_SETTING_COLUMN_MODE                   + " INTEGER            ," +
+    SIMCARD_SETTING_COLUMN_RINGTONE_TYPE          + " INTEGER            ," +
+    SIMCARD_SETTING_COLUMN_TONE_FILE              + " TEXT               ," +
+    SIMCARD_SETTING_COLUMN_VIBRATE_FILE           + " TEXT               ," +
+    SIMCARD_SETTING_COLUMN_VIBRATE_MODE           + " INTEGER            ," +
+    SIMCARD_SETTING_COLUMN_RING_MODE              + " INTEGER            ," +
+    " PRIMARY KEY (" + SIMCARD_SETTING_COLUMN_MODE + ", " + SIMCARD_SETTING_COLUMN_RINGTONE_TYPE + "))";
+
+static const std::string INIT_SIMCARD_SETTING_TABLE = "INSERT OR IGNORE INTO " + SIMCARD_SETTING_TABLE + " (" +
+    SIMCARD_SETTING_COLUMN_MODE                   + ", " +
+    SIMCARD_SETTING_COLUMN_RINGTONE_TYPE          + ") VALUES (1, 0), (1, 1), (1, 2), (1, 3), \
+                                                        (2, 0), (2, 1), (2, 2), (2, 3),        \
+                                                        (3, 0), (3, 1), (3, 2), (3, 3);";
+static const vector<string> RESTORE_INIT_SQLS = {
+    CREATE_RINGTONE_TABLE,
+    CREATE_SIMCARD_SETTING_TABLE,
+    INIT_SIMCARD_SETTING_TABLE,
+};
+
 int RingtoneRestoreRdbOpenCb::OnCreate(NativeRdb::RdbStore &store)
 {
-    return store.ExecuteSql(CREATE_RINGTONE_TABLE);
+    for (const auto &sql : RESTORE_INIT_SQLS) {
+        int32_t errCode = store.ExecuteSql(sql);
+        CHECK_AND_RETURN_RET_LOG(errCode == E_OK, errCode,
+            "Execute %{public}s failed: %{public}d", sql.c_str(), errCode);
+    }
+    return E_OK;
 }
 
 int RingtoneRestoreRdbOpenCb::OnUpgrade(NativeRdb::RdbStore &store, int oldVersion, int newVersion)

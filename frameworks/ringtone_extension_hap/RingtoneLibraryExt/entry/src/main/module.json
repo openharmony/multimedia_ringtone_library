@@ -84,6 +84,17 @@
           ],
           "when": "inuse"
         }
+      },
+      {
+        "name": "ohos.permission.READ_IMAGEVIDEO",
+        "reason": "$string:permission_access_media_asset",
+        "useScene": {
+          "abilities": [
+            "RingtoneBackupExtAbility",
+            "DataShareExtAbility"
+          ],
+          "when": "inuse"
+        }
       }
     ],
     "proxyDatas": [

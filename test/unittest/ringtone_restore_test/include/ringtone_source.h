@@ -35,7 +35,6 @@ class RingtoneRestoreRdbOpenCb : public NativeRdb::RdbOpenCallback {
 public:
     int OnCreate(NativeRdb::RdbStore &rdbStore) override;
     int OnUpgrade(NativeRdb::RdbStore &rdbStore, int oldVersion, int newVersion) override;
-    static const std::string CREATE_RINGTONE_TABLE;
 };
 
 class RingtoneLocalRdbOpenCb : public NativeRdb::RdbOpenCallback {
