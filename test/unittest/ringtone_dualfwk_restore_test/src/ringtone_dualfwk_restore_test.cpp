@@ -330,7 +330,7 @@ HWTEST_F(RingtoneDualFwkRestoreTest, ringtone_VibrateSettingClone_test_0001, Tes
     auto settings = dualSetting->GetSettings();
     DualFwkSettingItem item;
     for (auto &setting : settings) {
-        if (item.toneSetting.settingType == TONE_SETTING_TYPE_ALARM) {
+        if (setting.toneSetting.settingType == TONE_SETTING_TYPE_ALARM) {
             item = setting;
         }
     }

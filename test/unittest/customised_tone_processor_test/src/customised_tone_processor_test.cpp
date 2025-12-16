@@ -41,11 +41,11 @@ namespace Media {
 const string TEST_BACKUP_PATH = "/data/test/backup";
 const string TEST_BACKUP_DATA = "/data/local/tmp/test/Adara.ogg";
 const std::string TEST_RINGTONE_EXTERNAL_BASE_PATH = "/storage/emulated/0";
-const std::string TEST_RINGTONE_EXTERNAL_MUSIC_PATH = TEST_RINGTONE_EXTERNAL_BASE_PATH + "/Music";
-const std::string TEST_FILE_MANAGER_BASE_PATH = "/storage/media/local/files/Docs";
-const std::string TEST_FILE_MANAGER_MUSIC_PATH = TEST_FILE_MANAGER_BASE_PATH + "/Music";
-const std::string TEST_FILE_MANAGER_UPDATE_BACKUP_PATH = TEST_FILE_MANAGER_BASE_PATH + "/UpdateBackup";
-const std::string TEST_FILE_MANAGER_UPDATE_BACKUP_MUSIC_PATH = TEST_FILE_MANAGER_UPDATE_BACKUP_PATH + "/Music";
+const std::string TEST_RINGTONE_EXTERNAL_MUSIC_PATH = TEST_RINGTONE_EXTERNAL_BASE_PATH + "/Music/";
+const std::string TEST_FILE_MANAGER_BASE_PATH = "/storage/media/local/files/Docs/";
+const std::string TEST_FILE_MANAGER_MUSIC_PATH = TEST_FILE_MANAGER_BASE_PATH + "Music/";
+const std::string TEST_FILE_MANAGER_UPDATE_BACKUP_PATH = TEST_FILE_MANAGER_BASE_PATH + "UpdateBackup/";
+const std::string TEST_FILE_MANAGER_UPDATE_BACKUP_MUSIC_PATH = TEST_FILE_MANAGER_UPDATE_BACKUP_PATH + "Music/";
 
 unique_ptr<CustomisedToneProcessor> g_customisedToneProcess = nullptr;
 
@@ -136,6 +136,10 @@ HWTEST_F(CustomisedToneProcessorTest, customised_tone_processor_003, TestSize.Le
     EXPECT_EQ(RingtoneFileUtils::CreateDirectory(TEST_FILE_MANAGER_UPDATE_BACKUP_MUSIC_PATH), true);
     ret1 = g_customisedToneProcess->ConvertCustomisedAudioPath(ringtonePath);
     EXPECT_EQ(ret1, TEST_FILE_MANAGER_UPDATE_BACKUP_MUSIC_PATH);
+
+    EXPECT_EQ(g_customisedToneProcess->ConvertCustomisedAudioPath(""), "");
+    EXPECT_EQ(g_customisedToneProcess->ConvertCustomisedAudioPath(TEST_BACKUP_PATH), "");
+    EXPECT_EQ(g_customisedToneProcess->ConvertCustomisedAudioPath(RINGTONE_EXTERNAL_BASE_PATH), "");
 
     RINGTONE_INFO_LOG("customised_tone_processor_003::End");
 }

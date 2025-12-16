@@ -56,7 +56,7 @@ protected:
     bool NeedCommitSetting(const std::string &typeColumn, const std::string &sourceColumn,
         int type, int allSetType);
     void SetNotRingtone(const std::string &typeColumn, const std::string &sourceColumn, int32_t simCard);
-    void UpdateSettingTable(const SimcardSettingAsset &asset);
+    void UpdateSettingTable(const SimcardSettingAsset &asset, bool forceUpdate = false);
 private:
     void CheckUpdateVibrateSetting(const FileInfo &info);
     std::string QuerySingleColumn(const std::string &dataColumn,

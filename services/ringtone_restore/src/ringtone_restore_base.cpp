@@ -517,7 +517,7 @@ void RingtoneRestoreBase::SetNotRingtone(const string &columnType, const string 
     RINGTONE_INFO_LOG("update both end changeRows = %{public}d", changeRows);
 }
 
-void RingtoneRestoreBase::UpdateSettingTable(const SimcardSettingAsset &asset)
+void RingtoneRestoreBase::UpdateSettingTable(const SimcardSettingAsset &asset, bool forceUpdate)
 {
     CHECK_AND_RETURN_LOG(localRdb_ != nullptr, "localRdb_ is null");
     int32_t changeRows = 0;
@@ -535,6 +535,9 @@ void RingtoneRestoreBase::UpdateSettingTable(const SimcardSettingAsset &asset)
     whereArgs.push_back(to_string(asset.GetRingtoneType()));
     absRdbPredicates.SetWhereClause(whereClause);
     absRdbPredicates.SetWhereArgs(whereArgs);
+    if (!forceUpdate) {
+        absRdbPredicates.IsNull(SIMCARD_SETTING_COLUMN_VIBRATE_MODE);
+    }
     localRdb_->Update(changeRows, valuesBucket, absRdbPredicates);
     RINGTONE_INFO_LOG("update end changeRows = %{public}d", changeRows);
 }

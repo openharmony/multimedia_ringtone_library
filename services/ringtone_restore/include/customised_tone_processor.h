@@ -25,11 +25,14 @@
 
 namespace OHOS {
 namespace Media {
-const std::string RINGTONE_EXTERNAL_BASE_PATH = "/storage/emulated/0";
-const std::string RINGTONE_EXTERNAL_MUSIC_PATH = RINGTONE_EXTERNAL_BASE_PATH + "/Music";
-const std::string FILE_MANAGER_BASE_PATH = "/storage/media/local/files/Docs";
-const std::string FILE_MANAGER_UPDATE_BACKUP_PATH = FILE_MANAGER_BASE_PATH + "/UpdateBackup";
+const std::string RINGTONE_EXTERNAL_BASE_PATH = "/storage/emulated/";
+const std::string RINGTONE_EXTERNAL_SUB_DIR_MUSIC = "Music/";
+const std::string FILE_MANAGER_BASE_PATH = "/storage/media/";
+const std::string FILE_MANAGER_SUB_DIR_DOCS = "local/files/Docs/";
+const std::string FILE_MANAGER_SUB_DIR_UPDATEBACKUP = FILE_MANAGER_SUB_DIR_DOCS + "UpdateBackup/";
+
 constexpr int STORAGE_MANAGER_MANAGER_ID = 5003;
+static constexpr uint64_t MAX_TONE_FILE_SIZE = 200 * 1024 * 1024;
 
 class CustomisedToneProcessor {
 public:

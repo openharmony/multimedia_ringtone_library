@@ -241,7 +241,7 @@ std::string DualFwkSoundSetting::ExtractFileName(const std::string &input)
     }
 
     auto pos = input.find(DUALFWK_CONF_VIBRATE_MODE_STD);
-    if (pos != std::string::npos) {
+    if (pos == std::string::npos) {
         return ret;
     }
 
