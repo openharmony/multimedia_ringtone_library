@@ -41,6 +41,7 @@
 #endif
 #include "ringtone_restore_base.h"
 #include "iservice_registry.h"
+#include "ringtone_restore_db_utils.h"
 
 namespace OHOS {
 namespace Media {
@@ -153,47 +154,35 @@ int32_t CustomisedToneProcessor::GetCustomisedAudioPath(DualFwkConf &dualFwkConf
 
 std::string CustomisedToneProcessor::ConvertCustomisedAudioPath(const std::string &ringtonePath)
 {
-    if (ringtonePath.empty()) {
-        RINGTONE_ERR_LOG("customised audio path is empty");
-        return "";
-    }
+    CHECK_AND_RETURN_RET_LOG(!ringtonePath.empty(), "", "customised audio path is empty");
+    auto pos = ringtonePath.find(RINGTONE_EXTERNAL_BASE_PATH);
+    CHECK_AND_RETURN_RET_LOG(pos != std::string::npos, "",
+        "customised audio file not in the directory: %{public}s", RINGTONE_EXTERNAL_BASE_PATH.c_str());
 
-    std::string::size_type pos = ringtonePath.find(RINGTONE_EXTERNAL_BASE_PATH);
-    if (pos == std::string::npos) {
-        RINGTONE_ERR_LOG("customised audio file not in the directory: %{public}s", RINGTONE_EXTERNAL_BASE_PATH.c_str());
-        return "";
-    }
+    std::filesystem::path userSubPath = ringtonePath.substr(RINGTONE_EXTERNAL_BASE_PATH.length());
+    userSubPath = userSubPath.relative_path();
+    auto iter = userSubPath.begin();
+    CHECK_AND_RETURN_RET_LOG(iter != userSubPath.end(), "",
+        "invalid subpath: %{public}s", userSubPath.c_str());
 
-    std::string absPath = ringtonePath.substr(pos + RINGTONE_EXTERNAL_BASE_PATH.length());
-    bool isMusicPath = ringtonePath.find(RINGTONE_EXTERNAL_MUSIC_PATH) != std::string::npos;
-    std::string fileMgrAudioPath = "";
+    std::filesystem::path subPath = RingtoneUtils::IsNumber(*iter) ?
+        std::filesystem::relative(userSubPath, *iter) : userSubPath;
+    bool isMusicPath = subPath.string().find(RINGTONE_EXTERNAL_SUB_DIR_MUSIC) != std::string::npos;
+    std::filesystem::path fileMgrBasePath = FILE_MANAGER_BASE_PATH;
+    std::filesystem::path searchPath1 = fileMgrBasePath / FILE_MANAGER_SUB_DIR_DOCS;
+    std::filesystem::path searchPath2 = fileMgrBasePath / FILE_MANAGER_SUB_DIR_UPDATEBACKUP;
+    std::string strSearchPath1 = (searchPath1 / subPath).lexically_normal().string();
+    std::string strSearchPath2 =  (searchPath2 / subPath).lexically_normal().string();
+    RINGTONE_INFO_LOG("searchPath1:%{public}s, searchPath2:%{public}s",
+        strSearchPath1.c_str(), strSearchPath2.c_str());
+
     std::string tmpPath;
-    if (isMusicPath && PathToRealPath(FILE_MANAGER_UPDATE_BACKUP_PATH + absPath, tmpPath)) {
-        fileMgrAudioPath = FILE_MANAGER_UPDATE_BACKUP_PATH + absPath;
-        RINGTONE_INFO_LOG("convert %{public}s to %{public}s", ringtonePath.c_str(), fileMgrAudioPath.c_str());
-        return fileMgrAudioPath;
-    }
-
-    if (!isMusicPath && PathToRealPath(FILE_MANAGER_BASE_PATH + absPath, tmpPath)) {
-        fileMgrAudioPath = FILE_MANAGER_BASE_PATH + absPath;
-        RINGTONE_INFO_LOG("convert %{public}s to %{public}s", ringtonePath.c_str(), fileMgrAudioPath.c_str());
-        return fileMgrAudioPath;
-    }
-
-    if (!isMusicPath && PathToRealPath(FILE_MANAGER_UPDATE_BACKUP_PATH + absPath, tmpPath)) {
-        fileMgrAudioPath = FILE_MANAGER_UPDATE_BACKUP_PATH + absPath;
-        RINGTONE_INFO_LOG("convert %{public}s to %{public}s", ringtonePath.c_str(), fileMgrAudioPath.c_str());
-        return fileMgrAudioPath;
-    }
-
-    if (isMusicPath && PathToRealPath(FILE_MANAGER_BASE_PATH + absPath, tmpPath)) {
-        fileMgrAudioPath = FILE_MANAGER_BASE_PATH + absPath;
-        RINGTONE_INFO_LOG("convert %{public}s to %{public}s", ringtonePath.c_str(), fileMgrAudioPath.c_str());
-        return fileMgrAudioPath;
-    }
-
-    RINGTONE_DEBUG_LOG("No rule can convert ringtonePath: %{public}s", ringtonePath.c_str());
-    return fileMgrAudioPath;
+    CHECK_AND_RETURN_RET(!(isMusicPath && PathToRealPath(strSearchPath2, tmpPath)), strSearchPath2);
+    CHECK_AND_RETURN_RET(!(!isMusicPath && PathToRealPath(strSearchPath1, tmpPath)), strSearchPath1);
+    CHECK_AND_RETURN_RET(!(!isMusicPath && PathToRealPath(strSearchPath2, tmpPath)), strSearchPath2);
+    CHECK_AND_RETURN_RET(!(isMusicPath && PathToRealPath(strSearchPath1, tmpPath)), strSearchPath1);
+    RINGTONE_INFO_LOG("No rule can convert ringtonePath: %{public}s", ringtonePath.c_str());
+    return "";
 }
 
 int32_t CustomisedToneProcessor::BuildFileInfo(const std::string &dualFilePath, int32_t toneType, int32_t ringtoneType,
@@ -244,7 +233,7 @@ std::string CustomisedToneProcessor::GetNewUri(int32_t toneType, const std::stri
     CHECK_AND_RETURN_RET_LOG(manager_ != nullptr, newUri, "get media library manager failed");
     std::string fileUri;
     std::string filePath{oldUri};
-    if (mediaType == RINGTONE_MEDIA_TYPE_VIDEO) {
+    if (mediaType == RINGTONE_MEDIA_TYPE_VIDEO && ext == RINGTONE_CONTAINER_TYPE_VIDEO_MP4) {
         auto newUris = manager_->GetUrisByOldUris({oldUri});
         fileUri = newUris.count(oldUri) == 0 ? oldUri : newUris[oldUri];
         if (fileUri != oldUri) {
@@ -256,6 +245,11 @@ std::string CustomisedToneProcessor::GetNewUri(int32_t toneType, const std::stri
     if (!filePath.empty() && filePath != oldUri) {
         int32_t fd = manager_->OpenAsset(fileUri, RINGTONE_FILEMODE_READONLY);
         CHECK_AND_RETURN_RET_LOG(fd > 0, newUri, "get file fd failed");
+        if (!RingtoneFileUtils::CheckFileSize(fd, MAX_TONE_FILE_SIZE)) {
+            RINGTONE_ERR_LOG("file size exceed limit");
+            manager_->CloseAsset(fileUri, fd);
+            return newUri;
+        }
         std::string target = RingtoneRestoreBase::GetRestoreDir(toneType) +
             "/" + RingtoneFileUtils::GetFileNameFromPath(oldUri);
         RingtoneFileUtils::DeleteFile(target);

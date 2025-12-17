@@ -472,5 +472,18 @@ HWTEST_F(RingtoneFileUtilsTest, ringtoneUtils_CopyFileFromFd_Test_001, TestSize.
     RingtoneFileUtils::DeleteFile(newPath);
 }
 
+HWTEST_F(RingtoneFileUtilsTest, ringtoneUtils_CheckFileSize_Test_001, TestSize.Level1)
+{
+    uint64_t maxFileSize = 1024 * 1024 * 100;
+    string oldPath = "/data/local/tmp/test/check_file_size_utils1.ogg";
+    EXPECT_EQ(RingtoneFileUtils::CheckFileSize(-1, maxFileSize), false);
+    EXPECT_EQ(RingtoneFileUtils::CreateFile(oldPath), E_SUCCESS);
+    int32_t fd = RingtoneFileUtils::OpenFile(oldPath, RINGTONE_FILEMODE_READONLY);
+    EXPECT_GT(fd, 0);
+    EXPECT_EQ(RingtoneFileUtils::CheckFileSize(fd, maxFileSize), true);
+
+    RingtoneFileUtils::DeleteFile(oldPath);
+}
+
 } // namespace Media
 } // namespace OHOS

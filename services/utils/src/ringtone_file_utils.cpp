@@ -515,6 +515,15 @@ int32_t RingtoneFileUtils::CopyFileFromFd(int32_t srcFd, const std::string &newP
     return E_OK;
 }
 
+bool RingtoneFileUtils::CheckFileSize(int32_t fd, uint64_t maxFileSize)
+{
+    CHECK_AND_RETURN_RET_LOG(fd > 0, false, "invalid fd");
+    struct stat stat_buf;
+    CHECK_AND_RETURN_RET_LOG(fstat(fd, &stat_buf) == 0, false, "get fd stat failed");
+
+    return static_cast<uint64_t>(stat_buf.st_size) <= maxFileSize;
+}
+
 int64_t RingtoneFileUtils::Timespec2Millisecond(const struct timespec &time)
 {
     return time.tv_sec * MSEC_TO_SEC + time.tv_nsec / MSEC_TO_NSEC;
