@@ -157,13 +157,13 @@ std::string CustomisedToneProcessor::ConvertCustomisedAudioPath(const std::strin
     CHECK_AND_RETURN_RET_LOG(!ringtonePath.empty(), "", "customised audio path is empty");
     auto pos = ringtonePath.find(RINGTONE_EXTERNAL_BASE_PATH);
     CHECK_AND_RETURN_RET_LOG(pos != std::string::npos, "",
-        "customised audio file not in the directory: %{public}s", RINGTONE_EXTERNAL_BASE_PATH.c_str());
+        "customised audio file not in the directory: %{private}s", RINGTONE_EXTERNAL_BASE_PATH.c_str());
 
     std::filesystem::path userSubPath = ringtonePath.substr(RINGTONE_EXTERNAL_BASE_PATH.length());
     userSubPath = userSubPath.relative_path();
     auto iter = userSubPath.begin();
     CHECK_AND_RETURN_RET_LOG(iter != userSubPath.end(), "",
-        "invalid subpath: %{public}s", userSubPath.c_str());
+        "invalid subpath: %{private}s", userSubPath.c_str());
 
     std::filesystem::path subPath = RingtoneUtils::IsNumber(*iter) ?
         std::filesystem::relative(userSubPath, *iter) : userSubPath;
@@ -173,7 +173,7 @@ std::string CustomisedToneProcessor::ConvertCustomisedAudioPath(const std::strin
     std::filesystem::path searchPath2 = fileMgrBasePath / FILE_MANAGER_SUB_DIR_UPDATEBACKUP;
     std::string strSearchPath1 = (searchPath1 / subPath).lexically_normal().string();
     std::string strSearchPath2 =  (searchPath2 / subPath).lexically_normal().string();
-    RINGTONE_INFO_LOG("searchPath1:%{public}s, searchPath2:%{public}s",
+    RINGTONE_INFO_LOG("searchPath1:%{private}s, searchPath2:%{private}s",
         strSearchPath1.c_str(), strSearchPath2.c_str());
 
     std::string tmpPath;
@@ -181,7 +181,7 @@ std::string CustomisedToneProcessor::ConvertCustomisedAudioPath(const std::strin
     CHECK_AND_RETURN_RET(!(!isMusicPath && PathToRealPath(strSearchPath1, tmpPath)), strSearchPath1);
     CHECK_AND_RETURN_RET(!(!isMusicPath && PathToRealPath(strSearchPath2, tmpPath)), strSearchPath2);
     CHECK_AND_RETURN_RET(!(isMusicPath && PathToRealPath(strSearchPath1, tmpPath)), strSearchPath1);
-    RINGTONE_INFO_LOG("No rule can convert ringtonePath: %{public}s", ringtonePath.c_str());
+    RINGTONE_INFO_LOG("No rule can convert ringtonePath: %{private}s", ringtonePath.c_str());
     return "";
 }
 
