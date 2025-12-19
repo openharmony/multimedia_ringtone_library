@@ -328,6 +328,9 @@ std::vector<FileInfo> RingtoneDualFwkRestore::BuildFileInfo()
     std::vector<FileInfo> result;
     std::map<std::string, std::shared_ptr<FileInfo>> resultFromFileMgr;
     CustomisedToneProcessor customisedToneProcessor;
+
+    int32_t limit = GetRingtoneLimit(RINGTONE_MEDIA_TYPE_VIDEO);
+    customisedToneProcessor.SetVideoToneLimit(limit);
     customisedToneProcessor.QueryFileMgrForFileInfo(resultFromFileMgr);
 
     std::vector<std::string> displayNames = dualFwkSetting_->GetDisplayNames();

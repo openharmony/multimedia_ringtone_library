@@ -517,6 +517,18 @@ void RingtoneRestoreBase::SetNotRingtone(const string &columnType, const string 
     RINGTONE_INFO_LOG("update both end changeRows = %{public}d", changeRows);
 }
 
+int32_t RingtoneRestoreBase::GetRingtoneLimit(RingtoneMediaType mediaType)
+{
+    std::string querySql = "SELECT count(1) AS count FROM " + RINGTONE_TABLE + " WHERE " +  RINGTONE_COLUMN_MEDIA_TYPE +
+        " = " + std::to_string(mediaType);
+    int32_t count = RingtoneRestoreDbUtils::QueryInt(GetBaseDb(), querySql, "count");
+    int32_t limit = RINGTONE_VIDEO_MAX_COUNT;
+    if (count >= 0) {
+        limit = std::max(RINGTONE_VIDEO_MAX_COUNT - count, 0);
+    }
+    return limit;
+}
+
 void RingtoneRestoreBase::UpdateSettingTable(const SimcardSettingAsset &asset, bool forceUpdate)
 {
     CHECK_AND_RETURN_LOG(localRdb_ != nullptr, "localRdb_ is null");
@@ -529,15 +541,15 @@ void RingtoneRestoreBase::UpdateSettingTable(const SimcardSettingAsset &asset, b
     }
     valuesBucket.PutInt(SIMCARD_SETTING_COLUMN_VIBRATE_MODE, VIBRATE_TYPE_STANDARD);
     NativeRdb::AbsRdbPredicates absRdbPredicates(SIMCARD_SETTING_TABLE);
-    string whereClause = SIMCARD_SETTING_COLUMN_MODE + "= ? AND " + SIMCARD_SETTING_COLUMN_RINGTONE_TYPE + " = ?";
+    string whereClause = SIMCARD_SETTING_COLUMN_MODE + "= ? AND " + SIMCARD_SETTING_COLUMN_RINGTONE_TYPE + " = ? ";
+    if (!forceUpdate) {
+        whereClause += " AND " + SIMCARD_SETTING_COLUMN_VIBRATE_MODE + " IS NULL ";
+    }
     vector<string> whereArgs;
     whereArgs.push_back(to_string(asset.GetMode()));
     whereArgs.push_back(to_string(asset.GetRingtoneType()));
     absRdbPredicates.SetWhereClause(whereClause);
     absRdbPredicates.SetWhereArgs(whereArgs);
-    if (!forceUpdate) {
-        absRdbPredicates.IsNull(SIMCARD_SETTING_COLUMN_VIBRATE_MODE);
-    }
     localRdb_->Update(changeRows, valuesBucket, absRdbPredicates);
     RINGTONE_INFO_LOG("update end changeRows = %{public}d", changeRows);
 }
