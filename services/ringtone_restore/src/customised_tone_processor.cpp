@@ -190,6 +190,9 @@ int32_t CustomisedToneProcessor::BuildFileInfo(const std::string &dualFilePath, 
 {
     CHECK_AND_RETURN_RET_LOG(!dualFilePath.empty(), E_FAIL, "empty input path");
     const std::string oldUri{dualFilePath};
+    CHECK_AND_RETURN_RET_LOG(CanBuildFileInfo(oldUri), E_FAIL,
+        "can not add file info of tone:%{public}d", toneType);
+
     std::string customisedPath = ConvertCustomisedAudioPath(oldUri);
     std::string newUri = customisedPath.empty() ? GetNewUri(toneType, oldUri) : customisedPath;
     std::string filePath = newUri != oldUri ? newUri : customisedPath;
@@ -221,6 +224,30 @@ int32_t CustomisedToneProcessor::BuildFileInfo(const std::string &dualFilePath, 
     fileInfo.size = statInfo.st_size;
     fileInfos.emplace_back(fileInfo);
     return E_OK;
+}
+
+void CustomisedToneProcessor::SetVideoToneLimit(int32_t limit)
+{
+    RINGTONE_INFO_LOG("limit set to %{public}d", limit);
+    videoToneLimit_ = limit;
+}
+
+bool CustomisedToneProcessor::CanBuildFileInfo(const std::string &dualFilePath)
+{
+    bool ret = true;
+    const std::string ext = RingtoneFileUtils::GetExtensionFromPath(dualFilePath);
+    std::string mimeType = RingtoneMimeTypeUtils::GetMimeTypeFromExtension(ext);
+    RingtoneMediaType mediaType = RingtoneMimeTypeUtils::GetMediaTypeFromMimeType(mimeType);
+    if (videoToneLimit_.load() >= 0 && mediaType == RINGTONE_MEDIA_TYPE_VIDEO) {
+        if (videoToneLimit_.load() == 0) {
+            RINGTONE_ERR_LOG("video file info can not build");
+            return false;
+        } else {
+            videoToneLimit_--;
+        }
+    }
+
+    return ret;
 }
 
 std::string CustomisedToneProcessor::GetNewUri(int32_t toneType, const std::string &oldUri)

@@ -15,6 +15,7 @@
 #ifndef CUSTOMISED_TONE_PROCESSOR_H
 #define CUSTOMISED_TONE_PROCESSOR_H
 
+#include <atomic>
 #include <cstdint>
 #include <string>
 
@@ -39,7 +40,7 @@ public:
     CustomisedToneProcessor();
     ~CustomisedToneProcessor() {};
     int32_t QueryFileMgrForFileInfo(std::map<std::string, std::shared_ptr<FileInfo>> &infoMap);
-
+    void SetVideoToneLimit(int32_t limit);
 private:
     int32_t GetCustomisedAudioPath(DualFwkConf &dualFwkConf);
     std::string ConvertCustomisedAudioPath(const std::string &ringtonePath);
@@ -47,6 +48,8 @@ private:
         int32_t shotToneType, std::vector<FileInfo> &fileInfo);
     std::vector<FileInfo> BuildFileInfos();
     std::string GetNewUri(int32_t toneType, const std::string &oldUri);
+    bool CanBuildFileInfo(const std::string &dualFilePath);
+    std::atomic<int32_t> videoToneLimit_ = -1;
 #ifdef USE_MEDIA_LIBRARY
     std::string GetFileAssetPathByUri(const std::string &uri);
     MediaLibraryManager *manager_ = nullptr;

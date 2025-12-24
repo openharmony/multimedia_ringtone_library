@@ -125,15 +125,22 @@ vector<FileInfo> RingtoneRestore::ConvertToFileInfos(vector<shared_ptr<RingtoneM
 
 void RingtoneRestore::CheckRestoreFileInfos(vector<FileInfo> &infos)
 {
+    int32_t videoRingtoneLimit = GetRingtoneLimit(RINGTONE_MEDIA_TYPE_VIDEO);
+    RINGTONE_INFO_LOG("%{public}d available video ringtone to restore", videoRingtoneLimit);
+    int32_t videoRingtoneCnt = 0;
     for (auto it = infos.begin(); it != infos.end();) {
         // at first, check backup file path
         string srcPath = backupPath_ + it->data;
-        if (!RingtoneFileUtils::IsFileExists(srcPath)) {
+        bool toneExists = RingtoneFileUtils::IsFileExists(srcPath);
+        bool toneExceedLimit = toneExists && (it->mediaType == RINGTONE_MEDIA_TYPE_VIDEO &&
+            ++videoRingtoneCnt > videoRingtoneLimit);
+        if (!toneExists || toneExceedLimit) {
             if (it->sourceType == SOURCE_TYPE_PRESET) {
                 it->restorePath = it->data;
                 CheckSetting(*it);
             }
-            RINGTONE_INFO_LOG("warnning:backup file is not exist, path=%{private}s", srcPath.c_str());
+            RINGTONE_INFO_LOG("warnning:backup file is not exist, path=%{private}s, mediaType=%{public}d",
+                srcPath.c_str(), it->mediaType);
             it = infos.erase(it);
         } else {
             it++;

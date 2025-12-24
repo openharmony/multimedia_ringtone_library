@@ -56,6 +56,7 @@ protected:
     bool NeedCommitSetting(const std::string &typeColumn, const std::string &sourceColumn,
         int type, int allSetType);
     void SetNotRingtone(const std::string &typeColumn, const std::string &sourceColumn, int32_t simCard);
+    int32_t GetRingtoneLimit(RingtoneMediaType mediaType);
     void UpdateSettingTable(const SimcardSettingAsset &asset, bool forceUpdate = false);
 private:
     void CheckUpdateVibrateSetting(const FileInfo &info);
