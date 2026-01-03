@@ -17,10 +17,15 @@
 #include "ringtone_scanner_utils.h"
 
 #include "ringtone_log.h"
+#include <iostream>
+#include <vector>
+#include <sstream>
 
 namespace OHOS {
 namespace Media {
 using namespace std;
+const std::string GARBLE = "*";
+const size_t NUMBER_TWO = 2;
 
 // Check if file exists or not
 bool RingtoneScannerUtils::IsExists(const string &path)
@@ -165,6 +170,41 @@ bool RingtoneScannerUtils::IsDirHiddenRecursive(const string &path)
     }
 
     return dirHid;
+}
+
+string RingtoneScannerUtils::GetSafePath(const string &originalPath)
+{
+    if (originalPath.empty()) {
+        return GARBLE;
+    }
+
+    std::vector<std::string> pathParts;
+    std::stringstream ss(originalPath);
+    std::string part;
+
+    std::string path = originalPath;
+    for (char& c : path) {
+        if (c == '\\') c = '/';
+    }
+
+    while (getline(ss, part, '/')) {
+        if (!part.empty()) {
+            pathParts.push_back(part);
+        }
+    }
+
+    size_t len = pathParts.size();
+    if (len == 0) {
+        return "*";
+    } else if (len == 1) {
+        return "*";
+    } else if (len == NUMBER_TWO) {
+        return pathParts[0] + "/*";
+    } else {
+        std::string result = pathParts[0];
+        result += "/**/" + pathParts.back();
+        return result;
+    }
 }
 } // namespace Media
 } // namespace OHOS

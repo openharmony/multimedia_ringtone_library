@@ -65,6 +65,18 @@ private:
     EXPORT int32_t BootScan();
     EXPORT int32_t UpdateDefaultTone();
     EXPORT int32_t BootScanProcess();
+    EXPORT std::vector<std::string> FilterResourcePaths(
+        const std::vector<std::string>& sourcePaths, const std::vector<std::string>& pathsToFilter);
+    EXPORT int32_t GetRingToneSourcePath(
+        const char *source, std::vector<std::string> &sourcePaths);
+    EXPORT std::vector<std::string> BuildRingtoneDirs(const std::vector<std::string>& sourcePaths);
+    EXPORT std::vector<std::string> BuildVibrateDirs(const std::vector<std::string>& sourcePaths);
+    EXPORT int32_t ScanDirectories(const std::vector<std::string>& dirs);
+    EXPORT int32_t AdditionalVibrateType(const std::vector<std::string>& vibratePaths);
+    EXPORT int32_t AdditionalVibratePlayMode(const std::vector<std::string>& vibratePaths);
+    EXPORT bool ContainsAnyPath(const std::string& input, const std::vector<std::string>& paths);
+    EXPORT int32_t AdditionalToneTypeMap(const std::vector<std::string>& tonePaths);
+    EXPORT void IncrementalScannResource();
 
     /* file */
     EXPORT int32_t ScanFile();
