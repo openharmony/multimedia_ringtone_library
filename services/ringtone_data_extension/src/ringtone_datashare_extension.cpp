@@ -218,11 +218,10 @@ static int32_t CheckRingtonePerm(RingtoneDataCommand &cmd, bool isWrite)
 static int32_t GetValidUriTab(const Uri &uri, string &tab)
 {
     string uriStr = uri.ToString();
-
     auto proxyStringPos = uriStr.find(RINGTONE_URI_PROXY_STRING);
     auto lastSlash = uriStr.find_last_of('/');
     if (lastSlash != std::string::npos &&
-        proxyStringPos != std::string::npos) {
+        proxyStringPos != std::string::npos && proxyStringPos > lastSlash) {
         auto tablePos = lastSlash + 1;
         tab = uriStr.substr(tablePos, proxyStringPos - tablePos);
         return Media::E_OK;
@@ -235,6 +234,10 @@ static int32_t GetValidUriTab(const Uri &uri, string &tab)
         }
     }
 
+    uriStr.erase(std::remove_if(uriStr.begin(), uriStr.end(),
+        [](char c) {
+            return c == '\r' || c == '\n';
+        }), uriStr.end());
     RINGTONE_INFO_LOG("INVALID uri=%{public}s", uriStr.c_str());
     return E_INVALID_URI;
 }
