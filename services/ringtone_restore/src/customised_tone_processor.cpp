@@ -279,10 +279,13 @@ std::string CustomisedToneProcessor::GetNewUri(int32_t toneType, const std::stri
         }
         std::string target = RingtoneRestoreBase::GetRestoreDir(toneType) +
             "/" + RingtoneFileUtils::GetFileNameFromPath(oldUri);
-        RingtoneFileUtils::DeleteFile(target);
-        int32_t ret = RingtoneFileUtils::CopyFileFromFd(fd, target);
-        manager_->CloseAsset(fileUri, fd);
-        CHECK_AND_RETURN_RET_LOG(ret == E_OK, newUri, "copy file failed");
+        if (!RingtoneFileUtils::IsFileExists(target)) {
+            int32_t ret = RingtoneFileUtils::CopyFileFromFd(fd, target);
+            manager_->CloseAsset(fileUri, fd);
+            CHECK_AND_RETURN_RET_LOG(ret == E_OK, newUri, "copy file failed");
+        } else {
+            manager_->CloseAsset(fileUri, fd);
+        }
         newUri = target;
         RINGTONE_INFO_LOG("new Uri:%{public}s", newUri.c_str());
     }

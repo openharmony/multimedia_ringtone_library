@@ -146,7 +146,7 @@ int32_t RingtoneDualFwkRestore::QueryRingToneDbForFileInfo(std::shared_ptr<Nativ
     string whereClause = MakeBatchQueryWhereClause(names, predicateColumn);
     std::string queryCountSql = "SELECT * FROM " + RINGTONE_TABLE +
         " WHERE " + whereClause +  " AND " +
-        RINGTONE_COLUMN_MEDIA_TYPE + "=" + std::to_string(RINGTONE_MEDIA_TYPE_AUDIO) + ";";
+        RINGTONE_COLUMN_MEDIA_TYPE + "!=" + std::to_string(RINGTONE_MEDIA_TYPE_INVALID) + ";";
     RINGTONE_INFO_LOG("Querying ringtonedb where %{public}s", whereClause.c_str());
 
     auto resultSet = rdbStore->QuerySql(queryCountSql);
@@ -298,6 +298,12 @@ static std::shared_ptr<FileInfo> MergeQueries(const DualFwkSettingItem &setting,
     doInsert = true;
     auto keyName = setting.toneSetting.tonePath;
     if (resultFromFileMgr.find(keyName) != resultFromFileMgr.end()) {
+        bool hasSameTone = resultFromRingtoneByDisplayName.find(keyName) != resultFromRingtoneByDisplayName.end();
+        if (hasSameTone) {
+            results = resultFromRingtoneByDisplayName.at(keyName);
+            GetRingtoneInfo(results, setting, doInsert);
+        }
+
         infoPtr = resultFromFileMgr[keyName];
         RINGTONE_INFO_LOG("found %{public}s in filemgr", keyName.c_str());
     } else if (resultFromRingtoneByDisplayName.find(keyName) != resultFromRingtoneByDisplayName.end()) {
@@ -462,7 +468,6 @@ bool RingtoneDualFwkRestore::OnPrepare(FileInfo &info, const std::string &dstPat
         info.restorePath = dstPath + "/" + baseName + "(" + to_string(repeatCount++) + ")" + "." + extensionName;
     }
 
-    RINGTONE_ERR_LOG("info.restorePath=%{private}s ", info.restorePath.c_str());
     if (DupToneFile(info) != E_SUCCESS) {
         return false;
     }

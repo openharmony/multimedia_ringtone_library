@@ -51,7 +51,7 @@ protected:
     int32_t PopulateMetadata(const std::shared_ptr<NativeRdb::ResultSet> &resultSet,
         std::unique_ptr<RingtoneMetadata> &metaData);
     virtual void FlushSettings();
-    bool DetermineNoRingtone(const std::string &typeColumn, const std::string &sourceColumn,
+    bool IsDetermineNoRingtone(const std::string &typeColumn, const std::string &sourceColumn,
         int type, int allSetType, const std::shared_ptr<NativeRdb::RdbStore> &rdbStore);
     bool NeedCommitSetting(const std::string &typeColumn, const std::string &sourceColumn,
         int type, int allSetType);

@@ -26,6 +26,7 @@
 #undef private
 #include "rdb_store.h"
 #include "rdb_utils.h"
+#include "result_set_utils.h"
 
 using namespace std;
 using namespace OHOS;
@@ -577,6 +578,88 @@ HWTEST_F(RingtoneSettingManagerTest, settingMetadata_GetMetaDataFromResultSet_te
     auto ret = g_ringtoneSettingManager->GetMetaDataFromResultSet(resultSet, metaDatas);
     EXPECT_EQ(ret, E_INVALID_ARGUMENTS);
     RINGTONE_INFO_LOG("settingMetadata_GetMetaDataFromResultSet_test_001 end.");
+}
+
+/*
+ * Feature: Service
+ * Function: Test SetForceFlush
+ * SubFunction: NA
+ * FunctionPoints: NA
+ * EnvConditions: NA
+ * CaseDescription: Test SetForceFlush
+ */
+HWTEST_F(RingtoneSettingManagerTest, settingMetadata_SetForceFlush_test_001, TestSize.Level0)
+{
+    ASSERT_TRUE(g_uniStore != nullptr);
+    ASSERT_TRUE(g_ringtoneSettingManager != nullptr);
+    auto rdbStore = g_uniStore->GetRaw();
+    ASSERT_TRUE(rdbStore != nullptr);
+
+    Uri uri(RINGTONE_PATH_URI);
+    RingtoneDataCommand cmd(uri, RINGTONE_TABLE, RingtoneOperationType::INSERT);
+    NativeRdb::ValuesBucket values;
+    const string dataPath = "/SetForceFlush_test1";
+    int32_t oldSourceType = SOURCE_TYPE_PRESET;
+    string data = ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH + dataPath;
+    values.PutString(RINGTONE_COLUMN_DATA, data);
+    values.PutString(RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE, to_string(oldSourceType));
+    values.PutString(RINGTONE_COLUMN_NOTIFICATION_TONE_SOURCE_TYPE, to_string(oldSourceType));
+    values.PutString(RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, to_string(oldSourceType));
+    values.PutString(RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE, to_string(oldSourceType));
+    values.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
+    cmd.SetValueBucket(values);
+    int64_t rowId = E_HAS_DB_ERROR;
+    auto ret = g_uniStore->Insert(cmd, rowId);
+    EXPECT_EQ(ret, E_OK);
+
+    int32_t queryVal = SOURCE_TYPE_INVALID;
+    const string querySql = "SELECT * FROM " + RINGTONE_TABLE + " WHERE " +  RINGTONE_COLUMN_DATA +
+        " = " +  "\"" + data + "\"";
+    auto queryFunc = [&](const std::string &column) {
+        auto resultSet = rdbStore->QuerySql(querySql);
+        CHECK_AND_RETURN_LOG(resultSet != nullptr, "SetForceFlush resultSet is nullptr");
+        if (resultSet->GoToFirstRow() != NativeRdb::E_OK) {
+            resultSet->Close();
+            RINGTONE_INFO_LOG("SetForceFlush Query operation failed, no resultSet");
+            return;
+        }
+        queryVal = GetInt32Val(column, resultSet);
+        resultSet->Close();
+    };
+
+    int32_t toneType = SIMCARD_MODE_BOTH;
+    int32_t sourceType = SOURCE_TYPE_CUSTOMISED;
+    auto updateFunc = [&]() {
+        g_ringtoneSettingManager->TravelQueryResultSet(querySql, [&](shared_ptr<RingtoneMetadata> &meta) -> bool {
+            g_ringtoneSettingManager->UpdateShotSetting(meta, toneType, sourceType);
+            g_ringtoneSettingManager->UpdateRingtoneSetting(meta, toneType, sourceType);
+            g_ringtoneSettingManager->UpdateNotificationSetting(meta, toneType, sourceType);
+            g_ringtoneSettingManager->UpdateAlarmSetting(meta, toneType, sourceType);
+            return true;
+        });
+    };
+
+    g_ringtoneSettingManager->SetForceFlush(false);
+    updateFunc();
+    queryFunc(RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE);
+    EXPECT_EQ(queryVal, oldSourceType);
+    queryFunc(RINGTONE_COLUMN_NOTIFICATION_TONE_SOURCE_TYPE);
+    EXPECT_EQ(queryVal, oldSourceType);
+    queryFunc(RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE);
+    EXPECT_EQ(queryVal, oldSourceType);
+    queryFunc(RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE);
+    EXPECT_EQ(queryVal, oldSourceType);
+
+    g_ringtoneSettingManager->SetForceFlush(true);
+    updateFunc();
+    queryFunc(RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE);
+    EXPECT_EQ(queryVal, sourceType);
+    queryFunc(RINGTONE_COLUMN_NOTIFICATION_TONE_SOURCE_TYPE);
+    EXPECT_EQ(queryVal, sourceType);
+    queryFunc(RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE);
+    EXPECT_EQ(queryVal, sourceType);
+    queryFunc(RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE);
+    EXPECT_EQ(queryVal, sourceType);
 }
 
 } // namespace Media

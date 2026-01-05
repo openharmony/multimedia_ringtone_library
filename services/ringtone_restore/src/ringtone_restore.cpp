@@ -239,7 +239,7 @@ void RingtoneRestore::OnFinished(vector<FileInfo> &infos)
 void RingtoneRestore::CheckNotRingtoneRestore()
 {
     // SIMCARD_MODE_1 ring no ringtone
-    if (RingtoneRestoreBase::DetermineNoRingtone(RINGTONE_COLUMN_RING_TONE_TYPE,
+    if (RingtoneRestoreBase::IsDetermineNoRingtone(RINGTONE_COLUMN_RING_TONE_TYPE,
         RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, RING_TONE_TYPE_SIM_CARD_1, RING_TONE_TYPE_SIM_CARD_BOTH, restoreRdb_) &&
         RingtoneRestoreBase::NeedCommitSetting(RINGTONE_COLUMN_RING_TONE_TYPE,
             RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, RING_TONE_TYPE_SIM_CARD_1, RING_TONE_TYPE_SIM_CARD_BOTH)) {
@@ -248,7 +248,7 @@ void RingtoneRestore::CheckNotRingtoneRestore()
             RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, SIMCARD_MODE_1);
     }
     // SIMCARD_MODE_2 ring no ringtone
-    if (RingtoneRestoreBase::DetermineNoRingtone(RINGTONE_COLUMN_RING_TONE_TYPE,
+    if (RingtoneRestoreBase::IsDetermineNoRingtone(RINGTONE_COLUMN_RING_TONE_TYPE,
         RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, RING_TONE_TYPE_SIM_CARD_2, RING_TONE_TYPE_SIM_CARD_BOTH, restoreRdb_) &&
         RingtoneRestoreBase::NeedCommitSetting(RINGTONE_COLUMN_RING_TONE_TYPE,
             RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, RING_TONE_TYPE_SIM_CARD_2, RING_TONE_TYPE_SIM_CARD_BOTH)) {
@@ -257,7 +257,7 @@ void RingtoneRestore::CheckNotRingtoneRestore()
             RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, SIMCARD_MODE_2);
     }
     // SIMCARD_MODE_1 shot no ringtone
-    if (RingtoneRestoreBase::DetermineNoRingtone(RINGTONE_COLUMN_SHOT_TONE_TYPE,
+    if (RingtoneRestoreBase::IsDetermineNoRingtone(RINGTONE_COLUMN_SHOT_TONE_TYPE,
         RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE, SHOT_TONE_TYPE_SIM_CARD_1, SHOT_TONE_TYPE_SIM_CARD_BOTH, restoreRdb_) &&
         RingtoneRestoreBase::NeedCommitSetting(RINGTONE_COLUMN_SHOT_TONE_TYPE,
             RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE, SHOT_TONE_TYPE_SIM_CARD_1, SHOT_TONE_TYPE_SIM_CARD_BOTH)) {
@@ -266,7 +266,7 @@ void RingtoneRestore::CheckNotRingtoneRestore()
             RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE, SIMCARD_MODE_1);
     }
     // SIMCARD_MODE_2 shot no ringtone
-    if (RingtoneRestoreBase::DetermineNoRingtone(RINGTONE_COLUMN_SHOT_TONE_TYPE,
+    if (RingtoneRestoreBase::IsDetermineNoRingtone(RINGTONE_COLUMN_SHOT_TONE_TYPE,
         RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE, SHOT_TONE_TYPE_SIM_CARD_2, SHOT_TONE_TYPE_SIM_CARD_BOTH, restoreRdb_) &&
         RingtoneRestoreBase::NeedCommitSetting(RINGTONE_COLUMN_SHOT_TONE_TYPE,
             RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE, SHOT_TONE_TYPE_SIM_CARD_2, SHOT_TONE_TYPE_SIM_CARD_BOTH)) {
@@ -275,7 +275,7 @@ void RingtoneRestore::CheckNotRingtoneRestore()
             RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE, SIMCARD_MODE_2);
     }
     // notification
-    if (RingtoneRestoreBase::DetermineNoRingtone(RINGTONE_COLUMN_NOTIFICATION_TONE_TYPE,
+    if (RingtoneRestoreBase::IsDetermineNoRingtone(RINGTONE_COLUMN_NOTIFICATION_TONE_TYPE,
         RINGTONE_COLUMN_NOTIFICATION_TONE_SOURCE_TYPE, NOTIFICATION_TONE_TYPE, NOTIFICATION_TONE_TYPE, restoreRdb_) &&
         RingtoneRestoreBase::NeedCommitSetting(RINGTONE_COLUMN_NOTIFICATION_TONE_TYPE,
             RINGTONE_COLUMN_NOTIFICATION_TONE_SOURCE_TYPE, NOTIFICATION_TONE_TYPE, NOTIFICATION_TONE_TYPE)) {

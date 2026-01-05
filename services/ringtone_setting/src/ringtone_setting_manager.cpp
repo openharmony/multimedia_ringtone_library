@@ -134,6 +134,12 @@ void RingtoneSettingManager::TravelSettings(function<int32_t (const string &, Se
     }
 }
 
+void RingtoneSettingManager::SetForceFlush(bool forceFlush)
+{
+    RINGTONE_INFO_LOG("flag = %{public}d", forceFlush ? 1 : 0);
+    forceFlush_ = forceFlush;
+}
+
 void RingtoneSettingManager::FlushSettings()
 {
     TravelSettings([this](const string &tonePath, SettingItem &item) -> int32_t {
@@ -229,8 +235,12 @@ int32_t RingtoneSettingManager::UpdateShotSetting(shared_ptr<RingtoneMetadata> &
     string updateSql = "UPDATE ToneFiles SET " +
         RINGTONE_COLUMN_SHOT_TONE_TYPE + " = " + to_string(val) + ", " +
         RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE + " = " + to_string(sourceType) +
-        " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(meta->GetToneId()) +
-        " AND " + RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE + " NOT IN (1, 2)";
+        " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(meta->GetToneId());
+
+    if (!forceFlush_) {
+        updateSql += " AND " + RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE + " NOT IN (1, 2)";
+    }
+
     int32_t rdbRet = ringtoneRdb_->ExecuteSql(updateSql);
     if (rdbRet < 0) {
         RINGTONE_ERR_LOG("execute update failed");
@@ -252,8 +262,12 @@ int32_t RingtoneSettingManager::UpdateRingtoneSetting(shared_ptr<RingtoneMetadat
     string updateSql = "UPDATE ToneFiles SET " +
         RINGTONE_COLUMN_RING_TONE_TYPE + " = " + to_string(val) + ", " +
         RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE + " = " + to_string(sourceType) +
-        " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(meta->GetToneId()) +
-        " AND " + RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE + " NOT IN (1, 2)";
+        " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(meta->GetToneId());
+        
+    if (!forceFlush_) {
+        updateSql += " AND " + RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE + " NOT IN (1, 2)";
+    }
+
     int32_t rdbRet = ringtoneRdb_->ExecuteSql(updateSql);
     if (rdbRet < 0) {
         RINGTONE_ERR_LOG("execute update failed");
@@ -269,8 +283,11 @@ int32_t RingtoneSettingManager::UpdateNotificationSetting(shared_ptr<RingtoneMet
     string updateSql = "UPDATE ToneFiles SET " +
         RINGTONE_COLUMN_NOTIFICATION_TONE_TYPE + " = " + to_string(toneType) + ", " +
         RINGTONE_COLUMN_NOTIFICATION_TONE_SOURCE_TYPE + " = " + to_string(sourceType) +
-        " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(meta->GetToneId()) +
-        " AND " + RINGTONE_COLUMN_NOTIFICATION_TONE_SOURCE_TYPE + " NOT IN (1, 2)";
+        " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(meta->GetToneId());
+
+    if (!forceFlush_) {
+        updateSql += " AND " + RINGTONE_COLUMN_NOTIFICATION_TONE_SOURCE_TYPE + " NOT IN (1, 2)";
+    }
     int32_t rdbRet = ringtoneRdb_->ExecuteSql(updateSql);
     if (rdbRet < 0) {
         RINGTONE_ERR_LOG("execute update failed");
@@ -286,8 +303,12 @@ int32_t RingtoneSettingManager::UpdateAlarmSetting(shared_ptr<RingtoneMetadata> 
     string updateSql = "UPDATE ToneFiles SET " +
         RINGTONE_COLUMN_ALARM_TONE_TYPE + " = " + to_string(toneType) + ", " +
         RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE + " = " + to_string(sourceType) +
-        " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(meta->GetToneId()) +
-        " AND " + RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE + " NOT IN (1, 2)";
+        " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(meta->GetToneId());
+
+    if (!forceFlush_) {
+        updateSql += " AND " + RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE + " NOT IN (1, 2)";
+    }
+        
     int32_t rdbRet = ringtoneRdb_->ExecuteSql(updateSql);
     if (rdbRet < 0) {
         RINGTONE_ERR_LOG("execute update failed");
