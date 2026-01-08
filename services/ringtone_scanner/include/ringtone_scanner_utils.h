@@ -61,6 +61,7 @@ public:
     EXPORT static std::string GetFileTitle(const std::string &displayName);
     EXPORT static bool IsDirHiddenRecursive(const std::string &path);
     EXPORT static bool IsDirHidden(const std::string &path);
+    EXPORT static std::string GetSafePath(const std::string &originalPath);
 };
 } // namespace Media
 } // namespace OHOS

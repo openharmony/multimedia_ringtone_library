@@ -27,6 +27,9 @@
 #include "ringtone_mimetype_utils.h"
 #include "ringtone_rdbstore.h"
 #include "ringtone_scanner_utils.h"
+#ifdef USE_CONFIG_POLICY
+#include "config_policy_utils.h"
+#endif
 
 namespace OHOS {
 namespace Media {
@@ -46,6 +49,8 @@ static const int RINGTONE_RDB_SCANNER_FLAG_KEY_TRUE = 1;
 static const int RINGTONE_RDB_SCANNER_FLAG_KEY_FALSE = 0;
 static const char RINGTONE_PARAMETER_SCANNER_FIRST_KEY[] = "ringtone.scanner.first";
 static const char RINGTONE_PARAMETER_SCANNER_FIRST_TRUE[] = "true";
+static const char RINGTONE_RESOURCE_PATH[] = "resource/media/audio";
+static const char VIBRATE_RESOURCE_PATH[] = "resource/media/haptics";
 
 static std::unordered_map<std::string, std::pair<int32_t, int32_t>> g_typeMap = {
     // customized tones map
@@ -118,6 +123,15 @@ static const std::vector<std::string> g_preloadDirs = {
     {ROOT_VIBRATE_PRELOAD_PATH_CHINA_PATH + "/gentle"},
     {ROOT_VIBRATE_PRELOAD_PATH_OVERSEA_PATH + "/standard"},
     {ROOT_VIBRATE_PRELOAD_PATH_OVERSEA_PATH + "/gentle"},
+};
+
+static const std::vector<std::string> g_ringtoneAndVibratePaths = {
+    {ROOT_TONE_PRELOAD_PATH_NOAH_PATH},
+    {ROOT_TONE_PRELOAD_PATH_CHINA_PATH},
+    {ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH},
+    {ROOT_VIBRATE_PRELOAD_PATH_NOAH_PATH},
+    {ROOT_VIBRATE_PRELOAD_PATH_CHINA_PATH},
+    {ROOT_VIBRATE_PRELOAD_PATH_OVERSEA_PATH},
 };
 
 RingtoneScannerObj::RingtoneScannerObj(const std::string &path,
@@ -215,26 +229,10 @@ int32_t RingtoneScannerObj::BootScanProcess()
     res = RingtoneScannerDb::UpdateScannerFlag();
     CHECK_AND_RETURN_RET_LOG(res, E_HAS_DB_ERROR, "UpdateScannerFlag operation failed, res: %{public}d",
         E_HAS_DB_ERROR);
-    for (auto &dir : g_preloadDirs) {
-        RINGTONE_INFO_LOG("start to scan realpath %{private}s", dir.c_str());
-        string realPath;
-        if (!PathToRealPath(dir, realPath)) {
-            RINGTONE_INFO_LOG("failed to get realpath %{private}s, errno %{public}d", dir.c_str(), errno);
-            continue;
-        }
+    IncrementalScannResource();
 
-        RINGTONE_INFO_LOG("start to scan realpath %{private}s", dir.c_str());
-        callback_ = make_shared<ScanErrCallback>(dir);
-
-        if (RingtoneScannerUtils::IsDirectory(realPath)) {
-            dir_ = move(realPath);
-            ret = ScanDir();
-        } else if (RingtoneScannerUtils::IsRegularFile(realPath)) {
-            path_ = move(realPath);
-            ret = ScanFile();
-        }
-        CHECK_AND_RETURN_RET_LOG(ret == E_OK, ret, "BootScan err, ret: %{public}d", ret);
-    }
+    ret = ScanDirectories(g_preloadDirs);
+    CHECK_AND_RETURN_RET_LOG(ret == E_OK, ret, "ScanDirectories for g_preloadDirs err, ret: %{public}d", ret);
 
     ret = UpdateDefaultTone();
     CHECK_AND_RETURN_RET_LOG(ret == E_OK, ret, "UpdateDefaultTone operation failed, ret: %{public}d", ret);
@@ -425,9 +423,12 @@ int32_t RingtoneScannerObj::ScanFileInTraversal(const string &path)
         return E_FILE_HIDDEN;
     }
 
+    std::vector<string> vibratePath;
+    GetRingToneSourcePath(VIBRATE_RESOURCE_PATH, vibratePath);
     bool flag = (path_.find(ROOT_VIBRATE_PRELOAD_PATH_NOAH_PATH) != std::string::npos) ? true : false;
     flag |= (path_.find(ROOT_VIBRATE_PRELOAD_PATH_CHINA_PATH) != std::string::npos);
     flag |= (path_.find(ROOT_VIBRATE_PRELOAD_PATH_OVERSEA_PATH) != std::string::npos);
+    flag |= ContainsAnyPath(path_, vibratePath);
     std::string extension = RingtoneScannerUtils::GetFileExtension(path_);
 
     if (flag) {
@@ -642,9 +643,12 @@ int32_t RingtoneScannerObj::ScanFileInternal()
         return E_FILE_HIDDEN;
     }
 
+    std::vector<string> vibratePath;
+    GetRingToneSourcePath(VIBRATE_RESOURCE_PATH, vibratePath);
     bool flag = (path_.find(ROOT_VIBRATE_PRELOAD_PATH_NOAH_PATH) != std::string::npos) ? true : false;
     flag |= (path_.find(ROOT_VIBRATE_PRELOAD_PATH_CHINA_PATH) != std::string::npos);
     flag |= (path_.find(ROOT_VIBRATE_PRELOAD_PATH_OVERSEA_PATH) != std::string::npos);
+    flag |= ContainsAnyPath(path_, vibratePath);
     std::string extension = RingtoneScannerUtils::GetFileExtension(path_);
 
     if (flag) {
@@ -728,6 +732,190 @@ int32_t RingtoneScannerObj::Commit()
     }
 
     return E_OK;
+}
+
+int32_t RingtoneScannerObj::GetRingToneSourcePath(const char *source, vector<string> &sourcePaths)
+{
+    RINGTONE_INFO_LOG("start GetRingToneSourcePath");
+#ifdef USE_CONFIG_POLICY
+    CfgFiles *cfgFiles = GetCfgFiles(source);
+    if (cfgFiles == nullptr) {
+        RINGTONE_INFO_LOG("not found cfgFiles");
+        return E_ERR;
+    }
+
+    for (int32_t i = MAX_CFG_POLICY_DIRS_CNT - 1; i >= 0; i--) {
+        if (cfgFiles->paths[i] && *(cfgFiles->paths[i]) != '\0') {
+            sourcePaths.push_back(cfgFiles->paths[i]);
+            RINGTONE_INFO_LOG("extra parameter config file path: %{public}s",
+                RingtoneScannerUtils::GetSafePath(cfgFiles->paths[i]).c_str());
+        }
+    }
+    FreeCfgFiles(cfgFiles);
+#endif
+    return E_OK;
+}
+
+int32_t RingtoneScannerObj::ScanDirectories(const std::vector<std::string>& dirs)
+{
+    int32_t ret = E_OK;
+    if (dirs.empty()) {
+        RINGTONE_INFO_LOG("dirs is empty");
+        return E_ERR;
+    }
+    for (const auto& dir : dirs) {
+        RINGTONE_DEBUG_LOG("start to scan realpath %{public}s",
+            RingtoneScannerUtils::GetSafePath(dir.c_str()).c_str());
+        std::string realPath;
+        if (!PathToRealPath(dir, realPath)) {
+            RINGTONE_DEBUG_LOG("failed to get realpath %{public}s, errno %{public}d",
+                RingtoneScannerUtils::GetSafePath(dir.c_str()).c_str(), errno);
+            continue;
+        }
+
+        RINGTONE_DEBUG_LOG("start to scan realpath %{public}s",
+            RingtoneScannerUtils::GetSafePath(dir.c_str()).c_str());
+        callback_ = std::make_shared<ScanErrCallback>(dir);
+
+        if (RingtoneScannerUtils::IsDirectory(realPath)) {
+            dir_ = std::move(realPath);
+            ret = ScanDir();
+        } else if (RingtoneScannerUtils::IsRegularFile(realPath)) {
+            path_ = std::move(realPath);
+            ret = ScanFile();
+        }
+        CHECK_AND_RETURN_RET_LOG(ret == E_OK, ret, "BootScan err, ret: %{public}d", ret);
+    }
+    return ret;
+}
+
+vector<string> RingtoneScannerObj::FilterResourcePaths(
+    const vector<string>& sourcePaths, const vector<string>& pathsToFilter)
+{
+    if (sourcePaths.empty() || pathsToFilter.empty()) {
+        RINGTONE_ERR_LOG("sourcePaths or pathsToFilter is empty");
+        return {};
+    }
+
+    const unordered_set<string> filterSet(pathsToFilter.begin(), pathsToFilter.end());
+
+    vector<string> filteredPaths;
+    for (const auto& path : sourcePaths) {
+        if (filterSet.find(path) == filterSet.end()) {
+            filteredPaths.push_back(path);
+        }
+    }
+
+    return filteredPaths;
+}
+
+vector<string> RingtoneScannerObj::BuildRingtoneDirs(const vector<string>& sourcePaths)
+{
+    if (sourcePaths.empty()) {
+        RINGTONE_INFO_LOG("sourcePaths is empty");
+        return {};
+    }
+
+    vector<string> filteredPaths;
+    for (const auto& path : sourcePaths) {
+        filteredPaths.push_back(path + "/" + ALARMS_TYPE);
+        filteredPaths.push_back(path + "/" + RINGTONES_TYPE);
+        filteredPaths.push_back(path + "/" + NOTIFICATIONS_TYPE);
+    }
+
+    return filteredPaths;
+}
+
+vector<string> RingtoneScannerObj::BuildVibrateDirs(const vector<string>& sourcePaths)
+{
+    if (sourcePaths.empty()) {
+        RINGTONE_INFO_LOG("sourcePaths is empty");
+        return {};
+    }
+
+    vector<string> filteredPaths;
+    for (const auto& path : sourcePaths) {
+        filteredPaths.push_back(path + PATH_VIBRATE_TYPE_STANDARD);
+        filteredPaths.push_back(path + PATH_VIBRATE_TYPE_GENTLE);
+    }
+
+    return filteredPaths;
+}
+
+int32_t RingtoneScannerObj::AdditionalVibrateType(const std::vector<std::string>& vibratePaths)
+{
+    if (!vibratePaths.empty()) {
+        for (const auto& path : vibratePaths) {
+            g_vibrateTypeMap[path+PATH_VIBRATE_TYPE_STANDARD] = {SOURCE_TYPE_PRESET, VIBRATE_TYPE_STANDARD};
+            g_vibrateTypeMap[path+PATH_VIBRATE_TYPE_GENTLE] = {SOURCE_TYPE_PRESET, VIBRATE_TYPE_GENTLE};
+        }
+    }
+    return E_OK;
+}
+
+int32_t RingtoneScannerObj::AdditionalVibratePlayMode(const std::vector<std::string>& vibratePaths)
+{
+    if (!vibratePaths.empty()) {
+        for (const auto& path : vibratePaths) {
+            g_vibratePlayModeMap[path+PATH_VIBRATE_TYPE_STANDARD+PATH_PLAY_MODE_SYNC] = {
+                SOURCE_TYPE_PRESET, VIBRATE_PLAYMODE_SYNC
+            };
+            g_vibratePlayModeMap[path+PATH_VIBRATE_TYPE_STANDARD + PATH_PLAY_MODE_CLASSIC] = {
+                SOURCE_TYPE_PRESET, VIBRATE_PLAYMODE_CLASSIC
+            };
+            g_vibratePlayModeMap[path+PATH_VIBRATE_TYPE_GENTLE + PATH_PLAY_MODE_SYNC] = {
+                SOURCE_TYPE_PRESET, VIBRATE_PLAYMODE_SYNC};
+            g_vibratePlayModeMap[path+PATH_VIBRATE_TYPE_GENTLE + PATH_PLAY_MODE_CLASSIC] = {
+                SOURCE_TYPE_PRESET, VIBRATE_PLAYMODE_CLASSIC};
+        }
+    }
+    return E_OK;
+}
+
+bool RingtoneScannerObj::ContainsAnyPath(const std::string& input, const std::vector<std::string>& paths)
+{
+    if (paths.empty()) {
+        return false;
+    }
+    return std::any_of(paths.begin(), paths.end(),
+        [&input](const std::string& path) {
+            return input.find(path) != std::string::npos;
+        });
+}
+
+int32_t RingtoneScannerObj::AdditionalToneTypeMap(const std::vector<std::string>& tonePaths)
+{
+    if (!tonePaths.empty()) {
+        for (const auto& path : tonePaths) {
+            g_typeMap[path+ "/" + ALARMS_TYPE] = {
+                SOURCE_TYPE_PRESET, TONE_TYPE_ALARM
+            };
+            g_typeMap[path+ "/" + RINGTONES_TYPE] = {
+                SOURCE_TYPE_PRESET, TONE_TYPE_RINGTONE
+            };
+            g_typeMap[path+ "/" + NOTIFICATIONS_TYPE] = {
+                SOURCE_TYPE_PRESET, TONE_TYPE_NOTIFICATION
+            };
+        }
+    }
+    return E_OK;
+}
+
+void RingtoneScannerObj::IncrementalScannResource()
+{
+    std::vector<string> ringtonePath;
+    GetRingToneSourcePath(RINGTONE_RESOURCE_PATH, ringtonePath);
+    auto filterRingtonePath = FilterResourcePaths(ringtonePath, g_ringtoneAndVibratePaths);
+    AdditionalToneTypeMap(filterRingtonePath);
+
+    std::vector<string> vibratePath;
+    GetRingToneSourcePath(VIBRATE_RESOURCE_PATH, vibratePath);
+    auto filterVibratePath = FilterResourcePaths(vibratePath, g_ringtoneAndVibratePaths);
+    AdditionalVibrateType(filterVibratePath);
+    AdditionalVibratePlayMode(filterVibratePath);
+
+    ScanDirectories(BuildRingtoneDirs(filterRingtonePath));
+    ScanDirectories(BuildVibrateDirs(filterVibratePath));
 }
 } // namespace Media
 } // namespace OHOS

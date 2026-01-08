@@ -37,6 +37,37 @@ using namespace testing::ext;
 
 namespace OHOS {
 namespace Media {
+
+static const char TEST_RINGTONE_RESOURCE_PATH[] = "resource/media/audio";
+static const char TEST_VIBRATE_RESOURCE_PATH[] = "resource/media/haptics";
+
+static const std::vector<std::string> g_ringtoneAndVibratePaths = {
+    {ROOT_TONE_PRELOAD_PATH_NOAH_PATH},
+    {ROOT_TONE_PRELOAD_PATH_CHINA_PATH},
+    {ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH},
+    {ROOT_VIBRATE_PRELOAD_PATH_NOAH_PATH},
+    {ROOT_VIBRATE_PRELOAD_PATH_CHINA_PATH},
+    {ROOT_VIBRATE_PRELOAD_PATH_OVERSEA_PATH},
+};
+
+static const std::vector<std::string> g_preloadDirs = {
+    {ROOT_TONE_PRELOAD_PATH_NOAH_PATH + "/alarms"},
+    {ROOT_TONE_PRELOAD_PATH_NOAH_PATH + "/ringtones"},
+    {ROOT_TONE_PRELOAD_PATH_NOAH_PATH + "/notifications"},
+    {ROOT_TONE_PRELOAD_PATH_CHINA_PATH + "/alarms"},
+    {ROOT_TONE_PRELOAD_PATH_CHINA_PATH + "/ringtones"},
+    {ROOT_TONE_PRELOAD_PATH_CHINA_PATH + "/notifications"},
+    {ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH + "/alarms"},
+    {ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH + "/ringtones"},
+    {ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH + "/notifications"},
+    {ROOT_VIBRATE_PRELOAD_PATH_NOAH_PATH + "/standard"},
+    {ROOT_VIBRATE_PRELOAD_PATH_NOAH_PATH + "/gentle"},
+    {ROOT_VIBRATE_PRELOAD_PATH_CHINA_PATH + "/standard"},
+    {ROOT_VIBRATE_PRELOAD_PATH_CHINA_PATH + "/gentle"},
+    {ROOT_VIBRATE_PRELOAD_PATH_OVERSEA_PATH + "/standard"},
+    {ROOT_VIBRATE_PRELOAD_PATH_OVERSEA_PATH + "/gentle"},
+};
+
 void RingtoneScannerTest::SetUpTestCase()
 {
     auto stageContext = std::make_shared<AbilityRuntime::ContextImpl>();
@@ -287,6 +318,201 @@ HWTEST_F(RingtoneScannerTest, scanner_ScanFileInTraversal_test_002, TestSize.Lev
     ret = ringtoneScannerObj.ScanFileInTraversal(path);
     EXPECT_EQ(ret, E_OK);
     RINGTONE_INFO_LOG("scanner_ScanFileInTraversal_test_002 start.");
+}
+
+HWTEST_F(RingtoneScannerTest, scanner_FilterResourcePaths_test_001, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("scanner_FilterResourcePaths_test_001 start.");
+    shared_ptr<IRingtoneScannerCallback> callback = nullptr;
+    RingtoneScannerObj ringtoneScannerObj(ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH,
+        callback, RingtoneScannerObj::DIRECTORY);
+    static const std::vector<std::string> ringtonePath = {
+        {"/test/resource/ringtone"}
+    };
+    std::vector<std::string> paths = ringtoneScannerObj.FilterResourcePaths(ringtonePath, g_ringtoneAndVibratePaths);
+    EXPECT_EQ(!paths.empty(), true);
+    RINGTONE_INFO_LOG("scanner_FilterResourcePaths_test_001 end.");
+}
+
+HWTEST_F(RingtoneScannerTest, scanner_FilterResourcePaths_test_002, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("scanner_FilterResourcePaths_test_002 start.");
+    shared_ptr<IRingtoneScannerCallback> callback = nullptr;
+    RingtoneScannerObj ringtoneScannerObj(ROOT_VIBRATE_PRELOAD_PATH_CHINA_PATH,
+        callback, RingtoneScannerObj::DIRECTORY);
+    std::vector<std::string> paths = ringtoneScannerObj.FilterResourcePaths({}, g_ringtoneAndVibratePaths);
+    EXPECT_EQ(paths.empty(), true);
+    RINGTONE_INFO_LOG("scanner_FilterResourcePaths_test_002 end.");
+}
+
+HWTEST_F(RingtoneScannerTest, scanner_GetRingToneSourcePath_test_001, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("scanner_GetRingToneSourcePath_test_001 start.");
+    shared_ptr<IRingtoneScannerCallback> callback = nullptr;
+    RingtoneScannerObj ringtoneScannerObj(ROOT_VIBRATE_PRELOAD_PATH_CHINA_PATH,
+        callback, RingtoneScannerObj::DIRECTORY);
+    std::vector<std::string> sourcePaths;
+    int32_t ret = ringtoneScannerObj.GetRingToneSourcePath("", sourcePaths);
+    EXPECT_EQ(ret, E_OK);
+    RINGTONE_INFO_LOG("scanner_GetRingToneSourcePath_test_001 end.");
+}
+
+HWTEST_F(RingtoneScannerTest, scanner_GetRingToneSourcePath_test_002, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("scanner_GetRingToneSourcePath_test_002 start.");
+    shared_ptr<IRingtoneScannerCallback> callback = nullptr;
+    RingtoneScannerObj ringtoneScannerObj(ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH,
+        callback, RingtoneScannerObj::DIRECTORY);
+    std::vector<string> ringtonePath;
+    int32_t ret = ringtoneScannerObj.GetRingToneSourcePath(TEST_RINGTONE_RESOURCE_PATH, ringtonePath);
+    EXPECT_EQ(ret, E_OK);
+    RINGTONE_INFO_LOG("scanner_GetRingToneSourcePath_test_002 end.");
+}
+
+HWTEST_F(RingtoneScannerTest, scanner_GetRingToneSourcePath_test_003, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("scanner_GetRingToneSourcePath_test_003 start.");
+    shared_ptr<IRingtoneScannerCallback> callback = nullptr;
+    RingtoneScannerObj ringtoneScannerObj(ROOT_VIBRATE_PRELOAD_PATH_CHINA_PATH,
+        callback, RingtoneScannerObj::DIRECTORY);
+    std::vector<string> vibratePath;
+    int32_t ret = ringtoneScannerObj.GetRingToneSourcePath(TEST_VIBRATE_RESOURCE_PATH, vibratePath);
+    EXPECT_EQ(ret, E_OK);
+    RINGTONE_INFO_LOG("scanner_GetRingToneSourcePath_test_003 end.");
+}
+
+HWTEST_F(RingtoneScannerTest, scanner_BuildRingtoneDirs_test_001, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("scanner_BuildRingtoneDirs_test_001 start.");
+    shared_ptr<IRingtoneScannerCallback> callback = nullptr;
+    RingtoneScannerObj ringtoneScannerObj(ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH,
+        callback, RingtoneScannerObj::DIRECTORY);
+    std::vector<std::string> paths = ringtoneScannerObj.BuildRingtoneDirs({});
+    EXPECT_EQ(paths.empty(), true);
+    RINGTONE_INFO_LOG("scanner_BuildRingtoneDirs_test_001 end.");
+}
+
+HWTEST_F(RingtoneScannerTest, scanner_BuildRingtoneDirs_test_002, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("scanner_BuildRingtoneDirs_test_002 start.");
+    shared_ptr<IRingtoneScannerCallback> callback = nullptr;
+    RingtoneScannerObj ringtoneScannerObj(ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH,
+        callback, RingtoneScannerObj::DIRECTORY);
+    std::vector<std::string> paths = ringtoneScannerObj.BuildRingtoneDirs({{"/test/ringtone/"}});
+    EXPECT_EQ(!paths.empty(), true);
+    RINGTONE_INFO_LOG("scanner_BuildRingtoneDirs_test_002 end.");
+}
+
+HWTEST_F(RingtoneScannerTest, scanner_BuildVibrateDirs_test_001, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("scanner_BuildVibrateDirs_test_001 start.");
+    shared_ptr<IRingtoneScannerCallback> callback = nullptr;
+    RingtoneScannerObj ringtoneScannerObj(ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH,
+        callback, RingtoneScannerObj::DIRECTORY);
+    std::vector<std::string> paths = ringtoneScannerObj.BuildVibrateDirs({});
+    EXPECT_EQ(paths.empty(), true);
+    RINGTONE_INFO_LOG("scanner_BuildVibrateDirs_test_001 end.");
+}
+
+HWTEST_F(RingtoneScannerTest, scanner_BuildVibrateDirs_test_002, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("scanner_BuildVibrateDirs_test_002 start.");
+    shared_ptr<IRingtoneScannerCallback> callback = nullptr;
+    RingtoneScannerObj ringtoneScannerObj(ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH,
+        callback, RingtoneScannerObj::DIRECTORY);
+    std::vector<std::string> paths = ringtoneScannerObj.BuildVibrateDirs({{"/test/vibrate/"}});
+    EXPECT_EQ(!paths.empty(), true);
+    RINGTONE_INFO_LOG("scanner_BuildVibrateDirs_test_002 end.");
+}
+
+HWTEST_F(RingtoneScannerTest, scanner_ScanDirectories_test_001, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("scanner_ScanDirectories_test_001 start.");
+    shared_ptr<IRingtoneScannerCallback> callback = nullptr;
+    RingtoneScannerObj ringtoneScannerObj("resource/media/haptics", callback, RingtoneScannerObj::DIRECTORY);
+    int32_t ret = ringtoneScannerObj.ScanDirectories(g_preloadDirs);
+    EXPECT_EQ(ret, E_OK);
+    RINGTONE_INFO_LOG("scanner_ScanDirectories_test_001 end.");
+}
+
+HWTEST_F(RingtoneScannerTest, scanner_ScanDirectories_test_002, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("scanner_ScanDirectories_test_002 start.");
+    shared_ptr<IRingtoneScannerCallback> callback = nullptr;
+    RingtoneScannerObj ringtoneScannerObj("resource/media/haptics", callback, RingtoneScannerObj::DIRECTORY);
+    int32_t ret = ringtoneScannerObj.ScanDirectories({});
+    EXPECT_EQ(ret, E_ERR);
+    RINGTONE_INFO_LOG("scanner_ScanDirectories_test_002 end.");
+}
+
+HWTEST_F(RingtoneScannerTest, scanner_AdditionalVibrateType_test_001, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("scanner_AdditionalVibrateType_test_001 start.");
+    shared_ptr<IRingtoneScannerCallback> callback = nullptr;
+    RingtoneScannerObj ringtoneScannerObj(STORAGE_FILES_DIR, callback, RingtoneScannerObj::DIRECTORY);
+    int32_t ret = ringtoneScannerObj.AdditionalVibrateType({});
+    EXPECT_EQ(ret, E_OK);
+    RINGTONE_INFO_LOG("scanner_AdditionalVibrateType_test_001 end.");
+}
+
+HWTEST_F(RingtoneScannerTest, scanner_AdditionalVibrateType_test_002, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("scanner_AdditionalVibrateType_test_002 start.");
+    shared_ptr<IRingtoneScannerCallback> callback = nullptr;
+    RingtoneScannerObj ringtoneScannerObj(STORAGE_FILES_DIR, callback, RingtoneScannerObj::DIRECTORY);
+    int32_t ret = ringtoneScannerObj.AdditionalVibrateType(g_ringtoneAndVibratePaths);
+    EXPECT_EQ(ret, E_OK);
+    RINGTONE_INFO_LOG("scanner_AdditionalVibrateType_test_002 end.");
+}
+
+HWTEST_F(RingtoneScannerTest, scanner_AdditionalVibratePlayMode_test_001, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("scanner_AdditionalVibratePlayMode_test_001 start.");
+    shared_ptr<IRingtoneScannerCallback> callback = nullptr;
+    RingtoneScannerObj ringtoneScannerObj(STORAGE_FILES_DIR, callback, RingtoneScannerObj::DIRECTORY);
+    int32_t ret = ringtoneScannerObj.AdditionalVibratePlayMode({});
+    EXPECT_EQ(ret, E_OK);
+    RINGTONE_INFO_LOG("scanner_AdditionalVibratePlayMode_test_001 end.");
+}
+
+HWTEST_F(RingtoneScannerTest, scanner_AdditionalVibratePlayMode_test_002, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("scanner_AdditionalVibratePlayMode_test_002 start.");
+    shared_ptr<IRingtoneScannerCallback> callback = nullptr;
+    RingtoneScannerObj ringtoneScannerObj(STORAGE_FILES_DIR, callback, RingtoneScannerObj::DIRECTORY);
+    int32_t ret = ringtoneScannerObj.AdditionalVibratePlayMode(g_ringtoneAndVibratePaths);
+    EXPECT_EQ(ret, E_OK);
+    RINGTONE_INFO_LOG("scanner_AdditionalVibratePlayMode_test_002 end.");
+}
+
+HWTEST_F(RingtoneScannerTest, scanner_ContainsAnyPath_test_001, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("scanner_ContainsAnyPath_test_001 start.");
+    shared_ptr<IRingtoneScannerCallback> callback = nullptr;
+    RingtoneScannerObj ringtoneScannerObj(STORAGE_FILES_DIR, callback, RingtoneScannerObj::DIRECTORY);
+    bool ret = ringtoneScannerObj.ContainsAnyPath("", {});
+    EXPECT_EQ(ret, false);
+    RINGTONE_INFO_LOG("scanner_ContainsAnyPath_test_001 end.");
+}
+
+HWTEST_F(RingtoneScannerTest, scanner_ContainsAnyPath_test_002, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("scanner_ContainsAnyPath_test_002 start.");
+    shared_ptr<IRingtoneScannerCallback> callback = nullptr;
+    RingtoneScannerObj ringtoneScannerObj(STORAGE_FILES_DIR, callback, RingtoneScannerObj::DIRECTORY);
+    bool ret = ringtoneScannerObj.ContainsAnyPath("/test/ringtone", {"/test/ringtone"});
+    EXPECT_EQ(ret, true);
+    RINGTONE_INFO_LOG("scanner_ContainsAnyPath_test_002 end.");
+}
+
+HWTEST_F(RingtoneScannerTest, scanner_AdditionalToneTypeMap_test_001, TestSize.Level0)
+{
+    RINGTONE_INFO_LOG("scanner_AdditionalToneTypeMap_test_001 start.");
+    shared_ptr<IRingtoneScannerCallback> callback = nullptr;
+    RingtoneScannerObj ringtoneScannerObj(STORAGE_FILES_DIR, callback, RingtoneScannerObj::DIRECTORY);
+    int32_t ret = ringtoneScannerObj.AdditionalToneTypeMap({"/test/ringtone"});
+    EXPECT_EQ(ret, E_OK);
+    RINGTONE_INFO_LOG("scanner_AdditionalToneTypeMap_test_001 end.");
 }
 } // namespace Media
 } // namespace OHOS
