@@ -171,6 +171,36 @@ HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_Query_test_001, Test
     EXPECT_EQ(ret, nullptr);
 }
 
+HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_Query_test_002, TestSize.Level0)
+{
+    const std::unique_ptr<AbilityRuntime::Runtime> runtime;
+    AbilityRuntime::RingtoneDataShareExtension *mediaDataShare;
+    mediaDataShare = AbilityRuntime::RingtoneDataShareExtension::Create(runtime);
+    EXPECT_EQ(mediaDataShare != nullptr, true);
+    string uriTest = RINGTONE_PATH_URI + "\r\n";
+    Uri uri(uriTest);
+    vector<string> columns;
+    const AbilityRuntime::DataSharePredicates predicates;
+    AbilityRuntime::DatashareBusinessError businessError;
+    auto ret = mediaDataShare->Query(uri, predicates, columns, businessError);
+    EXPECT_EQ(ret, nullptr);
+}
+
+HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_Query_test_003, TestSize.Level0)
+{
+    const std::unique_ptr<AbilityRuntime::Runtime> runtime;
+    AbilityRuntime::RingtoneDataShareExtension *mediaDataShare;
+    mediaDataShare = AbilityRuntime::RingtoneDataShareExtension::Create(runtime);
+    EXPECT_EQ(mediaDataShare != nullptr, true);
+    string uriTest = RINGTONE_URI_PROXY_STRING + RINGTONE_PATH_URI;
+    Uri uri(uriTest);
+    vector<string> columns;
+    const AbilityRuntime::DataSharePredicates predicates;
+    AbilityRuntime::DatashareBusinessError businessError;
+    auto ret = mediaDataShare->Query(uri, predicates, columns, businessError);
+    EXPECT_EQ(ret, nullptr);
+}
+
 HWTEST_F(RingtoneDataShareExtensionTest, dataShareExtension_Query_Vibrate_test_001, TestSize.Level0)
 {
     const std::unique_ptr<AbilityRuntime::Runtime> runtime;

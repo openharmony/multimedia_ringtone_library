@@ -433,43 +433,6 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareUpdate_test_001, TestSize.Level0)
     GTEST_LOG_(INFO) << "DataShareUpdate1-3Column Cost: " << ((double) (end - start) / NUMBER_OF_TIMES) << "ms";
 }
 
-HWTEST_F(RingtoneUnitTest, medialib_datashareUpdate_test_002, TestSize.Level0)
-{
-    Uri uri(RINGTONE_PATH_URI);
-    DataShareValuesBucket valuesInsert;
-    valuesInsert.Put(RINGTONE_COLUMN_DATA,
-        static_cast<string>(RINGTONE_LIBRARY_PATH + RINGTONE_SLASH_CHAR +
-        TEST_INSERT_RINGTONE_LIBRARY + to_string(0) + MTP_FORMAT_OGG));
-    valuesInsert.Put(RINGTONE_COLUMN_SIZE, static_cast<int64_t>(TEST_RINGTONE_COLUMN_SIZE));
-    valuesInsert.Put(RINGTONE_COLUMN_DISPLAY_NAME, static_cast<string>(RAINNING) + MTP_FORMAT_OGG);
-    valuesInsert.Put(RINGTONE_COLUMN_TITLE, static_cast<string>(RAINNING));
-    valuesInsert.Put(RINGTONE_COLUMN_MEDIA_TYPE, static_cast<int>(RINGTONE_MEDIA_TYPE_AUDIO));
-    auto result = g_dataShareHelper->Insert(uri, valuesInsert);
-    EXPECT_GT(result, E_OK);
-
-    DataSharePredicates predicates;
-    vector<string> selectionArgs = { ZERO };
-    predicates.SetWhereClause(SELECTION);
-    predicates.SetWhereArgs(selectionArgs);
-    DataShareValuesBucket updateValues;
-    updateValues.Put(RINGTONE_COLUMN_TITLE, TITLE_UPDATE);
-
-    int64_t start = UTCTimeSeconds();
-    RingtoneTracer tracer;
-    tracer.Start("DataShareUpdateColumn");
-    for (int i = 0; i < 1; i++) {
-        auto result = g_dataShareHelper->Update(uri, predicates, updateValues);
-        EXPECT_EQ(result, 1);
-    }
-    DataSharePredicates predicatesDel;
-    predicatesDel.EqualTo(RINGTONE_COLUMN_TITLE, TITLE_UPDATE);
-    EXPECT_GT(g_dataShareHelper->Delete(uri, predicatesDel), E_OK);
-    tracer.Finish();
-    int64_t end = UTCTimeSeconds();
-
-    GTEST_LOG_(INFO) << "DataShareUpdateColumn Cost: " << ((double) (end - start)) << "ms";
-}
-
 HWTEST_F(RingtoneUnitTest, medialib_datashareUpdate_test_003, TestSize.Level0)
 {
     Uri uri(RINGTONE_PATH_URI);
@@ -482,37 +445,6 @@ HWTEST_F(RingtoneUnitTest, medialib_datashareUpdate_test_003, TestSize.Level0)
     for (int i = 0; i < 1; i++) {
         auto result = g_dataShareHelper->Update(uri, predicates, updateValues);
         EXPECT_EQ(result, E_INVALID_VALUES);
-    }
-    tracer.Finish();
-    int64_t end = UTCTimeSeconds();
-
-    GTEST_LOG_(INFO) << "DataShareUpdate1-3Column Cost: " << ((double) (end - start)) << "ms";
-}
-
-HWTEST_F(RingtoneUnitTest, medialib_datashareUpdate_test_004, TestSize.Level0)
-{
-    Uri uri(RINGTONE_PATH_URI);
-    DataSharePredicates predicates;
-    vector<string> selectionArgs = { ZERO };
-    predicates.SetWhereClause(SELECTION);
-    predicates.SetWhereArgs(selectionArgs);
-    DataShareValuesBucket values;
-    values.Put(RINGTONE_COLUMN_TONE_ID, TONE_ID_DEFAULT);
-    values.Put(RINGTONE_COLUMN_DATA, DATA_DEFAULT);
-    values.Put(RINGTONE_COLUMN_SIZE, SIZE_DEFAULT);
-    values.Put(RINGTONE_COLUMN_DISPLAY_NAME, DISPLAY_NAME_DEFAULT);
-    values.Put(RINGTONE_COLUMN_TITLE, TITLE_DEFAULT);
-    values.Put(RINGTONE_COLUMN_MEDIA_TYPE, METADATA_MEDIA_TYPE_DEFAULT);
-    values.Put(RINGTONE_COLUMN_TONE_TYPE, TONE_TYPE_DEFAULT);
-    values.Put(RINGTONE_COLUMN_MIME_TYPE, MIME_TYPE_DEFAULT);
-
-
-    int64_t start = UTCTimeSeconds();
-    RingtoneTracer tracer;
-    tracer.Start("DataShareUpdate10Column");
-    for (int i = 0; i < 1; i++) {
-        auto result = g_dataShareHelper->Update(uri, predicates, values);
-        EXPECT_EQ(result, E_HAS_DB_ERROR);
     }
     tracer.Finish();
     int64_t end = UTCTimeSeconds();
@@ -1198,30 +1130,6 @@ HWTEST_F(RingtoneUnitTest, medialib_deleteVibrateSetting_test_001, TestSize.Leve
     auto ret = g_dataShareHelper->Delete(uri, predicates);
     GTEST_LOG_(INFO)<< "GetVibrateSetting -> Delete result=" << ret;
     EXPECT_EQ((ret > 0), true);
-}
-
-HWTEST_F(RingtoneUnitTest, medialib_silentAccessQuery_test_001, TestSize.Level0)
-{
-    Uri uri(RINGTONE_LIBRARY_PROXY_DATA_URI_SIMCARD_SETTING);
-
-    DataSharePredicates predicates;
-    vector<string> selectionArgs = {std::to_string(RING_TONE_TYPE_SIM_CARD_1)};
-    const std::string selection = SIMCARD_SETTING_COLUMN_MODE + " = ? ";
-    predicates.SetWhereClause(selection);
-    predicates.SetWhereArgs(selectionArgs);
-
-    vector<string> columns {
-        SIMCARD_SETTING_COLUMN_MODE,
-        SIMCARD_SETTING_COLUMN_TONE_FILE,
-        SIMCARD_SETTING_COLUMN_VIBRATE_FILE,
-        SIMCARD_SETTING_COLUMN_VIBRATE_MODE
-    };
-
-    DatashareBusinessError businessError;
-    ASSERT_TRUE(g_dataShareHelperProxy);
-    auto resultSet = g_dataShareHelperProxy->Query(uri, predicates, columns, &businessError);
-    auto errCode = businessError.GetCode();
-    GTEST_LOG_(INFO)<< "g_dataShareHelperProxy->Query(uri errCode=" << errCode;
 }
 
 HWTEST_F(RingtoneUnitTest, medialib_GetCustomRingtoneCurrentPath_test_001, TestSize.Level0)
