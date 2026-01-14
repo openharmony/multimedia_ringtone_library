@@ -29,12 +29,16 @@
 #include "ringtone_log.h"
 #include "ringtone_type.h"
 #include "ringtone_fetch_result.h"
+#include "ringtone_rdbstore.h"
+#include "ringtone_scanner_utils.h"
 
 namespace OHOS {
 namespace Media {
 using namespace std;
 static const int32_t QUERY_COUNT = 500;
 static const int32_t INVALID_QUERY_OFFSET = -1;
+static const std::string RINGTONE_PREFIX_STR = "/audio/";
+
 int32_t RingtoneRestore::Init(const std::string &backupPath)
 {
     RINGTONE_INFO_LOG("Init db start");
@@ -123,6 +127,35 @@ vector<FileInfo> RingtoneRestore::ConvertToFileInfos(vector<shared_ptr<RingtoneM
     return infos;
 }
 
+void RingtoneRestore::CustomizedRingToneHandle(FileInfo& fileInfo)
+{
+    RINGTONE_INFO_LOG("enter CustomizedRingToneHandle");
+    if (!RingtoneFileUtils::IsFileExists(fileInfo.data)) {
+        RINGTONE_INFO_LOG("source path does not exist, srcPath=%{public}s",
+            RingtoneScannerUtils::GetSafePath(fileInfo.data).c_str());
+        size_t pos = fileInfo.data.find(RINGTONE_PREFIX_STR);
+        if (pos != std::string::npos) {
+            string dataPath = fileInfo.data.substr(pos);
+            auto rdbStore = RingtoneRdbStore::GetInstance();
+            CHECK_AND_RETURN_LOG(rdbStore != nullptr, "rdbstore is nullptr");
+            auto rawRdb = rdbStore->GetRaw();
+            CHECK_AND_RETURN_LOG(rawRdb != nullptr, "rawRdb is nullptr");
+            string sql = "SELECT " + VIBRATE_COLUMN_DATA + " FROM " +
+                RINGTONE_TABLE + " WHERE " + VIBRATE_COLUMN_DATA + " like " + "'%" +
+                dataPath + "' AND " +  RINGTONE_COLUMN_SOURCE_TYPE + " = 1";
+            auto resultSet = rawRdb->QuerySql(sql);
+            CHECK_AND_RETURN_LOG(resultSet != nullptr, "resultSet is nullptr");
+            if (resultSet->GoToFirstRow() != NativeRdb::E_OK) {
+                resultSet->Close();
+                RINGTONE_INFO_LOG("Query operation failed, no resultSet");
+                return;
+            }
+            string originDataPath = GetStringVal(VIBRATE_COLUMN_DATA, resultSet);
+            fileInfo.data = originDataPath;
+        }
+    }
+}
+
 void RingtoneRestore::CheckRestoreFileInfos(vector<FileInfo> &infos)
 {
     int32_t videoRingtoneLimit = GetRingtoneLimit(RINGTONE_MEDIA_TYPE_VIDEO);
@@ -134,6 +167,7 @@ void RingtoneRestore::CheckRestoreFileInfos(vector<FileInfo> &infos)
         bool toneExists = RingtoneFileUtils::IsFileExists(srcPath);
         bool toneExceedLimit = toneExists && (it->mediaType == RINGTONE_MEDIA_TYPE_VIDEO &&
             ++videoRingtoneCnt > videoRingtoneLimit);
+        CustomizedRingToneHandle(*it);
         if (!toneExists || toneExceedLimit) {
             if (it->sourceType == SOURCE_TYPE_PRESET) {
                 it->restorePath = it->data;
