@@ -557,5 +557,31 @@ HWTEST_F(RingtoneRestoreTest, ringtone_VibrateSettingClone_test_0002, TestSize.L
     toneFile = g_restoreService->QuerySingleColumn(RINGTONE_COLUMN_DATA, absRdbPredicates4);
     EXPECT_TRUE(!toneFile.empty());
 }
+
+HWTEST_F(RingtoneRestoreTest, ringtone_IsRingtoneSet_test_0001, TestSize.Level0)
+{
+    ASSERT_NE(g_restoreService, nullptr);
+    vector<NativeRdb::ValuesBucket> values;
+    NativeRdb::ValuesBucket value;
+    value.PutInt(RINGTONE_COLUMN_SHOT_TONE_TYPE, SIMCARD_MODE_1);
+    value.PutString(RINGTONE_COLUMN_DISPLAY_NAME, "IsRingtoneSet_test_0001");
+    value.PutInt(RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE, SOURCE_TYPE_CUSTOMISED);
+    value.PutInt(RINGTONE_COLUMN_NOTIFICATION_TONE_TYPE, SIMCARD_MODE_1);
+    value.PutInt(RINGTONE_COLUMN_NOTIFICATION_TONE_SOURCE_TYPE, SOURCE_TYPE_CUSTOMISED);
+    value.PutInt(RINGTONE_COLUMN_RING_TONE_TYPE, SIMCARD_MODE_1);
+    value.PutInt(RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, SOURCE_TYPE_CUSTOMISED);
+    value.PutInt(RINGTONE_COLUMN_ALARM_TONE_TYPE, SIMCARD_MODE_1);
+    value.PutInt(RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE, SOURCE_TYPE_CUSTOMISED);
+    values.push_back(value);
+
+    int64_t rowNum = 0;
+    int32_t errCode = g_restoreService->BatchInsert(RINGTONE_TABLE, values, rowNum);
+    EXPECT_EQ(errCode, Media::E_OK);
+
+    EXPECT_EQ(g_restoreService->IsRingtoneSet(TONE_SETTING_TYPE_ALARM, SIMCARD_MODE_1), true);
+    EXPECT_EQ(g_restoreService->IsRingtoneSet(TONE_SETTING_TYPE_SHOT, SIMCARD_MODE_1), true);
+    EXPECT_EQ(g_restoreService->IsRingtoneSet(TONE_SETTING_TYPE_RINGTONE, SIMCARD_MODE_1), true);
+    EXPECT_EQ(g_restoreService->IsRingtoneSet(TONE_SETTING_TYPE_NOTIFICATION, SIMCARD_MODE_1), true);
+}
 } // namespace Media
 } // namespace OHOS

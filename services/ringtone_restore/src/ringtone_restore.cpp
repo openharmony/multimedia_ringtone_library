@@ -104,6 +104,16 @@ void RingtoneRestore::UpdateSettingInfos()
     RingtoneFetchResult<SimcardSettingAsset> fetchResult;
     auto ret = resultSet->GoToFirstRow();
     while (ret == NativeRdb::E_OK) {
+        bool isNull = false;
+        int columnIndex = -1;
+        resultSet->GetColumnIndex(SIMCARD_SETTING_COLUMN_RING_MODE, columnIndex);
+        resultSet->IsColumnNull(columnIndex, isNull);
+        if (isNull) {
+            RINGTONE_INFO_LOG("skip null column");
+            ret = resultSet->GoToNextRow();
+            continue;
+        }
+
         auto rdbResult = std::dynamic_pointer_cast<NativeRdb::ResultSet>(resultSet);
         auto asset = fetchResult.GetObject(rdbResult);
         if (asset != nullptr) {

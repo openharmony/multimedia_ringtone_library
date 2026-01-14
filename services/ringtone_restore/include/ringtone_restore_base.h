@@ -58,6 +58,7 @@ protected:
     void SetNotRingtone(const std::string &typeColumn, const std::string &sourceColumn, int32_t simCard);
     int32_t GetRingtoneLimit(RingtoneMediaType mediaType);
     void UpdateSettingTable(const SimcardSettingAsset &asset, bool forceUpdate = false);
+    bool IsRingtoneSet(ToneSettingType toneType, SimcardMode simcard);
 private:
     void CheckUpdateVibrateSetting(const FileInfo &info);
     std::string QuerySingleColumn(const std::string &dataColumn,

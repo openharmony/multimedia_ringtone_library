@@ -20,6 +20,7 @@
 
 #include "rdb_helper.h"
 #include "result_set.h"
+#include "ringtone_type.h"
 
 namespace OHOS {
 namespace Media {
@@ -37,6 +38,8 @@ public:
     static std::unordered_map<std::string, std::string> GetColumnInfoMap(
         const std::shared_ptr<NativeRdb::RdbStore> &rdbStore, const std::string &tableName);
     static bool GetUserID(int &userId);
+    static std::string GetSourceColumnName(ToneSettingType settingType);
+    static std::string GetModeColumnName(ToneSettingType settingType);
 };
 
 } // namespace Media
