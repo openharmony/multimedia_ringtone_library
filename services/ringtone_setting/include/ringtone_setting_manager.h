@@ -38,6 +38,7 @@ public:
         std::function<bool (std::shared_ptr<RingtoneMetadata> &)> func);
     EXPORT int32_t Update(int &changedRows, const NativeRdb::ValuesBucket &values,
         const NativeRdb::AbsRdbPredicates &predicates);
+    EXPORT void SetForceFlush(bool forceFlush);
 private:
     struct SettingItem {
         int32_t toneId = TONE_ID_DEFAULT;
@@ -67,6 +68,7 @@ private:
         int32_t sourceType);
     EXPORT int32_t UpdateAlarmSetting(std::shared_ptr<RingtoneMetadata> &meta, int32_t toneType, int32_t sourceType);
 private:
+    bool forceFlush_ = false;
     std::shared_ptr<NativeRdb::RdbStore> ringtoneRdb_ = nullptr;
     std::unordered_multimap<std::string, SettingItem> settings_ = {};
 };

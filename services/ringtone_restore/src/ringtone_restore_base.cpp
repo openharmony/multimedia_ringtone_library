@@ -76,6 +76,7 @@ int32_t RingtoneRestoreBase::Init(const string &backupPath)
         RINGTONE_ERR_LOG("create ringtone setting manager failed");
         return E_FAIL;
     }
+    settingMgr_->SetForceFlush(true);
 
     return E_OK;
 }
@@ -137,10 +138,10 @@ bool RingtoneRestoreBase::NeedCommitSetting(const std::string &typeColumn, const
     if (count > 0) {
         return false;
     }
-    return !DetermineNoRingtone(typeColumn, sourceColumn, type, allSetType, localRdb_);
+    return !IsDetermineNoRingtone(typeColumn, sourceColumn, type, allSetType, localRdb_);
 }
 
-bool RingtoneRestoreBase::DetermineNoRingtone(const std::string &typeColumn,
+bool RingtoneRestoreBase::IsDetermineNoRingtone(const std::string &typeColumn,
     const std::string &sourceColumn, int type, int allSetType, const std::shared_ptr<NativeRdb::RdbStore> &rdbStore)
 {
     string queryCountSql = "SELECT count(1) as count FROM " + RINGTONE_TABLE + " WHERE " + sourceColumn +
