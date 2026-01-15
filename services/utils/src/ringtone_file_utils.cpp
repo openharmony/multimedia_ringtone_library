@@ -489,9 +489,27 @@ bool RingtoneFileUtils::CopyFileUtil(const string &filePath, const string &newPa
 
 int32_t RingtoneFileUtils::CopyFileFromFd(int32_t srcFd, const std::string &newPath)
 {
-    CHECK_AND_RETURN_RET_LOG(!RingtoneFileUtils::IsFileExists(newPath), E_HAS_FS_ERROR,
-        "error file exists:%{public}s", newPath.c_str());
-    int32_t dest = open(newPath.c_str(), O_WRONLY | O_CREAT, MODE_RW_USR);
+    CHECK_AND_RETURN_RET_LOG(!newPath.empty(), E_HAS_FS_ERROR,
+        "file path is empty:%{private}s", newPath.c_str());
+    std::string filename;
+    std::string dirPath;
+    size_t lastSlash = newPath.find_last_of('/');
+    if (lastSlash != std::string::npos) {
+        dirPath = newPath.substr(0, lastSlash);
+        filename = newPath.substr(lastSlash + 1);
+    } else {
+        RINGTONE_ERR_LOG("file path is error:%{private}s", newPath.c_str());
+        return E_HAS_FS_ERROR;
+    }
+
+    char filePathTemp[PATH_MAX] = {0};
+    bool bflag = realpath(dirPath.c_str(), filePathTemp) == nullptr;
+    CHECK_AND_RETURN_RET_LOG(!bflag, E_ERR,
+        "check newPath fail, dirPath = %{private}s", dirPath.c_str());
+    std::string path = std::string(filePathTemp) + "/" + filename;
+    CHECK_AND_RETURN_RET_LOG(!RingtoneFileUtils::IsFileExists(path), E_HAS_FS_ERROR,
+        "error file exists:%{private}s", path.c_str());
+    int32_t dest = open(path.c_str(), O_WRONLY | O_CREAT, MODE_RW_USR);
     CHECK_AND_RETURN_RET_LOG(dest > 0, E_ERR, "Open failed for destination file %{public}d", errno);
 
     OHOS::UniqueFd destFd(dest);
