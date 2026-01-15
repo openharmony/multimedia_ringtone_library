@@ -507,9 +507,8 @@ void RingtoneRestoreBase::SetNotRingtone(const string &columnType, const string 
     changeRows = 0;
     NativeRdb::ValuesBucket valuesBucketBoth;
     valuesBucketBoth.PutInt(columnType, simCard);
-    valuesBucketBoth.PutInt(columnSourceType, SOURCE_TYPE_INVALID);
     NativeRdb::AbsRdbPredicates absRdbPredicatesBoth(RINGTONE_TABLE);
-    string whereClauseBoth = columnType + "= ? AND " + columnSourceType + " = 1";
+    string whereClauseBoth = columnType + "= ?";
     vector<string> whereArgsBoth;
     whereArgsBoth.push_back(to_string(SIMCARD_MODE_BOTH));
     absRdbPredicatesBoth.SetWhereClause(whereClauseBoth);
@@ -528,6 +527,22 @@ int32_t RingtoneRestoreBase::GetRingtoneLimit(RingtoneMediaType mediaType)
         limit = std::max(RINGTONE_VIDEO_MAX_COUNT - count, 0);
     }
     return limit;
+}
+
+bool RingtoneRestoreBase::IsRingtoneSet(ToneSettingType toneType, SimcardMode simcard)
+{
+    bool ret = false;
+    std::string sourceColumn = RingtoneRestoreDbUtils::GetSourceColumnName(toneType);
+    std::string simcardColumn = RingtoneRestoreDbUtils::GetModeColumnName(toneType);
+    CHECK_AND_RETURN_RET_LOG(!sourceColumn.empty() && !simcardColumn.empty(), ret, "get column name failed");
+
+    std::string querySql = "SELECT count(1) AS count FROM " + RINGTONE_TABLE +
+        " WHERE " +  sourceColumn + " = " + std::to_string(SOURCE_TYPE_CUSTOMISED) +
+        " AND " + simcardColumn + " IN (" + std::to_string(simcard) + " , " +
+        std::to_string(SIMCARD_MODE_BOTH) + " )";
+    int32_t count = RingtoneRestoreDbUtils::QueryInt(GetBaseDb(), querySql, "count");
+    ret = count > 0;
+    return ret;
 }
 
 void RingtoneRestoreBase::UpdateSettingTable(const SimcardSettingAsset &asset, bool forceUpdate)

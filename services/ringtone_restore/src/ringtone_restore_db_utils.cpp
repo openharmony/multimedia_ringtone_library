@@ -124,5 +124,50 @@ bool RingtoneRestoreDbUtils::GetUserID(int &userId)
     userId = activeIds[0];
     return true;
 }
+
+std::string RingtoneRestoreDbUtils::GetSourceColumnName(ToneSettingType settingType)
+{
+    std::string ret = "";
+    switch (settingType) {
+        case TONE_SETTING_TYPE_ALARM:
+            ret = RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE;
+            break;
+        case TONE_SETTING_TYPE_SHOT:
+            ret = RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE;
+            break;
+        case TONE_SETTING_TYPE_RINGTONE:
+            ret = RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE;
+            break;
+        case TONE_SETTING_TYPE_NOTIFICATION:
+            ret = RINGTONE_COLUMN_NOTIFICATION_TONE_SOURCE_TYPE;
+            break;
+        default:
+            break;
+    }
+    return ret;
+}
+
+std::string RingtoneRestoreDbUtils::GetModeColumnName(ToneSettingType settingType)
+{
+    std::string ret = "";
+    switch (settingType) {
+        case TONE_SETTING_TYPE_ALARM:
+            ret = RINGTONE_COLUMN_ALARM_TONE_TYPE;
+            break;
+        case TONE_SETTING_TYPE_SHOT:
+            ret = RINGTONE_COLUMN_SHOT_TONE_TYPE;
+            break;
+        case TONE_SETTING_TYPE_RINGTONE:
+            ret = RINGTONE_COLUMN_RING_TONE_TYPE;
+            break;
+        case TONE_SETTING_TYPE_NOTIFICATION:
+            ret = RINGTONE_COLUMN_NOTIFICATION_TONE_TYPE;
+            break;
+        default:
+            break;
+    }
+    return ret;
+}
+
 } // namespace Media
 } // namespace OHOS
