@@ -39,6 +39,7 @@ private:
     void UpdateRestoreFileInfo(FileInfo &info);
     void CheckNotRingtoneRestore();
     void UpdateSettingInfos();
+    void CustomizedRingToneHandle(FileInfo& fileInfo);
 private:
     std::shared_ptr<NativeRdb::RdbStore> restoreRdb_ = nullptr;
     std::string backupPath_ = {};
