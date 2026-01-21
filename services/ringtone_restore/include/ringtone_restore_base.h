@@ -67,6 +67,8 @@ private:
     int32_t BatchInsert(const std::string &tableName, std::vector<NativeRdb::ValuesBucket> &values, int64_t &rowNum);
     std::shared_ptr<NativeRdb::RdbStore> localRdb_ = nullptr;
     std::unique_ptr<RingtoneSettingManager> settingMgr_ = nullptr;
+public:
+    RestoreSceneType sceneType_ {-1};
 };
 } // namespace Media
 } // namespace OHOS
