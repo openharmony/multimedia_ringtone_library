@@ -355,12 +355,6 @@ std::vector<FileInfo> RingtoneDualFwkRestore::BuildFileInfo()
         if (IsRingtoneSet(setting.toneSetting.settingType, setting.toneSetting.simcard)) {
             info.doInsert = false;
         }
-        for (const auto& exist : result) {
-            if (exist.data == info.data) {
-                info.doInsert = false;
-                break;
-            }
-        }
 
         AddSettingsToFileInfo(setting, info);
         result.push_back(info);

@@ -368,6 +368,22 @@ string RingtoneRestoreBase::GetRestoreDir(const int32_t toneType)
     return path;
 }
 
+static void CheckSameFilePath(FileInfo &fileInfo, const vector<NativeRdb::ValuesBucket> &values)
+{
+    for (const auto& insertValue : values) {
+        NativeRdb::ValueObject tmpValue;
+        string restorePath {};
+        if (insertValue.GetObject(RINGTONE_COLUMN_DATA, tmpValue)) {
+            tmpValue.GetString(restorePath);
+        }
+        if (restorePath == fileInfo.restorePath && !restorePath.empty()) {
+            RINGTONE_INFO_LOG("find same file path: %{private}s", restorePath.c_str());
+            fileInfo.doInsert = false;
+            break;
+        }
+    }
+}
+
 vector<NativeRdb::ValuesBucket> RingtoneRestoreBase::MakeInsertValues(std::vector<FileInfo> &fileInfos)
 {
     vector<NativeRdb::ValuesBucket> values;
@@ -380,6 +396,9 @@ vector<NativeRdb::ValuesBucket> RingtoneRestoreBase::MakeInsertValues(std::vecto
         NativeRdb::ValuesBucket value = SetInsertValue(*it);
         if (value.IsEmpty()) {
             continue;
+        }
+        if (sceneType_ != RESTORE_SCENE_TYPE_SINGLE_CLONE) {
+            CheckSameFilePath(*it, values);
         }
         if (it->doInsert) { // only when this value needs to be inserted
             values.emplace_back(value);

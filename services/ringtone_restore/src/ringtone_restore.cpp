@@ -194,6 +194,7 @@ void RingtoneRestore::CheckRestoreFileInfos(vector<FileInfo> &infos)
 
 int32_t RingtoneRestore::StartRestore()
 {
+    sceneType_ = RESTORE_SCENE_TYPE_SINGLE_CLONE;
     if (restoreRdb_ == nullptr || backupPath_.empty()) {
         return E_FAIL;
     }
