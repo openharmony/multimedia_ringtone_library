@@ -312,8 +312,11 @@ HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_UrlDecode_Test_001, TestSize.L
 HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_CreateCustomDirectory_Test_001, TestSize.Level0)
 {
     RingtoneFileUtils::CheckAndCreateCustomRingtoneDir();
-    EXPECT_EQ(RingtoneFileUtils::IsFileExists(RINGTONE_CUSTOMIZED_CONTACTS_PATH), true);
-    EXPECT_EQ(RingtoneFileUtils::IsFileExists(RINGTONE_CUSTOMIZED_APP_NOTIFICATIONS_PATH), true);
+    string path1 = "/data/app/el2/100/base/com.ohos.ringtonelibrary.ringtonelibrarydata/files/Ringtone/contacts";
+    string path2 = "/data/app/el2/100/base/com.ohos.ringtonelibrary.ringtonelibrarydata/"
+        "files/Ringtone/app_notifications";
+    EXPECT_EQ(RingtoneFileUtils::IsFileExists(path1), true);
+    EXPECT_EQ(RingtoneFileUtils::IsFileExists(path2), true);
 }
 
 HWTEST_F(RingtoneFileUtilsTest, ringtoneFileUtils_MoveDirectory_Test_001, TestSize.Level0)
