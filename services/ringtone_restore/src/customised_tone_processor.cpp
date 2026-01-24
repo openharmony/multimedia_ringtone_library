@@ -34,8 +34,6 @@
 #include "ringtone_tracer.h"
 #include "ringtone_utils.h"
 #ifdef USE_MEDIA_LIBRARY
-#include "userfilemgr_uri.h"
-#include "medialibrary_db_const.h"
 #include "fetch_result.h"
 #include "base_data_uri.h"
 #endif
@@ -308,8 +306,10 @@ std::string CustomisedToneProcessor::GetFileAssetPathByUri(const std::string &ur
     CHECK_AND_RETURN_RET_LOG(!fileName.empty(), ret, "get name from uri failed");
 
     std::vector<std::string> columns{};
+    const string PAH_QUERY_PHOTO = "datashare:///media/phaccess_photo_operation/query";
     Uri queryUri(PAH_QUERY_PHOTO);
     DataShare::DataSharePredicates predicates;
+    const string MEDIA_DATA_DB_NAME = "display_name";
     predicates.EqualTo(MEDIA_DATA_DB_NAME, fileName);
     auto queryResultSet = dataShareHelper->Query(queryUri, predicates, columns);
     auto fetchResult = std::make_shared<FetchResult<FileAsset>>(queryResultSet);
