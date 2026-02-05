@@ -94,6 +94,7 @@ void RingtoneLanguageManager::SyncAssetLanguage()
     } else {
         systemLanguage_ = ENGLISH_ABBREVIATION;
     }
+    RINGTONE_INFO_LOG("need changed system language is %{public}s", systemLanguage_.c_str());
     UpdateRingtoneLanguage();
     UpdateVibrationLanguage();
     RINGTONE_INFO_LOG("SyncAssetLanguage end.");
