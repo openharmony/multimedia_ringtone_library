@@ -257,17 +257,16 @@ std::string CustomisedToneProcessor::GetNewUri(int32_t toneType, const std::stri
     RingtoneMediaType mediaType = RingtoneMimeTypeUtils::GetMediaTypeFromMimeType(mimeType);
     CHECK_AND_RETURN_RET_LOG(manager_ != nullptr, newUri, "get media library manager failed");
     std::string fileUri;
-    std::string filePath{oldUri};
     if (mediaType == RINGTONE_MEDIA_TYPE_VIDEO && ext == RINGTONE_CONTAINER_TYPE_VIDEO_MP4) {
         auto newUris = manager_->GetUrisByOldUris({oldUri});
         fileUri = newUris.count(oldUri) == 0 ? oldUri : newUris[oldUri];
-        if (fileUri != oldUri) {
-            filePath = GetFileAssetPathByUri(fileUri);
-        }
+    } else {
+        RINGTONE_INFO_LOG("no need to convert");
+        return newUri;
     }
-    RINGTONE_INFO_LOG("fileUri:%{public}s, old path:%{public}s, new path:%{public}s",
-        fileUri.c_str(), oldUri.c_str(), filePath.c_str());
-    if (!filePath.empty() && filePath != oldUri) {
+    RINGTONE_INFO_LOG("fileUri:%{public}s, old path:%{public}s",
+        fileUri.c_str(), oldUri.c_str());
+    if (!fileUri.empty()) {
         int32_t fd = manager_->OpenAsset(fileUri, RINGTONE_FILEMODE_READONLY);
         CHECK_AND_RETURN_RET_LOG(fd > 0, newUri, "get file fd failed");
         if (!RingtoneFileUtils::CheckFileSize(fd, MAX_TONE_FILE_SIZE)) {
@@ -290,42 +289,6 @@ std::string CustomisedToneProcessor::GetNewUri(int32_t toneType, const std::stri
 #endif
     return newUri;
 }
-
-#ifdef USE_MEDIA_LIBRARY
-std::string CustomisedToneProcessor::GetFileAssetPathByUri(const std::string &uri)
-{
-    std::string ret;
-    auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    CHECK_AND_RETURN_RET_LOG(sam != nullptr, ret, "get samgr failed");
-    auto remoteObj = sam->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
-    CHECK_AND_RETURN_RET_LOG(remoteObj != nullptr, ret, "get system ability failed");
-    auto dataShareHelper = DataShare::DataShareHelper::Creator(remoteObj, MEDIALIBRARY_DATA_URI);
-    CHECK_AND_RETURN_RET_LOG(dataShareHelper != nullptr, ret, "create media datashare failed");
-
-    std::string fileName = RingtoneFileUtils::GetFileNameFromPath(uri);
-    CHECK_AND_RETURN_RET_LOG(!fileName.empty(), ret, "get name from uri failed");
-
-    std::vector<std::string> columns{};
-    const string PAH_QUERY_PHOTO = "datashare:///media/phaccess_photo_operation/query";
-    Uri queryUri(PAH_QUERY_PHOTO);
-    DataShare::DataSharePredicates predicates;
-    const string MEDIA_DATA_DB_NAME = "display_name";
-    predicates.EqualTo(MEDIA_DATA_DB_NAME, fileName);
-    auto queryResultSet = dataShareHelper->Query(queryUri, predicates, columns);
-    auto fetchResult = std::make_shared<FetchResult<FileAsset>>(queryResultSet);
-    if (fetchResult == nullptr) {
-        dataShareHelper->Release();
-        return ret;
-    }
-
-    auto asset = fetchResult->GetFirstObject();
-    if (asset != nullptr) {
-        ret = asset->GetPath();
-    }
-    dataShareHelper->Release();
-    return ret;
-}
-#endif
 
 std::vector<FileInfo> CustomisedToneProcessor::BuildFileInfos()
 {

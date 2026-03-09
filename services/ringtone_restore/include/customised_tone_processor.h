@@ -51,7 +51,6 @@ private:
     bool CanBuildFileInfo(const std::string &dualFilePath);
     std::atomic<int32_t> videoToneLimit_ = -1;
 #ifdef USE_MEDIA_LIBRARY
-    std::string GetFileAssetPathByUri(const std::string &uri);
     MediaLibraryManager *manager_ = nullptr;
 #endif
 };
