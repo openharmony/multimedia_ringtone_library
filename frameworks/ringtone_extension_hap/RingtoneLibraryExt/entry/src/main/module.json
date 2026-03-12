@@ -55,16 +55,6 @@
     ],
     "requestPermissions": [
       {
-        "name": "ohos.permission.READ_AUDIO",
-        "reason": "$string:permission_read_audio",
-        "usedScene": {
-          "abilities": [
-            "RingtoneBackupExtAbility"
-          ],
-          "when": "inuse"
-        }
-      },
-      {
         "name": "ohos.permission.FILE_ACCESS_MANAGER",
         "reason": "$string:permission_file_access_manager",
         "usedScene": {
