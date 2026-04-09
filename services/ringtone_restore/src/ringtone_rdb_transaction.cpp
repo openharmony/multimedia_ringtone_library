@@ -95,6 +95,7 @@ int32_t RingtoneRdbTransaction::BeginTransaction()
             continue;
         } else if (errCode != NativeRdb::E_OK) {
             RINGTONE_ERR_LOG("Start Transaction failed, errCode=%{public}d", errCode);
+            lock_guard<mutex> lock(transactionMutex_);
             isInTransaction_.store(false);
             transactionCV_.notify_one();
             return E_HAS_DB_ERROR;
@@ -121,8 +122,11 @@ int32_t RingtoneRdbTransaction::TransactionCommit()
     }
 
     int32_t errCode = rdbStore_->Commit();
-    isInTransaction_.store(false);
-    transactionCV_.notify_all();
+    {
+        lock_guard<mutex> lock(transactionMutex_);
+        isInTransaction_.store(false);
+        transactionCV_.notify_all();
+    }
     if (errCode != NativeRdb::E_OK) {
         RINGTONE_ERR_LOG("commit failed, errCode=%{public}d", errCode);
         return E_HAS_DB_ERROR;
@@ -144,8 +148,11 @@ int32_t RingtoneRdbTransaction::TransactionRollback()
     }
 
     int32_t errCode = rdbStore_->RollBack();
-    isInTransaction_.store(false);
-    transactionCV_.notify_all();
+    {
+        lock_guard<mutex> lock(transactionMutex_);
+        isInTransaction_.store(false);
+        transactionCV_.notify_all();
+    }
     if (errCode != NativeRdb::E_OK) {
         RINGTONE_ERR_LOG("rollback failed, errCode=%{public}d", errCode);
         return E_HAS_DB_ERROR;
