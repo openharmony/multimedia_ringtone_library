@@ -37,6 +37,7 @@ using namespace std;
 using namespace OHOS::AppExecFwk;
 using namespace OHOS::DataShare;
 static const int32_t SCANNER_WAIT_FOR_TIMEOUT = 10000; // ms
+static const int32_t PROP_VALUE_MAX = 256;
 static const std::string PATH_PLAY_MODE_SYNC = "/synchronized";
 static const std::string PATH_PLAY_MODE_CLASSIC = "/non-synchronized";
 static const std::string PATH_VIBRATE_TYPE_STANDARD = "/standard";
@@ -48,6 +49,9 @@ static const char RINGTONE_RDB_SCANNER_FLAG_KEY[] = "RDBInitScanner";
 static const int RINGTONE_RDB_SCANNER_FLAG_KEY_TRUE = 1;
 static const int RINGTONE_RDB_SCANNER_FLAG_KEY_FALSE = 0;
 static const char RINGTONE_PARAMETER_SCANNER_FIRST_KEY[] = "ringtone.scanner.first";
+static const char POCKET_VIBRATION_ENHANCEMENT_PARAM[] =
+    "const.multimedia.audio.support_pocket_vibration_enhancement";
+static const char RING_MOCK_HAPTIC_AUDIO_RESOURCE_PATH[] = "resource/media/ringtone_mock_haptic_audio";
 static const char RINGTONE_PARAMETER_SCANNER_FIRST_TRUE[] = "true";
 static const char RINGTONE_RESOURCE_PATH[] = "resource/media/audio";
 static const char VIBRATE_RESOURCE_PATH[] = "resource/media/haptics";
@@ -106,6 +110,21 @@ static std::unordered_map<std::string, std::pair<int32_t, int32_t>> g_vibratePla
     {ROOT_VIBRATE_PRELOAD_PATH_OVERSEA_PATH + PATH_VIBRATE_TYPE_GENTLE + PATH_PLAY_MODE_CLASSIC,
         {SOURCE_TYPE_PRESET, VIBRATE_PLAYMODE_CLASSIC}},
 };
+
+static std::unordered_map<std::string, std::pair<int32_t, int32_t>> g_ringMockHapticAudioTypeMap;
+
+static bool IsSupportPocketVibrationEnhancement()
+{
+    char value[PROP_VALUE_MAX] = {0};
+    int ret = GetParameter(POCKET_VIBRATION_ENHANCEMENT_PARAM, "false", value, sizeof(value));
+    if (ret <= 0) {
+        RINGTONE_WARN_LOG("Failed to get parameter, use default false");
+        return false;
+    }
+    
+    RINGTONE_INFO_LOG("Pocket vibration enhancement: %{public}s", value);
+    return (strcmp(value, "true") == 0);
+}
 
 static const std::vector<std::string> g_preloadDirs = {
     {ROOT_TONE_PRELOAD_PATH_NOAH_PATH + "/alarms"},
@@ -229,6 +248,13 @@ int32_t RingtoneScannerObj::BootScanProcess()
     res = RingtoneScannerDb::UpdateScannerFlag();
     CHECK_AND_RETURN_RET_LOG(res, E_HAS_DB_ERROR, "UpdateScannerFlag operation failed, res: %{public}d",
         E_HAS_DB_ERROR);
+    
+    if (IsSupportPocketVibrationEnhancement()) {
+        res = RingtoneScannerDb::UpdateRingMockHapticAudioScannerFlag();
+        CHECK_AND_RETURN_RET_LOG(res, E_HAS_DB_ERROR,
+            "UpdateRingMockHapticAudioScannerFlag operation failed, res: %{public}d", E_HAS_DB_ERROR);
+    }
+    
     IncrementalScannResource();
 
     ret = ScanDirectories(g_preloadDirs);
@@ -242,6 +268,12 @@ int32_t RingtoneScannerObj::BootScanProcess()
         PRId64 " ms", tonesScannedCount_, tonesScannedCount_, scanEnd - scanStart);
     res = RingtoneScannerDb::DeleteNotExist();
     CHECK_AND_RETURN_RET_LOG(res, E_ERR, "DeleteNotExist operation failed, res: %{public}d", res);
+    
+    if (IsSupportPocketVibrationEnhancement()) {
+        res = RingtoneScannerDb::DeleteNotExistRingMockHapticAudio();
+        CHECK_AND_RETURN_RET_LOG(res, E_ERR,
+            "DeleteNotExistRingMockHapticAudio operation failed, res: %{public}d", res);
+    }
     return ret;
 }
 
@@ -302,6 +334,13 @@ int32_t RingtoneScannerObj::ScanDirInternal()
         RINGTONE_ERR_LOG("commit vibrate transaction err %{public}d", err);
         return err;
     }
+
+    err = CommitRingMockHapticAudioTransaction();
+    if (err != E_OK) {
+        RINGTONE_ERR_LOG("commit ring mock haptic audio transaction err %{public}d", err);
+        return err;
+    }
+
     err = CleanupDirectory();
     if (err != E_OK) {
         RINGTONE_ERR_LOG("clean up dir err %{public}d", err);
@@ -358,6 +397,32 @@ int32_t RingtoneScannerObj::CommitVibrateTransaction()
     }
     vibrateDataBuffer_.clear();
 
+    return E_OK;
+}
+
+int32_t RingtoneScannerObj::CommitRingMockHapticAudioTransaction()
+{
+    RINGTONE_INFO_LOG("CommitRingMockHapticAudioTransaction start, buffer size: %{public}zu",
+        ringMockHapticAudioDataBuffer_.size());
+    
+    std::unique_ptr<RingMockHapticAudioMetadata> data;
+    std::string tableName = HAPTIC_2_TONE_TABLE;
+    
+    for (uint32_t i = 0; i < ringMockHapticAudioDataBuffer_.size(); i++) {
+        data = std::move(ringMockHapticAudioDataBuffer_[i]);
+        if (data->GetId() != FILE_ID_DEFAULT) {
+            RingtoneScannerDb::UpdateRingMockHapticAudioMetadata(*data, tableName);
+        } else {
+            RingtoneScannerDb::InsertRingMockHapticAudioMetadata(*data, tableName);
+        }
+    }
+    
+    if (ringMockHapticAudioDataBuffer_.size() > 0) {
+        tonesScannedCount_ += ringMockHapticAudioDataBuffer_.size();
+    }
+    ringMockHapticAudioDataBuffer_.clear();
+    
+    RINGTONE_INFO_LOG("CommitRingMockHapticAudioTransaction end");
     return E_OK;
 }
 
@@ -439,6 +504,17 @@ int32_t RingtoneScannerObj::ScanFileInTraversal(const string &path)
         return E_OK;
     }
 
+    std::vector<string> ringMockHapticAudioPath;
+    GetRingToneSourcePath(RING_MOCK_HAPTIC_AUDIO_RESOURCE_PATH, ringMockHapticAudioPath);
+    bool isRingMockHapticAudio = ContainsAnyPath(path_, ringMockHapticAudioPath);
+    if (isRingMockHapticAudio && IsSupportPocketVibrationEnhancement()) {
+        if (extension.compare("wav") == 0) {
+            isRingMockHapticAudioFile_ = true;
+            return ScanRingMockHapticAudioFile();
+        }
+        return E_OK;
+    }
+
     int32_t err = GetFileMetadata();
     if (err != E_OK) {
         if (err != E_SCANNED) {
@@ -470,6 +546,11 @@ int32_t RingtoneScannerObj::GetFileMetadata()
     int errCode = 0;
     if (isVibrateFile_) {
         errCode = BuildVibrateData(statInfo);
+        if (errCode != E_OK) {
+            return errCode;
+        }
+    } else if (isRingMockHapticAudioFile_) {
+        errCode = BuildRingMockHapticAudioData(statInfo);
         if (errCode != E_OK) {
             return errCode;
         }
@@ -506,13 +587,17 @@ int32_t RingtoneScannerObj::AddToTransaction()
         if (vibrateDataBuffer_.size() >= MAX_BATCH_SIZE) {
             return CommitVibrateTransaction();
         }
+    } else if (isRingMockHapticAudioFile_) {
+        ringMockHapticAudioDataBuffer_.emplace_back(move(ringMockHapticAudioData_));
+        if (ringMockHapticAudioDataBuffer_.size() >= MAX_BATCH_SIZE) {
+            return CommitRingMockHapticAudioTransaction();
+        }
     } else {
         dataBuffer_.emplace_back(move(data_));
         if (dataBuffer_.size() >= MAX_BATCH_SIZE) {
             return CommitTransaction();
         }
     }
-
     return E_OK;
 }
 
@@ -636,6 +721,57 @@ int32_t RingtoneScannerObj::BuildVibrateData(const struct stat &statInfo)
     return E_OK;
 }
 
+int32_t RingtoneScannerObj::BuildRingMockHapticAudioData(const struct stat &statInfo)
+{
+    ringMockHapticAudioData_ = make_unique<RingMockHapticAudioMetadata>();
+    if (ringMockHapticAudioData_ == nullptr) {
+        RINGTONE_ERR_LOG("failed to make unique ptr for sim ringtone metadata");
+        return E_DATA;
+    }
+
+    if (S_ISDIR(statInfo.st_mode)) {
+        return E_INVALID_ARGUMENTS;
+    }
+
+    int32_t err = RingtoneScannerDb::GetRingMockHapticAudioFileBasicInfo(path_, ringMockHapticAudioData_);
+    if (err != E_OK) {
+        RINGTONE_ERR_LOG("failed to get ring mock haptic audio file basic info");
+        return err;
+    }
+
+    for (const auto &pair : g_ringMockHapticAudioTypeMap) {
+        if (path_.find(pair.first) == 0) {
+            ringMockHapticAudioData_->SetSourceType(pair.second.first);
+            ringMockHapticAudioData_->SetRingMockHapticAudioType(pair.second.second);
+            int32_t ntype = 0;
+            if (pair.second.second == RING_MOCK_HAPTIC_AUDIO_TYPE_CLASSIC_STANDARD) {
+                ntype = (path_.find(ALARMS_TYPE) != string::npos) ?
+                    RING_MOCK_HAPTIC_AUDIO_TYPE_ALARM_STANDARD : RING_MOCK_HAPTIC_AUDIO_TYPE_CLASSIC_STANDARD;
+                ntype = (path_.find(RINGTONES_TYPE) != string::npos) ?
+                    RING_MOCK_HAPTIC_AUDIO_TYPE_RINGTONE_STANDARD : ntype;
+                ntype = (path_.find(NOTIFICATIONS_TYPE) != string::npos) ?
+                    RING_MOCK_HAPTIC_AUDIO_TYPE_NOTIFICATION_STANDARD : ntype;
+                ringMockHapticAudioData_->SetRingMockHapticAudioType(ntype);
+            }
+        }
+    }
+
+    ringMockHapticAudioData_->SetData(path_);
+    auto dispName = RingtoneScannerUtils::GetFileNameFromUri(path_);
+    ringMockHapticAudioData_->SetDisplayName(dispName);
+    ringMockHapticAudioData_->SetTitle(RingtoneScannerUtils::GetFileTitle(dispName));
+    ringMockHapticAudioData_->SetSize(statInfo.st_size);
+    ringMockHapticAudioData_->SetDateModified(
+        static_cast<int64_t>(RingtoneFileUtils::Timespec2Millisecond(statInfo.st_mtim)));
+    if (ringMockHapticAudioData_->GetDateAdded() == 0) {
+        ringMockHapticAudioData_->SetDateAdded(RingtoneFileUtils::UTCTimeMilliSeconds());
+    }
+    ringMockHapticAudioData_->SetPlayMode(1);
+    ringMockHapticAudioData_->SetScannerFlag(1);
+
+    return E_OK;
+}
+
 int32_t RingtoneScannerObj::ScanFileInternal()
 {
     if (RingtoneScannerUtils::IsFileHidden(path_)) {
@@ -657,6 +793,17 @@ int32_t RingtoneScannerObj::ScanFileInternal()
             return ScanVibrateFile();
         }
         return E_INVALID_PATH;
+    }
+
+    std::vector<string> ringMockHapticAudioPath;
+    GetRingToneSourcePath(RING_MOCK_HAPTIC_AUDIO_RESOURCE_PATH, ringMockHapticAudioPath);
+    bool isRingMockHapticAudio = ContainsAnyPath(path_, ringMockHapticAudioPath);
+    if (isRingMockHapticAudio && IsSupportPocketVibrationEnhancement()) {
+        if (extension.compare("wav") == 0) {
+            isRingMockHapticAudioFile_ = true;
+            return ScanRingMockHapticAudioFile();
+        }
+        return E_OK;
     }
 
     int32_t err = GetFileMetadata();
@@ -711,6 +858,37 @@ int32_t RingtoneScannerObj::ScanVibrateFile()
     return E_OK;
 }
 
+int32_t RingtoneScannerObj::ScanRingMockHapticAudioFile()
+{
+    int32_t err = GetFileMetadata();
+    if (err != E_OK) {
+        if (err != E_SCANNED) {
+            RINGTONE_ERR_LOG("failed to get sim ringtone file metadata");
+        }
+        isRingMockHapticAudioFile_ = false;
+        return err;
+    }
+
+    if (type_ == FILE) {
+        err = Commit();
+        if (err != E_OK) {
+            RINGTONE_ERR_LOG("failed to commit err %{public}d", err);
+            isRingMockHapticAudioFile_ = false;
+            return err;
+        }
+    } else {
+        err = AddToTransaction();
+        if (err != E_OK) {
+            RINGTONE_ERR_LOG("failed to add to transaction err %{public}d", err);
+            isRingMockHapticAudioFile_ = false;
+            return err;
+        }
+    }
+
+    isRingMockHapticAudioFile_ = false;
+    return E_OK;
+}
+
 int32_t RingtoneScannerObj::Commit()
 {
     std::string tab = RINGTONE_TABLE;
@@ -722,6 +900,14 @@ int32_t RingtoneScannerObj::Commit()
             uri_ = RingtoneScannerDb::UpdateVibrateMetadata(*vibrateData_, tab);
         } else {
             uri_ = RingtoneScannerDb::InsertVibrateMetadata(*vibrateData_, tab);
+        }
+    } else if (isRingMockHapticAudioFile_) {
+        tab = HAPTIC_2_TONE_TABLE;
+
+        if (ringMockHapticAudioData_->GetId() != FILE_ID_DEFAULT) {
+            uri_ = RingtoneScannerDb::UpdateRingMockHapticAudioMetadata(*ringMockHapticAudioData_, tab);
+        } else {
+            uri_ = RingtoneScannerDb::InsertRingMockHapticAudioMetadata(*ringMockHapticAudioData_, tab);
         }
     } else {
         if (data_->GetToneId() != FILE_ID_DEFAULT) {
@@ -753,6 +939,22 @@ int32_t RingtoneScannerObj::GetRingToneSourcePath(const char *source, vector<str
     }
     FreeCfgFiles(cfgFiles);
 #endif
+    return E_OK;
+}
+
+int32_t RingtoneScannerObj::AdditionalRingMockHapticAudioTypeMap(
+    const std::vector<std::string>& ringMockHapticAudioPaths)
+{
+    if (!ringMockHapticAudioPaths.empty()) {
+        for (const auto &path : ringMockHapticAudioPaths) {
+            g_ringMockHapticAudioTypeMap[path + PATH_VIBRATE_TYPE_STANDARD] = {
+                SOURCE_TYPE_PRESET, RING_MOCK_HAPTIC_AUDIO_TYPE_CLASSIC_STANDARD
+            };
+            g_ringMockHapticAudioTypeMap[path + PATH_VIBRATE_TYPE_GENTLE] = {
+                SOURCE_TYPE_PRESET, RING_MOCK_HAPTIC_AUDIO_TYPE_CLASSIC_GENTLE
+            };
+        }
+    }
     return E_OK;
 }
 
@@ -916,6 +1118,25 @@ void RingtoneScannerObj::IncrementalScannResource()
 
     ScanDirectories(BuildRingtoneDirs(filterRingtonePath));
     ScanDirectories(BuildVibrateDirs(filterVibratePath));
+
+    if (IsSupportPocketVibrationEnhancement()) {
+        RINGTONE_INFO_LOG("Pocket vibration enhancement is supported, start scanning sim ringtone");
+        
+        std::vector<string> ringMockHapticAudioPath;
+        GetRingToneSourcePath(RING_MOCK_HAPTIC_AUDIO_RESOURCE_PATH, ringMockHapticAudioPath);
+        auto filterRingMockHapticAudioPath = FilterResourcePaths(ringMockHapticAudioPath, g_ringtoneAndVibratePaths);
+        AdditionalRingMockHapticAudioTypeMap(filterRingMockHapticAudioPath);
+        
+        std::vector<string> ringMockHapticAudioDirs;
+        for (const auto &path : filterRingMockHapticAudioPath) {
+            ringMockHapticAudioDirs.push_back(path + PATH_VIBRATE_TYPE_STANDARD);
+            ringMockHapticAudioDirs.push_back(path + PATH_VIBRATE_TYPE_GENTLE);
+        }
+        
+        ScanDirectories(ringMockHapticAudioDirs);
+    } else {
+        RINGTONE_INFO_LOG("Pocket vibration enhancement is not supported, skip sim ringtone scanning");
+    }
 }
 } // namespace Media
 } // namespace OHOS
