@@ -65,7 +65,7 @@ const std::string RINGTONE_LIBRARY_DB_PATH_EL1 = "/data/storage/el1/database";
 const std::string RINGTONE_LIBRARY_DB_NAME = "ringtone_library.db";
 
 // ringtone db version
-const int32_t RINGTONE_RDB_VERSION = 9;
+const int32_t RINGTONE_RDB_VERSION = 10;
 enum {
     VERSION_ADD_DISPLAY_LANGUAGE_COLUMN = 2,
     VERSION_ADD_VIBRATE_TABLE = 3,
@@ -75,6 +75,7 @@ enum {
     VERSION_ADD_SCANNER_FLAG = 7,
     VERSION_UPDATE_MEDIA_TYPE_VIDEO = 8,
     VERSION_UPDATE_DATA_URI = 9,
+    VERSION_ADD_HAPTIC_2_TONE_TABLE = 10,
 };
 
 // ringtone table name
@@ -140,6 +141,24 @@ const std::string PRELOAD_CONFIG_TABLE                          = "PreloadConfig
 const std::string PRELOAD_CONFIG_COLUMN_RING_TONE_TYPE          = "ring_tone_type";
 const std::string PRELOAD_CONFIG_COLUMN_TONE_ID                 = "tone_id";
 const std::string PRELOAD_CONFIG_COLUMN_DISPLAY_NAME            = "display_name";
+
+// haptic 2 tone table name
+const std::string HAPTIC_2_TONE_TABLE = "Haptic2ToneFiles";
+const std::string HAPTIC_2_TONE_URI_PATH = HAPTIC_2_TONE_TABLE;
+const std::string HAPTIC_2_TONE_PATH_URI = RINGTONE_URI + "/" + HAPTIC_2_TONE_URI_PATH;
+
+// haptic 2 tone column name
+const std::string HAPTIC_2_TONE_COLUMN_ID = "id";
+const std::string HAPTIC_2_TONE_COLUMN_DATA = "data";
+const std::string HAPTIC_2_TONE_COLUMN_SIZE = "size";
+const std::string HAPTIC_2_TONE_COLUMN_DISPLAY_NAME = "display_name";
+const std::string HAPTIC_2_TONE_COLUMN_TITLE = "title";
+const std::string HAPTIC_2_TONE_COLUMN_HAPTIC_2_TONE_TYPE = "haptic_2_tone_type";
+const std::string HAPTIC_2_TONE_COLUMN_SOURCE_TYPE = "source_type";
+const std::string HAPTIC_2_TONE_COLUMN_DATE_ADDED = "date_added";
+const std::string HAPTIC_2_TONE_COLUMN_DATE_MODIFIED = "date_modified";
+const std::string HAPTIC_2_TONE_COLUMN_PLAY_MODE = "play_mode";
+const std::string HAPTIC_2_TONE_COLUMN_SCANNER_FLAG = "scanner_flag";
 
 } // namespace Media
 } // namespace OHOS

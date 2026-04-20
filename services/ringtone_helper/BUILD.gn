@@ -37,6 +37,7 @@ ohos_shared_library("ringtone_data_helper") {
     "src/ringtone_fetch_result.cpp",
     "src/simcard_setting_asset.cpp",
     "src/vibrate_asset.cpp",
+    "src/haptic_2_tone_asset.cpp",
   ]
 
   public_configs = [ ":ringtone_helper_public_config" ]
