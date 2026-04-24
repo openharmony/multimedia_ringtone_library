@@ -184,6 +184,16 @@ void RingtoneDataShareExtension::OnStop()
 
 sptr<IRemoteObject> RingtoneDataShareExtension::OnConnect(const AAFwk::Want &want)
 {
+    if (!RingtonePermissionUtils::IsSystemApp() && IPCSkeleton::GetCallingUid() != 0
+        && !RingtonePermissionUtils::IsNativeSAApp()) {
+        RINGTONE_ERR_LOG("RingtoneLibrary should only be called by system applications!");
+        return nullptr;
+    }
+    // 不支持跨端分布式场景
+    if (!want.GetDeviceId().empty()) {
+        RINGTONE_ERR_LOG("RingtoneLibrary does not support distributed scenario!");
+        return nullptr;
+    }
     RINGTONE_DEBUG_LOG("begin.");
     Extension::OnConnect(want);
     sptr<RingtoneDataShareStubImpl> remoteObject = new (nothrow) RingtoneDataShareStubImpl(
