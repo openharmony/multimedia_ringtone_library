@@ -65,7 +65,8 @@ const std::vector<std::string> RINGTONE_OPEN_WRITE_MODE_VECTOR = {
 std::map<std::string, std::string> VALID_URI_TO_TABLE {
     {SIMCARD_SETTING_PATH_URI, SIMCARD_SETTING_TABLE},
     {RINGTONE_PATH_URI, RINGTONE_TABLE},
-    {VIBRATE_PATH_URI, VIBRATE_TABLE}
+    {VIBRATE_PATH_URI, VIBRATE_TABLE},
+    {HAPTIC_2_TONE_PATH_URI, HAPTIC_2_TONE_TABLE}
 };
 
 static const char RINGTONE_RDB_SCANNER_FLAG_KEY[] = "RDBInitScanner";
@@ -375,6 +376,11 @@ int RingtoneDataShareExtension::Insert(const Uri &uri, const DataShareValuesBuck
         return err;
     }
 
+    if (tab == HAPTIC_2_TONE_TABLE) {
+        RINGTONE_ERR_LOG("Haptic2ToneFiles table does not support insert operation");
+        return Media::E_INVALID_URI;
+    }
+
     RingtoneDataCommand cmd(uri, tab, RingtoneOperationType::INSERT);
     err = CheckRingtonePerm(cmd, true);
     if (err < 0) {
@@ -398,6 +404,11 @@ int RingtoneDataShareExtension::Update(const Uri &uri, const DataSharePredicates
         return err;
     }
 
+    if (tab == HAPTIC_2_TONE_TABLE) {
+        RINGTONE_ERR_LOG("Haptic2ToneFiles table does not support update operation");
+        return Media::E_INVALID_URI;
+    }
+
     RingtoneDataCommand cmd(uri, tab, RingtoneOperationType::UPDATE);
     err = CheckRingtonePerm(cmd, false);
     if (err < 0) {
@@ -416,6 +427,11 @@ int RingtoneDataShareExtension::Delete(const Uri &uri, const DataSharePredicates
     int err = GetValidUriTab(uri, tab);
     if (err != Media::E_OK) {
         return err;
+    }
+
+    if (tab == HAPTIC_2_TONE_TABLE) {
+        RINGTONE_ERR_LOG("Haptic2ToneFiles table does not support delete operation");
+        return Media::E_INVALID_URI;
     }
 
     RingtoneDataCommand cmd(uri, tab, RingtoneOperationType::DELETE);

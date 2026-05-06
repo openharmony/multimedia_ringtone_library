@@ -32,6 +32,7 @@ ohos_unittest("ringtone_helper_unittest") {
   ]
 
   sources = [
+    "./src/haptic_2_tone_asset_test.cpp",
     "./src/ringtone_asset_test.cpp",
     "./src/ringtone_fetch_result_test.cpp",
     "./src/simcard_setting_asset_test.cpp",

@@ -74,6 +74,31 @@ int32_t RingtoneScannerDb::GetVibrateFileBasicInfo(const string &path, unique_pt
     return FillVibrateMetadata(resultSet, ptr);
 }
 
+int32_t RingtoneScannerDb::GetRingMockHapticAudioFileBasicInfo(const string &path,
+    unique_ptr<RingMockHapticAudioMetadata> &ptr)
+{
+    vector<string> columns = {
+        HAPTIC_2_TONE_COLUMN_ID, HAPTIC_2_TONE_COLUMN_SIZE, HAPTIC_2_TONE_COLUMN_DATE_MODIFIED,
+        HAPTIC_2_TONE_COLUMN_TITLE, HAPTIC_2_TONE_COLUMN_DATE_ADDED
+    };
+    string whereClause = HAPTIC_2_TONE_COLUMN_DATA + " = ?";
+    vector<string> args = { path };
+
+    Uri uri("");
+    RingtoneDataCommand cmd(uri, HAPTIC_2_TONE_TABLE, RingtoneOperationType::QUERY);
+    cmd.GetAbsRdbPredicates()->SetWhereClause(whereClause);
+    cmd.GetAbsRdbPredicates()->SetWhereArgs(args);
+
+    shared_ptr<NativeRdb::ResultSet> resultSet;
+    int32_t ret = GetFileSet(cmd, columns, resultSet);
+    if (ret != E_OK) {
+        RINGTONE_ERR_LOG("Query operation failed. ret=%{public}d", ret);
+        return E_DB_FAIL;
+    }
+
+    return FillRingMockHapticAudioMetadata(resultSet, ptr);
+}
+
 int32_t RingtoneScannerDb::QueryRingtoneRdb(const string &whereClause, vector<string> &whereArgs,
     const vector<string> &columns, shared_ptr<NativeRdb::ResultSet> &resultSet, const string &tableName)
 {
@@ -156,6 +181,23 @@ int32_t RingtoneScannerDb::FillVibrateMetadata(const shared_ptr<NativeRdb::Resul
     return E_OK;
 }
 
+int32_t RingtoneScannerDb::FillRingMockHapticAudioMetadata(const shared_ptr<NativeRdb::ResultSet> &resultSet,
+    unique_ptr<RingMockHapticAudioMetadata> &ptr)
+{
+    std::vector<std::string> columnNames;
+    int32_t err = resultSet->GetAllColumnNames(columnNames);
+    if (err != NativeRdb::E_OK) {
+        RINGTONE_ERR_LOG("failed to get all column names");
+        return E_RDB;
+    }
+
+    for (const auto &col : columnNames) {
+        ExtractRingMockHapticAudioMetaFromColumn(resultSet, ptr, col);
+    }
+
+    return E_OK;
+}
+
 void RingtoneScannerDb::ExtractMetaFromColumn(const shared_ptr<NativeRdb::ResultSet> &resultSet,
     unique_ptr<RingtoneMetadata> &metadata, const std::string &col)
 {
@@ -197,6 +239,28 @@ void RingtoneScannerDb::ExtractVibrateMetaFromColumn(const shared_ptr<NativeRdb:
         ResultSetUtils::GetValFromColumn<const shared_ptr<NativeRdb::ResultSet>>(col, resultSet, dataType);
 
     // Use the function pointer from map and pass data to fn ptr
+    if (requestFunc != nullptr) {
+        (metadata.get()->*requestFunc)(data);
+    }
+}
+
+void RingtoneScannerDb::ExtractRingMockHapticAudioMetaFromColumn(const shared_ptr<NativeRdb::ResultSet> &resultSet,
+    unique_ptr<RingMockHapticAudioMetadata> &metadata, const std::string &col)
+{
+    RingtoneResultSetDataType dataType = RingtoneResultSetDataType::DATA_TYPE_NULL;
+    RingMockHapticAudioMetadata::RingMockHapticAudioMetadataFnPtr requestFunc = nullptr;
+    auto itr = metadata->memberFuncMap_.find(col);
+    if (itr != metadata->memberFuncMap_.end()) {
+        dataType = itr->second.first;
+        requestFunc = itr->second.second;
+    } else {
+        RINGTONE_DEBUG_LOG("invalid column name %{public}s", col.c_str());
+        return;
+    }
+
+    std::variant<int32_t, std::string, int64_t, double> data =
+        ResultSetUtils::GetValFromColumn<const shared_ptr<NativeRdb::ResultSet>>(col, resultSet, dataType);
+
     if (requestFunc != nullptr) {
         (metadata.get()->*requestFunc)(data);
     }
@@ -415,6 +479,31 @@ int32_t RingtoneScannerDb::InsertVibrateMetadata(const VibrateMetadata &metadata
     return rowNum;
 }
 
+int32_t RingtoneScannerDb::InsertRingMockHapticAudioMetadata(const RingMockHapticAudioMetadata &metadata,
+    string &tableName)
+{
+    ValuesBucket values;
+    int32_t rowNum = 0;
+    tableName = HAPTIC_2_TONE_TABLE;
+
+    values.PutString(HAPTIC_2_TONE_COLUMN_DATA, metadata.GetData());
+    values.PutLong(HAPTIC_2_TONE_COLUMN_SIZE, metadata.GetSize());
+    values.PutString(HAPTIC_2_TONE_COLUMN_DISPLAY_NAME, metadata.GetDisplayName());
+    values.PutString(HAPTIC_2_TONE_COLUMN_TITLE, metadata.GetTitle());
+    values.PutInt(HAPTIC_2_TONE_COLUMN_HAPTIC_2_TONE_TYPE, metadata.GetRingMockHapticAudioType());
+    values.PutInt(HAPTIC_2_TONE_COLUMN_SOURCE_TYPE, metadata.GetSourceType());
+    values.PutLong(HAPTIC_2_TONE_COLUMN_DATE_ADDED, metadata.GetDateAdded());
+    values.PutLong(HAPTIC_2_TONE_COLUMN_DATE_MODIFIED, metadata.GetDateModified());
+    values.PutInt(HAPTIC_2_TONE_COLUMN_PLAY_MODE, metadata.GetPlayMode());
+    values.PutInt(HAPTIC_2_TONE_COLUMN_SCANNER_FLAG, metadata.GetScannerFlag());
+
+    if (!InsertData(values, tableName, rowNum)) {
+        return E_DB_FAIL;
+    }
+
+    return rowNum;
+}
+
 bool RingtoneScannerDb::InsertData(const ValuesBucket values, const string &tableName, int32_t &rowNum)
 {
     auto rdbStore = RingtoneRdbStore::GetInstance();
@@ -445,7 +534,45 @@ bool RingtoneScannerDb::InsertData(const ValuesBucket values, const string &tabl
     }
     rowNum = static_cast<int32_t>(nRow);
 
-    return true;
+    return rowNum;
+}
+
+int32_t RingtoneScannerDb::UpdateRingMockHapticAudioMetadata(const RingMockHapticAudioMetadata &metadata,
+    string &tableName)
+{
+    int32_t updateCount = 0;
+    ValuesBucket values;
+    string whereClause = HAPTIC_2_TONE_COLUMN_ID + " = ?";
+    vector<string> whereArgs = { to_string(metadata.GetId()) };
+
+    values.PutString(HAPTIC_2_TONE_COLUMN_DATA, metadata.GetData());
+    values.PutLong(HAPTIC_2_TONE_COLUMN_SIZE, metadata.GetSize());
+    values.PutString(HAPTIC_2_TONE_COLUMN_DISPLAY_NAME, metadata.GetDisplayName());
+    values.PutString(HAPTIC_2_TONE_COLUMN_TITLE, metadata.GetTitle());
+    values.PutInt(HAPTIC_2_TONE_COLUMN_HAPTIC_2_TONE_TYPE, metadata.GetRingMockHapticAudioType());
+    values.PutInt(HAPTIC_2_TONE_COLUMN_SOURCE_TYPE, metadata.GetSourceType());
+    values.PutLong(HAPTIC_2_TONE_COLUMN_DATE_ADDED, metadata.GetDateAdded());
+    values.PutLong(HAPTIC_2_TONE_COLUMN_DATE_MODIFIED, metadata.GetDateModified());
+    values.PutInt(HAPTIC_2_TONE_COLUMN_PLAY_MODE, metadata.GetPlayMode());
+    values.PutInt(HAPTIC_2_TONE_COLUMN_SCANNER_FLAG, metadata.GetScannerFlag());
+
+    tableName = HAPTIC_2_TONE_TABLE;
+    auto rdbStore = RingtoneRdbStore::GetInstance();
+    if (rdbStore == nullptr) {
+        RINGTONE_ERR_LOG("failed to get rdb");
+        return E_RDB;
+    }
+    auto rawRdb = rdbStore->GetRaw();
+    if (rawRdb == nullptr) {
+        RINGTONE_ERR_LOG("get raw rdb failed");
+        return E_RDB;
+    }
+    int32_t result = rawRdb->Update(updateCount, tableName, values, whereClause, whereArgs);
+    if (result != NativeRdb::E_OK || updateCount <= 0) {
+        RINGTONE_ERR_LOG("Update operation failed. Result %{public}d. Updated %{public}d", result, updateCount);
+        return E_DB_FAIL;
+    }
+    return updateCount;
 }
 
 bool RingtoneScannerDb::UpdateScannerFlag()
@@ -529,6 +656,67 @@ bool RingtoneScannerDb::DeleteNotExist()
     RINGTONE_INFO_LOG("Vibrate update operation end. Deleted %{public}d", deleteCount);
     if (result != NativeRdb::E_OK || deleteCount < 0) {
         RINGTONE_ERR_LOG("Vibrate update operation failed. Result %{public}d. Deleted %{public}d", result, deleteCount);
+        return false;
+    }
+    return true;
+}
+
+bool RingtoneScannerDb::UpdateRingMockHapticAudioScannerFlag()
+{
+    int32_t updateCount = 0;
+    auto rdbStore = RingtoneRdbStore::GetInstance();
+    if (rdbStore == nullptr) {
+        RINGTONE_ERR_LOG("failed to get rdb");
+        return false;
+    }
+    auto rawRdb = rdbStore->GetRaw();
+    if (rawRdb == nullptr) {
+        RINGTONE_ERR_LOG("get raw rdb failed");
+        return false;
+    }
+
+    ValuesBucket ringMockHapticAudioValues;
+    DataShare::DataSharePredicates ringMockHapticAudioPredicates;
+    int32_t result;
+    NativeRdb::RdbPredicates ringMockHapticAudioRdbPredicate = RdbDataShareAdapter::RdbUtils::ToPredicates(
+        ringMockHapticAudioPredicates, HAPTIC_2_TONE_TABLE);
+    ringMockHapticAudioValues.PutInt(HAPTIC_2_TONE_COLUMN_SCANNER_FLAG, 0);
+    result = rawRdb->Update(updateCount, ringMockHapticAudioValues, ringMockHapticAudioRdbPredicate);
+    RINGTONE_INFO_LOG("SimRingtone update operation end. Updated %{public}d", updateCount);
+    if (result != NativeRdb::E_OK || updateCount < 0) {
+        RINGTONE_ERR_LOG("SimRingtone update operation failed. Result %{public}d. Updated %{public}d",
+            result, updateCount);
+        return false;
+    }
+    return true;
+}
+
+bool RingtoneScannerDb::DeleteNotExistRingMockHapticAudio()
+{
+    int32_t deleteCount = 0;
+    auto rdbStore = RingtoneRdbStore::GetInstance();
+    if (rdbStore == nullptr) {
+        RINGTONE_ERR_LOG("failed to get rdb");
+        return false;
+    }
+    auto rawRdb = rdbStore->GetRaw();
+    if (rawRdb == nullptr) {
+        RINGTONE_ERR_LOG("get raw rdb failed");
+        return false;
+    }
+
+    DataShare::DataSharePredicates ringMockHapticAudioPredicates;
+    int32_t result;
+    NativeRdb::RdbPredicates ringMockHapticAudioRdbPredicate = RdbDataShareAdapter::RdbUtils::ToPredicates(
+        ringMockHapticAudioPredicates, HAPTIC_2_TONE_TABLE);
+    ringMockHapticAudioRdbPredicate.EqualTo(HAPTIC_2_TONE_COLUMN_SCANNER_FLAG, "0");
+    ringMockHapticAudioRdbPredicate.And();
+    ringMockHapticAudioRdbPredicate.EqualTo(HAPTIC_2_TONE_COLUMN_SOURCE_TYPE, "1");
+    result = rawRdb->Delete(deleteCount, ringMockHapticAudioRdbPredicate);
+    RINGTONE_INFO_LOG("SimRingtone delete operation end. Deleted %{public}d", deleteCount);
+    if (result != NativeRdb::E_OK || deleteCount < 0) {
+        RINGTONE_ERR_LOG("SimRingtone delete operation failed. Result %{public}d. Deleted %{public}d",
+            result, deleteCount);
         return false;
     }
     return true;
