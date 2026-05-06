@@ -31,6 +31,8 @@ const std::string RINGTONE_LIBRARY_PROXY_DATA_URI_VIBATE_FILES =
     "datashare:///com.ohos.ringtonelibrary.ringtonelibrarydata/entry/ringtone_library/VibrateFiles?Proxy=true";
 const std::string RINGTONE_LIBRARY_PROXY_DATA_URI_PRELOAD_CONFIG =
     "datashare:///com.ohos.ringtonelibrary.ringtonelibrarydata/entry/ringtone_library/PreloadConfig?Proxy=true";
+const std::string RINGTONE_LIBRARY_PROXY_DATA_URI_HAPTIC_2_TONE =
+    "datashare:///com.ohos.ringtonelibrary.ringtonelibrarydata/entry/ringtone_library/Haptic2ToneFiles?Proxy=true";
 
 } // namespace Media
 } // namespace OHOS

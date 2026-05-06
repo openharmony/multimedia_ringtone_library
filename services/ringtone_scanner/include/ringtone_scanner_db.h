@@ -20,6 +20,7 @@
 #include "ringtone_data_command.h"
 #include "ringtone_metadata.h"
 #include "vibrate_metadata.h"
+#include "ring_mock_haptic_audio_metadata.h"
 
 namespace OHOS {
 namespace Media {
@@ -33,12 +34,20 @@ public:
 
     EXPORT static int32_t InsertMetadata(const RingtoneMetadata &metadata, std::string &tableName);
     EXPORT static int32_t InsertVibrateMetadata(const VibrateMetadata &metadata, std::string &tableName);
+    EXPORT static int32_t InsertRingMockHapticAudioMetadata(const RingMockHapticAudioMetadata &metadata,
+        std::string &tableName);
     EXPORT static int32_t UpdateMetadata(const RingtoneMetadata &metadata, std::string &tableName);
     EXPORT static int32_t UpdateVibrateMetadata(const VibrateMetadata &metadata, std::string &tableName);
+    EXPORT static int32_t UpdateRingMockHapticAudioMetadata(const RingMockHapticAudioMetadata &metadata,
+        std::string &tableName);
     EXPORT static bool UpdateScannerFlag();
+    EXPORT static bool UpdateRingMockHapticAudioScannerFlag();
     EXPORT static bool DeleteNotExist();
+    EXPORT static bool DeleteNotExistRingMockHapticAudio();
     EXPORT static int32_t GetFileBasicInfo(const std::string &path, std::unique_ptr<RingtoneMetadata> &ptr);
     EXPORT static int32_t GetVibrateFileBasicInfo(const std::string &path, std::unique_ptr<VibrateMetadata> &ptr);
+    EXPORT static int32_t GetRingMockHapticAudioFileBasicInfo(const std::string &path,
+        std::unique_ptr<RingMockHapticAudioMetadata> &ptr);
     EXPORT static int32_t UpdateRingtoneRdb(NativeRdb::ValuesBucket &values, const std::string &whereClause,
          std::vector<std::string> &whereArgs, const std::string &tableName = RINGTONE_TABLE);
     EXPORT static int32_t QueryRingtoneRdb(const std::string &whereClause, std::vector<std::string> &whereArgs,
@@ -48,6 +57,8 @@ public:
         std::unique_ptr<RingtoneMetadata> &ptr);
     EXPORT static int32_t FillVibrateMetadata(const std::shared_ptr<NativeRdb::ResultSet> &resultSet,
         std::unique_ptr<VibrateMetadata> &ptr);
+    EXPORT static int32_t FillRingMockHapticAudioMetadata(const std::shared_ptr<NativeRdb::ResultSet> &resultSet,
+        std::unique_ptr<RingMockHapticAudioMetadata> &ptr);
 private:
     static bool InsertData(const NativeRdb::ValuesBucket values, const std::string &tableName, int32_t &rowNum);
     static int32_t GetFileSet(RingtoneDataCommand &cmd, const std::vector<std::string> &columns,
@@ -56,6 +67,8 @@ private:
         std::unique_ptr<RingtoneMetadata> &metadata, const std::string &col);
     static void ExtractVibrateMetaFromColumn(const std::shared_ptr<NativeRdb::ResultSet> &resultSet,
         std::unique_ptr<VibrateMetadata> &metadata, const std::string &col);
+    static void ExtractRingMockHapticAudioMetaFromColumn(const std::shared_ptr<NativeRdb::ResultSet> &resultSet,
+        std::unique_ptr<RingMockHapticAudioMetadata> &metadata, const std::string &col);
     static int32_t BuildToneSettingTypeQuery(ToneSettingType type, RingtoneDataCommand &cmd);
     static int32_t GetToneSettingType(ToneSettingType type, std::vector<std::shared_ptr<RingtoneMetadata>> &metas);
 };

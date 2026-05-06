@@ -24,6 +24,7 @@
 #include "ringtone_errno.h"
 #include "ringtone_metadata_extractor.h"
 #include "ringtone_scanner_db.h"
+#include "ring_mock_haptic_audio_metadata.h"
 
 namespace OHOS {
 namespace Media {
@@ -82,9 +83,11 @@ private:
     EXPORT int32_t ScanFile();
     EXPORT int32_t ScanFileInternal();
     EXPORT int32_t ScanVibrateFile();
+    EXPORT int32_t ScanRingMockHapticAudioFile();
     EXPORT int32_t BuildFileInfo();
     EXPORT int32_t BuildData(const struct stat &statInfo);
     EXPORT int32_t BuildVibrateData(const struct stat &statInfo);
+    EXPORT int32_t BuildRingMockHapticAudioData(const struct stat &statInfo);
     EXPORT int32_t GetFileMetadata();
     EXPORT int32_t GetMediaInfo();
 
@@ -100,7 +103,11 @@ private:
     EXPORT int32_t AddToTransaction();
     EXPORT int32_t CommitTransaction();
     EXPORT int32_t CommitVibrateTransaction();
+    EXPORT int32_t CommitRingMockHapticAudioTransaction();
     EXPORT int32_t UpdateToneTypeSettings();
+
+    /* ring mock haptic audio type map */
+    EXPORT int32_t AdditionalRingMockHapticAudioTypeMap(const std::vector<std::string>& ringMockHapticAudioPaths);
 
     /* callback */
     EXPORT int32_t InvokeCallback(int32_t code);
@@ -116,7 +123,10 @@ private:
     std::vector<std::unique_ptr<RingtoneMetadata>> dataBuffer_;
     std::unique_ptr<VibrateMetadata> vibrateData_;
     std::vector<std::unique_ptr<VibrateMetadata>> vibrateDataBuffer_;
+    std::unique_ptr<RingMockHapticAudioMetadata> ringMockHapticAudioData_;
+    std::vector<std::unique_ptr<RingMockHapticAudioMetadata>> ringMockHapticAudioDataBuffer_;
     bool isVibrateFile_ = false;
+    bool isRingMockHapticAudioFile_ = false;
     bool isForceScan_ = false;
     uint32_t tonesScannedCount_ = 0;
     std::mutex scannerLock_;

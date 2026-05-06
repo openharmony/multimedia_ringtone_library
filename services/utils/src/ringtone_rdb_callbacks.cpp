@@ -99,6 +99,19 @@ const std::string CREATE_PRELOAD_CONF_TABLE = "CREATE TABLE IF NOT EXISTS " + PR
 const std::string INIT_PRELOAD_CONF_TABLE = "INSERT OR IGNORE INTO " + PRELOAD_CONFIG_TABLE + " (" +
     PRELOAD_CONFIG_COLUMN_RING_TONE_TYPE + ") VALUES (1), (2), (3), (4), (5), (6);";
 
+const std::string CREATE_HAPTIC_2_TONE_TABLE = "CREATE TABLE IF NOT EXISTS " + HAPTIC_2_TONE_TABLE + "(" +
+    HAPTIC_2_TONE_COLUMN_ID + " INTEGER  PRIMARY KEY AUTOINCREMENT, " +
+    HAPTIC_2_TONE_COLUMN_DATA + " TEXT              , " +
+    HAPTIC_2_TONE_COLUMN_SIZE + " BIGINT   DEFAULT 0, " +
+    HAPTIC_2_TONE_COLUMN_DISPLAY_NAME + " TEXT              , " +
+    HAPTIC_2_TONE_COLUMN_TITLE + " TEXT              , " +
+    HAPTIC_2_TONE_COLUMN_HAPTIC_2_TONE_TYPE + " INT      DEFAULT 0, " +
+    HAPTIC_2_TONE_COLUMN_SOURCE_TYPE + " INT      DEFAULT 0, " +
+    HAPTIC_2_TONE_COLUMN_DATE_ADDED + " BIGINT   DEFAULT 0, " +
+    HAPTIC_2_TONE_COLUMN_DATE_MODIFIED + " BIGINT   DEFAULT 0, " +
+    HAPTIC_2_TONE_COLUMN_PLAY_MODE + " INT      DEFAULT 0, " +
+    HAPTIC_2_TONE_COLUMN_SCANNER_FLAG + " INT      DEFAULT 0  " + ")";
+
 static const vector<string> g_initSqls = {
     CREATE_RINGTONE_TABLE,
     CREATE_VIBRATE_TABLE,
@@ -106,6 +119,7 @@ static const vector<string> g_initSqls = {
     INIT_SIMCARD_SETTING_TABLE,
     CREATE_PRELOAD_CONF_TABLE,
     INIT_PRELOAD_CONF_TABLE,
+    CREATE_HAPTIC_2_TONE_TABLE,
 };
 
 RingtoneDataCallBack::RingtoneDataCallBack(void)
@@ -268,6 +282,15 @@ static void AddPreloadConfTable(NativeRdb::RdbStore &store)
     ExecSqls(sqls, store);
 }
 
+static void AddRingMockHapticAudioTable(NativeRdb::RdbStore &store)
+{
+    const vector<string> sqls = {
+        CREATE_HAPTIC_2_TONE_TABLE,
+    };
+    RINGTONE_INFO_LOG("Add sim ringtone table");
+    ExecSqls(sqls, store);
+}
+
 static void UpdateDefaultSystemTone(NativeRdb::RdbStore &store)
 {
     RINGTONE_INFO_LOG("setting system tone begin");
@@ -399,6 +422,9 @@ static void UpgradeExtension(NativeRdb::RdbStore &store, int32_t oldVersion)
     }
     if (oldVersion < VERSION_UPDATE_DATA_URI) {
         UpdateDataUri(store);
+    }
+    if (oldVersion < VERSION_ADD_HAPTIC_2_TONE_TABLE) {
+        AddRingMockHapticAudioTable(store);
     }
 }
 
