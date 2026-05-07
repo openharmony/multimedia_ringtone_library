@@ -534,7 +534,7 @@ bool RingtoneScannerDb::InsertData(const ValuesBucket values, const string &tabl
     }
     rowNum = static_cast<int32_t>(nRow);
 
-    return rowNum;
+    return true;
 }
 
 int32_t RingtoneScannerDb::UpdateRingMockHapticAudioMetadata(const RingMockHapticAudioMetadata &metadata,
