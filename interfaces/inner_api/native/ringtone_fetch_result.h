@@ -24,6 +24,7 @@
 #include "ringtone_db_const.h"
 #include "ringtone_type.h"
 #include "simcard_setting_asset.h"
+#include "haptic_2_tone_asset.h"
 
 namespace OHOS {
 namespace Media {
