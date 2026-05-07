@@ -328,5 +328,6 @@ unique_ptr<T> RingtoneFetchResult<T>::GetObjectFromRdb(shared_ptr<NativeRdb::Res
 template class RingtoneFetchResult<RingtoneAsset>;
 template class RingtoneFetchResult<SimcardSettingAsset>;
 template class RingtoneFetchResult<VibrateAsset>;
+template class RingtoneFetchResult<Haptic2ToneAsset>;
 }  // namespace Media
 }  // namespace OHOS
