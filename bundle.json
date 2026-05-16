@@ -45,7 +45,8 @@
           "samgr",
           "preferences",
           "os_account",
-          "safwk"
+          "safwk",
+          "ets_frontend"
         ],
         "third_party": []
       },
