@@ -57,6 +57,7 @@ ohos_unittest("ringtone_helper_unittest") {
     "ipc:ipc_napi",
     "ipc:ipc_single",
     "napi:ace_napi",
+    "media_foundation:media_foundation",
     "player_framework:media_client",
     "relational_store:rdb_data_share_adapter",
   ]

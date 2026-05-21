@@ -85,6 +85,7 @@ ohos_unittest("customised_tone_processor_unittest") {
     "libxml2:libxml2",
     "napi:ace_napi",
     "os_account:os_account_innerkits",
+    "media_foundation:media_foundation",
     "player_framework:media_client",
     "preferences:native_preferences",
     "relational_store:native_rdb",
