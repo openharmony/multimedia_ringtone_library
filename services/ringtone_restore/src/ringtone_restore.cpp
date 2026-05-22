@@ -151,9 +151,11 @@ void RingtoneRestore::CustomizedRingToneHandle(FileInfo& fileInfo)
             auto rawRdb = rdbStore->GetRaw();
             CHECK_AND_RETURN_LOG(rawRdb != nullptr, "rawRdb is nullptr");
             string sql = "SELECT " + VIBRATE_COLUMN_DATA + " FROM " +
-                RINGTONE_TABLE + " WHERE " + VIBRATE_COLUMN_DATA + " like " + "'%" +
-                dataPath + "' AND " +  RINGTONE_COLUMN_SOURCE_TYPE + " = 1";
-            auto resultSet = rawRdb->QuerySql(sql);
+                RINGTONE_TABLE + " WHERE " + VIBRATE_COLUMN_DATA + " LIKE ?" +
+                " AND " +  RINGTONE_COLUMN_SOURCE_TYPE + " = 1";
+            std::vector<NativeRdb::ValueObject> bindArgs;
+            bindArgs.push_back(NativeRdb::ValueObject("%" + dataPath));
+            auto resultSet = rawRdb->QuerySql(sql, bindArgs);
             CHECK_AND_RETURN_LOG(resultSet != nullptr, "resultSet is nullptr");
             if (resultSet->GoToFirstRow() != NativeRdb::E_OK) {
                 resultSet->Close();
