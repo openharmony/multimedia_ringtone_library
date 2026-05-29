@@ -435,6 +435,33 @@ bool RingtoneFileUtils::MoveFile(const string &oldPath, const string &newPath)
     return errRet;
 }
 
+static bool GetSafeDestPath(const string &newPath, string &absNewPath)
+{
+    bool newPathExists = PathToRealPath(newPath, absNewPath);
+    if (newPathExists) {
+        return true;  // 目标存在，路径已验证
+    }
+    // 目标不存在，校验父目录
+    size_t lastSlash = newPath.rfind('/');
+    if (lastSlash == std::string::npos) {
+        RINGTONE_ERR_LOG("No parent directory in path");
+        return false;
+    }
+    string parentDir = newPath.substr(0, lastSlash);
+    string fileName = newPath.substr(lastSlash + 1);
+    if (fileName.empty() || fileName.find('/') != std::string::npos) {
+        RINGTONE_ERR_LOG("Invalid file name");
+        return false;
+    }
+    string absParentDir;
+    if (!PathToRealPath(parentDir, absParentDir)) {
+        RINGTONE_ERR_LOG("Parent directory not valid");
+        return false;
+    }
+    absNewPath = absParentDir + "/" + fileName;
+    return true;
+}
+
 bool RingtoneFileUtils::CopyFileUtil(const string &filePath, const string &newPath)
 {
     struct stat fst{};
@@ -466,8 +493,12 @@ bool RingtoneFileUtils::CopyFileUtil(const string &filePath, const string &newPa
         RINGTONE_ERR_LOG("Open failed for source file");
         return ret;
     }
-
-    int32_t dest = open(newPath.c_str(), O_WRONLY | O_CREAT, MODE_RW_USR);
+    string absNewPath;
+    if (!GetSafeDestPath(newPath, absNewPath)) {
+        close(source);
+        return false;
+    }
+    int32_t dest = open(absNewPath.c_str(), O_WRONLY | O_CREAT, MODE_RW_USR);
     if (dest == -1) {
         RINGTONE_ERR_LOG("Open failed for destination file %{public}d", errno);
         close(source);
