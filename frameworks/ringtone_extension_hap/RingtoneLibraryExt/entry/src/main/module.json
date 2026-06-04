@@ -112,6 +112,15 @@
           "name": "dataProperties",
           "resource": "$profile:rdb_meta_preload_config"
         }
+      },
+      {
+        "uri":"datashareproxy://com.ohos.ringtonelibrary.ringtonelibrarydata/entry/ringtone_library/Haptic2ToneFiles",
+        "requiredReadPermission":"ohos.permission.ACCESS_CUSTOM_RINGTONE",
+        "requiredWritePermission":"ohos.permission.ACCESS_CUSTOM_RINGTONE",
+        "metadata": {
+          "name": "dataProperties",
+          "resource": "$profile:rdb_meta_haptic_2_tone_files"
+        }
       }
     ]
   }
