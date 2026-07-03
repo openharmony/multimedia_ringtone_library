@@ -122,6 +122,12 @@
           "resource": "$profile:rdb_meta_haptic_2_tone_files"
         }
       }
+    ],
+    "metadata": [
+      {
+        "name": "ohos.ability.loadNativeLibraryForApplication",
+        "value": "true"
+      }
     ]
   }
 }
