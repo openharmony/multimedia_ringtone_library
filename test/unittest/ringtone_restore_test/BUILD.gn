@@ -85,7 +85,6 @@ ohos_unittest("ringtone_restore_unittest") {
     "ipc:ipc_napi",
     "ipc:ipc_single",
     "libxml2:libxml2",
-    "napi:ace_napi",
     "os_account:os_account_innerkits",
     "media_foundation:media_foundation",
     "player_framework:media_client",
