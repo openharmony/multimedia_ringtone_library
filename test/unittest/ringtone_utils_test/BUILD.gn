@@ -64,7 +64,6 @@ ohos_unittest("ringtone_utils_unittest") {
     "hitrace:hitrace_meter",
     "ipc:ipc_core",
     "ipc:ipc_single",
-    "napi:ace_napi",
     "os_account:os_account_innerkits",
     "relational_store:native_rdb",
     "safwk:system_ability_fwk",
