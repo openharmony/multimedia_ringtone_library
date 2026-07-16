@@ -63,6 +63,12 @@ private:
     void CheckUpdateVibrateSetting(const FileInfo &info);
     std::string QuerySingleColumn(const std::string &dataColumn,
         const NativeRdb::AbsRdbPredicates &predicates);
+    std::string GetVibrateFileName(const FileInfo &info);
+    int32_t CalcRingtoneType(const VibrateFileInfo &vibrateInfo);
+    std::string QueryToneData(const FileInfo &info);
+    std::string QueryVibrateData(const std::string &displayName, VibratePlayMode vibrateMode);
+    SimcardSettingAsset BuildSimcardSettingAsset(const FileInfo &info,
+        const std::string &toneData, const std::string &vibrateData, int32_t ringtoneType);
     static NativeRdb::ValuesBucket SetInsertValue(const FileInfo &fileInfo);
     int32_t BatchInsert(const std::string &tableName, std::vector<NativeRdb::ValuesBucket> &values, int64_t &rowNum);
     std::shared_ptr<NativeRdb::RdbStore> localRdb_ = nullptr;

@@ -48,17 +48,31 @@ void DfxReporter::ReportDfxMessage()
     }
     std::string date = RingtoneFileUtils::StrCreateTimeByMilliseconds(DATE_FORMAT,
         RingtoneFileUtils::UTCTimeMilliSeconds());
-    int64_t presetNum = DfxManager::GetInstance()->RequestTonesCount(SourceType::SOURCE_TYPE_PRESET);
-    int64_t customNum = DfxManager::GetInstance()->RequestTonesCount(SourceType::SOURCE_TYPE_CUSTOMISED);
-    RINGTONE_INFO_LOG("presetNum:%{public}" PRId64 ", customNum:%{public}" PRId64, presetNum, customNum);
+    RingtoneCountInfo countInfo = DfxManager::GetInstance()->GetRingtoneCountInfo();
+    RINGTONE_INFO_LOG("presetNum:%{public}d, customNum:%{public}d, custTotalSize:%{public}" PRId64,
+        countInfo.presetNum, countInfo.customNum, countInfo.custTotalSize);
 
     int ret = HiSysEventWrite(
         RINGTONE_LIBRARY,
         "RINGTONELIB_DFX_MESSAGE",
         HiviewDFX::HiSysEvent::EventType::STATISTIC,
         "DATE", date,
-        "PRESET_NUM", presetNum,
-        "CUSTOM_NUM", customNum);
+        "PRESET_NUM", countInfo.presetNum,
+        "CUSTOM_NUM", countInfo.customNum,
+        "CUST_TOTAL_SIZE", countInfo.custTotalSize,
+        "CUST_ALARM_NUM", countInfo.custAlarmNum,
+        "CUST_ALARM_SIZE", countInfo.custAlarmSize,
+        "CUST_CONTACT_AUDIO_NUM", countInfo.custContactAudioNum,
+        "CUST_CONTACT_VIDEO_NUM", countInfo.custContactVideoNum,
+        "CUST_CONTACT_SIZE", countInfo.custContactSize,
+        "CUST_APP_NOTIF_NUM", countInfo.custAppNotifNum,
+        "CUST_APP_NOTIF_SIZE", countInfo.custAppNotifSize,
+        "CUST_NOTIF_NUM", countInfo.custNotifNum,
+        "CUST_NOTIF_SIZE", countInfo.custNotifSize,
+        "CUST_RINGTONE_AUDIO_NUM", countInfo.custRingtoneAudioNum,
+        "CUST_RINGTONE_VIDEO_NUM", countInfo.custRingtoneVideoNum,
+        "CUST_RINGTONE_SIZE", countInfo.custRingtoneSize,
+        "CUST_VIDEO_TOTAL_SIZE", countInfo.custVideoTotalSize);
     if (ret != 0) {
         RINGTONE_ERR_LOG("ReportDfxMessage error:%{public}d", ret);
     }

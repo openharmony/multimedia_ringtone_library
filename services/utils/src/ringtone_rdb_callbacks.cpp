@@ -72,9 +72,15 @@ const std::string CREATE_SIMCARD_SETTING_TABLE = "CREATE TABLE IF NOT EXISTS " +
 
 const std::string INIT_SIMCARD_SETTING_TABLE = "INSERT OR IGNORE INTO " + SIMCARD_SETTING_TABLE + " (" +
     SIMCARD_SETTING_COLUMN_MODE                   + ", " +
-    SIMCARD_SETTING_COLUMN_RINGTONE_TYPE          + ") VALUES (1, 0), (1, 1), (1, 2), (1, 3), \
-                                                        (2, 0), (2, 1), (2, 2), (2, 3),        \
-                                                        (3, 0), (3, 1), (3, 2), (3, 3);";
+    SIMCARD_SETTING_COLUMN_RINGTONE_TYPE          + ") VALUES " +
+    // 响铃模式 (原有12条): mode 1/2/3, ringtone_type 0/1/2/3
+    "(1, 0), (1, 1), (1, 2), (1, 3), " +
+    "(2, 0), (2, 1), (2, 2), (2, 3), " +
+    "(3, 0), (3, 1), (3, 2), (3, 3), " +
+     // 振动模式 (新增8条): ringtone_type 100/101/102/103
+    "(1, 101), (1, 102), " +   // 卡1: 振动-短信, 振动-来电
+    "(2, 101), (2, 102), " +   // 卡2: 振动-短信, 振动-来电
+    "(3, 100), (3, 101), (3, 102), (3, 103);"; // 非卡相关: 振动-闹钟, 振动-短信, 振动-来电, 振动-通知
 
 const std::string CREATE_VIBRATE_TABLE = "CREATE TABLE IF NOT EXISTS " + VIBRATE_TABLE + "(" +
     VIBRATE_COLUMN_VIBRATE_ID                     + " INTEGER  PRIMARY KEY AUTOINCREMENT, " +
@@ -291,6 +297,50 @@ static void AddRingMockHapticAudioTable(NativeRdb::RdbStore &store)
     ExecSqls(sqls, store);
 }
 
+static void AddSoundModeVibrateRecords(NativeRdb::RdbStore &store)
+{
+    RINGTONE_INFO_LOG("Add sound mode vibrate records");
+
+    // Step 1: 插入振动模式缺省记录
+    const string insertSql =
+        "INSERT OR IGNORE INTO " + SIMCARD_SETTING_TABLE + " (" +
+        SIMCARD_SETTING_COLUMN_MODE + ", " +
+        SIMCARD_SETTING_COLUMN_RINGTONE_TYPE + ") VALUES " +
+        "(1, 101), (1, 102), " +
+        "(2, 101), (2, 102), " +
+        "(3, 100), (3, 101), (3, 102), (3, 103)";
+    store.ExecuteSql(insertSql);
+
+    // Step 2: 数据迁移 - 把响铃模式的振动效果复制到振动模式
+    // 原理: ringtone_type 0,1,2,3 与 100,101,102,103 相差100，通过 ringtone_type - 100 关联查询
+    // 条件: ring_mode != 0 表示有效的振动设置（ring_mode=0表示无振动）
+    const string copySql =
+        "UPDATE " + SIMCARD_SETTING_TABLE + " SET " +
+        SIMCARD_SETTING_COLUMN_VIBRATE_FILE + " = " +
+            "(SELECT s2." + SIMCARD_SETTING_COLUMN_VIBRATE_FILE + " FROM " +
+            SIMCARD_SETTING_TABLE + " s2 WHERE s2." + SIMCARD_SETTING_COLUMN_MODE + " = " +
+            SIMCARD_SETTING_TABLE + "." + SIMCARD_SETTING_COLUMN_MODE + " AND s2." +
+            SIMCARD_SETTING_COLUMN_RINGTONE_TYPE + " = " + SIMCARD_SETTING_TABLE + "." +
+            SIMCARD_SETTING_COLUMN_RINGTONE_TYPE + " - 100), " +
+        SIMCARD_SETTING_COLUMN_RING_MODE + " = " +
+            "(SELECT s2." + SIMCARD_SETTING_COLUMN_RING_MODE + " FROM " +
+            SIMCARD_SETTING_TABLE + " s2 WHERE s2." + SIMCARD_SETTING_COLUMN_MODE + " = " +
+            SIMCARD_SETTING_TABLE + "." + SIMCARD_SETTING_COLUMN_MODE + " AND s2." +
+            SIMCARD_SETTING_COLUMN_RINGTONE_TYPE + " = " + SIMCARD_SETTING_TABLE + "." +
+            SIMCARD_SETTING_COLUMN_RINGTONE_TYPE + " - 100) " +
+        "WHERE " + SIMCARD_SETTING_COLUMN_RINGTONE_TYPE + " IN (100, 101, 102, 103) " +
+        "AND " + SIMCARD_SETTING_COLUMN_RING_MODE + " != 0";
+    store.ExecuteSql(copySql);
+
+    // Step 3: 清理无效数据 - ring_mode=0说明是从响铃模式复制的无效数据（因为响铃模式振动效果ring_mode不会是0）
+    const string nullifySql =
+        "UPDATE " + SIMCARD_SETTING_TABLE + " SET " +
+        SIMCARD_SETTING_COLUMN_VIBRATE_FILE + " = NULL " +
+        "WHERE " + SIMCARD_SETTING_COLUMN_RINGTONE_TYPE + " IN (100, 101, 102, 103) " +
+        "AND " + SIMCARD_SETTING_COLUMN_RING_MODE + " = 0";
+    store.ExecuteSql(nullifySql);
+}
+
 static void UpdateDefaultSystemTone(NativeRdb::RdbStore &store)
 {
     RINGTONE_INFO_LOG("setting system tone begin");
@@ -425,6 +475,9 @@ static void UpgradeExtension(NativeRdb::RdbStore &store, int32_t oldVersion)
     }
     if (oldVersion < VERSION_ADD_HAPTIC_2_TONE_TABLE) {
         AddRingMockHapticAudioTable(store);
+    }
+    if (oldVersion < VERSION_ADD_SOUND_MODE_VIBRATE) {
+        AddSoundModeVibrateRecords(store);
     }
 }
 
