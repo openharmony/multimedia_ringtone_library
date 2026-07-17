@@ -58,9 +58,13 @@ static const std::string CREATE_SIMCARD_SETTING_TABLE = "CREATE TABLE IF NOT EXI
 
 static const std::string INIT_SIMCARD_SETTING_TABLE = "INSERT OR IGNORE INTO " + SIMCARD_SETTING_TABLE + " (" +
     SIMCARD_SETTING_COLUMN_MODE                   + ", " +
-    SIMCARD_SETTING_COLUMN_RINGTONE_TYPE          + ") VALUES (1, 0), (1, 1), (1, 2), (1, 3), \
-                                                        (2, 0), (2, 1), (2, 2), (2, 3),        \
-                                                        (3, 0), (3, 1), (3, 2), (3, 3);";
+    SIMCARD_SETTING_COLUMN_RINGTONE_TYPE          + ") VALUES " +
+    "(1, 0), (1, 1), (1, 2), (1, 3), " +
+    "(2, 0), (2, 1), (2, 2), (2, 3), " +
+    "(3, 0), (3, 1), (3, 2), (3, 3), " +
+    "(1, 101), (1, 102), " +
+    "(2, 101), (2, 102), " +
+    "(3, 100), (3, 101), (3, 102), (3, 103);";
 static const vector<string> RESTORE_INIT_SQLS = {
     CREATE_RINGTONE_TABLE,
     CREATE_SIMCARD_SETTING_TABLE,

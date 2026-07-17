@@ -131,7 +131,8 @@ bool RingtoneRestoreBase::NeedCommitSetting(const std::string &typeColumn, const
     // allSetType is for those settings with both sim cards
     string queryCountSql = "SELECT count(1) as count FROM " + RINGTONE_TABLE + " WHERE " +  sourceColumn +
         " = 2 AND (" + typeColumn + " = " + type2Str + " OR " + typeColumn + " = " + allSetTypeStr + " );";
-    RINGTONE_INFO_LOG("queryCountSql: %{public}s", queryCountSql.c_str());
+    RINGTONE_INFO_LOG("NeedCommitSetting queryCountSql: %{public}s, check: typeColumn=%{public}s, type=%{public}d,"
+        "allSetType=%{public}d", queryCountSql.c_str(), typeColumn.c_str(), type, allSetType);
 
     int32_t count = RingtoneRestoreDbUtils::QueryInt(localRdb_, queryCountSql, "count");
     RINGTONE_INFO_LOG("got count = %{public}d", count);
@@ -213,7 +214,9 @@ void RingtoneRestoreBase::CheckRingtoneSetting(FileInfo &info)
 
 void RingtoneRestoreBase::CheckSetting(FileInfo &info)
 {
-    RINGTONE_INFO_LOG("checking setting: %{public}s", info.toString().c_str());
+    RINGTONE_INFO_LOG("checking setting: %{public}s, vibrateInfo: soundMode=%{public}d, toneType=%{public}d, "
+        "vibrateMode=%{public}d", info.toString().c_str(), info.vibrateInfo.soundMode,
+        info.vibrateInfo.toneType, info.vibrateInfo.vibrateMode);
     CheckUpdateVibrateSetting(info);
     CheckShotSetting(info);
     CheckRingtoneSetting(info);
@@ -246,52 +249,105 @@ void RingtoneRestoreBase::CheckSetting(FileInfo &info)
 void RingtoneRestoreBase::CheckUpdateVibrateSetting(const FileInfo &info)
 {
     CHECK_AND_RETURN_LOG(info.vibrateInfo.vibrateMode != VIBRATE_PLAYMODE_INVALID, "vibrate mode is invalid");
+    
+    RINGTONE_INFO_LOG("CheckUpdateVibrateSetting start: simcard=%{public}d, soundMode=%{public}d, "
+        "toneType=%{public}d, settingType=%{public}d, vibrateMode=%{public}d, displayName=%{public}s",
+        info.vibrateInfo.simcard, info.vibrateInfo.soundMode, info.vibrateInfo.toneType,
+        info.vibrateInfo.settingType, info.vibrateInfo.vibrateMode, info.vibrateInfo.displayName.c_str());
+
+    std::string toneData = QueryToneData(info);
+    std::string vibrateName = GetVibrateFileName(info);
+    std::string vibrateData = QueryVibrateData(vibrateName, info.vibrateInfo.vibrateMode);
+    
+    int32_t ringtoneType = CalcRingtoneType(info.vibrateInfo);
+    SimcardSettingAsset asset = BuildSimcardSettingAsset(info, toneData, vibrateData, ringtoneType);
+    
+    UpdateSettingTable(asset);
+    RINGTONE_INFO_LOG("CheckUpdateVibrateSetting end");
+}
+
+std::string RingtoneRestoreBase::QueryToneData(const FileInfo &info)
+{
+    std::string toneData = info.data;
+    if (!toneData.empty()) {
+        return toneData;
+    }
+    
+    RINGTONE_INFO_LOG("incoming data is empty, get from db");
+    NativeRdb::AbsRdbPredicates absRdbPredicates(RINGTONE_TABLE);
+    absRdbPredicates.EqualTo(RINGTONE_COLUMN_TONE_TYPE, info.vibrateInfo.toneType);
+    absRdbPredicates.And();
+    absRdbPredicates.NotEqualTo(RINGTONE_COLUMN_MEDIA_TYPE, RINGTONE_MEDIA_TYPE_INVALID);
+    absRdbPredicates.And();
+    absRdbPredicates.BeginsWith(RINGTONE_COLUMN_DISPLAY_NAME, info.displayName);
+    return QuerySingleColumn(RINGTONE_COLUMN_DATA, absRdbPredicates);
+}
+
+std::string RingtoneRestoreBase::QueryVibrateData(const std::string &displayName, VibratePlayMode vibrateMode)
+{
+    if (vibrateMode == VIBRATE_PLAYMODE_NONE) {
+        return {};
+    }
+    
+    auto queryVibrateFunc = [&](const std::string &name) {
+        NativeRdb::AbsRdbPredicates absRdbPredicates(VIBRATE_TABLE);
+        absRdbPredicates.BeginsWith(VIBRATE_COLUMN_DISPLAY_NAME, name);
+        absRdbPredicates.And();
+        absRdbPredicates.EqualTo(VIBRATE_COLUMN_PLAY_MODE, VIBRATE_PLAYMODE_CLASSIC);
+        absRdbPredicates.And();
+        absRdbPredicates.In(VIBRATE_COLUMN_VIBRATE_TYPE, {VIBRATE_TYPE_STANDARD, VIBRATE_TYPE_SALARM,
+            VIBRATE_TYPE_SRINGTONE, VIBRATE_TYPE_SNOTIFICATION});
+        return QuerySingleColumn(VIBRATE_COLUMN_DATA, absRdbPredicates);
+    };
+    
+    std::string vibrateData = queryVibrateFunc(displayName);
+    if (vibrateData.empty()) {
+        RINGTONE_INFO_LOG("invalid vibrate:%{public}s, searching for classic vibrate", displayName.c_str());
+        vibrateData = queryVibrateFunc(VIBRATE_FILE_NAME_STD);
+    }
+    CHECK_AND_RETURN_RET_LOG(!vibrateData.empty(), {}, "vibrateData is empty");
+    return vibrateData;
+}
+
+std::string RingtoneRestoreBase::GetVibrateFileName(const FileInfo &info)
+{
     const std::string ext = RingtoneFileUtils::GetExtensionFromPath(info.vibrateInfo.displayName);
-    std::string vibrateName = info.vibrateInfo.vibrateMode == VIBRATE_PLAYMODE_SYNC ?
+    return info.vibrateInfo.vibrateMode == VIBRATE_PLAYMODE_SYNC ?
         RingtoneUtils::ReplaceAll(info.displayName, ext, VIBRATE_FILE_SUFFIX) :
         info.vibrateInfo.displayName;
-    RINGTONE_INFO_LOG("ringtoneFile=%{public}s, vibrateFile=%{public}s, vibrateMode=%{public}d",
-        info.displayName.c_str(), vibrateName.c_str(), info.vibrateInfo.vibrateMode);
+}
 
-    std::string toneData = info.data;
-    if (toneData.empty()) {
-        RINGTONE_INFO_LOG("incoming data is empty, get from db");
-        NativeRdb::AbsRdbPredicates absRdbPredicates1(RINGTONE_TABLE);
-        absRdbPredicates1.EqualTo(RINGTONE_COLUMN_TONE_TYPE, info.vibrateInfo.toneType);
-        absRdbPredicates1.And();
-        absRdbPredicates1.NotEqualTo(RINGTONE_COLUMN_MEDIA_TYPE, RINGTONE_MEDIA_TYPE_INVALID);
-        absRdbPredicates1.And();
-        absRdbPredicates1.BeginsWith(RINGTONE_COLUMN_DISPLAY_NAME, info.displayName);
-        toneData = QuerySingleColumn(RINGTONE_COLUMN_DATA, absRdbPredicates1);
+int32_t RingtoneRestoreBase::CalcRingtoneType(const VibrateFileInfo &vibrateInfo)
+{
+    int32_t ringtoneType = vibrateInfo.settingType;
+    if (vibrateInfo.toneType == TONE_TYPE_ALARM) {
+        ringtoneType = CalcRingtoneTypeByMode(vibrateInfo.soundMode, TONE_TYPE_ALARM);
+    } else if (vibrateInfo.toneType == TONE_TYPE_NOTIFICATION) {
+        ringtoneType = CalcRingtoneTypeByMode(vibrateInfo.soundMode, TONE_TYPE_NOTIFICATION);
+    } else if (vibrateInfo.toneType == TONE_TYPE_RINGTONE) {
+        ringtoneType = CalcRingtoneTypeByMode(vibrateInfo.soundMode, TONE_TYPE_RINGTONE);
+    } else if (vibrateInfo.toneType == TONE_TYPE_SHOT) {
+        ringtoneType = CalcRingtoneTypeByMode(vibrateInfo.soundMode, TONE_TYPE_SHOT);
     }
+    RINGTONE_INFO_LOG("Calc ringtoneType: soundMode=%{public}d, toneType=%{public}d → ringtoneType=%{public}d",
+        vibrateInfo.soundMode, vibrateInfo.toneType, ringtoneType);
+    return ringtoneType;
+}
 
-    std::string vibrateData{};
-    if (info.vibrateInfo.vibrateMode != VIBRATE_PLAYMODE_NONE) {
-        auto queryVibrateFunc = [&](const std::string &displayName) {
-            NativeRdb::AbsRdbPredicates absRdbPredicates2(VIBRATE_TABLE);
-            absRdbPredicates2.BeginsWith(VIBRATE_COLUMN_DISPLAY_NAME, displayName);
-            absRdbPredicates2.And();
-            absRdbPredicates2.EqualTo(VIBRATE_COLUMN_PLAY_MODE, VIBRATE_PLAYMODE_CLASSIC);
-            absRdbPredicates2.And();
-            absRdbPredicates2.In(VIBRATE_COLUMN_VIBRATE_TYPE, {VIBRATE_TYPE_STANDARD, VIBRATE_TYPE_SALARM,
-                VIBRATE_TYPE_SRINGTONE, VIBRATE_TYPE_SNOTIFICATION});
-            vibrateData = QuerySingleColumn(VIBRATE_COLUMN_DATA, absRdbPredicates2);
-        };
-        queryVibrateFunc(vibrateName);
-        if (vibrateData.empty()) {
-            RINGTONE_INFO_LOG("invalid vibrate:%{public}s, searching for classic vibrate",
-                vibrateName.c_str());
-            queryVibrateFunc(VIBRATE_FILE_NAME_STD);
-        }
-        CHECK_AND_RETURN_LOG(!vibrateData.empty(), "vibrateData is empty");
-    }
+SimcardSettingAsset RingtoneRestoreBase::BuildSimcardSettingAsset(const FileInfo &info,
+    const std::string &toneData, const std::string &vibrateData, int32_t ringtoneType)
+{
     SimcardSettingAsset asset;
     asset.SetMode(info.vibrateInfo.simcard);
     asset.SetRingMode(info.vibrateInfo.vibrateMode);
     asset.SetVibrateFile(vibrateData);
-    asset.SetRingtoneType(info.vibrateInfo.settingType);
+    asset.SetRingtoneType(ringtoneType);
     asset.SetToneFile(toneData);
-    UpdateSettingTable(asset);
+    RINGTONE_INFO_LOG("BuildSimcardSettingAsset: mode=%{public}d, vibrateMode=%{public}d, "
+        "ringtoneType=%{public}d, vibrateFile=%{public}s, toneFile=%{public}s",
+        info.vibrateInfo.simcard, info.vibrateInfo.vibrateMode, ringtoneType,
+        vibrateData.c_str(), toneData.c_str());
+    return asset;
 }
 
 int32_t RingtoneRestoreBase::InsertTones(std::vector<FileInfo> &fileInfos)
@@ -585,8 +641,11 @@ void RingtoneRestoreBase::UpdateSettingTable(const SimcardSettingAsset &asset, b
     whereArgs.push_back(to_string(asset.GetRingtoneType()));
     absRdbPredicates.SetWhereClause(whereClause);
     absRdbPredicates.SetWhereArgs(whereArgs);
+    RINGTONE_INFO_LOG("UpdateSettingTable: mode=%{public}d, ringtoneType=%{public}d, ringMode=%{public}d, "
+        "vibrateFile=%{public}s, forceUpdate=%{public}d", asset.GetMode(), asset.GetRingtoneType(),
+        asset.GetRingMode(), asset.GetVibrateFile().c_str(), forceUpdate);
     localRdb_->Update(changeRows, valuesBucket, absRdbPredicates);
-    RINGTONE_INFO_LOG("update end changeRows = %{public}d", changeRows);
+    RINGTONE_INFO_LOG("UpdateSettingTable result: changeRows=%{public}d", changeRows);
 }
 
 std::string RingtoneRestoreBase::QuerySingleColumn(const std::string &columnName,

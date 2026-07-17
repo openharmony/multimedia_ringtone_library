@@ -39,7 +39,21 @@
 domain: RINGTONE_LIBRARY
 
 RINGTONELIB_DFX_MESSAGE:
-  __BASE: { type: STATISTIC, level: MINOR, desc: preset and custom ringtone number }
+  __BASE: { type: STATISTIC, level: MINOR, desc: preset and custom ringtone number and size }
   DATE: { type: STRING, desc: report date }
   PRESET_NUM: { type: INT32, desc: preset ringtone number }
   CUSTOM_NUM: { type: INT32, desc: custom ringtone number }
+  CUST_TOTAL_SIZE: { type: INT64, desc: custom ringtone total size on disk (bytes) }
+  CUST_ALARM_NUM: { type: INT32, desc: custom alarm ringtone number }
+  CUST_ALARM_SIZE: { type: INT64, desc: custom alarm ringtone size on disk (bytes) }
+  CUST_CONTACT_AUDIO_NUM: { type: INT32, desc: custom contact audio ringtone number }
+  CUST_CONTACT_VIDEO_NUM: { type: INT32, desc: custom contact video ringtone number }
+  CUST_CONTACT_SIZE: { type: INT64, desc: custom contact ringtone size on disk (bytes) }
+  CUST_APP_NOTIF_NUM: { type: INT32, desc: custom app notification ringtone number }
+  CUST_APP_NOTIF_SIZE: { type: INT64, desc: custom app notification ringtone size on disk (bytes) }
+  CUST_NOTIF_NUM: { type: INT32, desc: custom notification ringtone number }
+  CUST_NOTIF_SIZE: { type: INT64, desc: custom notification ringtone size on disk (bytes) }
+  CUST_RINGTONE_AUDIO_NUM: { type: INT32, desc: custom ringtone audio number }
+  CUST_RINGTONE_VIDEO_NUM: { type: INT32, desc: custom ringtone video number }
+  CUST_RINGTONE_SIZE: { type: INT64, desc: custom ringtone audio size on disk (bytes) }
+  CUST_VIDEO_TOTAL_SIZE: { type: INT64, desc: custom ringtone video total size in db (bytes) }

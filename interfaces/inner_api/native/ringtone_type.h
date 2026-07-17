@@ -127,6 +127,38 @@ enum RingMockHapticAudioPlayMode {
     RING_MOCK_HAPTIC_AUDIO_PLAYMODE_CLASSIC = 2,
 };
 
+// 声音模式枚举 - 用于区分响铃模式/振动模式/静音模式
+enum SoundMode : int32_t {
+    SOUND_MODE_RING = 0,    // 响铃模式
+    SOUND_MODE_VIBRATE = 1, // 振动模式
+    SOUND_MODE_SILENT = 2,  // 静音模式（等同于响铃模式）
+};
+
+// 声音模式系数 - ringtone_type编码规则: soundMode * 100 + toneType
+// 示例: 100 = 振动模式(1) * 100 + 闹钟(0)
+//       101 = 振动模式(1) * 100 + 短信(1)
+//       102 = 振动模式(1) * 100 + 来电(2)
+//       103 = 振动模式(1) * 100 + 通知(3)
+constexpr int32_t RINGTONE_TYPE_SOUND_MODE_FACTOR = 100;
+
+// ringtone_type编解码函数
+constexpr int32_t CalcRingtoneTypeByMode(int32_t soundMode, int32_t toneType)
+{
+    return soundMode * RINGTONE_TYPE_SOUND_MODE_FACTOR + toneType;
+}
+
+// 预定义的ringtone_type常量（方便外部调用）
+// 响铃模式: 0=闹钟, 1=短信, 2=来电, 3=通知
+constexpr int32_t RINGTONE_TYPE_RING_ALARM = CalcRingtoneTypeByMode(SOUND_MODE_RING, 0);           // 0
+constexpr int32_t RINGTONE_TYPE_RING_SMS = CalcRingtoneTypeByMode(SOUND_MODE_RING, 1);           // 1
+constexpr int32_t RINGTONE_TYPE_RING_RINGTONE = CalcRingtoneTypeByMode(SOUND_MODE_RING, 2);     // 2
+constexpr int32_t RINGTONE_TYPE_RING_NOTIFICATION = CalcRingtoneTypeByMode(SOUND_MODE_RING, 3); // 3
+// 振动模式: 100=振动-闹钟, 101=振动-短信, 102=振动-来电, 103=振动-通知
+constexpr int32_t RINGTONE_TYPE_VIBRATE_ALARM = CalcRingtoneTypeByMode(SOUND_MODE_VIBRATE, 0);    // 100
+constexpr int32_t RINGTONE_TYPE_VIBRATE_SMS = CalcRingtoneTypeByMode(SOUND_MODE_VIBRATE, 1);    // 101
+constexpr int32_t RINGTONE_TYPE_VIBRATE_RINGTONE = CalcRingtoneTypeByMode(SOUND_MODE_VIBRATE, 2); // 102
+constexpr int32_t RINGTONE_TYPE_VIBRATE_NOTIFICATION = CalcRingtoneTypeByMode(SOUND_MODE_VIBRATE, 3); // 103
+
 inline int GetAppSandboxPathFromUri(std::string &uri)
 {
     const std::string prefixPart = "/data/app/el2/";

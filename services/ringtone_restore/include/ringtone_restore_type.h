@@ -70,6 +70,7 @@ struct VibrateFileInfo {
     VibrateType vibrateType{VIBRATE_TYPE_INVALID};
     VibratePlayMode vibrateMode{VIBRATE_PLAYMODE_INVALID};
     std::string displayName;
+    int32_t soundMode {SOUND_MODE_RING};
 };
 
 struct FileInfo {
