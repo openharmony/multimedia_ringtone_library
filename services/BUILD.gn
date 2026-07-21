@@ -47,6 +47,7 @@ config("ringtone_public_config") {
 }
 
 ohos_shared_library("ringtone_data_extension") {
+  branch_protector_ret = "pac_ret"
   install_enable = true
 
   ringtone_scan_source = [
@@ -148,6 +149,7 @@ ohos_shared_library("ringtone_data_extension") {
 }
 
 ohos_shared_library("ringtonerestore") {
+  branch_protector_ret = "pac_ret"
   include_dirs = [
     "${RINGTONE_RESTORE_PATH}/include",
     "${RINGTONE_UTILS_PATH}/include",
@@ -241,6 +243,7 @@ config("ringtone_public_visible_config") {
 }
 
 ohos_shared_library("ringtone_utils") {
+  branch_protector_ret = "pac_ret"
   install_enable = true
 
   include_dirs = [
@@ -310,6 +313,7 @@ ohos_shared_library("ringtone_utils") {
 }
 
 ohos_shared_library("ringtone_setting") {
+  branch_protector_ret = "pac_ret"
   install_enable = true
   include_dirs = [
     "${RINGTONE_INTERFACES_PATH}/inner_api/native",
