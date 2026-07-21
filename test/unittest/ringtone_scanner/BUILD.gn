@@ -15,6 +15,7 @@ import("//build/test.gni")
 import("//foundation/multimedia/ringtone_library/ringtone_library.gni")
 
 ohos_executable("ringtone_scanner_test") {
+  branch_protector_ret = "pac_ret"
   install_enable = true
 
   include_dirs = []
@@ -72,6 +73,7 @@ ohos_executable("ringtone_scanner_test") {
 }
 
 ohos_executable("ringtone_test") {
+  branch_protector_ret = "pac_ret"
   install_enable = true
 
   include_dirs = []
@@ -129,6 +131,7 @@ ohos_executable("ringtone_test") {
 }
 
 ohos_executable("ringtone_read_test") {
+  branch_protector_ret = "pac_ret"
   install_enable = true
 
   include_dirs = []
