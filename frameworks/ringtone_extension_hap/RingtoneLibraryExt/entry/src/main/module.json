@@ -12,6 +12,7 @@
       "2in1",
       "wearable"
     ],
+    "compressNativeLibs": true,
     "deliveryWithInstall": true,
     "installationFree": false,
     "pages": "$profile:main_pages",
