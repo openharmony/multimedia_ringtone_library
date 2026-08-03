@@ -94,6 +94,8 @@ ohos_unittest("ringtone_restore_unittest") {
     "samgr:samgr_proxy",
   ]
 
+  defines = []
+
   sanitize = {
     cfi = true
     cfi_cross_dso = true

@@ -98,6 +98,7 @@ struct FileInfo {
     std::string restorePath {};
     int32_t scannerFlag {0};
     bool doInsert {true};
+    bool skipSetting {false};
     SimcardMode simcard {SIMCARD_MODE_INVALID};
     VibrateFileInfo vibrateInfo{};
 
@@ -136,6 +137,7 @@ struct FileInfo {
             "|ringToneType=" + std::to_string(ringToneType) +
             "|ringToneSourceType=" + std::to_string(ringToneSourceType) +
             "|doInsert=" + std::to_string(doInsert) +
+            "|skipSetting=" + std::to_string(skipSetting) +
             "|restorePath=" + restorePath + "|simcard=" + std::to_string(simcard);
     }
 };

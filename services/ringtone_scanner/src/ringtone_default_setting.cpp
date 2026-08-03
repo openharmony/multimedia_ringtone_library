@@ -67,28 +67,43 @@ void RingtoneDefaultSetting::ShotToneDefaultSettings()
 {
     char paramValue1[SYSPARA_SIZE] = {0};
     char paramValue2[SYSPARA_SIZE] = {0};
+    char paramValueEsim1[SYSPARA_SIZE] = {0};
+    char paramValueEsim2[SYSPARA_SIZE] = {0};
 
-    GetParameter(PARAM_RINGTONE_SETTING_SHOT, "", paramValue1, SYSPARA_SIZE);
-    GetParameter(PARAM_RINGTONE_SETTING_SHOT2, "", paramValue2, SYSPARA_SIZE);
+    GetParameter(PARAM_RINGTONE_SETTING_SHOT, "Leap.ogg", paramValue1, SYSPARA_SIZE);
+    GetParameter(PARAM_RINGTONE_SETTING_SHOT2, "Leap.ogg", paramValue2, SYSPARA_SIZE);
+    GetParameter(PARAM_SYSTEM_TONE_ESIM_CARD_0, "Leap.ogg", paramValueEsim1, SYSPARA_SIZE);
+    GetParameter(PARAM_SYSTEM_TONE_ESIM_CARD_1, "Leap.ogg", paramValueEsim2, SYSPARA_SIZE);
 
-    if (strcmp(paramValue1, "")) {
-        string tonePath = {};
-        string strVal = {paramValue1};
-        tonePath = GetTonePathByDisplayName(strVal);
-        if (!tonePath.empty()) {
-            settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_SHOT, SHOT_TONE_TYPE_SIM_CARD_1,
-                SOURCE_TYPE_PRESET);
-        }
+    string tonePath = {};
+    string strVal1 = {paramValue1};
+    tonePath = GetTonePathByDisplayName(strVal1);
+    if (!tonePath.empty() && tonePath != "") {
+        settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_SHOT, SHOT_TONE_TYPE_SIM_CARD_1,
+            SOURCE_TYPE_PRESET);
     }
 
-    if (strcmp(paramValue2, "")) {
-        string tonePath = {};
-        string strVal = {paramValue2};
-        tonePath = GetTonePathByDisplayName(strVal);
-        if (!tonePath.empty()) {
-            settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_SHOT, SHOT_TONE_TYPE_SIM_CARD_2,
-                SOURCE_TYPE_PRESET);
-        }
+    string strVal2 = {paramValue2};
+    tonePath = GetTonePathByDisplayName(strVal2);
+    if (!tonePath.empty() && tonePath != "") {
+        settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_SHOT, SHOT_TONE_TYPE_SIM_CARD_2,
+            SOURCE_TYPE_PRESET);
+    }
+
+    string strValEsim1 = {paramValueEsim1};
+    tonePath = GetTonePathByDisplayName(strValEsim1);
+    if (!tonePath.empty() && tonePath != "") {
+        settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_SHOT, SHOT_TONE_TYPE_ESIM_CARD_1,
+            SOURCE_TYPE_PRESET);
+        RINGTONE_INFO_LOG("eSIM1 shot tone default setting: %{public}s", tonePath.c_str());
+    }
+
+    string strValEsim2 = {paramValueEsim2};
+    tonePath = GetTonePathByDisplayName(strValEsim2);
+    if (!tonePath.empty() && tonePath != "") {
+        settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_SHOT, SHOT_TONE_TYPE_ESIM_CARD_2,
+            SOURCE_TYPE_PRESET);
+        RINGTONE_INFO_LOG("eSIM2 shot tone default setting: %{public}s", tonePath.c_str());
     }
 }
 
@@ -112,28 +127,43 @@ void RingtoneDefaultSetting::RingToneDefaultSettings()
 {
     char paramValue1[SYSPARA_SIZE] = {0};
     char paramValue2[SYSPARA_SIZE] = {0};
+    char paramValueEsim1[SYSPARA_SIZE] = {0};
+    char paramValueEsim2[SYSPARA_SIZE] = {0};
 
     GetParameter(PARAM_RINGTONE_SETTING_RINGTONE, "", paramValue1, SYSPARA_SIZE);
     GetParameter(PARAM_RINGTONE_SETTING_RINGTONE2, "", paramValue2, SYSPARA_SIZE);
+    GetParameter(PARAM_RINGTONE_ESIM_CARD_0, "", paramValueEsim1, SYSPARA_SIZE);
+    GetParameter(PARAM_RINGTONE_ESIM_CARD_1, "", paramValueEsim2, SYSPARA_SIZE);
 
-    if (strcmp(paramValue1, "")) {
-        string tonePath = {};
-        string strVal = {paramValue1};
-        tonePath = GetTonePathByDisplayName(strVal);
-        if (!tonePath.empty()) {
-            settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_RINGTONE, RING_TONE_TYPE_SIM_CARD_1,
-                SOURCE_TYPE_PRESET);
-        }
+    string tonePath = {};
+    string strVal1 = {paramValue1};
+    tonePath = GetTonePathByDisplayName(strVal1);
+    if (!tonePath.empty() && tonePath != "") {
+        settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_RINGTONE, RING_TONE_TYPE_SIM_CARD_1,
+            SOURCE_TYPE_PRESET);
     }
 
-    if (strcmp(paramValue2, "")) {
-        string tonePath = {};
-        string strVal = {paramValue2};
-        tonePath = GetTonePathByDisplayName(strVal);
-        if (!tonePath.empty()) {
-            settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_RINGTONE, RING_TONE_TYPE_SIM_CARD_2,
-                SOURCE_TYPE_PRESET);
-        }
+    string strVal2 = {paramValue2};
+    tonePath = GetTonePathByDisplayName(strVal2);
+    if (!tonePath.empty() && tonePath != "") {
+        settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_RINGTONE, RING_TONE_TYPE_SIM_CARD_2,
+            SOURCE_TYPE_PRESET);
+    }
+
+    string strValEsim1 = {paramValueEsim1};
+    tonePath = GetTonePathByDisplayName(strValEsim1);
+    if (!tonePath.empty() && tonePath != "") {
+        settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_RINGTONE, RING_TONE_TYPE_ESIM_CARD_1,
+            SOURCE_TYPE_PRESET);
+        RINGTONE_INFO_LOG("eSIM1 ring tone default setting: %{public}s", tonePath.c_str());
+    }
+
+    string strValEsim2 = {paramValueEsim2};
+    tonePath = GetTonePathByDisplayName(strValEsim2);
+    if (!tonePath.empty() && tonePath != "") {
+        settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_RINGTONE, RING_TONE_TYPE_ESIM_CARD_2,
+            SOURCE_TYPE_PRESET);
+        RINGTONE_INFO_LOG("eSIM2 ring tone default setting: %{public}s", tonePath.c_str());
     }
 }
 

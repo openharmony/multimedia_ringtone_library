@@ -39,6 +39,10 @@
 #include "ringtone_type.h"
 #include "ringtone_utils.h"
 #include "customised_tone_processor.h"
+#ifdef CORE_SERVICE_ENABLE
+#include "core_service_client.h"
+#include "telephony_errors.h"
+#endif
 #ifdef USE_MEDIA_LIBRARY
 #include "media_library_manager.h"
 #endif
@@ -48,6 +52,7 @@ namespace Media {
 using namespace std;
 
 static const string DUALFWK_SOUND_CONF_XML = "backup";
+const int32_t SIM_LABLE_INDEX_TOW = 2;
 
 int32_t RingtoneDualFwkRestore::LoadDualFwkConf(const std::string &backupPath)
 {
@@ -354,6 +359,7 @@ std::vector<FileInfo> RingtoneDualFwkRestore::BuildFileInfo()
         info.doInsert = doInsert;
         if (IsRingtoneSet(setting.toneSetting.settingType, setting.toneSetting.simcard)) {
             info.doInsert = false;
+            info.skipSetting = true;
         }
 
         AddSettingsToFileInfo(setting, info);
@@ -373,6 +379,11 @@ int32_t RingtoneDualFwkRestore::StartRestore()
     auto ret = RingtoneRestoreBase::StartRestore();
     if (ret != E_OK) {
         return ret;
+    }
+
+    ret = HandleUpgradeWithESim();
+    if (ret != E_OK) {
+        RINGTONE_ERR_LOG("HandleUpgradeWithESim failed, ret=%{public}d", ret);
     }
 
     std::vector<FileInfo> infos = BuildFileInfo();
@@ -484,6 +495,158 @@ bool RingtoneDualFwkRestore::OnPrepare(FileInfo &info, const std::string &dstPat
 void RingtoneDualFwkRestore::OnFinished(vector<FileInfo> &infos)
 {
     RINGTONE_ERR_LOG("ringtone dualfwk restore finished");
+}
+
+CardScenarioType RingtoneDualFwkRestore::AnalyzeCardScenario(bool hasSim1, bool hasSim2, bool hasESim1, bool hasESim2)
+{
+    int32_t cardCount = static_cast<int32_t>(hasSim1) + static_cast<int32_t>(hasSim2) +
+        static_cast<int32_t>(hasESim1) + static_cast<int32_t>(hasESim2);
+    RINGTONE_INFO_LOG("Card scenario analysis: sim1=%{public}d, sim2=%{public}d, esim1=%{public}d, esim2=%{public}d, "
+        "total=%{public}d", hasSim1, hasSim2, hasESim1, hasESim2, cardCount);
+
+    if (cardCount == 0) {
+        RINGTONE_INFO_LOG("No active SIM cards found");
+        return SCENARIO_INVALID;
+    }
+
+    if (cardCount == 1) {
+        if (hasESim1) return SCENARIO_ESIM1_ONLY;
+        if (hasESim2) return SCENARIO_ESIM2_ONLY;
+        if (hasSim1) return SCENARIO_SIM1_ONLY;
+        if (hasSim2) return SCENARIO_SIM2_ONLY;
+    } else if (cardCount == SIM_LABLE_INDEX_TOW) {
+        if (hasSim1 && hasSim2) return SCENARIO_SIM1_SIM2;
+        if (hasSim1 && hasESim1) return SCENARIO_SIM1_ESIM1;
+        if (hasSim1 && hasESim2) return SCENARIO_SIM1_ESIM2;
+        if (hasSim2 && hasESim1) return SCENARIO_SIM2_ESIM1;
+        if (hasSim2 && hasESim2) return SCENARIO_SIM2_ESIM2;
+        if (hasESim1 && hasESim2) return SCENARIO_ESIM1_ESIM2;
+    }
+
+    return SCENARIO_INVALID;
+}
+
+void RingtoneDualFwkRestore::MigrateToneType(int32_t fromCardMask, int32_t toCardMask)
+{
+    RINGTONE_INFO_LOG("Migrating tone type from mask=%{public}d to mask=%{public}d", fromCardMask, toCardMask);
+    auto rdbStore = GetBaseDb();
+    if (rdbStore == nullptr) {
+        RINGTONE_ERR_LOG("GetBaseDb failed, cannot migrate tone type");
+        return;
+    }
+
+    std::string updateShotToneSql =
+        "UPDATE " + RINGTONE_TABLE + " SET " +
+        RINGTONE_COLUMN_SHOT_TONE_TYPE + " = " + RINGTONE_COLUMN_SHOT_TONE_TYPE + " | ?" +
+        " WHERE " + RINGTONE_COLUMN_SHOT_TONE_TYPE + " & ? != 0";
+    int32_t ret = rdbStore->ExecuteSql(updateShotToneSql,
+        { NativeRdb::ValueObject(toCardMask), NativeRdb::ValueObject(fromCardMask) });
+    if (ret != E_OK) {
+        RINGTONE_ERR_LOG("Update shot_tone_type failed, ret=%{public}d", ret);
+    }
+
+    std::string updateRingToneSql =
+        "UPDATE " + RINGTONE_TABLE + " SET " +
+        RINGTONE_COLUMN_RING_TONE_TYPE + " = " + RINGTONE_COLUMN_RING_TONE_TYPE + " | ?" +
+        " WHERE " + RINGTONE_COLUMN_RING_TONE_TYPE + " & ? != 0";
+    ret = rdbStore->ExecuteSql(updateRingToneSql,
+        { NativeRdb::ValueObject(toCardMask), NativeRdb::ValueObject(fromCardMask) });
+    if (ret != E_OK) {
+        RINGTONE_ERR_LOG("Update ring_tone_type failed, ret=%{public}d", ret);
+    }
+}
+
+void RingtoneDualFwkRestore::MigrateSimCardSetting(int32_t fromMode, int32_t toMode)
+{
+    RINGTONE_INFO_LOG("Migrating SimCardSetting from mode=%{public}d to mode=%{public}d", fromMode, toMode);
+    auto rdbStore = GetBaseDb();
+    if (rdbStore == nullptr) {
+        RINGTONE_ERR_LOG("GetBaseDb failed, cannot migrate SimCardSetting");
+        return;
+    }
+    std::string migrateSql =
+        "INSERT OR REPLACE INTO " + SIMCARD_SETTING_TABLE + " (" +
+        SIMCARD_SETTING_COLUMN_MODE + ", " +
+        SIMCARD_SETTING_COLUMN_RINGTONE_TYPE + ", " +
+        SIMCARD_SETTING_COLUMN_TONE_FILE + ", " +
+        SIMCARD_SETTING_COLUMN_VIBRATE_FILE + ", " +
+        SIMCARD_SETTING_COLUMN_VIBRATE_MODE + ", " +
+        SIMCARD_SETTING_COLUMN_RING_MODE + ") " +
+        "SELECT ?, " +
+        SIMCARD_SETTING_COLUMN_RINGTONE_TYPE + ", " +
+        SIMCARD_SETTING_COLUMN_TONE_FILE + ", " +
+        SIMCARD_SETTING_COLUMN_VIBRATE_FILE + ", " +
+        SIMCARD_SETTING_COLUMN_VIBRATE_MODE + ", " +
+        SIMCARD_SETTING_COLUMN_RING_MODE + " " +
+        "FROM " + SIMCARD_SETTING_TABLE + " " +
+        "WHERE " + SIMCARD_SETTING_COLUMN_MODE + " = ?";
+    int32_t ret = rdbStore->ExecuteSql(migrateSql,
+        { NativeRdb::ValueObject(toMode), NativeRdb::ValueObject(fromMode) });
+    if (ret != E_OK) {
+        RINGTONE_ERR_LOG("Migrate SimCardSetting failed, ret=%{public}d", ret);
+    }
+}
+
+void RingtoneDualFwkRestore::ApplyMigration(int32_t fromCardMask, int32_t toCardMask)
+{
+    MigrateToneType(fromCardMask, toCardMask);
+    MigrateSimCardSetting(GetSimcardModeFromCardMask(fromCardMask), GetSimcardModeFromCardMask(toCardMask));
+}
+
+int32_t RingtoneDualFwkRestore::HandleUpgradeWithESim()
+{
+    RINGTONE_INFO_LOG("HandleUpgradeWithESim start");
+#ifdef CORE_SERVICE_ENABLE
+    std::vector<Telephony::IccAccountInfo> telIccAccountInfoList;
+    int32_t ret = Telephony::CoreServiceClient::GetInstance().GetActiveSimAccountInfoList(telIccAccountInfoList);
+    if ((ret != Telephony::TELEPHONY_ERR_SUCCESS) && (ret != Telephony::TELEPHONY_ERR_NO_SIM_CARD)) {
+        RINGTONE_ERR_LOG("GetActiveSimAccountInfoList error, ret = %{public}d.", ret);
+        return ret;
+    }
+
+    bool hasSim1 = false;
+    bool hasSim2 = false;
+    bool hasESim1 = false;
+    bool hasESim2 = false;
+    for (const auto &telInfo : telIccAccountInfoList) {
+        if (telInfo.isEsim) {
+            if (telInfo.simLabelIndex == 1) {
+                hasESim1 = true;
+            } else if (telInfo.simLabelIndex == SIM_LABLE_INDEX_TOW) {
+                hasESim2 = true;
+            }
+        } else {
+            if (telInfo.simLabelIndex == 1) {
+                hasSim1 = true;
+            } else if (telInfo.simLabelIndex == SIM_LABLE_INDEX_TOW) {
+                hasSim2 = true;
+            }
+        }
+    }
+
+    auto scenario = AnalyzeCardScenario(hasSim1, hasSim2, hasESim1, hasESim2);
+    RINGTONE_INFO_LOG("Card scenario type: %{public}d", scenario);
+ 
+    if (scenario == SCENARIO_INVALID) {
+        RINGTONE_ERR_LOG("Unknown card scenario");
+        return E_FAIL;
+    }
+
+    for (const auto &config : MIGRATION_CONFIG_TABLE) {
+        if (config.scenario == scenario) {
+            RINGTONE_INFO_LOG("Applying migration for scenario=%{public}d, "
+                "fromCardMask=%{public}d, toCardMask=%{public}d",
+                scenario, config.fromCardMask, config.toCardMask);
+            ApplyMigration(config.fromCardMask, config.toCardMask);
+            break;
+        }
+    }
+#else
+    RINGTONE_WARN_LOG("CORE_SERVICE_ENABLE not defined, skip HandleUpgradeWithESim");
+#endif
+ 
+    RINGTONE_INFO_LOG("HandleUpgradeWithESim end");
+    return E_OK;
 }
 
 int32_t RingtoneDualFwkRestoreClone::LoadDualFwkConf(const std::string &backupPath)

@@ -47,6 +47,92 @@ export default class RingtoneBackupExtAbility extends BackupExtensionAbility {
     console.log(TAG, 'onBackup ok.');
   }
 
+  async onBackupEx(backupInfo: string): Promise<string> {
+    console.log(TAG, `onBackupEx start, backupInfo: ${backupInfo}`);
+    try {
+      let backupInfoObj = JSON.parse(backupInfo);
+      let peerSlotNum = backupInfoObj.peerSlotNum;
+      if (peerSlotNum === undefined) {
+        peerSlotNum = 2;
+      }
+      console.log(TAG, `peerSlotNum: ${peerSlotNum}`);
+
+      const MAX_TOTAL_CARD_COUNT = 4;
+      const needEsimClean = MAX_TOTAL_CARD_COUNT > peerSlotNum;
+
+      const tempDbPath = '/storage/media/local/files/.backup/backup/ringtone_temp_rdb/';
+      const srcDbPath = this.context.backupDir + 'restore/data/storage/el1/database/rdb/';
+
+      if (!this.isDirExist(srcDbPath)) {
+        console.log(TAG, 'source db path not exist, skip');
+        return '';
+      }
+
+      const ringtoneBasePath = this.context.backupDir + 'restore/data/storage/el2/base/files/Ringtone/';
+      // peerSlotNum: 传入实际值用于eSIM裁剪；ringtoneBasePath用于过滤未使用自定义铃声
+      await this.copyDbAndClean(srcDbPath, tempDbPath, peerSlotNum, ringtoneBasePath);
+
+      console.log(TAG, `onBackupEx end, tempDbPath: ${tempDbPath}`);
+      return JSON.stringify({
+        backupDir: tempDbPath,
+        restoreDir: '/data/storage/el1/database/rdb/'
+      });
+    } catch (err) {
+      console.error(TAG, `onBackupEx error: ${err.message}`);
+      return '';
+    }
+  }
+
+  private async copyDbAndClean(srcPath: string, destPath: string, peerSlotNum: number,
+    ringtoneBasePath: string): Promise<void> {
+    console.log(TAG, `copyDbAndClean from ${srcPath} to ${destPath}, peerSlotNum: ${peerSlotNum}`);
+    try {
+      // 1. 拷贝DB文件到临时目录
+      await fs.mkdir(destPath);
+      const srcDbFile = srcPath + 'ringtone_library.db';
+      const destDbFile = destPath + 'ringtone_library.db';
+      await fs.copyFile(srcDbFile, destDbFile);
+      console.log(TAG, `copyDbAndClean: db file copied`);
+
+      // 拷贝WAL和SHM文件（如果存在）
+      try {
+        await fs.copyFile(srcDbFile + '-wal', destDbFile + '-wal');
+      } catch (e) {
+        /* WAL may not exist */
+      };
+      try {
+        await fs.copyFile(srcDbFile + '-shm', destDbFile + '-shm');
+      } catch (e) {
+        /* SHM may not exist */
+      };
+
+      // 2. 调用Native层NAPI方法：清理eSIM数据 + 过滤未使用的自定义铃声 + 删除对应文件
+      const dbPath = destPath + 'ringtone_library.db';
+      const cleanResult: number = await ringtonerestore.cleanESimData(dbPath, peerSlotNum, ringtoneBasePath);
+      console.log(TAG, `cleanESimData result: ${cleanResult}`);
+
+      console.log(TAG, `copyDbAndClean completed successfully`);
+    } catch (err) {
+      console.error(TAG, `copyDbAndClean error: ${err.message}, code: ${err.code}`);
+    }
+  }
+
+  async getRestoreCompatibilityInfo(extInfo: string): Promise<string> {
+    console.log(TAG, `getRestoreCompatibilityInfo, extInfo: ${extInfo}`);
+    try {
+      let compatibilityInfo = {
+        version: 1,
+        peerSlotNum: 4
+      };
+      let ret = JSON.stringify(compatibilityInfo);
+      console.log(TAG, `getRestoreCompatibilityInfo ret: ${ret}`);
+      return ret;
+    } catch (error) {
+      console.error(TAG, `getRestoreCompatibilityInfo failed with error. Code: ${error.code}, message: ${error.message}`);
+    }
+    return '';
+  }
+
   async onRestoreEx(bundleVersion: BundleVersion, restoreInfo: string): Promise<string> {
     console.log(TAG, `onRestoreEx ok ${JSON.stringify(bundleVersion)}`);
     console.time(TAG + ' RESTORE');
@@ -81,6 +167,16 @@ export default class RingtoneBackupExtAbility extends BackupExtensionAbility {
     let resultInfo: string = JSON.stringify(resultExInfo);
     console.log(TAG, `restore end resultInfo:${resultInfo}`);
     return resultInfo;
+  }
+
+  private isDirExist(dirPath : string) : boolean {
+    try {
+      let stat = fs.lstatSync(dirPath);
+      return stat.isDirectory();
+    } catch (err) {
+      console.error(TAG, `lstatSync failed, message = ${err.message}; code = ${err.code}`);
+      return false;
+    }
   }
 
   private isFileExist(filePath : string) : boolean {

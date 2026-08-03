@@ -95,18 +95,24 @@ enum AlarmToneType : int32_t {
 
 enum DefaultSystemToneType : int32_t {
     DEFAULT_RING_TYPE_SIM_CARD_1 = 1,
-    DEFAULT_RING_TYPE_SIM_CARD_2,
-    DEFAULT_SHOT_TYPE_SIM_CARD_1,
-    DEFAULT_SHOT_TYPE_SIM_CARD_2,
-    DEFAULT_NOTIFICATION_TYPE,
-    DEFAULT_ALARM_TYPE,
+    DEFAULT_RING_TYPE_SIM_CARD_2 = 2,
+    DEFAULT_SHOT_TYPE_SIM_CARD_1 = 3,
+    DEFAULT_SHOT_TYPE_SIM_CARD_2 = 4,
+    DEFAULT_NOTIFICATION_TYPE = 5,
+    DEFAULT_ALARM_TYPE = 6,
+    DEFAULT_RING_TYPE_ESIM_CARD_1 = 7,    // eSIM1来电 (新增)
+    DEFAULT_SHOT_TYPE_ESIM_CARD_1 = 8,    // eSIM1短信 (新增)
+    DEFAULT_RING_TYPE_ESIM_CARD_2 = 9,    // eSIM2来电 (新增)
+    DEFAULT_SHOT_TYPE_ESIM_CARD_2 = 10,   // eSIM2短信 (新增)
 };
 
 enum SimcardMode : int32_t {
     SIMCARD_MODE_INVALID = 0,
-    SIMCARD_MODE_1,
-    SIMCARD_MODE_2,
-    SIMCARD_MODE_BOTH,
+    SIMCARD_MODE_1 = 1,       // 卡1 (SIM卡)
+    SIMCARD_MODE_2 = 2,       // 卡2 (SIM卡)
+    SIMCARD_MODE_BOTH = 3,  // 非卡相关(通知、闹钟)
+    SIMCARD_MODE_ESIM_1 = 4,  // eSIM1 (新增)
+    SIMCARD_MODE_ESIM_2 = 5,  // eSIM2 (新增)
 };
 
 enum RingMockHapticAudioType {
@@ -178,6 +184,11 @@ static const char PARAM_RINGTONE_SETTING_NOTIFICATIONTONE[] = "const.multimedia.
 static const char PARAM_RINGTONE_SETTING_RINGTONE[] = "const.multimedia.ringtone_sim_card_0";
 static const char PARAM_RINGTONE_SETTING_RINGTONE2[] = "const.multimedia.ringtone_sim_card_1";
 static const char PARAM_RINGTONE_SETTING_ALARM[] = "const.multimedia.alarm_tone";
+// eSIM CCM configuration items (新增)
+static const char PARAM_RINGTONE_ESIM_CARD_0[] = "const.multimedia.ringtone_esim_card_0";
+static const char PARAM_RINGTONE_ESIM_CARD_1[] = "const.multimedia.ringtone_esim_card_1";
+static const char PARAM_SYSTEM_TONE_ESIM_CARD_0[] = "const.multimedia.system_tone_esim_card_0";
+static const char PARAM_SYSTEM_TONE_ESIM_CARD_1[] = "const.multimedia.system_tone_esim_card_1";
 // default value
 const int32_t TONE_ID_DEFAULT = -1;
 const std::string DATA_DEFAULT = {};
@@ -243,6 +254,89 @@ const std::string RINGTONE_CONTAINER_TYPE_M4R   = "m4r";
 const std::string RINGTONE_CONTAINER_TYPE_WAV   = "wav";
 const std::string RINGTONE_CONTAINER_TYPE_OGG   = "ogg";
 const std::string RINGTONE_CONTAINER_TYPE_VIDEO_MP4   = "mp4";
+
+// SIM卡Bitmap掩码定义 (用于shot_tone_type和ring_tone_type字段)
+constexpr int32_t SIM_CARD_1_MASK = 0x01;    // bit0: 卡1
+constexpr int32_t SIM_CARD_2_MASK = 0x02;    // bit1: 卡2
+constexpr int32_t ESIM_CARD_1_MASK = 0x04;   // bit2: eSIM1
+constexpr int32_t ESIM_CARD_2_MASK = 0x08;   // bit3: eSIM2
+constexpr int32_t ALL_CARD_MASK = 0x0F;      // 所有卡
+
+// SIM卡数量定义
+constexpr int32_t MAX_SIM_CARD_COUNT = 2;
+constexpr int32_t MAX_ESIM_CARD_COUNT = 2;
+constexpr int32_t MAX_TOTAL_CARD_COUNT = 4;
+
+// eSIM铃声类型常量 (用于ToneFiles表shot_tone_type/ring_tone_type)
+constexpr int32_t SHOT_TONE_TYPE_ESIM_CARD_1 = ESIM_CARD_1_MASK;  // 4
+constexpr int32_t SHOT_TONE_TYPE_ESIM_CARD_2 = ESIM_CARD_2_MASK;  // 8
+constexpr int32_t RING_TONE_TYPE_ESIM_CARD_1 = ESIM_CARD_1_MASK;  // 4
+constexpr int32_t RING_TONE_TYPE_ESIM_CARD_2 = ESIM_CARD_2_MASK;  // 8
+
+inline bool IsSimCard1Set(int32_t toneType)
+{
+    return (toneType & SIM_CARD_1_MASK) != 0;
+}
+
+inline bool IsSimCard2Set(int32_t toneType)
+{
+    return (toneType & SIM_CARD_2_MASK) != 0;
+}
+
+inline bool IsESimCard1Set(int32_t toneType)
+{
+    return (toneType & ESIM_CARD_1_MASK) != 0;
+}
+
+inline bool IsESimCard2Set(int32_t toneType)
+{
+    return (toneType & ESIM_CARD_2_MASK) != 0;
+}
+
+inline int32_t GetSimCardCount(int32_t toneType)
+{
+    int32_t count = 0;
+    if (IsSimCard1Set(toneType)) count++;
+    if (IsSimCard2Set(toneType)) count++;
+    if (IsESimCard1Set(toneType)) count++;
+    if (IsESimCard2Set(toneType)) count++;
+    return count;
+}
+
+inline bool HasAnyCardSet(int32_t toneType)
+{
+    return (toneType & ALL_CARD_MASK) != 0;
+}
+
+inline int32_t ClearCardMask(int32_t toneType, int32_t cardMask)
+{
+    return toneType & ~cardMask;
+}
+
+inline int32_t SetCardMask(int32_t toneType, int32_t cardMask)
+{
+    return toneType | cardMask;
+}
+
+inline int32_t GetCardMaskFromSimcardMode(SimcardMode mode)
+{
+    switch (mode) {
+        case SIMCARD_MODE_1: return SIM_CARD_1_MASK;
+        case SIMCARD_MODE_2: return SIM_CARD_2_MASK;
+        case SIMCARD_MODE_ESIM_1: return ESIM_CARD_1_MASK;
+        case SIMCARD_MODE_ESIM_2: return ESIM_CARD_2_MASK;
+        default: return 0;
+    }
+}
+
+inline SimcardMode GetSimcardModeFromCardMask(int32_t cardMask)
+{
+    if (cardMask & SIM_CARD_1_MASK) return SIMCARD_MODE_1;
+    if (cardMask & SIM_CARD_2_MASK) return SIMCARD_MODE_2;
+    if (cardMask & ESIM_CARD_1_MASK) return SIMCARD_MODE_ESIM_1;
+    if (cardMask & ESIM_CARD_2_MASK) return SIMCARD_MODE_ESIM_2;
+    return SIMCARD_MODE_INVALID;
+}
 } // namespace Media
 } // namespace OHOS
 

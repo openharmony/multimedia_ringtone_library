@@ -219,11 +219,21 @@ ohos_shared_library("ringtonerestore") {
     "samgr:samgr_proxy",
   ]
 
+  defines = []
+
   if (ringtone_media_library_enable) {
-    defines = [ "USE_MEDIA_LIBRARY" ]
+    defines += [ "USE_MEDIA_LIBRARY" ]
     external_deps += [
       "media_library:media_library",
-      "media_library:media_library_manager", 
+      "media_library:media_library_manager",
+    ]
+  }
+
+  if (ringtone_core_service_enable) {
+    defines += [ "CORE_SERVICE_ENABLE" ]
+    external_deps += [
+      "core_service:libtel_common",
+      "core_service:tel_core_service_api",
     ]
   }
 

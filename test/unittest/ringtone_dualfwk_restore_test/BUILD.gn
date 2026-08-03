@@ -49,6 +49,8 @@ ohos_unittest("ringtone_dualfwk_restore_unittest") {
     "./src/ringtone_dualfwk_restore_test.cpp",
   ]
 
+  cflags = [ "-fno-access-control" ]
+
   configs = [ "//build/config/compiler:exceptions" ]
 
   deps = [
@@ -94,6 +96,8 @@ ohos_unittest("ringtone_dualfwk_restore_unittest") {
     "relational_store:rdb_data_share_adapter",
     "samgr:samgr_proxy",
   ]
+
+  defines = []
 
   sanitize = {
     cfi = true

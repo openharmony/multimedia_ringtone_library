@@ -123,20 +123,22 @@ bool RingtoneRestoreBase::MoveFile(const std::string &src, const std::string &ds
     return true;
 }
 
+bool RingtoneRestoreBase::HasCustomisedSetting(const std::string &typeColumn, const std::string &sourceColumn,
+    int type, int allSetType)
+{
+    string queryCountSql = "SELECT count(1) as count FROM " + RINGTONE_TABLE + " WHERE " + sourceColumn +
+        " = 2 AND (" + typeColumn + " = " + std::to_string(type) + " OR " + typeColumn + " = " +
+        std::to_string(allSetType) + " );";
+    int32_t count = RingtoneRestoreDbUtils::QueryInt(localRdb_, queryCountSql, "count");
+    RINGTONE_INFO_LOG("HasCustomisedSetting: typeColumn=%{public}s, type=%{public}d, allSetType=%{public}d, "
+        "count=%{public}d", typeColumn.c_str(), type, allSetType, count);
+    return count > 0;
+}
+
 bool RingtoneRestoreBase::NeedCommitSetting(const std::string &typeColumn, const std::string &sourceColumn,
     int type, int allSetType)
 {
-    auto type2Str = std::to_string(type);
-    auto allSetTypeStr = std::to_string(allSetType);
-    // allSetType is for those settings with both sim cards
-    string queryCountSql = "SELECT count(1) as count FROM " + RINGTONE_TABLE + " WHERE " +  sourceColumn +
-        " = 2 AND (" + typeColumn + " = " + type2Str + " OR " + typeColumn + " = " + allSetTypeStr + " );";
-    RINGTONE_INFO_LOG("NeedCommitSetting queryCountSql: %{public}s, check: typeColumn=%{public}s, type=%{public}d,"
-        "allSetType=%{public}d", queryCountSql.c_str(), typeColumn.c_str(), type, allSetType);
-
-    int32_t count = RingtoneRestoreDbUtils::QueryInt(localRdb_, queryCountSql, "count");
-    RINGTONE_INFO_LOG("got count = %{public}d", count);
-    if (count > 0) {
+    if (HasCustomisedSetting(typeColumn, sourceColumn, type, allSetType)) {
         return false;
     }
     return !IsDetermineNoRingtone(typeColumn, sourceColumn, type, allSetType, localRdb_);
@@ -158,58 +160,75 @@ bool RingtoneRestoreBase::IsDetermineNoRingtone(const std::string &typeColumn,
     return false;
 }
 
+void RingtoneRestoreBase::CommitCardSettings(FileInfo &info, int32_t toneTypeBits, int32_t toneSourceType,
+    const std::string &typeColumn, const std::string &sourceColumn, ToneSettingType settingType)
+{
+    if (!HasAnyCardSet(toneTypeBits)) {
+        SetNotRingtone(typeColumn, sourceColumn, info.simcard);
+        return;
+    }
+
+    static const std::vector<int32_t> cardMasks = {
+        SIM_CARD_1_MASK, SIM_CARD_2_MASK, ESIM_CARD_1_MASK, ESIM_CARD_2_MASK};
+    static const std::vector<int32_t> shotCardToneTypes = {SHOT_TONE_TYPE_SIM_CARD_1, SHOT_TONE_TYPE_SIM_CARD_2,
+                                                           SHOT_TONE_TYPE_ESIM_CARD_1, SHOT_TONE_TYPE_ESIM_CARD_2};
+    static const std::vector<int32_t> ringCardToneTypes = {RING_TONE_TYPE_SIM_CARD_1, RING_TONE_TYPE_SIM_CARD_2,
+                                                           RING_TONE_TYPE_ESIM_CARD_1, RING_TONE_TYPE_ESIM_CARD_2};
+    const auto &cardToneTypes = (settingType == TONE_SETTING_TYPE_SHOT) ? shotCardToneTypes : ringCardToneTypes;
+
+    int32_t cardCount = GetSimCardCount(toneTypeBits);
+    if (cardCount > 1) {
+        CommitMultiCardSettings(info, toneTypeBits, toneSourceType, typeColumn, sourceColumn,
+            cardToneTypes, cardMasks, settingType);
+    } else {
+        CommitSingleCardSettings(info, toneTypeBits, toneSourceType, typeColumn, sourceColumn,
+            cardToneTypes, cardMasks, settingType);
+    }
+}
+
+void RingtoneRestoreBase::CommitMultiCardSettings(FileInfo &info, int32_t toneTypeBits, int32_t toneSourceType,
+    const std::string &typeColumn, const std::string &sourceColumn,
+    const std::vector<int32_t> &cardToneTypes, const std::vector<int32_t> &cardMasks, ToneSettingType settingType)
+{
+    for (size_t i = 0; i < cardMasks.size(); i++) {
+        if (!(toneTypeBits & cardMasks[i])) {
+            continue;
+        }
+        if (NeedCommitSetting(typeColumn, sourceColumn, cardToneTypes[i], toneTypeBits)) {
+            settingMgr_->CommitSetting(info.toneId, info.restorePath, settingType, cardToneTypes[i], toneSourceType);
+            RINGTONE_INFO_LOG("commit %{public}s as card/%{public}d, mask=%{public}d",
+                typeColumn.c_str(), static_cast<int>(i + 1), cardMasks[i]);
+        }
+    }
+}
+
+void RingtoneRestoreBase::CommitSingleCardSettings(FileInfo &info, int32_t toneTypeBits, int32_t toneSourceType,
+    const std::string &typeColumn, const std::string &sourceColumn,
+    const std::vector<int32_t> &cardToneTypes, const std::vector<int32_t> &cardMasks, ToneSettingType settingType)
+{
+    for (size_t i = 0; i < cardMasks.size(); i++) {
+        if (!(toneTypeBits & cardMasks[i])) {
+            continue;
+        }
+        if (NeedCommitSetting(typeColumn, sourceColumn, cardToneTypes[i], cardToneTypes[i])) {
+            settingMgr_->CommitSetting(info.toneId, info.restorePath, settingType, cardToneTypes[i], toneSourceType);
+            RINGTONE_INFO_LOG("commit %{public}s as card/%{public}d single",
+                typeColumn.c_str(), static_cast<int>(i + 1));
+        }
+        break;
+    }
+}
+
 void RingtoneRestoreBase::CheckShotSetting(FileInfo &info)
 {
-    if (info.shotToneType == SHOT_TONE_TYPE_SIM_CARD_BOTH && info.shotToneSourceType == SOURCE_TYPE_CUSTOMISED) {
-        if (NeedCommitSetting(RINGTONE_COLUMN_SHOT_TONE_TYPE, RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE,
-            SHOT_TONE_TYPE_SIM_CARD_1, SHOT_TONE_TYPE_SIM_CARD_BOTH)) {
-            settingMgr_->CommitSetting(info.toneId, info.restorePath, TONE_SETTING_TYPE_SHOT,
-                SHOT_TONE_TYPE_SIM_CARD_1, info.shotToneSourceType);
-            RINGTONE_INFO_LOG("commit as card1 shottone");
-        }
-        if (NeedCommitSetting(RINGTONE_COLUMN_SHOT_TONE_TYPE, RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE,
-            SHOT_TONE_TYPE_SIM_CARD_2, SHOT_TONE_TYPE_SIM_CARD_BOTH)) {
-            settingMgr_->CommitSetting(info.toneId, info.restorePath, TONE_SETTING_TYPE_SHOT,
-                SHOT_TONE_TYPE_SIM_CARD_2, info.shotToneSourceType);
-            RINGTONE_INFO_LOG("commit as card2 shottone");
-        }
-    } else if ((info.shotToneType > SHOT_TONE_TYPE_NOT) && (info.shotToneType < SHOT_TONE_TYPE_SIM_CARD_BOTH) &&
-            (info.shotToneSourceType == SOURCE_TYPE_CUSTOMISED) && NeedCommitSetting(RINGTONE_COLUMN_SHOT_TONE_TYPE,
-            RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE, info.shotToneType, SHOT_TONE_TYPE_SIM_CARD_BOTH)) {
-        settingMgr_->CommitSetting(info.toneId, info.restorePath, TONE_SETTING_TYPE_SHOT, info.shotToneType,
-            info.shotToneSourceType);
-        RINGTONE_INFO_LOG("commit as shottone");
-    } else if (info.shotToneType == SHOT_TONE_TYPE_NOT &&
-            info.shotToneSourceType == SOURCE_TYPE_INVALID) {
-        SetNotRingtone(RINGTONE_COLUMN_SHOT_TONE_TYPE, RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE, info.simcard);
-    }
+    CommitCardSettings(info, info.shotToneType, info.shotToneSourceType,
+        RINGTONE_COLUMN_SHOT_TONE_TYPE, RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE, TONE_SETTING_TYPE_SHOT);
 }
 
 void RingtoneRestoreBase::CheckRingtoneSetting(FileInfo &info)
 {
-    if (info.ringToneType == RING_TONE_TYPE_SIM_CARD_BOTH && info.ringToneSourceType == SOURCE_TYPE_CUSTOMISED) {
-        if (NeedCommitSetting(RINGTONE_COLUMN_RING_TONE_TYPE, RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE,
-            RING_TONE_TYPE_SIM_CARD_1, RING_TONE_TYPE_SIM_CARD_BOTH)) {
-            settingMgr_->CommitSetting(info.toneId, info.restorePath, TONE_SETTING_TYPE_RINGTONE,
-                RING_TONE_TYPE_SIM_CARD_1, info.ringToneSourceType);
-            RINGTONE_INFO_LOG("commit as card1 ringtone");
-        }
-        if (NeedCommitSetting(RINGTONE_COLUMN_RING_TONE_TYPE, RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE,
-            RING_TONE_TYPE_SIM_CARD_2, RING_TONE_TYPE_SIM_CARD_BOTH)) {
-            settingMgr_->CommitSetting(info.toneId, info.restorePath, TONE_SETTING_TYPE_RINGTONE,
-                RING_TONE_TYPE_SIM_CARD_2, info.ringToneSourceType);
-            RINGTONE_INFO_LOG("commit as card2 ringtone");
-        }
-    } else if (info.ringToneType > RING_TONE_TYPE_NOT && info.ringToneType < RING_TONE_TYPE_SIM_CARD_BOTH &&
-            info.ringToneSourceType == SOURCE_TYPE_CUSTOMISED && NeedCommitSetting(RINGTONE_COLUMN_RING_TONE_TYPE,
-            RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, info.ringToneType, RING_TONE_TYPE_SIM_CARD_BOTH)) {
-        settingMgr_->CommitSetting(info.toneId, info.restorePath, TONE_SETTING_TYPE_RINGTONE, info.ringToneType,
-            info.ringToneSourceType);
-        RINGTONE_INFO_LOG("commit as ringtone");
-    } else if (info.ringToneType == RING_TONE_TYPE_NOT &&
-            info.ringToneSourceType == SOURCE_TYPE_INVALID) {
-        SetNotRingtone(RINGTONE_COLUMN_RING_TONE_TYPE, RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, info.simcard);
-    }
+    CommitCardSettings(info, info.ringToneType, info.ringToneSourceType,
+        RINGTONE_COLUMN_RING_TONE_TYPE, RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE, TONE_SETTING_TYPE_RINGTONE);
 }
 
 void RingtoneRestoreBase::CheckSetting(FileInfo &info)
@@ -459,7 +478,9 @@ vector<NativeRdb::ValuesBucket> RingtoneRestoreBase::MakeInsertValues(std::vecto
         if (it->doInsert) { // only when this value needs to be inserted
             values.emplace_back(value);
         }
-        CheckSetting(*it);
+        if (!it->skipSetting) {
+            CheckSetting(*it);
+        }
     }
     return values;
 }

@@ -40,6 +40,8 @@ public:
     static bool GetUserID(int &userId);
     static std::string GetSourceColumnName(ToneSettingType settingType);
     static std::string GetModeColumnName(ToneSettingType settingType);
+    static int32_t CleanESimData(const std::string &dbPath, int32_t peerSlotNum,
+        const std::string &ringtoneBasePath = "");
 };
 
 } // namespace Media

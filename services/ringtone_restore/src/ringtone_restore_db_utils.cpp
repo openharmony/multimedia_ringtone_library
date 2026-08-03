@@ -15,6 +15,7 @@
 
 #include "ringtone_restore_db_utils.h"
 
+#include <unistd.h>
 #include "ringtone_db_const.h"
 #include "ringtone_log.h"
 #include "ringtone_errno.h"
@@ -29,6 +30,7 @@ const std::string CUSTOM_COUNT = "count";
 const std::string PRAGMA_TABLE_NAME = "name";
 const std::string PRAGMA_TABLE_TYPE = "type";
 const int RDB_AREA_EL1 = 0;
+const int PEER_SLOT_NUM = 4;
 int32_t RingtoneRestoreDbUtils::InitDb(std::shared_ptr<NativeRdb::RdbStore> &rdbStore, const std::string &dbName,
     const std::string &dbPath, const std::string &bundleName, bool isMediaLibrary)
 {
@@ -167,6 +169,139 @@ std::string RingtoneRestoreDbUtils::GetModeColumnName(ToneSettingType settingTyp
             break;
     }
     return ret;
+}
+
+static std::string BuildUnusedCustomWhere()
+{
+    return RINGTONE_COLUMN_SOURCE_TYPE + " = " + std::to_string(SOURCE_TYPE_CUSTOMISED) +
+        " AND " + RINGTONE_COLUMN_MEDIA_TYPE + " != " + std::to_string(RINGTONE_MEDIA_TYPE_VIDEO) +
+        " AND NOT (" +
+        "(" + RINGTONE_COLUMN_SHOT_TONE_TYPE + " != 0 AND " +
+        RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE + " = " + std::to_string(SOURCE_TYPE_CUSTOMISED) + ")" +
+        " OR (" + RINGTONE_COLUMN_RING_TONE_TYPE + " != 0 AND " +
+        RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE + " = " + std::to_string(SOURCE_TYPE_CUSTOMISED) + ")" +
+        " OR (" + RINGTONE_COLUMN_NOTIFICATION_TONE_TYPE + " != 0 AND " +
+        RINGTONE_COLUMN_NOTIFICATION_TONE_SOURCE_TYPE + " = " + std::to_string(SOURCE_TYPE_CUSTOMISED) + ")" +
+        " OR (" + RINGTONE_COLUMN_ALARM_TONE_TYPE + " != 0 AND " +
+        RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE + " = " + std::to_string(SOURCE_TYPE_CUSTOMISED) + ")" +
+        ")";
+}
+
+static void ClearESimSlotBits(const std::shared_ptr<NativeRdb::RdbStore> &rdbStore, int32_t peerSlotMask)
+{
+    // Mask tone_type bits to keep only peer slots
+    std::vector<std::pair<std::string, std::string>> typeSourcePairs = {
+        {RINGTONE_COLUMN_SHOT_TONE_TYPE, RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE},
+        {RINGTONE_COLUMN_RING_TONE_TYPE, RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE},
+    };
+    for (const auto &[typeCol, sourceCol] : typeSourcePairs) {
+        std::string maskSql = "UPDATE " + RINGTONE_TABLE + " SET " + typeCol +
+            " = " + typeCol + " & " + std::to_string(peerSlotMask) +
+            " WHERE " + typeCol + " != 0;";
+        int32_t err = rdbStore->ExecuteSql(maskSql);
+        if (err != NativeRdb::E_OK) {
+            RINGTONE_ERR_LOG("Mask %{public}s failed, err: %{public}d", typeCol.c_str(), err);
+        }
+        std::string clearSql = "UPDATE " + RINGTONE_TABLE + " SET " + sourceCol +
+            " = -1 WHERE " + typeCol + " = 0 AND " + sourceCol + " > 0;";
+        err = rdbStore->ExecuteSql(clearSql);
+        if (err != NativeRdb::E_OK) {
+            RINGTONE_ERR_LOG("Clear %{public}s failed, err: %{public}d", sourceCol.c_str(), err);
+        }
+    }
+
+    // Delete eSIM SimCardSetting and PreloadConfig records
+    std::string deleteSettingSql = "DELETE FROM " + SIMCARD_SETTING_TABLE +
+        " WHERE " + SIMCARD_SETTING_COLUMN_MODE + " > 3;";
+    int32_t err = rdbStore->ExecuteSql(deleteSettingSql);
+    if (err != NativeRdb::E_OK) {
+        RINGTONE_ERR_LOG("Delete eSIM setting failed, err: %{public}d", err);
+    }
+    std::string deletePreloadSql = "DELETE FROM " + PRELOAD_CONFIG_TABLE +
+        " WHERE " + PRELOAD_CONFIG_COLUMN_RING_TONE_TYPE + " > 6;";
+    err = rdbStore->ExecuteSql(deletePreloadSql);
+    if (err != NativeRdb::E_OK) {
+        RINGTONE_ERR_LOG("Delete eSIM preload failed, err: %{public}d", err);
+    }
+}
+
+static std::vector<std::string> QueryUnusedCustomPaths(const std::shared_ptr<NativeRdb::RdbStore> &rdbStore)
+{
+    std::string whereClause = BuildUnusedCustomWhere();
+    std::string querySql = "SELECT " + RINGTONE_COLUMN_DATA + " FROM " + RINGTONE_TABLE +
+        " WHERE " + whereClause + ";";
+    auto resultSet = rdbStore->QuerySql(querySql);
+    std::vector<std::string> paths;
+    if (resultSet != nullptr) {
+        while (resultSet->GoToNextRow() == NativeRdb::E_OK) {
+            std::string dataPath;
+            resultSet->GetString(0, dataPath);
+            if (!dataPath.empty()) {
+                paths.push_back(dataPath);
+            }
+        }
+    }
+    RINGTONE_INFO_LOG("Found %{public}zu unused custom non-video tones", paths.size());
+    return paths;
+}
+
+static void DeleteUnusedCustomTones(const std::shared_ptr<NativeRdb::RdbStore> &rdbStore)
+{
+    std::string whereClause = BuildUnusedCustomWhere();
+    std::string deleteSql = "DELETE FROM " + RINGTONE_TABLE + " WHERE " + whereClause + ";";
+    int32_t err = rdbStore->ExecuteSql(deleteSql);
+    if (err != NativeRdb::E_OK) {
+        RINGTONE_ERR_LOG("Delete unused custom tones failed, err: %{public}d", err);
+    }
+}
+
+static void DeleteUnusedFiles(const std::vector<std::string> &paths, const std::string &ringtoneBasePath)
+{
+    if (ringtoneBasePath.empty()) {
+        return;
+    }
+    const std::string ringtonePrefix = "/data/storage/el2/base/files/Ringtone/";
+    for (const auto &dataPath : paths) {
+        if (dataPath.find(ringtonePrefix) == 0) {
+            std::string relativePath = dataPath.substr(ringtonePrefix.length());
+            std::string fileToDelete = ringtoneBasePath + relativePath;
+            if (unlink(fileToDelete.c_str()) == 0) {
+                RINGTONE_INFO_LOG("Deleted unused tone file: %{private}s", fileToDelete.c_str());
+            } else {
+                RINGTONE_WARN_LOG("Failed to delete unused tone file: %{private}s, errno=%{public}d",
+                    fileToDelete.c_str(), errno);
+            }
+        }
+    }
+}
+
+int32_t RingtoneRestoreDbUtils::CleanESimData(const std::string &dbPath, int32_t peerSlotNum,
+    const std::string &ringtoneBasePath)
+{
+    RINGTONE_INFO_LOG("CleanESimData enter, dbPath: %{private}s, peerSlotNum: %{public}d, "
+        "ringtoneBasePath: %{private}s", dbPath.c_str(), peerSlotNum, ringtoneBasePath.c_str());
+    if (peerSlotNum <= 0 || peerSlotNum > PEER_SLOT_NUM) {
+        RINGTONE_ERR_LOG("Invalid peerSlotNum: %{public}d", peerSlotNum);
+        return E_FAIL;
+    }
+
+    std::shared_ptr<NativeRdb::RdbStore> rdbStore = nullptr;
+    int32_t err = InitDb(rdbStore, RINGTONE_LIBRARY_DB_NAME, dbPath, RINGTONE_BUNDLE_NAME, false);
+    if (err != NativeRdb::E_OK || rdbStore == nullptr) {
+        RINGTONE_ERR_LOG("InitDb failed, err: %{public}d", err);
+        return E_HAS_DB_ERROR;
+    }
+
+    int32_t peerSlotMask = (1 << peerSlotNum) - 1;
+    RINGTONE_INFO_LOG("peerSlotMask: %{public}d", peerSlotMask);
+
+    ClearESimSlotBits(rdbStore, peerSlotMask);
+    auto unusedPaths = QueryUnusedCustomPaths(rdbStore);
+    DeleteUnusedCustomTones(rdbStore);
+    DeleteUnusedFiles(unusedPaths, ringtoneBasePath);
+
+    RINGTONE_INFO_LOG("CleanESimData completed");
+    return E_OK;
 }
 
 } // namespace Media
