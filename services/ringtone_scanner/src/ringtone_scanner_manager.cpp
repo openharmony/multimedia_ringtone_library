@@ -140,17 +140,17 @@ void RingtoneScannerManager::Start(bool isSync)
     RingtoneTracer tracer;
     tracer.Start("Ringtone Scanner Start");
     if (isSync) {
-        RINGTONE_DEBUG_LOG("scan start, isSync = %{public}d", isSync);
+        RINGTONE_WARN_LOG("scan start, isSync = %{public}d", isSync);
         RingtoneScannerObj scanner = RingtoneScannerObj(RingtoneScannerObj::START);
         scanner.Scan();
-        RINGTONE_DEBUG_LOG("scan finished");
+        RINGTONE_WARN_LOG("scan finished");
     } else {
-        RINGTONE_DEBUG_LOG("scan start, isSync = %{public}d", isSync);
+        RINGTONE_WARN_LOG("scan start, isSync = %{public}d", isSync);
         executor_.Start();
         std::shared_ptr<RingtoneScannerObj> scanner = std::make_shared<RingtoneScannerObj>(RingtoneScannerObj::START);
         executor_.Commit(scanner);
         scanner->WaitFor();
-        RINGTONE_DEBUG_LOG("scan finished");
+        RINGTONE_WARN_LOG("scan finished");
     }
 }
 
