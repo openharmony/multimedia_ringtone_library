@@ -1,5 +1,6 @@
 {
 	"allowToBackupRestore": true,
+	"requireCompatibility": true,
 	"extraInfo" : {
         "supportScene": [
             "next2next",
@@ -9,6 +10,12 @@
 	"includes": [
 		"/data/storage/el1/database/rdb/",
 		"/data/storage/el2/base/files/Ringtone/"
+	],
+	"compatibleDirMapping": [
+		{
+			"backupDir": "/storage/media/local/files/.backup/backup/ringtone_temp_rdb/",
+			"restoreDir": "/data/storage/el1/database/rdb/"
+		}
 	],
 	"fullBackupOnly": true
 }

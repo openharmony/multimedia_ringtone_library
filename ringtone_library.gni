@@ -44,4 +44,10 @@ declare_args() {
   } else {
     ringtone_media_library_enable = false
   }
+
+  ringtone_core_service_enable = true
+  if (defined(global_parts_info) &&
+      !defined(global_parts_info.telephony_core_service)) {
+    ringtone_core_service_enable = false
+  }
 }

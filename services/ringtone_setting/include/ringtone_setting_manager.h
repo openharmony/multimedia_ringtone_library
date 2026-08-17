@@ -60,6 +60,9 @@ private:
         std::unique_ptr<RingtoneMetadata> &metadata, const std::string &col);
     EXPORT int32_t UpdateSettingsByPath(const std::string &tonePath, int32_t settingType, int32_t toneType,
         int32_t sourceType);
+    EXPORT int32_t UpdateCardToneSetting(const std::string &toneTypeColumn,
+        const std::string &sourceTypeColumn, int32_t currentVal, int32_t notValue, int32_t toneType,
+        int32_t sourceType, int32_t toneId);
     EXPORT int32_t UpdateShotSetting(std::shared_ptr<RingtoneMetadata> &meta, int32_t toneType,
         int32_t sourceType);
     EXPORT int32_t UpdateRingtoneSetting(std::shared_ptr<RingtoneMetadata> &meta, int32_t toneType,

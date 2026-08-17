@@ -223,22 +223,18 @@ int32_t RingtoneSettingManager::GetMetaDataFromResultSet(shared_ptr<NativeRdb::R
     return E_OK;
 }
 
-int32_t RingtoneSettingManager::UpdateShotSetting(shared_ptr<RingtoneMetadata> &meta, int32_t toneType,
-    int32_t sourceType)
+int32_t RingtoneSettingManager::UpdateCardToneSetting(const std::string &toneTypeColumn,
+    const std::string &sourceTypeColumn, int32_t currentVal, int32_t notValue, int32_t toneType,
+    int32_t sourceType, int32_t toneId)
 {
-    int32_t val = meta->GetShotToneType();
-    if (val != SHOT_TONE_TYPE_NOT && val != toneType) {
-        val = SHOT_TONE_TYPE_SIM_CARD_BOTH;
-    } else {
-        val = toneType;
-    }
+    int32_t val = (currentVal == notValue) ? toneType : SetCardMask(currentVal, toneType);
     string updateSql = "UPDATE ToneFiles SET " +
-        RINGTONE_COLUMN_SHOT_TONE_TYPE + " = " + to_string(val) + ", " +
-        RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE + " = " + to_string(sourceType) +
-        " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(meta->GetToneId());
+        toneTypeColumn + " = " + to_string(val) + ", " +
+        sourceTypeColumn + " = " + to_string(sourceType) +
+        " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(toneId);
 
     if (!forceFlush_) {
-        updateSql += " AND " + RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE + " NOT IN (1, 2)";
+        updateSql += " AND " + sourceTypeColumn + " NOT IN (1, 2)";
     }
 
     int32_t rdbRet = ringtoneRdb_->ExecuteSql(updateSql);
@@ -250,31 +246,18 @@ int32_t RingtoneSettingManager::UpdateShotSetting(shared_ptr<RingtoneMetadata> &
     return E_OK;
 }
 
+int32_t RingtoneSettingManager::UpdateShotSetting(shared_ptr<RingtoneMetadata> &meta, int32_t toneType,
+    int32_t sourceType)
+{
+    return UpdateCardToneSetting(RINGTONE_COLUMN_SHOT_TONE_TYPE, RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE,
+        meta->GetShotToneType(), SHOT_TONE_TYPE_NOT, toneType, sourceType, meta->GetToneId());
+}
+
 int32_t RingtoneSettingManager::UpdateRingtoneSetting(shared_ptr<RingtoneMetadata> &meta, int32_t toneType,
     int32_t sourceType)
 {
-    int32_t val = meta->GetRingToneType();
-    if (val != RING_TONE_TYPE_NOT && val != toneType) {
-        val = RING_TONE_TYPE_SIM_CARD_BOTH;
-    } else {
-        val = toneType;
-    }
-    string updateSql = "UPDATE ToneFiles SET " +
-        RINGTONE_COLUMN_RING_TONE_TYPE + " = " + to_string(val) + ", " +
-        RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE + " = " + to_string(sourceType) +
-        " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(meta->GetToneId());
-        
-    if (!forceFlush_) {
-        updateSql += " AND " + RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE + " NOT IN (1, 2)";
-    }
-
-    int32_t rdbRet = ringtoneRdb_->ExecuteSql(updateSql);
-    if (rdbRet < 0) {
-        RINGTONE_ERR_LOG("execute update failed");
-        return E_DB_FAIL;
-    }
-
-    return E_OK;
+    return UpdateCardToneSetting(RINGTONE_COLUMN_RING_TONE_TYPE, RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE,
+        meta->GetRingToneType(), RING_TONE_TYPE_NOT, toneType, sourceType, meta->GetToneId());
 }
 
 int32_t RingtoneSettingManager::UpdateNotificationSetting(shared_ptr<RingtoneMetadata> &meta, int32_t toneType,

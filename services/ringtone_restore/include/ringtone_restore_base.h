@@ -44,6 +44,16 @@ protected:
     virtual void CheckSetting(FileInfo &info);
     void CheckShotSetting(FileInfo &info);
     void CheckRingtoneSetting(FileInfo &info);
+    void CommitCardSettings(FileInfo &info, int32_t toneTypeBits, int32_t toneSourceType,
+        const std::string &typeColumn, const std::string &sourceColumn, ToneSettingType settingType);
+    void CommitMultiCardSettings(FileInfo &info, int32_t toneTypeBits, int32_t toneSourceType,
+        const std::string &typeColumn, const std::string &sourceColumn,
+        const std::vector<int32_t> &cardToneTypes, const std::vector<int32_t> &cardMasks,
+        ToneSettingType settingType);
+    void CommitSingleCardSettings(FileInfo &info, int32_t toneTypeBits, int32_t toneSourceType,
+        const std::string &typeColumn, const std::string &sourceColumn,
+        const std::vector<int32_t> &cardToneTypes, const std::vector<int32_t> &cardMasks,
+        ToneSettingType settingType);
     static bool MoveFile(const std::string &src, const std::string &dst);
     static int32_t MoveDirectory(const std::string &srcDir, const std::string &dstDir);
     void ExtractMetaFromColumn(const std::shared_ptr<NativeRdb::ResultSet> &resultSet,
@@ -53,6 +63,8 @@ protected:
     virtual void FlushSettings();
     bool IsDetermineNoRingtone(const std::string &typeColumn, const std::string &sourceColumn,
         int type, int allSetType, const std::shared_ptr<NativeRdb::RdbStore> &rdbStore);
+    bool HasCustomisedSetting(const std::string &typeColumn, const std::string &sourceColumn,
+        int type, int allSetType);
     bool NeedCommitSetting(const std::string &typeColumn, const std::string &sourceColumn,
         int type, int allSetType);
     void SetNotRingtone(const std::string &typeColumn, const std::string &sourceColumn, int32_t simCard);

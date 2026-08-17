@@ -30,6 +30,27 @@
 
 namespace OHOS {
 namespace Media {
+enum CardScenarioType : int32_t {
+    SCENARIO_INVALID = -1,
+    SCENARIO_SIM1_ONLY = 0,
+    SCENARIO_SIM2_ONLY,
+    SCENARIO_ESIM1_ONLY,
+    SCENARIO_ESIM2_ONLY,
+    SCENARIO_SIM1_SIM2,
+    SCENARIO_SIM1_ESIM1,
+    SCENARIO_SIM1_ESIM2,
+    SCENARIO_SIM2_ESIM1,
+    SCENARIO_SIM2_ESIM2,
+    SCENARIO_ESIM1_ESIM2,
+    SCENARIO_MAX = SCENARIO_ESIM1_ESIM2 + 1,
+};
+
+struct MigrationConfig {
+    CardScenarioType scenario;
+    int32_t fromCardMask;
+    int32_t toCardMask;
+};
+
 class RingtoneDualFwkRestore : public RingtoneRestoreBase {
 public:
     RingtoneDualFwkRestore() = default;
@@ -49,9 +70,22 @@ private:
     int32_t QueryRingToneDbForFileInfo(std::shared_ptr<NativeRdb::RdbStore> rdbStore,
         const std::vector<std::string> &names, std::map<std::string, std::vector<std::shared_ptr<FileInfo>>> &infoMap,
         const std::string &predicateColumn);
+    int32_t HandleUpgradeWithESim();
+    CardScenarioType AnalyzeCardScenario(bool hasSim1, bool hasSim2, bool hasESim1, bool hasESim2);
+    void MigrateToneType(int32_t fromCardMask, int32_t toCardMask);
+    void MigrateSimCardSetting(int32_t fromMode, int32_t toMode);
+    void ApplyMigration(int32_t fromCardMask, int32_t toCardMask);
 
 private:
     std::string dualFwkConf_ = {};
+    inline static const std::vector<MigrationConfig> MIGRATION_CONFIG_TABLE = {
+        { SCENARIO_ESIM1_ONLY,  SIM_CARD_2_MASK, ESIM_CARD_1_MASK },
+        { SCENARIO_ESIM2_ONLY,  SIM_CARD_2_MASK, ESIM_CARD_2_MASK },
+        { SCENARIO_SIM1_ESIM1,  SIM_CARD_2_MASK, ESIM_CARD_1_MASK },
+        { SCENARIO_SIM1_ESIM2,  SIM_CARD_2_MASK, ESIM_CARD_2_MASK },
+        { SCENARIO_SIM2_ESIM1,  SIM_CARD_1_MASK, ESIM_CARD_1_MASK },
+        { SCENARIO_SIM2_ESIM2,  SIM_CARD_1_MASK, ESIM_CARD_2_MASK },
+    };
 };
 
 class RingtoneDualFwkRestoreClone : public RingtoneDualFwkRestore {
