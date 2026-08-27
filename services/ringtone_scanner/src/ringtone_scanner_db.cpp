@@ -415,6 +415,8 @@ int32_t RingtoneScannerDb::UpdateMetadata(const RingtoneMetadata &metadata, stri
         RINGTONE_ERR_LOG("get raw rdb failed");
         return E_RDB;
     }
+    RINGTONE_WARN_LOG("Update operation. tableName %{public}s. whereClause %{public}s", tableName.c_str(),
+        whereClause.c_str());
     int32_t result = rawRdb->Update(updateCount, tableName, values, whereClause, whereArgs);
     if (result != NativeRdb::E_OK || updateCount <= 0) {
         RINGTONE_ERR_LOG("Update operation failed. Result %{public}d. Updated %{public}d", result, updateCount);
@@ -639,7 +641,7 @@ bool RingtoneScannerDb::DeleteNotExist()
     ringtoneRdbPredicate.And();
     ringtoneRdbPredicate.EqualTo(RINGTONE_COLUMN_SOURCE_TYPE, "1");
     result = rawRdb->Delete(deleteCount, ringtoneRdbPredicate);
-    RINGTONE_INFO_LOG("Ringtone delete operation end. Deleted %{public}d", deleteCount);
+    RINGTONE_WARN_LOG("Ringtone delete operation end. Deleted %{public}d", deleteCount);
     if (result != NativeRdb::E_OK || deleteCount < 0) {
         RINGTONE_ERR_LOG("Ringtone delete operation failed. Result %{public}d. Deleted %{public}d",
             result, deleteCount);
@@ -653,9 +655,9 @@ bool RingtoneScannerDb::DeleteNotExist()
     vibrateRdbPredicate.And();
     vibrateRdbPredicate.EqualTo(VIBRATE_COLUMN_SOURCE_TYPE, "1");
     result = rawRdb->Delete(deleteCount, vibrateRdbPredicate);
-    RINGTONE_INFO_LOG("Vibrate update operation end. Deleted %{public}d", deleteCount);
+    RINGTONE_WARN_LOG("Vibrate delete operation end. Deleted %{public}d", deleteCount);
     if (result != NativeRdb::E_OK || deleteCount < 0) {
-        RINGTONE_ERR_LOG("Vibrate update operation failed. Result %{public}d. Deleted %{public}d", result, deleteCount);
+        RINGTONE_ERR_LOG("Vibrate delete operation failed. Result %{public}d. Deleted %{public}d", result, deleteCount);
         return false;
     }
     return true;
@@ -691,6 +693,17 @@ bool RingtoneScannerDb::UpdateRingMockHapticAudioScannerFlag()
     return true;
 }
 
+/**
+ * @brief 删除数据库中文件不存在的预置触觉反馈2音记录。
+ *
+ * 在支持口袋振动增强功能的设备上，开机扫描末尾调用。
+ * 删除条件：HAPTIC_2_TONE_TABLE表中scanner_flag=0 且 source_type=1（预置）的记录。
+ *
+ * 【数据丢失风险-高】与DeleteNotExist()类似，设备升级后若触觉反馈音频文件不可达，
+ * 其数据库记录会被永久删除，不可恢复。
+ *
+ * @return true表示删除操作成功，false表示RDB操作失败。
+ */
 bool RingtoneScannerDb::DeleteNotExistRingMockHapticAudio()
 {
     int32_t deleteCount = 0;
@@ -713,7 +726,7 @@ bool RingtoneScannerDb::DeleteNotExistRingMockHapticAudio()
     ringMockHapticAudioRdbPredicate.And();
     ringMockHapticAudioRdbPredicate.EqualTo(HAPTIC_2_TONE_COLUMN_SOURCE_TYPE, "1");
     result = rawRdb->Delete(deleteCount, ringMockHapticAudioRdbPredicate);
-    RINGTONE_INFO_LOG("SimRingtone delete operation end. Deleted %{public}d", deleteCount);
+    RINGTONE_WARN_LOG("SimRingtone delete operation end. Deleted %{public}d", deleteCount);
     if (result != NativeRdb::E_OK || deleteCount < 0) {
         RINGTONE_ERR_LOG("SimRingtone delete operation failed. Result %{public}d. Deleted %{public}d",
             result, deleteCount);
