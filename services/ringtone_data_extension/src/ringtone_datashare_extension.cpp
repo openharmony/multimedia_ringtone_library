@@ -97,6 +97,15 @@ void RingtoneDataShareExtension::Init(const shared_ptr<AbilityLocalRecord> &reco
     DataShareExtAbility::Init(record, application, handler, token);
 }
 
+/**
+ * @brief 检查铃声数据库默认设置是否已初始化。
+ *
+ * 通过Preferences查询"RDBInitScanner"标志位，判断铃声数据库的默认铃声是否已完成首次写入。
+ * 若标志位为false，则查询preload_config表中是否已存在默认铃声记录：
+ *   - 若存在，将"RDBInitScanner"标志位设为true并持久化，表示默认铃声已就绪；
+ *   - 若不存在，保持标志位不变，等待后续扫描流程写入默认铃声。
+ * 该方法在OnStart中调用，用于确保首次开机铃声数据就绪。
+ */
 void RingtoneDataShareExtension::CheckRingtoneDbDefaultSettings()
 {
     int errCode = 0;
@@ -120,7 +129,7 @@ void RingtoneDataShareExtension::CheckRingtoneDbDefaultSettings()
     CHECK_AND_RETURN_LOG(resultSet != nullptr, "resultSet is nullptr");
     if (resultSet->GoToFirstRow() != NativeRdb::E_OK) {
         resultSet->Close();
-        RINGTONE_INFO_LOG("Query operation failed, no resultSet");
+        RINGTONE_ERR_LOG("Query Preload failed, no resultSet");
         return;
     }
     string displayName = GetStringVal(PRELOAD_CONFIG_COLUMN_DISPLAY_NAME, resultSet);
@@ -133,6 +142,22 @@ void RingtoneDataShareExtension::CheckRingtoneDbDefaultSettings()
     return;
 }
 
+/**
+ * @brief 扩展能力启动回调。
+ *
+ * 在Extension生命周期启动时由框架调用，执行以下初始化流程：
+ * 1. 调用基类OnStart完成基础初始化；
+ * 2. 获取应用上下文，若获取失败则终止应用进程；
+ * 3. 初始化RingtoneDataManager单例，若失败则终止应用进程；
+ * 4. 设置DataManager的Owner为当前Extension实例；
+ * 5. 初始化DFX（设计质量）管理器；
+ * 6. 检查铃声数据库默认设置（CheckRingtoneDbDefaultSettings）；
+ * 7. 执行铃声扫描（RingtoneScanner）；
+ * 8. 若旧版自定义铃声目录存在，则迁移旧路径数据到新路径（UpdataRdbPathData）；
+ * 9. 同步铃声资源的多语言信息。
+ *
+ * @param want 启动意图，包含启动信息。
+ */
 void RingtoneDataShareExtension::OnStart(const AAFwk::Want &want)
 {
     RINGTONE_INFO_LOG("Ringtone OnStart begin.");
@@ -183,6 +208,18 @@ void RingtoneDataShareExtension::OnStop()
     RINGTONE_INFO_LOG("end.");
 }
 
+/**
+ * @brief 扩展能力连接回调。
+ *
+ * 当客户端首次连接铃声数据共享Extension时由框架调用，执行以下流程：
+ * 1. 校验调用方身份，仅允许系统应用或原生SA应用连接，非系统应用返回nullptr；
+ * 2. 校验不支持跨端分布式场景（Want中deviceId不为空时返回nullptr）；
+ * 3. 创建RingtoneDataShareStubImpl远程对象，用于客户端IPC通信；
+ * 4. 返回远程对象的IRemoteObject引用。
+ *
+ * @param want 连接意图，包含设备ID等连接信息。
+ * @return 返回远程通信对象的IRemoteObject指针；若校验失败或内存不足则返回nullptr。
+ */
 sptr<IRemoteObject> RingtoneDataShareExtension::OnConnect(const AAFwk::Want &want)
 {
     if (!RingtonePermissionUtils::IsSystemApp() && IPCSkeleton::GetCallingUid() != 0
@@ -226,6 +263,18 @@ static int32_t CheckRingtonePerm(RingtoneDataCommand &cmd, bool isWrite)
     return err;
 }
 
+/**
+ * @brief 从URI中解析有效的数据库表名。
+ *
+ * 解析逻辑分两步：
+ * 1. 若URI中包含代理字符串（RINGTONE_URI_PROXY_STRING），则提取最后一个'/'到代理字符串之间的部分作为表名；
+ * 2. 若不含代理字符串，则在预定义的URI到表名的映射表（VALID_URI_TO_TABLE）中查找匹配项。
+ * 支持的URI路径包括：SIM卡设置、铃声、振动、触觉反馈2音。
+ *
+ * @param uri 数据共享操作的URI。
+ * @param tab 输出参数，解析得到的数据库表名。
+ * @return 返回Media::E_OK表示解析成功，E_INVALID_URI表示URI无效。
+ */
 static int32_t GetValidUriTab(const Uri &uri, string &tab)
 {
     string uriStr = uri.ToString();
@@ -315,6 +364,17 @@ void RingtoneDataShareExtension::DumpDataShareValueBucket(const std::vector<stri
     }
 }
 
+/**
+ * @brief 迁移旧路径铃声数据到新路径。
+ *
+ * 当检测到旧版自定义铃声目录（/storage/media/local/files/Ringtone）仍然存在时，
+ * 执行以下迁移流程：
+ * 1. 查询数据库中所有路径包含旧路径前缀的铃声记录；
+ * 2. 逐条将铃声文件从旧路径复制到新路径（/data/storage/el2/base/files/Ringtone）；
+ * 3. 更新数据库中对应记录的DATA字段为新路径；
+ * 4. 若所有文件均迁移成功，删除旧版铃声目录。
+ * 该方法在OnStart中条件触发调用，用于兼容旧版本升级场景。
+ */
 void RingtoneDataShareExtension::UpdataRdbPathData()
 {
     Uri uri(RINGTONE_LIBRARY_PROXY_DATA_URI_TONE_FILES);
@@ -364,6 +424,20 @@ void RingtoneDataShareExtension::UpdataRdbPathData()
     return;
 }
 
+/**
+ * @brief 向数据库插入一条铃声数据记录。
+ *
+ * 执行流程：
+ * 1. 打印待插入的字段值到日志（用于调试）；
+ * 2. 解析URI获取目标数据库表名；
+ * 3. 若目标表为Haptic2ToneFiles表，拒绝插入操作（该表不支持插入）；
+ * 4. 校验写操作权限（PERM_WRITE_RINGTONE）；
+ * 5. 委托RingtoneDataManager执行插入操作。
+ *
+ * @param uri 数据共享操作的URI，指示数据路径。
+ * @param value 待插入的数据键值对，包含各字段的值。
+ * @return 成功时返回插入记录的行ID（>=0），失败时返回错误码（<0）。
+ */
 int RingtoneDataShareExtension::Insert(const Uri &uri, const DataShareValuesBucket &value)
 {
     RINGTONE_DEBUG_LOG("entry, uri=%{public}s", uri.ToString().c_str());
@@ -392,6 +466,20 @@ int RingtoneDataShareExtension::Insert(const Uri &uri, const DataShareValuesBuck
     return ret;
 }
 
+/**
+ * @brief 更新数据库中的铃声数据记录。
+ *
+ * 执行流程：
+ * 1. 解析URI获取目标数据库表名；
+ * 2. 若目标表为Haptic2ToneFiles表，拒绝更新操作（该表不支持更新）；
+ * 3. 校验操作权限（读权限，因更新仅需系统应用身份）；
+ * 4. 委托RingtoneDataManager执行更新操作。
+ *
+ * @param uri 数据共享操作的URI，指示数据路径。
+ * @param predicates 过滤条件，指定需要更新的记录范围。
+ * @param value 待更新的数据键值对，包含需要修改的字段新值。
+ * @return 成功时返回更新的记录数（>=0），失败时返回错误码（<0）。
+ */
 int RingtoneDataShareExtension::Update(const Uri &uri, const DataSharePredicates &predicates,
     const DataShareValuesBucket &value)
 {
@@ -419,9 +507,22 @@ int RingtoneDataShareExtension::Update(const Uri &uri, const DataSharePredicates
     return RingtoneDataManager::GetInstance()->Update(cmd, value, predicates);
 }
 
+/**
+ * @brief 从数据库中删除铃声数据记录。
+ *
+ * 执行流程：
+ * 1. 解析URI获取目标数据库表名；
+ * 2. 若目标表为Haptic2ToneFiles表，拒绝删除操作（该表不支持删除）；
+ * 3. 校验写操作权限（PERM_WRITE_RINGTONE）；
+ * 4. 委托RingtoneDataManager执行删除操作。
+ *
+ * @param uri 数据共享操作的URI，指示数据路径。
+ * @param predicates 过滤条件，指定需要删除的记录范围。
+ * @return 成功时返回删除的记录数（>=0），失败时返回错误码（<0）。
+ */
 int RingtoneDataShareExtension::Delete(const Uri &uri, const DataSharePredicates &predicates)
 {
-    RINGTONE_DEBUG_LOG("entry, uri=%{public}s", uri.ToString().c_str());
+    RINGTONE_WARN_LOG("entry, uri=%{public}s", uri.ToString().c_str());
 
     string tab("");
     int err = GetValidUriTab(uri, tab);
@@ -444,6 +545,22 @@ int RingtoneDataShareExtension::Delete(const Uri &uri, const DataSharePredicates
     return RingtoneDataManager::GetInstance()->Delete(cmd, predicates);
 }
 
+/**
+ * @brief 查询数据库中的铃声数据记录。
+ *
+ * 执行流程：
+ * 1. 解析URI获取目标数据库表名；
+ * 2. 校验读操作权限（仅需系统应用身份）；
+ * 3. 委托RingtoneDataManager执行查询操作；
+ * 4. 将原生ResultSet包装为DataShareResultSet返回给调用方；
+ * 5. 通过businessError输出参数返回业务错误码。
+ *
+ * @param uri 数据共享操作的URI，指示数据路径。
+ * @param predicates 过滤条件，指定查询范围和排序等。
+ * @param columns 需要查询的列名列表。若为空则查询所有列。
+ * @param businessError 输出参数，用于返回业务错误码和错误信息。
+ * @return 成功时返回查询结果集，失败时返回nullptr。
+ */
 shared_ptr<DataShareResultSet> RingtoneDataShareExtension::Query(const Uri &uri,
     const DataSharePredicates &predicates, vector<string> &columns, DatashareBusinessError &businessError)
 {
@@ -474,6 +591,19 @@ shared_ptr<DataShareResultSet> RingtoneDataShareExtension::Query(const Uri &uri,
     return resultSet;
 }
 
+/**
+ * @brief 以指定模式打开铃声文件，返回文件描述符。
+ *
+ * 执行流程：
+ * 1. 解析URI获取目标数据库表名；
+ * 2. 将打开模式统一转为小写，判断是否为写模式（包含w/rw/wt/wa/rwt/rwa等）；
+ * 3. 根据模式类型校验相应权限（写模式需PERM_WRITE_RINGTONE权限）；
+ * 4. 委托RingtoneDataManager打开文件。
+ *
+ * @param uri 数据共享操作的URI，指示文件路径。
+ * @param mode 文件打开模式，如"r"（只读）、"w"（只写）、"rw"（读写）、"wt"（写截断）、"wa"（追加写）、"rwt"（读写截断）等。
+ * @return 成功时返回文件描述符（>=0），失败时返回错误码（<0）。
+ */
 int RingtoneDataShareExtension::OpenFile(const Uri &uri, const string &mode)
 {
     RINGTONE_DEBUG_LOG("entry, uri=%{public}s, mode=%{public}s",
@@ -543,6 +673,16 @@ bool RingtoneDataShareExtension::IdExists(const std::string &ids, int32_t id)
     return false;
 }
 
+/**
+ * @brief 检查当前用户是否已在系统参数中注册，若未注册则追加注册。
+ *
+ * 通过系统参数"ringtone.scanner.userId"获取已注册的用户ID列表（空格分隔），
+ * 判断当前活跃用户是否在其中。若存在则返回true，表示当前用户已注册；
+ * 若不存在，则将当前用户ID追加到列表中并写回系统参数，返回false。
+ * 该方法在RingtoneScanner中使用，用于多用户场景下判断是否需要为当前用户执行首次扫描。
+ *
+ * @return true表示当前用户已存在于已注册列表中，false表示当前用户是新注册的（首次扫描）。
+ */
 bool RingtoneDataShareExtension::CheckCurrentUser()
 {
     RINGTONE_INFO_LOG("CheckCurrentUser Start.");
@@ -565,6 +705,18 @@ bool RingtoneDataShareExtension::CheckCurrentUser()
     return false;
 }
 
+/**
+ * @brief 执行铃声扫描流程。
+ *
+ * 在OnStart中调用，负责扫描铃声目录并将铃声文件信息写入数据库。流程如下：
+ * 1. 通过RingtoneFileUtils确保铃声目录可访问；
+ * 2. 调用CheckCurrentUser检查当前用户是否已注册，同时管理系统参数；
+ * 3. 读取"ringtone.scanner.first"系统参数判断是否为首次启动：
+ *    - 若当前用户为新用户且参数为"true"，则将其设为"false"，表示首次扫描已触发；
+ * 4. 当参数为"false"时，启动RingtoneScannerManager执行非首次扫描（增量扫描）；
+ *    若参数仍为"true"（即首次启动且当前用户已注册），则不触发扫描，
+ *    等待其他初始化流程完成后由后续机制触发。
+ */
 void RingtoneDataShareExtension::RingtoneScanner()
 {
     RingtoneTracer tracer;

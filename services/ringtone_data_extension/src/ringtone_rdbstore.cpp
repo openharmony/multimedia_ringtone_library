@@ -148,7 +148,7 @@ int32_t RingtoneRdbStore::Delete(RingtoneDataCommand &cmd, int32_t &deletedRows)
     tracer.Start("RdbStore->DeleteByCmd");
 
     auto predicates = cmd.GetAbsRdbPredicates();
-    RINGTONE_INFO_LOG("delete WhereClause=%{public}s", predicates->GetWhereClause().c_str());
+    RINGTONE_WARN_LOG("delete WhereClause=%{public}s", predicates->GetWhereClause().c_str());
     for (const auto &arg : predicates->GetWhereArgs()) {
         RINGTONE_INFO_LOG("delete arg=%{private}s", arg.c_str());
     }
@@ -158,7 +158,7 @@ int32_t RingtoneRdbStore::Delete(RingtoneDataCommand &cmd, int32_t &deletedRows)
         RINGTONE_ERR_LOG("rdbStore_->Delete failed, ret = %{public}d", ret);
         return E_HAS_DB_ERROR;
     }
-    RINGTONE_INFO_LOG("Delete end, rows = %{public}d", deletedRows);
+    RINGTONE_WARN_LOG("Delete end, rows = %{public}d", deletedRows);
     return ret;
 }
 

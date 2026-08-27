@@ -264,8 +264,8 @@ int32_t RingtoneScannerObj::BootScanProcess()
     CHECK_AND_RETURN_RET_LOG(ret == E_OK, ret, "UpdateDefaultTone operation failed, ret: %{public}d", ret);
 
     int64_t scanEnd = RingtoneFileUtils::UTCTimeMilliSeconds();
-    RINGTONE_INFO_LOG("total preload tone files count:%{public}d, scanned: %{public}d, costed-time:%{public}"
-        PRId64 " ms", tonesScannedCount_, tonesScannedCount_, scanEnd - scanStart);
+    RINGTONE_WARN_LOG("total preload tone files scanned: %{public}d, costed-time:%{public}"
+        PRId64 " ms", tonesScannedCount_, scanEnd - scanStart);
     res = RingtoneScannerDb::DeleteNotExist();
     CHECK_AND_RETURN_RET_LOG(res, E_ERR, "DeleteNotExist operation failed, res: %{public}d", res);
     
@@ -437,9 +437,7 @@ int32_t RingtoneScannerObj::WalkFileTree(const string &path)
         return ERR_INCORRECT_PATH;
     }
     auto fName = (char *)calloc(FILENAME_MAX, sizeof(char));
-    if (fName == nullptr) {
-        return E_NO_MEMORY;
-    }
+    CHECK_AND_RETURN_RET_LOG(fName != nullptr, E_NO_MEMORY, "fName is nullptr");
     if (strcpy_s(fName, FILENAME_MAX, path.c_str()) != ERR_SUCCESS) {
         free(fName);
         return E_ERR;
