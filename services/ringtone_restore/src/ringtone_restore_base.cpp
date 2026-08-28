@@ -340,13 +340,16 @@ int32_t RingtoneRestoreBase::CalcRingtoneType(const VibrateFileInfo &vibrateInfo
 {
     int32_t ringtoneType = vibrateInfo.settingType;
     if (vibrateInfo.toneType == TONE_TYPE_ALARM) {
-        ringtoneType = CalcRingtoneTypeByMode(vibrateInfo.soundMode, TONE_TYPE_ALARM);
+        ringtoneType = CalcRingtoneTypeByMode(vibrateInfo.soundMode, TONE_SETTING_TYPE_ALARM);
     } else if (vibrateInfo.toneType == TONE_TYPE_NOTIFICATION) {
-        ringtoneType = CalcRingtoneTypeByMode(vibrateInfo.soundMode, TONE_TYPE_NOTIFICATION);
+        ringtoneType = CalcRingtoneTypeByMode(vibrateInfo.soundMode, TONE_SETTING_TYPE_NOTIFICATION);
     } else if (vibrateInfo.toneType == TONE_TYPE_RINGTONE) {
-        ringtoneType = CalcRingtoneTypeByMode(vibrateInfo.soundMode, TONE_TYPE_RINGTONE);
+        ringtoneType = CalcRingtoneTypeByMode(vibrateInfo.soundMode, TONE_SETTING_TYPE_RINGTONE);
     } else if (vibrateInfo.toneType == TONE_TYPE_SHOT) {
-        ringtoneType = CalcRingtoneTypeByMode(vibrateInfo.soundMode, TONE_TYPE_SHOT);
+        ringtoneType = CalcRingtoneTypeByMode(vibrateInfo.soundMode, TONE_SETTING_TYPE_SHOT);
+    } else {
+        RINGTONE_ERR_LOG("Calc ringtoneType: soundMode=%{public}d, toneType=%{public}d → ringtoneType=%{public}d",
+            vibrateInfo.soundMode, vibrateInfo.toneType, ringtoneType);
     }
     RINGTONE_INFO_LOG("Calc ringtoneType: soundMode=%{public}d, toneType=%{public}d → ringtoneType=%{public}d",
         vibrateInfo.soundMode, vibrateInfo.toneType, ringtoneType);
