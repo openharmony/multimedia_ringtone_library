@@ -174,7 +174,7 @@ HWTEST_F(RingtoneDefaultSettingsTest, settings_GetTonePathByDisplayName_001, Tes
     EXPECT_EQ(ret, E_OK);
     auto rawRdb = uniStore->GetRaw();
     std::unique_ptr<RingtoneDefaultSetting> defaultSetting = RingtoneDefaultSetting::GetObj(rawRdb);
-    defaultSetting->GetTonePathByDisplayName(name);
+    defaultSetting->GetDefaultTonePathByDisplayName(name);
 }
 
 HWTEST_F(RingtoneDefaultSettingsTest, settings_AlarmToneDefaultSettings_001, TestSize.Level0)
@@ -247,7 +247,7 @@ HWTEST_F(RingtoneDefaultSettingsTest, settings_GetTonePathByDisplayName_002, Tes
     auto rawRdb = uniStore->GetRaw();
     std::unique_ptr<RingtoneDefaultSetting> defaultSetting = RingtoneDefaultSetting::GetObj(rawRdb);
     ASSERT_NE(defaultSetting, nullptr);
-    defaultSetting->GetTonePathByDisplayName(name);
+    defaultSetting->GetDefaultTonePathByDisplayName(name);
 }
 } // namespace Media
 } // namespace OHOS

@@ -41,23 +41,18 @@ RingtoneDefaultSetting::RingtoneDefaultSetting(shared_ptr<NativeRdb::RdbStore> &
     settingMgr_ = make_unique<RingtoneSettingManager>(rdb);
 }
 
-string RingtoneDefaultSetting::GetTonePathByDisplayName(const string &name)
+string RingtoneDefaultSetting::GetDefaultTonePathByDisplayName(string &name)
 {
     string pathStr = {};
-    string querySql = "SELECT data FROM ToneFiles WHERE display_name = "s + "\"" + name + "\"";
+    string querySql = "SELECT data FROM ToneFiles WHERE display_name = "s + "\"" + name + "\"" +
+        " AND source_type = " + std::to_string(SOURCE_TYPE_PRESET);
     settingMgr_->TravelQueryResultSet(querySql, [&](shared_ptr<RingtoneMetadata> &meta) -> bool {
         pathStr = meta->GetData();
         if (pathStr.empty()) {
             pathStr = {};
             return false;
         }
-        if (pathStr.find(ROOT_TONE_PRELOAD_PATH_NOAH_PATH) == 0 ||
-            pathStr.find(ROOT_TONE_PRELOAD_PATH_CHINA_PATH) == 0 ||
-            pathStr.find(ROOT_TONE_PRELOAD_PATH_OVERSEA_PATH) == 0) {
-            return true;
-        }
-        pathStr = {};
-        return false;
+        return true;
     });
 
     return pathStr;
@@ -77,21 +72,21 @@ void RingtoneDefaultSetting::ShotToneDefaultSettings()
 
     string tonePath = {};
     string strVal1 = {paramValue1};
-    tonePath = GetTonePathByDisplayName(strVal1);
+    tonePath = GetDefaultTonePathByDisplayName(strVal1);
     if (!tonePath.empty() && tonePath != "") {
         settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_SHOT, SHOT_TONE_TYPE_SIM_CARD_1,
             SOURCE_TYPE_PRESET);
     }
 
     string strVal2 = {paramValue2};
-    tonePath = GetTonePathByDisplayName(strVal2);
+    tonePath = GetDefaultTonePathByDisplayName(strVal2);
     if (!tonePath.empty() && tonePath != "") {
         settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_SHOT, SHOT_TONE_TYPE_SIM_CARD_2,
             SOURCE_TYPE_PRESET);
     }
 
     string strValEsim1 = {paramValueEsim1};
-    tonePath = GetTonePathByDisplayName(strValEsim1);
+    tonePath = GetDefaultTonePathByDisplayName(strValEsim1);
     if (!tonePath.empty() && tonePath != "") {
         settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_SHOT, SHOT_TONE_TYPE_ESIM_CARD_1,
             SOURCE_TYPE_PRESET);
@@ -99,7 +94,7 @@ void RingtoneDefaultSetting::ShotToneDefaultSettings()
     }
 
     string strValEsim2 = {paramValueEsim2};
-    tonePath = GetTonePathByDisplayName(strValEsim2);
+    tonePath = GetDefaultTonePathByDisplayName(strValEsim2);
     if (!tonePath.empty() && tonePath != "") {
         settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_SHOT, SHOT_TONE_TYPE_ESIM_CARD_2,
             SOURCE_TYPE_PRESET);
@@ -115,7 +110,7 @@ void RingtoneDefaultSetting::NotificationToneDefaultSettings()
     if (strcmp(paramValue, "")) {
         string tonePath = {};
         string strVal = {paramValue};
-        tonePath = GetTonePathByDisplayName(strVal);
+        tonePath = GetDefaultTonePathByDisplayName(strVal);
         if (!tonePath.empty()) {
             settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_NOTIFICATION,
                 NOTIFICATION_TONE_TYPE, SOURCE_TYPE_PRESET);
@@ -137,21 +132,21 @@ void RingtoneDefaultSetting::RingToneDefaultSettings()
 
     string tonePath = {};
     string strVal1 = {paramValue1};
-    tonePath = GetTonePathByDisplayName(strVal1);
+    tonePath = GetDefaultTonePathByDisplayName(strVal1);
     if (!tonePath.empty() && tonePath != "") {
         settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_RINGTONE, RING_TONE_TYPE_SIM_CARD_1,
             SOURCE_TYPE_PRESET);
     }
 
     string strVal2 = {paramValue2};
-    tonePath = GetTonePathByDisplayName(strVal2);
+    tonePath = GetDefaultTonePathByDisplayName(strVal2);
     if (!tonePath.empty() && tonePath != "") {
         settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_RINGTONE, RING_TONE_TYPE_SIM_CARD_2,
             SOURCE_TYPE_PRESET);
     }
 
     string strValEsim1 = {paramValueEsim1};
-    tonePath = GetTonePathByDisplayName(strValEsim1);
+    tonePath = GetDefaultTonePathByDisplayName(strValEsim1);
     if (!tonePath.empty() && tonePath != "") {
         settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_RINGTONE, RING_TONE_TYPE_ESIM_CARD_1,
             SOURCE_TYPE_PRESET);
@@ -159,7 +154,7 @@ void RingtoneDefaultSetting::RingToneDefaultSettings()
     }
 
     string strValEsim2 = {paramValueEsim2};
-    tonePath = GetTonePathByDisplayName(strValEsim2);
+    tonePath = GetDefaultTonePathByDisplayName(strValEsim2);
     if (!tonePath.empty() && tonePath != "") {
         settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_RINGTONE, RING_TONE_TYPE_ESIM_CARD_2,
             SOURCE_TYPE_PRESET);
@@ -175,7 +170,7 @@ void RingtoneDefaultSetting::AlarmToneDefaultSettings()
     if (strcmp(paramValue, "")) {
         string tonePath = {};
         string strVal = {paramValue};
-        tonePath = GetTonePathByDisplayName(strVal);
+        tonePath = GetDefaultTonePathByDisplayName(strVal);
         if (!tonePath.empty()) {
             settingMgr_->CommitSetting(TONE_ID_DEFAULT, tonePath, TONE_SETTING_TYPE_ALARM, ALARM_TONE_TYPE,
                 SOURCE_TYPE_PRESET);

@@ -39,7 +39,7 @@ private:
     EXPORT void NotificationToneDefaultSettings();
     EXPORT void RingToneDefaultSettings();
     EXPORT void AlarmToneDefaultSettings();
-    EXPORT std::string GetTonePathByDisplayName(const std::string &name);
+    EXPORT std::string GetDefaultTonePathByDisplayName(std::string &name);
 
     std::unique_ptr<RingtoneSettingManager> settingMgr_ = nullptr;
 };
