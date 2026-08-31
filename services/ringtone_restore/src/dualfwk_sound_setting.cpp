@@ -142,14 +142,12 @@ int32_t DualFwkSoundSetting::ProcessConfRow(std::unique_ptr<DualFwkConfRow> &con
             settings_[found->second.item].toneSetting.toneType = found->second.toneType;
             settings_[found->second.item].defaultSysSet = (conf->defaultSysSet == "true" ? true : false);
         } else if (found->second.rowType == DUALFWK_CONFROW_SET) {
-            try {
-                settings_[found->second.item].setFlag = (std::stoi(conf->value) > 0 ? true : false);
-            } catch (const std::invalid_argument& e) {
+            int flagValue = 0;
+            if (DualFwkConfParser::StringConverter(conf->value, flagValue)) {
+                settings_[found->second.item].setFlag = (flagValue > 0);
+            } else {
                 settings_[found->second.item].setFlag = false;
-                RINGTONE_INFO_LOG("invalid argument: %s", e.what());
-            } catch (const std::out_of_range& e) {
-                settings_[found->second.item].setFlag = false;
-                RINGTONE_INFO_LOG("out of range: %s", e.what());
+                RINGTONE_ERR_LOG("xml setFlag parse failed: %{public}s", conf->value.c_str());
             }
         } else if (found->second.rowType == DUALFWK_CONFROW_PATH) {
             settings_[found->second.item].toneSetting.tonePath = RingtoneFileUtils::GetFileNameFromPath(conf->value);

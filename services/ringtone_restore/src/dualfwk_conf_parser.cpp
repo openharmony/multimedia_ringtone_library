@@ -27,7 +27,6 @@
 #include "ringtone_errno.h"
 #include "ringtone_log.h"
 #include "ringtone_type.h"
-#include "ringtone_utils.h"
 
 namespace OHOS {
 namespace Media {
@@ -63,26 +62,15 @@ int32_t DualFwkConfParser::Parse()
             RINGTONE_ERR_LOG("xml version is null");
             return E_ERR;
         }
-        try {
-            version_ = std::stoi((const char *)xmlVersion);
+        int value = 0;
+        if (StringConverter(reinterpret_cast<const char *>(xmlVersion), value)) {
+            version_ = value;
             RINGTONE_INFO_LOG("xml verison=%{public}d", version_);
-        } catch (const std::invalid_argument& e) {
-            RINGTONE_INFO_LOG("invalid argument: %{public}s", e.what());
-        } catch (const std::out_of_range& e) {
-            RINGTONE_INFO_LOG("out of range: %{public}s", e.what());
-        }
-
-        if (xmlVersion != nullptr) {
-            int32_t value = 0;
-            if (RingtoneUtils::IsNumber((const char *)xmlVersion) &&
-                StringConverter((const char *)xmlVersion, value)) {
-                version_ = value;
-                RINGTONE_INFO_LOG("xml verison=%{public}d", version_);
-                xmlFree(xmlVersion);
-            }
         } else {
-            RINGTONE_INFO_LOG("xml version is null");
+            RINGTONE_ERR_LOG("xml version parse failed: %{public}s",
+                reinterpret_cast<const char *>(xmlVersion));
         }
+        xmlFree(xmlVersion);
     } else {
         RINGTONE_ERR_LOG("root node name is not matched");
         return E_ERR;
@@ -104,15 +92,13 @@ int32_t DualFwkConfParser::ParseConf(xmlNodePtr node)
     auto conf = std::make_unique<DualFwkConfRow>();
     xmlChar* xmlAttrVal = xmlGetProp(node, BAD_CAST"id");
     if (xmlAttrVal) {
-        try {
-            int num = std::stoi((const char *)xmlAttrVal);
+        int num = 0;
+        if (StringConverter(reinterpret_cast<const char *>(xmlAttrVal), num)) {
             conf->id = num;
-        } catch (const std::invalid_argument& e) {
+        } else {
             conf->id = -1;
-            RINGTONE_INFO_LOG("invalid argument: %{public}s", e.what());
-        } catch (const std::out_of_range& e) {
-            conf->id = -1;
-            RINGTONE_INFO_LOG("out of range: %{public}s", e.what());
+            RINGTONE_ERR_LOG("xml id parse failed: %{public}s",
+                reinterpret_cast<const char *>(xmlAttrVal));
         }
         xmlFree(xmlAttrVal);
     }
