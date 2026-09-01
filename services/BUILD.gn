@@ -243,7 +243,6 @@ ohos_shared_library("ringtonerestore") {
     debug = false
   }
 
-  relative_install_dir = "module/multimedia"
   subsystem_name = "multimedia"
   part_name = "ringtone_library"
 }
