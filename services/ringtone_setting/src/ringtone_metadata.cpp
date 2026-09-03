@@ -91,6 +91,8 @@ void RingtoneMetadata::Init()
         &RingtoneMetadata::SetAlarmToneSourceType);
     memberFuncMap_[RINGTONE_COLUMN_SCANNER_FLAG] = make_pair(RingtoneResultSetDataType::DATA_TYPE_INT32,
         &RingtoneMetadata::SetScannerFlag);
+    memberFuncMap_[RINGTONE_COLUMN_DISPLAY_LANGUAGE_TYPE] = make_pair(RingtoneResultSetDataType::DATA_TYPE_STRING,
+        &RingtoneMetadata::SetDisplayLanguageType);
 }
 
 void RingtoneMetadata::SetToneId(const VariantData &toneId)
@@ -311,6 +313,16 @@ void RingtoneMetadata::SetScannerFlag(const VariantData &scannerFlag)
 int32_t RingtoneMetadata::GetScannerFlag() const
 {
     return scannerFlag_;
+}
+
+void RingtoneMetadata::SetDisplayLanguageType(const VariantData &displayLanguageType)
+{
+    displayLanguageType_ = std::get<std::string>(displayLanguageType);
+}
+
+const std::string &RingtoneMetadata::GetDisplayLanguageType() const
+{
+    return displayLanguageType_;
 }
 
 string RingtoneMetadata::ToString() const
