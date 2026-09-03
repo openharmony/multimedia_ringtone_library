@@ -200,7 +200,7 @@ shared_ptr<NativeRdb::ResultSet> RingtoneRdbStore::Query(RingtoneDataCommand &cm
     return resultSet;
 }
 
-int32_t RingtoneRdbStore::ExecuteSql(const string &sql)
+int32_t RingtoneRdbStore::ExecuteSql(const string &sql, const vector<NativeRdb::ValueObject> &values)
 {
     if (rdbStore_ == nullptr) {
         RINGTONE_ERR_LOG("Pointer rdbStore_ is nullptr. Maybe it didn't init successfully.");
@@ -208,7 +208,7 @@ int32_t RingtoneRdbStore::ExecuteSql(const string &sql)
     }
     RingtoneTracer tracer;
     tracer.Start("RdbStore->ExecuteSql");
-    int32_t ret = rdbStore_->ExecuteSql(sql);
+    int32_t ret = rdbStore_->ExecuteSql(sql, values);
     if (ret != NativeRdb::E_OK) {
         RINGTONE_ERR_LOG("rdbStore_->ExecuteSql failed, ret = %{public}d", ret);
         return E_HAS_DB_ERROR;
