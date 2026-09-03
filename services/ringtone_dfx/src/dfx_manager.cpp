@@ -142,7 +142,7 @@ int64_t DfxManager::RequestTonesCountAndSize(SourceType type, ToneType toneType,
     return rowCount;
 }
 
-int64_t DfxManager::RequestTonesCountOnly(SourceType type, ToneType toneType)
+int64_t DfxManager::RequestTonesCountOnly(SourceType type, ToneType toneType, int mediaType)
 {
     if (type > SOURCE_TYPE_CUSTOMISED || type < SOURCE_TYPE_PRESET) {
         RINGTONE_ERR_LOG("source type err, type=%{public}d", type);
@@ -155,6 +155,11 @@ int64_t DfxManager::RequestTonesCountOnly(SourceType type, ToneType toneType)
     if (toneType != TONE_TYPE_INVALID) {
         cmd.GetAbsRdbPredicates()->And();
         cmd.GetAbsRdbPredicates()->EqualTo(RINGTONE_COLUMN_TONE_TYPE, toneType);
+    }
+
+    if (mediaType >= 0) {
+        cmd.GetAbsRdbPredicates()->And();
+        cmd.GetAbsRdbPredicates()->EqualTo(RINGTONE_COLUMN_MEDIA_TYPE, mediaType);
     }
 
     auto resultSet = g_dfxUnistore->Query(cmd, { RINGTONE_COLUMN_TONE_ID });
@@ -172,7 +177,7 @@ int64_t DfxManager::RequestTonesCountOnly(SourceType type, ToneType toneType)
 
 int64_t DfxManager::ScanDirectorySize(const std::string &path)
 {
-    int64_t totalSize = 0;
+    std::uintmax_t totalSize = 0;
     std::error_code ec;
     if (!std::filesystem::exists(path, ec)) {
         RINGTONE_WARN_LOG("ScanDirectorySize path not exists: %{public}s, ec=%{public}d", path.c_str(), ec.value());
@@ -186,10 +191,18 @@ int64_t DfxManager::ScanDirectorySize(const std::string &path)
         if (entry.is_regular_file(ec)) {
             totalSize += entry.file_size(ec);
         } else if (entry.is_directory(ec)) {
-            totalSize += ScanDirectorySize(entry.path().string());
+            int64_t subDirSize = ScanDirectorySize(entry.path().string());
+            if (subDirSize >= 0) {
+                totalSize += static_cast<std::uintmax_t>(subDirSize);
+            }
         }
     }
-    return totalSize;
+
+    if (totalSize > static_cast<std::uintmax_t>(std::numeric_limits<int64_t>::max())) {
+        RINGTONE_ERR_LOG("ScanDirectorySize total size exceeds int64_t limit");
+        return 0;
+    }
+    return static_cast<int64_t>(totalSize);
 }
 
 // 统计内容: 预置铃声数、自定义铃声总数、各类型(闹钟/联系人/通知/应用通知/来电)数量和大小
@@ -204,7 +217,10 @@ RingtoneCountInfo DfxManager::GetRingtoneCountInfo()
     info.custAlarmNum = RequestTonesCountOnly(SourceType::SOURCE_TYPE_CUSTOMISED, TONE_TYPE_ALARM);
     info.custAlarmSize = ScanDirectorySize(RINGTONE_CUSTOMIZED_ALARM_PATH);
 
-    info.custContactAudioNum = RequestTonesCountOnly(SourceType::SOURCE_TYPE_CUSTOMISED, TONE_TYPE_CONTACTS);
+    info.custContactVideoNum = RequestTonesCountOnly(
+        SourceType::SOURCE_TYPE_CUSTOMISED, TONE_TYPE_CONTACTS, RINGTONE_MEDIA_TYPE_VIDEO);
+    info.custContactAudioNum = RequestTonesCountOnly(
+        SourceType::SOURCE_TYPE_CUSTOMISED, TONE_TYPE_CONTACTS, RINGTONE_MEDIA_TYPE_AUDIO);
     info.custContactSize = ScanDirectorySize(RINGTONE_CUSTOMIZED_CONTACTS_PATH);
 
     info.custAppNotifNum = RequestTonesCountOnly(SourceType::SOURCE_TYPE_CUSTOMISED, TONE_TYPE_APP_NOTIFICATION);
@@ -213,12 +229,15 @@ RingtoneCountInfo DfxManager::GetRingtoneCountInfo()
     info.custNotifNum = RequestTonesCountOnly(SourceType::SOURCE_TYPE_CUSTOMISED, TONE_TYPE_NOTIFICATION);
     info.custNotifSize = ScanDirectorySize(RINGTONE_CUSTOMIZED_NOTIFICATIONS_PATH);
 
-    info.custRingtoneAudioNum = RequestTonesCountOnly(SourceType::SOURCE_TYPE_CUSTOMISED, TONE_TYPE_RINGTONE);
+    info.custRingtoneAudioNum = RequestTonesCountOnly(
+        SourceType::SOURCE_TYPE_CUSTOMISED, TONE_TYPE_RINGTONE, RINGTONE_MEDIA_TYPE_AUDIO);
     info.custRingtoneSize = ScanDirectorySize(RINGTONE_CUSTOMIZED_RINGTONE_PATH);
 
     // 来电视频统计(数据库中记录的大小)
     int64_t videoSize = 0;
     info.custRingtoneVideoNum = RequestTonesCountAndSize(SourceType::SOURCE_TYPE_CUSTOMISED, TONE_TYPE_RINGTONE,
+        videoSize, RINGTONE_MEDIA_TYPE_VIDEO);
+    RequestTonesCountAndSize(SourceType::SOURCE_TYPE_CUSTOMISED, TONE_TYPE_INVALID,
         videoSize, RINGTONE_MEDIA_TYPE_VIDEO);
     info.custVideoTotalSize = videoSize;
 
