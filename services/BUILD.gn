@@ -242,7 +242,7 @@ ohos_shared_library("ringtonerestore") {
     cfi_cross_dso = true
     debug = false
   }
-
+  install_enable = false
   subsystem_name = "multimedia"
   part_name = "ringtone_library"
 }
