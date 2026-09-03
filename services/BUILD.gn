@@ -22,6 +22,7 @@ config("ringtone_public_config") {
     "${RINGTONE_DFX_PATH}/include",
     "${RINGTONE_UTILS_PATH}/include",
     "${RINGTONE_INTERFACES_PATH}/inner_api/native",
+    "${RINGTONE_HELPER_PATH}/include",
     "${RINGTONE_SETTING_PATH}/include",
   ]
   ldflags = [ "-Wl,--gc-sections" ]
@@ -175,11 +176,6 @@ ohos_shared_library("ringtonerestore") {
 
   ldflags = [ "-Wl" ]
 
-  cflags_cc = [
-    "-fvisibility-inlines-hidden",
-    "-Os",
-  ]
-
   deps = [
     ":ringtone_data_extension",
     ":ringtone_setting",
@@ -242,6 +238,7 @@ ohos_shared_library("ringtonerestore") {
     cfi_cross_dso = true
     debug = false
   }
+
   install_enable = false
   subsystem_name = "multimedia"
   part_name = "ringtone_library"
@@ -283,10 +280,7 @@ ohos_shared_library("ringtone_utils") {
     "-Os",
   ]
 
-  cflags_cc = [
-    "-fvisibility-inlines-hidden",
-    "-Os",
-  ]
+  cflags_cc = [ "-Os" ]
 
   external_deps = [
     "ability_base:want",
@@ -305,6 +299,16 @@ ohos_shared_library("ringtone_utils") {
     "relational_store:native_rdb",
     "samgr:samgr_proxy",
   ]
+
+  defines = []
+
+  if (ringtone_core_service_enable) {
+    defines += [ "CORE_SERVICE_ENABLE" ]
+    external_deps += [
+      "core_service:libtel_common",
+      "core_service:tel_core_service_api",
+    ]
+  }
 
   if (!ringtone_link_opt) {
     sanitize = {
