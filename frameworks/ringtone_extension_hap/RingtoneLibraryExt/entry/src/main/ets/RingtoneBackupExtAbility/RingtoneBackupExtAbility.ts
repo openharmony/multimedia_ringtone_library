@@ -42,6 +42,16 @@ export interface IResultErrorInfo {
   errorInfo: string;
 }
 
+interface DetailData {
+  version: number;
+  peerSlotNum: number;
+}
+
+interface BackupInfoList {
+  type: string;
+  detail: string;
+}
+
 export default class RingtoneBackupExtAbility extends BackupExtensionAbility {
   async onBackup() : Promise<void> {
     console.log(TAG, 'onBackup ok.');
@@ -50,15 +60,29 @@ export default class RingtoneBackupExtAbility extends BackupExtensionAbility {
   async onBackupEx(backupInfo: string): Promise<string> {
     console.log(TAG, `onBackupEx start, backupInfo: ${backupInfo}`);
     try {
-      let backupInfoObj = JSON.parse(backupInfo);
-      let peerSlotNum = backupInfoObj.peerSlotNum;
-      if (peerSlotNum === undefined) {
-        peerSlotNum = 2;
+      let needEsimClean : boolean = false;
+      let peerSlotNum = 2;
+      if (backupInfo === '') {
+        needEsimClean = true;
+      } else {
+        let backupInfoObj : object = JSON.parse(backupInfo);
+        let backupInfoList : BackupInfoList[] = backupInfoObj as BackupInfoList[];
+        for (let i = 0; i < backupInfoList.length; i++) {
+          let info = backupInfoList[i];
+          let type = backupInfoObj['type'];
+          if (type !== 'compatibility_info') {
+            continue;
+          }
+          console.log(TAG, `backupInfo-type: ${type}`);
+          let detailData : DetailData = backupInfoObj['detail'];
+          console.log(TAG, `backupInfo-detailData.peerSlotNum: ${detailData.peerSlotNum}`);
+          peerSlotNum = detailData.peerSlotNum;
+        }
+        console.log(TAG, `peerSlotNum: ${peerSlotNum}`);
+        const OLD_TOTAL_CARD_COUNT = 2;
+        needEsimClean = peerSlotNum <= OLD_TOTAL_CARD_COUNT;
+        console.log(TAG, `needEsimClean: ${needEsimClean}`);
       }
-      console.log(TAG, `peerSlotNum: ${peerSlotNum}`);
-
-      const MAX_TOTAL_CARD_COUNT = 4;
-      const needEsimClean = MAX_TOTAL_CARD_COUNT > peerSlotNum;
 
       const tempDbPath = '/storage/media/local/files/.backup/backup/ringtone_temp_rdb/';
       const srcDbPath = this.context.backupDir + 'restore/data/storage/el1/database/rdb/';
@@ -70,7 +94,9 @@ export default class RingtoneBackupExtAbility extends BackupExtensionAbility {
 
       const ringtoneBasePath = this.context.backupDir + 'restore/data/storage/el2/base/files/Ringtone/';
       // peerSlotNum: 传入实际值用于eSIM裁剪；ringtoneBasePath用于过滤未使用自定义铃声
-      await this.copyDbAndClean(srcDbPath, tempDbPath, peerSlotNum, ringtoneBasePath);
+      if (needEsimClean) {
+        await this.copyDbAndClean(srcDbPath, tempDbPath, peerSlotNum, ringtoneBasePath);
+      }
 
       console.log(TAG, `onBackupEx end, tempDbPath: ${tempDbPath}`);
       return JSON.stringify({
@@ -95,16 +121,8 @@ export default class RingtoneBackupExtAbility extends BackupExtensionAbility {
       console.log(TAG, `copyDbAndClean: db file copied`);
 
       // 拷贝WAL和SHM文件（如果存在）
-      try {
-        await fs.copyFile(srcDbFile + '-wal', destDbFile + '-wal');
-      } catch (e) {
-        /* WAL may not exist */
-      };
-      try {
-        await fs.copyFile(srcDbFile + '-shm', destDbFile + '-shm');
-      } catch (e) {
-        /* SHM may not exist */
-      };
+      try { await fs.copyFile(srcDbFile + '-wal', destDbFile + '-wal'); } catch (e) { /* WAL may not exist */ }
+      try { await fs.copyFile(srcDbFile + '-shm', destDbFile + '-shm'); } catch (e) { /* SHM may not exist */ }
 
       // 2. 调用Native层NAPI方法：清理eSIM数据 + 过滤未使用的自定义铃声 + 删除对应文件
       const dbPath = destPath + 'ringtone_library.db';
