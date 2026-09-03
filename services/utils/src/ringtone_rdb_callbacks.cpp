@@ -474,11 +474,17 @@ static CardConfig DetectActiveCards()
         RINGTONE_INFO_LOG("  card[%{public}zu]: isEsim=%{public}d, simLabelIndex=%{public}d",
             i, telInfo.isEsim, telInfo.simLabelIndex);
         if (telInfo.isEsim) {
-            if (telInfo.simLabelIndex == SIM_LABEL_INDEX_1) { config.hasESim1 = true; }
-            else if (telInfo.simLabelIndex == SIM_LABEL_INDEX_2) { config.hasESim2 = true; }
+            if (telInfo.simLabelIndex == SIM_LABEL_INDEX_1) {
+                config.hasESim1 = true;
+            } else if (telInfo.simLabelIndex == SIM_LABEL_INDEX_2) {
+                config.hasESim2 = true;
+            }
         } else {
-            if (telInfo.simLabelIndex == SIM_LABEL_INDEX_1) { config.hasSim1 = true; }
-            else if (telInfo.simLabelIndex == SIM_LABEL_INDEX_2) { config.hasSim2 = true; }
+            if (telInfo.simLabelIndex == SIM_LABEL_INDEX_1) {
+                config.hasSim1 = true;
+            } else if (telInfo.simLabelIndex == SIM_LABEL_INDEX_2) {
+                config.hasSim2 = true;
+            }
         }
     }
     RINGTONE_INFO_LOG("Card detection result: hasSim1=%{public}d, hasSim2=%{public}d, "
