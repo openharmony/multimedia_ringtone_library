@@ -60,6 +60,13 @@
         }                                              \
     } while (0)
 
+#define CHECK_AND_RETURN(cond, ...)                    \
+    do {                                               \
+        if (!(cond)) {                                 \
+            return;                                    \
+        }                                              \
+    } while (0)
+
 #define CHECK_AND_PRINT_LOG(cond, fmt, ...)            \
     do {                                               \
         if (!(cond)) {                                 \
