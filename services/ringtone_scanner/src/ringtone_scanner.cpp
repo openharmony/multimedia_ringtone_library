@@ -672,11 +672,20 @@ int32_t RingtoneScannerObj::BuildData(const struct stat &statInfo)
 int32_t RingtoneScannerObj::BuildVibrateData(const struct stat &statInfo)
 {
     vibrateData_ = make_unique<VibrateMetadata>();
-    CHECK_AND_RETURN_RET_LOG(vibrateData_ != nullptr, E_DATA, "failed to make unique ptr for metadata");
-    CHECK_AND_RETURN_RET(!S_ISDIR(statInfo.st_mode), E_INVALID_ARGUMENTS);
+    if (vibrateData_ == nullptr) {
+        RINGTONE_ERR_LOG("failed to make unique ptr for metadata");
+        return E_DATA;
+    }
+
+    if (S_ISDIR(statInfo.st_mode)) {
+        return E_INVALID_ARGUMENTS;
+    }
 
     int32_t err = RingtoneScannerDb::GetVibrateFileBasicInfo(path_, vibrateData_);
-    CHECK_AND_RETURN_RET_LOG(err == E_OK, err, "failed to get file basic info");
+    if (err != E_OK) {
+        RINGTONE_ERR_LOG("failed to get file basic info");
+        return err;
+    }
 
     {
         std::lock_guard<std::mutex> lock(g_typeMapMutex);
