@@ -31,6 +31,7 @@
 #include "ringtone_fetch_result.h"
 #include "ringtone_rdbstore.h"
 #include "ringtone_scanner_utils.h"
+#include "ringtone_language_manager.h"
 
 namespace OHOS {
 namespace Media {
@@ -239,6 +240,8 @@ int32_t RingtoneRestore::StartRestore()
     }
     // 刷新设置管理器，将CommitSetting中缓存的设置操作持久化到DB
     FlushSettings();
+    // 恢复完成后同步铃声多语言显示名，确保title与当前系统语言一致
+    RingtoneLanguageManager::GetInstance()->SyncAssetLanguage();
     return ret;
 }
 
