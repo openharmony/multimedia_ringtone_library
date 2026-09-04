@@ -57,6 +57,7 @@ static constexpr char VIBRATION_MULTILINGUAL_FILE_PATH[] =
     "/system/variant/phone/base/etc/resource/media/haptics/vibration_list_language.xml";
 #endif
 
+
 shared_ptr<RingtoneLanguageManager> RingtoneLanguageManager::instance_ = nullptr;
 mutex RingtoneLanguageManager::mutex_;
 
@@ -203,6 +204,7 @@ void RingtoneLanguageManager::UpdateVibrationLanguage()
     if (rowCount == 0) {
         return;
     }
+
 #ifdef USE_CONFIG_POLICY
     char buf[MAX_PATH_LEN] = {0};
     char *path = GetOneCfgFile(VIBRATION_MULTILINGUAL_FILE_PATH, buf, MAX_PATH_LEN);
