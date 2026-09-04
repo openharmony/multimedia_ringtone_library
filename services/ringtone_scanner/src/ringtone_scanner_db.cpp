@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#define MLOG_TAG "Scanner"
+#define MLOG_TAG "RingtoneScanner"
 
 #include "ringtone_scanner_db.h"
 
@@ -415,7 +415,7 @@ int32_t RingtoneScannerDb::UpdateMetadata(const RingtoneMetadata &metadata, stri
         RINGTONE_ERR_LOG("get raw rdb failed");
         return E_RDB;
     }
-    RINGTONE_WARN_LOG("Update operation. tableName %{public}s. whereClause %{public}s", tableName.c_str(),
+    RINGTONE_DEBUG_LOG("Update operation. tableName %{public}s. whereClause %{public}s", tableName.c_str(),
         whereClause.c_str());
     int32_t result = rawRdb->Update(updateCount, tableName, values, whereClause, whereArgs);
     if (result != NativeRdb::E_OK || updateCount <= 0) {

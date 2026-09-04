@@ -96,6 +96,9 @@ public:
     EXPORT void SetScannerFlag(const VariantData &flag);
     EXPORT int32_t GetScannerFlag() const;
 
+    EXPORT void SetDisplayLanguageType(const VariantData &displayLanguageType);
+    EXPORT const std::string &GetDisplayLanguageType() const;
+
     EXPORT void Init();
 
     using RingtoneMetadataFnPtr = void (RingtoneMetadata::*)(const VariantData &);
@@ -125,6 +128,7 @@ private:
     int32_t alarmToneType_;
     int32_t alarmToneSourceType_;
     int32_t scannerFlag_;
+    std::string displayLanguageType_;
 };
 } // namespace Media
 } // namespace OHOS

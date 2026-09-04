@@ -95,6 +95,7 @@ struct FileInfo {
     int32_t ringToneSourceType {0};
     int32_t alarmToneType {0};
     int32_t alarmToneSourceType {0};
+    std::string displayLanguageType {};
     std::string restorePath {};
     int32_t scannerFlag {0};
     bool doInsert {true};
@@ -124,18 +125,21 @@ struct FileInfo {
         ringToneSourceType(meta.GetRingToneSourceType()),
         alarmToneType(meta.GetAlarmToneType()),
         alarmToneSourceType(meta.GetAlarmToneSourceType()),
+        displayLanguageType(meta.GetDisplayLanguageType()),
         scannerFlag(meta.GetScannerFlag()) {}
 
     std::string toString() const
     {
         return data + "|" + displayName + "|" + title + "|size=" + std::to_string(size) +
             "|sourceType=" + std::to_string(sourceType) +
+            "|ringToneType=" + std::to_string(ringToneType) +
+            "|ringToneSourceType=" + std::to_string(ringToneSourceType) +
             "|shotToneType=" + std::to_string(shotToneType) +
             "|shotToneSourceType=" + std::to_string(shotToneSourceType) +
             "|notificationToneType=" + std::to_string(notificationToneType) +
             "|notificationToneSourceType=" + std::to_string(notificationToneSourceType) +
-            "|ringToneType=" + std::to_string(ringToneType) +
-            "|ringToneSourceType=" + std::to_string(ringToneSourceType) +
+            "|alarmToneType=" + std::to_string(alarmToneType) +
+            "|alarmToneSourceType=" + std::to_string(alarmToneSourceType) +
             "|doInsert=" + std::to_string(doInsert) +
             "|skipSetting=" + std::to_string(skipSetting) +
             "|restorePath=" + restorePath + "|simcard=" + std::to_string(simcard);

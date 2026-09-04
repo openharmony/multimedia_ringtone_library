@@ -161,7 +161,9 @@ RingtoneMediaType RingtoneMimeTypeUtils::GetMediaTypeFromMimeType(const string &
     } else if (prefix == "video") {
         return RINGTONE_MEDIA_TYPE_VIDEO;
     } else {
-        RINGTONE_WARN_LOG("Invalid mime type: %{public}s", mimeType.c_str());
+        if (mimeType != "application/json") {
+            RINGTONE_WARN_LOG("Invalid mime type: %{public}s", mimeType.c_str());
+        }
         return RINGTONE_MEDIA_TYPE_INVALID;
     }
 }

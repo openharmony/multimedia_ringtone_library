@@ -56,7 +56,7 @@ public:
 private:
     // 按铃声类型统计数量和大小的内部方法
     int64_t RequestTonesCountAndSize(SourceType type, ToneType toneType, int64_t &size, int mediaType = -1);
-    int64_t RequestTonesCountOnly(SourceType type, ToneType toneType);
+    int64_t RequestTonesCountOnly(SourceType type, ToneType toneType, int mediaType = -1);
     int64_t ScanDirectorySize(const std::string &path);  // 扫描目录计算总大小的内部方法
     static std::mutex instanceLock_;
     static std::shared_ptr<DfxManager> dfxManagerInstance_;

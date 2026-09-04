@@ -40,7 +40,8 @@ public:
     EXPORT std::shared_ptr<NativeRdb::ResultSet> Query(RingtoneDataCommand &cmd,
         const std::vector<std::string> &columns) override;
 
-    EXPORT int32_t ExecuteSql(const std::string &sql) override;
+    EXPORT int32_t ExecuteSql(const std::string &sql,
+        const std::vector<NativeRdb::ValueObject> &selectionArgs = std::vector<NativeRdb::ValueObject>()) override;
     EXPORT std::shared_ptr<NativeRdb::ResultSet> QuerySql(const std::string &sql,
         const std::vector<std::string> &selectionArgs = std::vector<std::string>()) override;
     EXPORT std::shared_ptr<NativeRdb::RdbStore> GetRaw() override;

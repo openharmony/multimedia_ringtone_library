@@ -66,66 +66,86 @@ RingtoneSettingManager::RingtoneSettingManager(std::shared_ptr<NativeRdb::RdbSto
 
 int32_t RingtoneSettingManager::CommitSettingCompare(int32_t settingType, int32_t toneType, int32_t sourceType)
 {
+    // sourceType只接受PRESET(1)和CUSTOMISED(2)，INVALID(-1)等值会被拒绝
     if ((sourceType != SOURCE_TYPE_PRESET) && (sourceType != SOURCE_TYPE_CUSTOMISED)) {
         return E_INVALID_ARGUMENTS;
     }
     if ((settingType < TONE_SETTING_TYPE_ALARM) || (settingType >= TONE_SETTING_TYPE_MAX)) {
         return E_INVALID_ARGUMENTS;
     }
+    // 通知和闹钟的toneType是固定值（非卡位图），必须匹配
     if (((settingType == TONE_SETTING_TYPE_NOTIFICATION) && (toneType != NOTIFICATION_TONE_TYPE)) ||
         ((settingType == TONE_SETTING_TYPE_ALARM) && (toneType != ALARM_TONE_TYPE))) {
         return E_INVALID_ARGUMENTS;
     }
-    if ((settingType == TONE_SETTING_TYPE_SHOT) && ((toneType <= SHOT_TONE_TYPE_NOT) ||
-        (toneType >= TONE_SETTING_TYPE_MAX))) {
-        return E_INVALID_ARGUMENTS;
+    // 短信和来电的toneType是卡位图，必须至少有一个卡位被设置
+    if (settingType == TONE_SETTING_TYPE_SHOT) {
+        if (toneType <= SHOT_TONE_TYPE_NOT || !HasAnyCardSet(toneType)) {
+            return E_INVALID_ARGUMENTS;
+        }
     }
-    if ((settingType == TONE_SETTING_TYPE_RINGTONE) && ((toneType <= RING_TONE_TYPE_NOT) ||
-        (toneType >= TONE_SETTING_TYPE_MAX))) {
-        return E_INVALID_ARGUMENTS;
+    if (settingType == TONE_SETTING_TYPE_RINGTONE) {
+        if (toneType <= RING_TONE_TYPE_NOT || !HasAnyCardSet(toneType)) {
+            return E_INVALID_ARGUMENTS;
+        }
     }
     return E_OK;
 }
 
-int32_t RingtoneSettingManager::CommitSetting(int32_t toneId, const string &tonePath, int32_t settingType,
+int32_t RingtoneSettingManager::TryMergeExistingSetting(const string &tonePath, int32_t settingType,
     int32_t toneType, int32_t sourceType)
 {
-    RINGTONE_INFO_LOG("toneId=%{public}d, tonePath=%{public}s, settingType=%{public}d, toneType=%{public}d,"
-        "sourceType=%{public}d", toneId, tonePath.c_str(), settingType, toneType, sourceType);
-    auto ret = CommitSettingCompare(settingType, toneType, sourceType);
-    if (ret != E_OK) {
-        return ret;
-    }
-    SettingItem item = {toneId, settingType, toneType, sourceType};
     for (auto it = settings_.find(tonePath); it != settings_.end(); it++) {
+        // 完全重复：settingType + toneType + sourceType 三者均相同
         if ((settingType == it->second.settingType) && (toneType == it->second.toneType) &&
             (sourceType == it->second.sourceType)) {
             RINGTONE_INFO_LOG("warning: this setting is existing, tone file:%{public}s", tonePath.c_str());
             return E_FAIL;
         } else if ((settingType == it->second.settingType) && (sourceType == it->second.sourceType)) {
-            if (((settingType == TONE_SETTING_TYPE_SHOT) && (it->second.toneType == SHOT_TONE_TYPE_SIM_CARD_BOTH)) ||
-                ((settingType == TONE_SETTING_TYPE_RINGTONE) &&
-                (it->second.toneType == SHOT_TONE_TYPE_SIM_CARD_BOTH))) {
-                RINGTONE_INFO_LOG("warning: this setting is existing, tone file:%{public}s", tonePath.c_str());
-                return E_FAIL;
+            // 同设置类型同来源，但卡位不同：合并卡位图
+            if (settingType == TONE_SETTING_TYPE_SHOT || settingType == TONE_SETTING_TYPE_RINGTONE) {
+                return MergeCardToneType(it->second, toneType);
             }
-            if ((settingType == TONE_SETTING_TYPE_SHOT) && (toneType != it->second.toneType)) {
-                it->second.toneType = SHOT_TONE_TYPE_SIM_CARD_BOTH;
-                return E_OK;
-            }
-            if ((settingType == TONE_SETTING_TYPE_RINGTONE) && (toneType != it->second.toneType)) {
-                it->second.toneType = RING_TONE_TYPE_SIM_CARD_BOTH;
-                return E_OK;
-            }
-        } else {
-            continue;
         }
     }
+    return E_ERR;
+}
+
+int32_t RingtoneSettingManager::MergeCardToneType(SettingItem &item, int32_t toneType)
+{
+    // 检查新卡位是否已存在于已有项中
+    if (static_cast<uint32_t>(item.toneType) & static_cast<uint32_t>(toneType)) {
+        RINGTONE_INFO_LOG("card already merged, toneType=%{public}d", item.toneType);
+        return E_OK;
+    }
+    // 位或运算合并卡位图，如 0b0001 | 0b0010 = 0b0011
+    item.toneType = SetCardMask(item.toneType, toneType);
+    RINGTONE_INFO_LOG("merged card mask=%{public}d", item.toneType);
+    return E_OK;
+}
+
+int32_t RingtoneSettingManager::CommitSetting(int32_t toneId, string &tonePath, int32_t settingType, int32_t toneType,
+    int32_t sourceType)
+{
+    RINGTONE_INFO_LOG("toneId=%{public}d, tonePath=%{public}s, settingType=%{public}d, toneType=%{public}d,"
+        "sourceType=%{public}d", toneId, tonePath.c_str(), settingType, toneType, sourceType);
+    // 步骤1: 参数合法性校验
+    auto ret = CommitSettingCompare(settingType, toneType, sourceType);
+    if (ret != E_OK) {
+        return ret;
+    }
+    // 步骤2: 尝试合并到已有的同路径缓存项（如合并卡位图）
+    ret = TryMergeExistingSetting(tonePath, settingType, toneType, sourceType);
+    if (ret != E_ERR) {
+        return ret;
+    }
+    // 步骤3: 无可合并项，新增缓存项
+    SettingItem item = {toneId, settingType, toneType, sourceType};
     settings_.emplace(tonePath, item);
     return E_OK;
 }
 
-void RingtoneSettingManager::TravelSettings(function<int32_t (const string &, SettingItem &)> func)
+void RingtoneSettingManager::TravelSettings(function<int32_t (string &, SettingItem &)> func)
 {
     for (auto it = settings_.cbegin(); it != settings_.cend(); ++it) {
         string first = it->first;
@@ -142,7 +162,7 @@ void RingtoneSettingManager::SetForceFlush(bool forceFlush)
 
 void RingtoneSettingManager::FlushSettings()
 {
-    TravelSettings([this](const string &tonePath, SettingItem &item) -> int32_t {
+    TravelSettings([this](string &tonePath, SettingItem &item) -> int32_t {
         int32_t ret = CleanupSetting(item.settingType, item.toneType, item.sourceType);
         if (ret != E_OK) {
             RINGTONE_ERR_LOG("error: cleanup settings failed, tonePath=%{public}s", tonePath.c_str());
@@ -150,7 +170,7 @@ void RingtoneSettingManager::FlushSettings()
         return ret;
     });
 
-    TravelSettings([this](const string &tonePath, SettingItem &item) -> int32_t {
+    TravelSettings([this](string &tonePath, SettingItem &item) -> int32_t {
         int32_t ret = this->UpdateSettingsByPath(tonePath, item.settingType, item.toneType, item.sourceType);
         if (ret != E_OK) {
             RINGTONE_ERR_LOG("error: update settings failed, tonePath=%{public}s", tonePath.c_str());
@@ -188,7 +208,7 @@ void RingtoneSettingManager::ExtractMetaFromColumn(const shared_ptr<NativeRdb::R
         dataType = itr->second.first;
         requestFunc = itr->second.second;
     } else {
-        RINGTONE_ERR_LOG("column name invalid %{private}s", col.c_str());
+        RINGTONE_ERR_LOG("column name invalid %{public}s", col.c_str());
         return;
     }
 
@@ -242,7 +262,6 @@ int32_t RingtoneSettingManager::UpdateCardToneSetting(const std::string &toneTyp
         RINGTONE_ERR_LOG("execute update failed");
         return E_DB_FAIL;
     }
-
     return E_OK;
 }
 
@@ -301,32 +320,37 @@ int32_t RingtoneSettingManager::UpdateAlarmSetting(shared_ptr<RingtoneMetadata> 
     return E_OK;
 }
 
-int32_t RingtoneSettingManager::UpdateSettingsByPath(const string &tonePath, int32_t settingType, int32_t toneType,
+int32_t RingtoneSettingManager::UpdateSettingsByPath(string &tonePath, int32_t settingType, int32_t toneType,
     int32_t sourceType)
 {
     string querySql = QUERY_SETTINGS_BY_PATH + "\"" + tonePath + "\"";
     auto ret = TravelQueryResultSet(querySql, [&](shared_ptr<RingtoneMetadata> &meta) -> bool {
         string updateSql = {};
-        bool result = true;
-        switch (settingType) {
-            case TONE_SETTING_TYPE_SHOT:
-                result = UpdateShotSetting(meta, toneType, sourceType) == E_OK;
-                break;
-            case TONE_SETTING_TYPE_RINGTONE:
-                result = UpdateRingtoneSetting(meta, toneType, sourceType) == E_OK;
-                break;
-            case TONE_SETTING_TYPE_NOTIFICATION:
-                result = UpdateNotificationSetting(meta, toneType, sourceType) == E_OK;
-                break;
-            case TONE_SETTING_TYPE_ALARM:
-                result = UpdateAlarmSetting(meta, toneType, sourceType) == E_OK;
-                break;
-            default:
-                RINGTONE_INFO_LOG("invalid tone-setting-type");
-                result =  false;
-                break;
+        if (settingType == TONE_SETTING_TYPE_SHOT) {
+            // update shot-tone settings
+            if (UpdateShotSetting(meta, toneType, sourceType) != E_OK) {
+                return false;
+            }
+        } else if (settingType == TONE_SETTING_TYPE_RINGTONE) {
+            // update ring-tone settings
+            if (UpdateRingtoneSetting(meta, toneType, sourceType) != E_OK) {
+                return false;
+            }
+        } else if (settingType == TONE_SETTING_TYPE_NOTIFICATION) {
+            // update notification-tone settings
+            if (UpdateNotificationSetting(meta, toneType, sourceType) != E_OK) {
+                return false;
+            }
+        } else if (settingType == TONE_SETTING_TYPE_ALARM) {
+            // update alarm-tone settings
+            if (UpdateAlarmSetting(meta, toneType, sourceType) != E_OK) {
+                return false;
+            }
+        } else {
+            RINGTONE_INFO_LOG("invalid tone-setting-type");
+            return false;
         }
-        return result;
+        return true;
     });
 
     return ret;
@@ -337,30 +361,25 @@ int32_t RingtoneSettingManager::UpdateSettingsWithToneId(int32_t settingType, in
     int32_t ret = E_OK;
 
     string updateSql = {};
-    switch (settingType) {
-        case TONE_SETTING_TYPE_SHOT:
-            // update shot-tone settings
-            updateSql = "UPDATE ToneFiles SET " + RINGTONE_COLUMN_SHOT_TONE_TYPE + " = " +
-                to_string(toneType) + " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(toneId);
-            break;
-        case TONE_SETTING_TYPE_RINGTONE:
-            // update ring-tone settings
-            updateSql = "UPDATE ToneFiles SET " + RINGTONE_COLUMN_RING_TONE_TYPE + " = " +
-                to_string(toneType) + " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(toneId);
-            break;
-        case TONE_SETTING_TYPE_NOTIFICATION:
-            // update notification-tone settings
-            updateSql = "UPDATE ToneFiles SET " + RINGTONE_COLUMN_NOTIFICATION_TONE_TYPE + " = " +
-                to_string(toneType) + " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(toneId);
-            break;
-        case TONE_SETTING_TYPE_ALARM:
-            // update alarm-tone settings
-            updateSql = "UPDATE ToneFiles SET " + RINGTONE_COLUMN_ALARM_TONE_TYPE + " = " +
-                to_string(toneType) + " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(toneId);
-            break;
-        default:
-            RINGTONE_INFO_LOG("invalid tone-setting-type");
-            return E_INVALID_ARGUMENTS;
+    if (settingType == TONE_SETTING_TYPE_SHOT) {
+        // update shot-tone settings
+        updateSql = "UPDATE ToneFiles SET " + RINGTONE_COLUMN_SHOT_TONE_TYPE + " = " +
+            to_string(toneType) + " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(toneId);
+    } else if (settingType == TONE_SETTING_TYPE_RINGTONE) {
+        // update ring-tone settings
+        updateSql = "UPDATE ToneFiles SET " + RINGTONE_COLUMN_RING_TONE_TYPE + " = " +
+            to_string(toneType) + " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(toneId);
+    } else if (settingType == TONE_SETTING_TYPE_NOTIFICATION) {
+        // update notification-tone settings
+        updateSql = "UPDATE ToneFiles SET " + RINGTONE_COLUMN_NOTIFICATION_TONE_TYPE + " = " +
+            to_string(toneType) + " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(toneId);
+    } else if (settingType == TONE_SETTING_TYPE_ALARM) {
+        // update alarm-tone settings
+        updateSql = "UPDATE ToneFiles SET " + RINGTONE_COLUMN_ALARM_TONE_TYPE + " = " +
+            to_string(toneType) + " WHERE " + RINGTONE_COLUMN_TONE_ID + " = " + to_string(toneId);
+    } else {
+        RINGTONE_INFO_LOG("invalid tone-setting-type");
+        return E_INVALID_ARGUMENTS;
     }
     if (!updateSql.empty()) {
         int32_t rdbRet = ringtoneRdb_->ExecuteSql(updateSql);
@@ -385,7 +404,7 @@ int32_t RingtoneSettingManager::CleanupSettingFromRdb(int32_t settingType, int32
     int32_t ret = E_OK;
     string updateSql = {};
     if (settingType == TONE_SETTING_TYPE_SHOT) {
-        if (toneType == SHOT_TONE_TYPE_SIM_CARD_BOTH) {
+        if (GetSimCardCount(toneType) > 1) {
             updateSql = SHOT_SETTING_CLEANUP_CLAUSE + " WHERE " + RINGTONE_COLUMN_SHOT_TONE_TYPE + " <> " +
                 to_string(SHOT_TONE_TYPE_DEFAULT) + " AND " + RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE + " = " +
                 to_string(sourceType);
@@ -394,7 +413,7 @@ int32_t RingtoneSettingManager::CleanupSettingFromRdb(int32_t settingType, int32
                 to_string(toneType) + " AND " + RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE + " = " + to_string(sourceType);
         }
     } else if (settingType == TONE_SETTING_TYPE_RINGTONE) {
-        if (toneType == RING_TONE_TYPE_SIM_CARD_BOTH) {
+        if (GetSimCardCount(toneType) > 1) {
             updateSql = RINGTONE_SETTING_CLEANUP_CLAUSE  + " WHERE " + RINGTONE_COLUMN_RING_TONE_TYPE + " <> " +
                 to_string(RING_TONE_TYPE_DEFAULT) + " AND " + RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE + " = " +
                 to_string(sourceType);
@@ -455,15 +474,15 @@ int32_t RingtoneSettingManager::CleanupSetting(int32_t settingType, int32_t tone
 
     TravelQueryResultSet(querySql, [&](shared_ptr<RingtoneMetadata> &meta) -> bool {
         int32_t ret = true;
-        if ((settingType == TONE_SETTING_TYPE_SHOT) && (toneType != SHOT_TONE_TYPE_SIM_CARD_BOTH) &&
-            (meta->GetShotToneType() == SHOT_TONE_TYPE_SIM_CARD_BOTH)) {
-            int32_t cleanType = (toneType == SHOT_TONE_TYPE_SIM_CARD_1 ? SHOT_TONE_TYPE_SIM_CARD_2 :
-                SHOT_TONE_TYPE_SIM_CARD_1);
+        if ((settingType == TONE_SETTING_TYPE_SHOT) && HasAnyCardSet(toneType) &&
+            (static_cast<uint32_t>(meta->GetShotToneType()) & static_cast<uint32_t>(toneType)) &&
+            (GetSimCardCount(meta->GetShotToneType()) > 1)) {
+            int32_t cleanType = ClearCardMask(meta->GetShotToneType(), toneType);
             UpdateSettingsWithToneId(settingType, meta->GetToneId(), cleanType);
-        } else if ((settingType == TONE_SETTING_TYPE_RINGTONE) && (toneType != RING_TONE_TYPE_SIM_CARD_BOTH) &&
-            (meta->GetRingToneType() == RING_TONE_TYPE_SIM_CARD_BOTH)) {
-            int32_t cleanType = (toneType == RING_TONE_TYPE_SIM_CARD_1 ? RING_TONE_TYPE_SIM_CARD_2 :
-                RING_TONE_TYPE_SIM_CARD_1);
+        } else if ((settingType == TONE_SETTING_TYPE_RINGTONE) && HasAnyCardSet(toneType) &&
+            (static_cast<uint32_t>(meta->GetRingToneType()) & static_cast<uint32_t>(toneType)) &&
+            (GetSimCardCount(meta->GetRingToneType()) > 1)) {
+            int32_t cleanType = ClearCardMask(meta->GetRingToneType(), toneType);
             UpdateSettingsWithToneId(settingType, meta->GetToneId(), cleanType);
         } else {
             ret = false;
@@ -475,7 +494,7 @@ int32_t RingtoneSettingManager::CleanupSetting(int32_t settingType, int32_t tone
     return CleanupSettingFromRdb(settingType, toneType, sourceType);
 }
 
-int32_t RingtoneSettingManager::TravelQueryResultSet(const string &querySql,
+int32_t RingtoneSettingManager::TravelQueryResultSet(string querySql,
     function<bool (shared_ptr<RingtoneMetadata> &)> func)
 {
     auto resultSet = ringtoneRdb_->QuerySql(querySql);
@@ -491,7 +510,7 @@ int32_t RingtoneSettingManager::TravelQueryResultSet(const string &querySql,
         return E_DB_FAIL;
     }
     for (auto meta : metaDatas) {
-        if (!func || func(meta) == true) {
+        if (func(meta) == true) {
             break;
         }
     }

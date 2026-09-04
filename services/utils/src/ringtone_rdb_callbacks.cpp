@@ -23,10 +23,15 @@
 #include "ringtone_db_const.h"
 #include "ringtone_file_utils.h"
 #include "ringtone_mimetype_utils.h"
+#include "ringtone_type.h"
 #include "ringtone_utils.h"
 #include "result_set_utils.h"
 #include "preferences_helper.h"
 #include "dfx_const.h"
+#ifdef CORE_SERVICE_ENABLE
+#include "core_service_client.h"
+#include "telephony_errors.h"
+#endif
 
 namespace OHOS {
 namespace Media {
@@ -35,6 +40,8 @@ using namespace std;
 const string DEFAULT_MIME_TYPE = "application/octet-stream";
 static const char RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY[] = "ringtone.scanner.completed";
 static const int RINGTONE_PARAMETER_SCANNER_COMPLETED_FALSE = 0;
+
+const int RINGTONE_PRELOAD_CONF_COUNT = 7;
 
 const std::string CREATE_RINGTONE_TABLE = "CREATE TABLE IF NOT EXISTS " + RINGTONE_TABLE + "(" +
     RINGTONE_COLUMN_TONE_ID                       + " INTEGER  PRIMARY KEY AUTOINCREMENT, " +
@@ -60,6 +67,14 @@ const std::string CREATE_RINGTONE_TABLE = "CREATE TABLE IF NOT EXISTS " + RINGTO
     RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE        + " INT      DEFAULT 0, " +
     RINGTONE_COLUMN_DISPLAY_LANGUAGE_TYPE         + " TEXT              , " +
     RINGTONE_COLUMN_SCANNER_FLAG                  + " INT      DEFAULT 0  " + ")";
+
+const std::string CREATE_PRELOAD_CONF_TABLE = "CREATE TABLE IF NOT EXISTS " + PRELOAD_CONFIG_TABLE + "(" +
+    PRELOAD_CONFIG_COLUMN_RING_TONE_TYPE          + " INTEGER  PRIMARY KEY," +
+    PRELOAD_CONFIG_COLUMN_TONE_ID                 + " INTEGER             ," +
+    PRELOAD_CONFIG_COLUMN_DISPLAY_NAME            + " TEXT                 " + ")";
+
+const std::string INIT_PRELOAD_CONF_TABLE = "INSERT OR IGNORE INTO " + PRELOAD_CONFIG_TABLE + " (" +
+    PRELOAD_CONFIG_COLUMN_RING_TONE_TYPE + ") VALUES (1), (2), (3), (4), (5), (6), (7), (8), (9), (10);";
 
 const std::string CREATE_SIMCARD_SETTING_TABLE = "CREATE TABLE IF NOT EXISTS " + SIMCARD_SETTING_TABLE + "(" +
     SIMCARD_SETTING_COLUMN_MODE                   + " INTEGER            ," +
@@ -100,13 +115,6 @@ const std::string CREATE_VIBRATE_TABLE = "CREATE TABLE IF NOT EXISTS " + VIBRATE
     VIBRATE_COLUMN_PLAY_MODE                      + " INT      DEFAULT 0, " +
     VIBRATE_COLUMN_SCANNER_FLAG                   + " INT      DEFAULT 0  " + ")";
 
-const std::string CREATE_PRELOAD_CONF_TABLE = "CREATE TABLE IF NOT EXISTS " + PRELOAD_CONFIG_TABLE + "(" +
-    PRELOAD_CONFIG_COLUMN_RING_TONE_TYPE          + " INTEGER  PRIMARY KEY," +
-    PRELOAD_CONFIG_COLUMN_TONE_ID                 + " INTEGER             ," +
-    PRELOAD_CONFIG_COLUMN_DISPLAY_NAME            + " TEXT                 " + ")";
-
-const std::string INIT_PRELOAD_CONF_TABLE = "INSERT OR IGNORE INTO " + PRELOAD_CONFIG_TABLE + " (" +
-    PRELOAD_CONFIG_COLUMN_RING_TONE_TYPE + ") VALUES (1), (2), (3), (4), (5), (6), (7), (8), (9), (10);";
 
 const std::string CREATE_HAPTIC_2_TONE_TABLE = "CREATE TABLE IF NOT EXISTS " + HAPTIC_2_TONE_TABLE + "(" +
     HAPTIC_2_TONE_COLUMN_ID + " INTEGER  PRIMARY KEY AUTOINCREMENT, " +
@@ -129,6 +137,13 @@ static const vector<string> g_initSqls = {
     CREATE_PRELOAD_CONF_TABLE,
     INIT_PRELOAD_CONF_TABLE,
     CREATE_HAPTIC_2_TONE_TABLE,
+};
+
+struct CardConfig {
+    bool hasSim1 = false;
+    bool hasSim2 = false;
+    bool hasESim1 = false;
+    bool hasESim2 = false;
 };
 
 RingtoneDataCallBack::RingtoneDataCallBack(void)
@@ -189,27 +204,6 @@ static void AddScannerFlagColumn(NativeRdb::RdbStore &store)
         "ALTER TABLE " + VIBRATE_TABLE + " ADD COLUMN " + VIBRATE_COLUMN_SCANNER_FLAG + " INT DEFAULT 0",
     };
     RINGTONE_INFO_LOG("Add scanner flag column");
-    ExecSqls(sqls, store);
-}
-
-static void AddVibrateTable(NativeRdb::RdbStore &store)
-{
-    const vector<string> sqls = {
-        CREATE_VIBRATE_TABLE,
-        CREATE_SIMCARD_SETTING_TABLE,
-        INIT_SIMCARD_SETTING_TABLE,
-    };
-    int32_t errCode;
-    shared_ptr<NativePreferences::Preferences> prefs =
-        NativePreferences::PreferencesHelper::GetPreferences(COMMON_XML_EL1, errCode);
-    if (!prefs) {
-        RINGTONE_ERR_LOG("AddVibrateTable: update faild errCode=%{public}d", errCode);
-    } else {
-        prefs->PutInt(RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY, RINGTONE_PARAMETER_SCANNER_COMPLETED_FALSE);
-        prefs->FlushSync();
-    }
-
-    RINGTONE_INFO_LOG("Add vibrate table");
     ExecSqls(sqls, store);
 }
 
@@ -303,7 +297,6 @@ static void AddRingMockHapticAudioTable(NativeRdb::RdbStore &store)
 static void AddSoundModeVibrateRecords(NativeRdb::RdbStore &store)
 {
     RINGTONE_INFO_LOG("Add sound mode vibrate records");
-
     // Step 1: 插入振动模式缺省记录
     const string insertSql =
         "INSERT OR IGNORE INTO " + SIMCARD_SETTING_TABLE + " (" +
@@ -312,53 +305,8 @@ static void AddSoundModeVibrateRecords(NativeRdb::RdbStore &store)
         "(1, 101), (1, 102), " +
         "(2, 101), (2, 102), " +
         "(3, 100), (3, 103)";
-    store.ExecuteSql(insertSql);
-
-    // Step 2: 数据迁移 - 把响铃模式的铃声和振动效果复制到振动模式
-    // 原理: ringtone_type 0,1,2,3 与 100,101,102,103 相差100，通过 ringtone_type - 100 关联查询
-    // 注意: 新插入行的 ring_mode 为 NULL，不能用 ring_mode != 0 过滤，否则 NULL != 0 为 NULL(falsy)，
-    //       导致所有行都不匹配。改为先无条件复制，再在 Step 3 清理无效数据。
-    const string copySql =
-        "UPDATE " + SIMCARD_SETTING_TABLE + " SET " +
-        SIMCARD_SETTING_COLUMN_TONE_FILE + " = " +
-            "(SELECT s2." + SIMCARD_SETTING_COLUMN_TONE_FILE + " FROM " +
-            SIMCARD_SETTING_TABLE + " s2 WHERE s2." + SIMCARD_SETTING_COLUMN_MODE + " = " +
-            SIMCARD_SETTING_TABLE + "." + SIMCARD_SETTING_COLUMN_MODE + " AND s2." +
-            SIMCARD_SETTING_COLUMN_RINGTONE_TYPE + " = " + SIMCARD_SETTING_TABLE + "." +
-            SIMCARD_SETTING_COLUMN_RINGTONE_TYPE + " - 100), " +
-        SIMCARD_SETTING_COLUMN_VIBRATE_FILE + " = " +
-            "(SELECT s2." + SIMCARD_SETTING_COLUMN_VIBRATE_FILE + " FROM " +
-            SIMCARD_SETTING_TABLE + " s2 WHERE s2." + SIMCARD_SETTING_COLUMN_MODE + " = " +
-            SIMCARD_SETTING_TABLE + "." + SIMCARD_SETTING_COLUMN_MODE + " AND s2." +
-            SIMCARD_SETTING_COLUMN_RINGTONE_TYPE + " = " + SIMCARD_SETTING_TABLE + "." +
-            SIMCARD_SETTING_COLUMN_RINGTONE_TYPE + " - 100), " +
-        SIMCARD_SETTING_COLUMN_RING_MODE + " = " +
-            "(SELECT s2." + SIMCARD_SETTING_COLUMN_RING_MODE + " FROM " +
-            SIMCARD_SETTING_TABLE + " s2 WHERE s2." + SIMCARD_SETTING_COLUMN_MODE + " = " +
-            SIMCARD_SETTING_TABLE + "." + SIMCARD_SETTING_COLUMN_MODE + " AND s2." +
-            SIMCARD_SETTING_COLUMN_RINGTONE_TYPE + " = " + SIMCARD_SETTING_TABLE + "." +
-            SIMCARD_SETTING_COLUMN_RINGTONE_TYPE + " - 100), " +
-        SIMCARD_SETTING_COLUMN_VIBRATE_MODE + " = " +
-            "(SELECT s2." + SIMCARD_SETTING_COLUMN_VIBRATE_MODE + " FROM " +
-            SIMCARD_SETTING_TABLE + " s2 WHERE s2." + SIMCARD_SETTING_COLUMN_MODE + " = " +
-            SIMCARD_SETTING_TABLE + "." + SIMCARD_SETTING_COLUMN_MODE + " AND s2." +
-            SIMCARD_SETTING_COLUMN_RINGTONE_TYPE + " = " + SIMCARD_SETTING_TABLE + "." +
-            SIMCARD_SETTING_COLUMN_RINGTONE_TYPE + " - 100), " +
-        "WHERE " + SIMCARD_SETTING_COLUMN_RINGTONE_TYPE + " IN (100, 101, 102, 103)";
-    store.ExecuteSql(copySql);
-
-    // Step 3: 清理无效数据 - ring_mode=0 或 NULL 说明源端响铃模式无振动效果，清空 vibrate_file
-    const string nullifySql =
-        "UPDATE " + SIMCARD_SETTING_TABLE + " SET " +
-        SIMCARD_SETTING_COLUMN_VIBRATE_FILE + " = NULL, " +
-        SIMCARD_SETTING_COLUMN_TONE_FILE + " = NULL, " +
-        SIMCARD_SETTING_COLUMN_VIBRATE_MODE + " = NULL, " +
-        SIMCARD_SETTING_COLUMN_RING_MODE + " = NULL, " +
-        "WHERE " + SIMCARD_SETTING_COLUMN_RINGTONE_TYPE + " = 102 " +
-        "AND (" + SIMCARD_SETTING_COLUMN_RING_MODE + " = 0 OR " +
-        SIMCARD_SETTING_COLUMN_RING_MODE + " IS NULL OR " +
-        SIMCARD_SETTING_COLUMN_RING_MODE + " = '')";
-    store.ExecuteSql(nullifySql);
+    int32_t result = store.ExecuteSql(insertSql);
+    CHECK_AND_RETURN_LOG(result == E_OK, "init SimCardSetting failed. Result %{public}d.", result);
 }
 
 static void UpdateDefaultSystemTone(NativeRdb::RdbStore &store)
@@ -387,10 +335,228 @@ static void UpdateDefaultSystemTone(NativeRdb::RdbStore &store)
     }
 }
 
+static void AddVibrateTable(NativeRdb::RdbStore &store)
+{
+    const vector<string> sqls = {
+        CREATE_VIBRATE_TABLE,
+        CREATE_SIMCARD_SETTING_TABLE,
+        INIT_SIMCARD_SETTING_TABLE,
+    };
+    int32_t errCode;
+    shared_ptr<NativePreferences::Preferences> prefs =
+        NativePreferences::PreferencesHelper::GetPreferences(COMMON_XML_EL1, errCode);
+    if (!prefs) {
+        RINGTONE_ERR_LOG("AddVibrateTable:  update faild errCode=%{public}d", errCode);
+    } else {
+        prefs->PutInt(RINGTONE_PARAMETER_SCANNER_COMPLETED_KEY, RINGTONE_PARAMETER_SCANNER_COMPLETED_FALSE);
+        prefs->FlushSync();
+    }
+
+    RINGTONE_INFO_LOG("Add vibrate table");
+    ExecSqls(sqls, store);
+}
+
+static void MigrateESimSimCardSetting(NativeRdb::RdbStore &store, int32_t fromMode, int32_t toMode)
+{
+    RINGTONE_INFO_LOG("MigrateESimSimCardSetting: fromMode=%{public}d, toMode=%{public}d", fromMode, toMode);
+    const string migrateSql =
+        "INSERT OR REPLACE INTO " + SIMCARD_SETTING_TABLE + " (" +
+        SIMCARD_SETTING_COLUMN_MODE + ", " +
+        SIMCARD_SETTING_COLUMN_RINGTONE_TYPE + ", " +
+        SIMCARD_SETTING_COLUMN_TONE_FILE + ", " +
+        SIMCARD_SETTING_COLUMN_VIBRATE_FILE + ", " +
+        SIMCARD_SETTING_COLUMN_VIBRATE_MODE + ", " +
+        SIMCARD_SETTING_COLUMN_RING_MODE + ") " +
+        "SELECT ?, " +
+        SIMCARD_SETTING_COLUMN_RINGTONE_TYPE + ", " +
+        SIMCARD_SETTING_COLUMN_TONE_FILE + ", " +
+        SIMCARD_SETTING_COLUMN_VIBRATE_FILE + ", " +
+        SIMCARD_SETTING_COLUMN_VIBRATE_MODE + ", " +
+        SIMCARD_SETTING_COLUMN_RING_MODE + " " +
+        "FROM " + SIMCARD_SETTING_TABLE + " " +
+        "WHERE " + SIMCARD_SETTING_COLUMN_MODE + " = ? AND " +
+        SIMCARD_SETTING_COLUMN_RINGTONE_TYPE + " IN (" +
+        to_string(RINGTONE_TYPE_RING_SMS) + ", " +
+        to_string(RINGTONE_TYPE_RING_RINGTONE) + ", " +
+        to_string(RINGTONE_TYPE_VIBRATE_SMS) + ", " +
+        to_string(RINGTONE_TYPE_VIBRATE_RINGTONE) + ")";
+    int32_t ret = store.ExecuteSql(migrateSql,
+        { NativeRdb::ValueObject(toMode), NativeRdb::ValueObject(fromMode) });
+    if (ret != E_OK) {
+        RINGTONE_ERR_LOG("MigrateESimSimCardSetting failed, fromMode=%{public}d, toMode=%{public}d, ret=%{public}d",
+            fromMode, toMode, ret);
+    } else {
+        RINGTONE_INFO_LOG("MigrateESimSimCardSetting success, fromMode=%{public}d, toMode=%{public}d",
+            fromMode, toMode);
+    }
+}
+
+static void AddESimToneTypeBit(NativeRdb::RdbStore &store, int32_t fromCardMask, int32_t toCardMask)
+{
+    RINGTONE_INFO_LOG("AddESimToneTypeBit: fromCardMask=%{public}d, toCardMask=%{public}d",
+        fromCardMask, toCardMask);
+    // Add toCardMask bitmask to records that have fromCardMask set (OR operation)
+    const string updateShotSql =
+        "UPDATE " + RINGTONE_TABLE + " SET " +
+        RINGTONE_COLUMN_SHOT_TONE_TYPE + " = " + RINGTONE_COLUMN_SHOT_TONE_TYPE + " | ?" +
+        " WHERE " + RINGTONE_COLUMN_SHOT_TONE_TYPE + " & ? != 0";
+    int32_t ret = store.ExecuteSql(updateShotSql,
+        { NativeRdb::ValueObject(toCardMask), NativeRdb::ValueObject(fromCardMask) });
+    if (ret != E_OK) {
+        RINGTONE_ERR_LOG("AddESimToneTypeBit shot_tone_type failed, ret=%{public}d", ret);
+    }
+
+    const string updateRingSql =
+        "UPDATE " + RINGTONE_TABLE + " SET " +
+        RINGTONE_COLUMN_RING_TONE_TYPE + " = " + RINGTONE_COLUMN_RING_TONE_TYPE + " | ?" +
+        " WHERE " + RINGTONE_COLUMN_RING_TONE_TYPE + " & ? != 0";
+    ret = store.ExecuteSql(updateRingSql,
+        { NativeRdb::ValueObject(toCardMask), NativeRdb::ValueObject(fromCardMask) });
+    if (ret != E_OK) {
+        RINGTONE_ERR_LOG("AddESimToneTypeBit ring_tone_type failed, ret=%{public}d", ret);
+    }
+    RINGTONE_INFO_LOG("AddESimToneTypeBit complete, fromCardMask=%{public}d, toCardMask=%{public}d",
+        fromCardMask, toCardMask);
+}
+
+static void ReplaceToneTypeBit(NativeRdb::RdbStore &store, int32_t fromCardMask, int32_t toCardMask)
+{
+    RINGTONE_INFO_LOG("ReplaceToneTypeBit: fromCardMask=%{public}d, toCardMask=%{public}d",
+        fromCardMask, toCardMask);
+    // Replace fromCardMask with toCardMask: clear fromCardMask bits, set toCardMask bits
+    const string updateShotSql =
+        "UPDATE " + RINGTONE_TABLE + " SET " +
+        RINGTONE_COLUMN_SHOT_TONE_TYPE + " = (" +
+        RINGTONE_COLUMN_SHOT_TONE_TYPE + " & ~?) | ?" +
+        " WHERE " + RINGTONE_COLUMN_SHOT_TONE_TYPE + " & ? != 0";
+    int32_t ret = store.ExecuteSql(updateShotSql,
+        { NativeRdb::ValueObject(fromCardMask), NativeRdb::ValueObject(toCardMask),
+          NativeRdb::ValueObject(fromCardMask) });
+    if (ret != E_OK) {
+        RINGTONE_ERR_LOG("ReplaceToneTypeBit shot_tone_type failed, ret=%{public}d", ret);
+    }
+
+    const string updateRingSql =
+        "UPDATE " + RINGTONE_TABLE + " SET " +
+        RINGTONE_COLUMN_RING_TONE_TYPE + " = (" +
+        RINGTONE_COLUMN_RING_TONE_TYPE + " & ~?) | ?" +
+        " WHERE " + RINGTONE_COLUMN_RING_TONE_TYPE + " & ? != 0";
+    ret = store.ExecuteSql(updateRingSql,
+        { NativeRdb::ValueObject(fromCardMask), NativeRdb::ValueObject(toCardMask),
+          NativeRdb::ValueObject(fromCardMask) });
+    if (ret != E_OK) {
+        RINGTONE_ERR_LOG("ReplaceToneTypeBit ring_tone_type failed, ret=%{public}d", ret);
+    }
+    RINGTONE_INFO_LOG("ReplaceToneTypeBit complete, fromCardMask=%{public}d, toCardMask=%{public}d",
+        fromCardMask, toCardMask);
+}
+
+static CardConfig DetectActiveCards()
+{
+    CardConfig config;
+#ifdef CORE_SERVICE_ENABLE
+    static constexpr int32_t SIM_LABEL_INDEX_1 = 1;
+    static constexpr int32_t SIM_LABEL_INDEX_2 = 2;
+    std::vector<Telephony::IccAccountInfo> telIccAccountInfoList;
+    int32_t ret = Telephony::CoreServiceClient::GetInstance().GetActiveSimAccountInfoList(telIccAccountInfoList);
+    RINGTONE_INFO_LOG("DetectActiveCards: GetActiveSimAccountInfoList ret=%{public}d, listSize=%{public}zu",
+        ret, telIccAccountInfoList.size());
+    if ((ret != Telephony::TELEPHONY_ERR_SUCCESS) && (ret != Telephony::TELEPHONY_ERR_NO_SIM_CARD)) {
+        RINGTONE_ERR_LOG("GetActiveSimAccountInfoList error, ret=%{public}d", ret);
+        return config;
+    }
+    if (ret == Telephony::TELEPHONY_ERR_NO_SIM_CARD) {
+        RINGTONE_INFO_LOG("No active SIM card");
+        return config;
+    }
+    for (size_t i = 0; i < telIccAccountInfoList.size(); i++) {
+        const auto &telInfo = telIccAccountInfoList[i];
+        RINGTONE_INFO_LOG("  card[%{public}zu]: isEsim=%{public}d, simLabelIndex=%{public}d",
+            i, telInfo.isEsim, telInfo.simLabelIndex);
+        if (telInfo.isEsim) {
+            if (telInfo.simLabelIndex == SIM_LABEL_INDEX_1) {
+                config.hasESim1 = true;
+            } else if (telInfo.simLabelIndex == SIM_LABEL_INDEX_2) {
+                config.hasESim2 = true;
+            }
+        } else {
+            if (telInfo.simLabelIndex == SIM_LABEL_INDEX_1) {
+                config.hasSim1 = true;
+            } else if (telInfo.simLabelIndex == SIM_LABEL_INDEX_2) {
+                config.hasSim2 = true;
+            }
+        }
+    }
+    RINGTONE_INFO_LOG("Card detection result: hasSim1=%{public}d, hasSim2=%{public}d, "
+        "hasESim1=%{public}d, hasESim2=%{public}d",
+        config.hasSim1, config.hasSim2, config.hasESim1, config.hasESim2);
+#else
+    RINGTONE_WARN_LOG("CORE_SERVICE_ENABLE not defined, skip eSIM detection");
+#endif
+    return config;
+}
+
+static void ApplyESimMigration(NativeRdb::RdbStore &store, const CardConfig &config)
+{
+    if (config.hasSim1 && config.hasESim1) {
+        // SIM1+eSIM1: 卡1 stays, old 卡2(=eSIM1) → new 卡2 + eSIM1
+        RINGTONE_INFO_LOG("Scenario: SIM1+eSIM1, migrate old 卡2→new 卡2+eSIM1");
+        MigrateESimSimCardSetting(store, SIMCARD_MODE_2, SIMCARD_MODE_ESIM_1);
+        AddESimToneTypeBit(store, SIM_CARD_2_MASK, ESIM_CARD_1_MASK);
+    } else if (config.hasSim1 && config.hasESim2) {
+        // SIM1+eSIM2: 卡1 stays, old 卡2(=eSIM2) → new 卡2 + eSIM2
+        RINGTONE_INFO_LOG("Scenario: SIM1+eSIM2, migrate old 卡2→new 卡2+eSIM2");
+        MigrateESimSimCardSetting(store, SIMCARD_MODE_2, SIMCARD_MODE_ESIM_2);
+        AddESimToneTypeBit(store, SIM_CARD_2_MASK, ESIM_CARD_2_MASK);
+    } else if (config.hasSim2 && config.hasESim1) {
+        // SIM2+eSIM1: 卡2 stays, old 卡1(=eSIM1) → new 卡1 + eSIM1
+        RINGTONE_INFO_LOG("Scenario: SIM2+eSIM1, migrate old 卡1→new 卡1+eSIM1");
+        MigrateESimSimCardSetting(store, SIMCARD_MODE_1, SIMCARD_MODE_ESIM_1);
+        AddESimToneTypeBit(store, SIM_CARD_1_MASK, ESIM_CARD_1_MASK);
+    } else if (config.hasSim2 && config.hasESim2) {
+        // SIM2+eSIM2: old 卡2→new 卡1, old 卡1(=eSIM2)→new 卡1+eSIM2
+        RINGTONE_INFO_LOG("Scenario: SIM2+eSIM2, migrate old 卡2→new 卡1, old 卡1(=eSIM2)→new 卡1+eSIM2");
+        // SimCardSetting: first copy 卡1→eSIM2, then copy 卡2→卡1
+        MigrateESimSimCardSetting(store, SIMCARD_MODE_1, SIMCARD_MODE_ESIM_2);
+        MigrateESimSimCardSetting(store, SIMCARD_MODE_2, SIMCARD_MODE_1);
+        // ToneFiles: first add eSIM2 bit to 卡1 records, then replace 卡2 bit with 卡1 bit
+        AddESimToneTypeBit(store, SIM_CARD_1_MASK, ESIM_CARD_2_MASK);
+        ReplaceToneTypeBit(store, SIM_CARD_2_MASK, SIM_CARD_1_MASK);
+    } else if (config.hasESim1 && config.hasESim2) {
+        // eSIM1+eSIM2: old 卡1→eSIM1, old 卡2→eSIM2
+        RINGTONE_INFO_LOG("Scenario: eSIM1+eSIM2, migrate old 卡1→eSIM1, old 卡2→eSIM2");
+        MigrateESimSimCardSetting(store, SIMCARD_MODE_1, SIMCARD_MODE_ESIM_1);
+        MigrateESimSimCardSetting(store, SIMCARD_MODE_2, SIMCARD_MODE_ESIM_2);
+        AddESimToneTypeBit(store, SIM_CARD_1_MASK, ESIM_CARD_1_MASK);
+        AddESimToneTypeBit(store, SIM_CARD_2_MASK, ESIM_CARD_2_MASK);
+    } else if (config.hasESim1) {
+        // eSIM1 only: old 卡2(=eSIM1) → new 卡2 + eSIM1
+        RINGTONE_INFO_LOG("Scenario: eSIM1 only, migrate old 卡2→new 卡2+eSIM1");
+        MigrateESimSimCardSetting(store, SIMCARD_MODE_2, SIMCARD_MODE_ESIM_1);
+        AddESimToneTypeBit(store, SIM_CARD_2_MASK, ESIM_CARD_1_MASK);
+    } else if (config.hasESim2) {
+        // eSIM2 only: old 卡2(=eSIM2) → new 卡2 + eSIM2
+        RINGTONE_INFO_LOG("Scenario: eSIM2 only, migrate old 卡2→new 卡2+eSIM2");
+        MigrateESimSimCardSetting(store, SIMCARD_MODE_2, SIMCARD_MODE_ESIM_2);
+        AddESimToneTypeBit(store, SIM_CARD_2_MASK, ESIM_CARD_2_MASK);
+    } else {
+        RINGTONE_INFO_LOG("No eSIM card active, skip eSIM data migration");
+    }
+}
+
 static void AddESimRecords(NativeRdb::RdbStore &store)
 {
+    RINGTONE_INFO_LOG("AddESimRecords start");
+
+    // Step 1: Insert eSIM SimCardSetting rows (mode 4/5, ringtone_type 1/2/101/102)
     ExecSqls({INIT_SIMCARD_SETTING_TABLE}, store);
-    RINGTONE_INFO_LOG("Add eSIM records");
+    RINGTONE_INFO_LOG("Step1: eSIM SimCardSetting rows inserted");
+
+    // Step 2: Detect active SIM configuration and apply data migration
+    CardConfig config = DetectActiveCards();
+    ApplyESimMigration(store, config);
+
+    RINGTONE_INFO_LOG("AddESimRecords complete");
 }
 
 static bool CheckAndGetDataUri(const string &displayName, const string &dataUri,
@@ -425,11 +591,13 @@ static bool CheckAndGetDataUri(const string &displayName, const string &dataUri,
     string dirName = filePath.substr(lastPos + 1);
     if (dirName == ringDirName && fileName == displayName) {
         return true;
-    }
-    if (dataUri.find(RINGTONE_CUSTOMIZED_BASE_PATH) != std::string::npos) {
-        newDataUri = RINGTONE_CUSTOMIZED_BASE_PATH + "/Ringtone/" + ringDirName + "/" + displayName;
-        if (RingtoneFileUtils::IsFileExists(newDataUri)) {
-            return false;
+    } else {
+        size_t start_pos = 0;
+        if ((start_pos = dataUri.find(RINGTONE_CUSTOMIZED_BASE_PATH)) != std::string::npos) {
+            newDataUri = RINGTONE_CUSTOMIZED_BASE_PATH + "/Ringtone/" + ringDirName + "/" + displayName;
+            if (RingtoneFileUtils::IsFileExists(newDataUri)) {
+                return false;
+            }
         }
     }
     return true;
@@ -472,13 +640,108 @@ static void UpdateDataUri(NativeRdb::RdbStore &store)
     RINGTONE_INFO_LOG("Update Data Uri End");
 }
 
+static void UpdatePreloadConfTable(NativeRdb::RdbStore &store)
+{
+    RINGTONE_INFO_LOG("Update Preload Conf Begin");
+    const string sqlCountPreloadConf = "SELECT count(1) AS count FROM " + PRELOAD_CONFIG_TABLE;
+    auto resultSet = store.QuerySql(sqlCountPreloadConf);
+    if (resultSet == nullptr || resultSet->GoToFirstRow() != NativeRdb::E_OK) {
+        RINGTONE_ERR_LOG("query error");
+        return;
+    }
+    int32_t count = GetInt32Val("count", resultSet);
+    if (count > RINGTONE_PRELOAD_CONF_COUNT) {
+        RINGTONE_INFO_LOG("no need to UpDatePreloadConf");
+        return;
+    }
+    const vector<string> sqls = {
+        INIT_PRELOAD_CONF_TABLE,
+    };
+    ExecSqls(sqls, store);
+    UpdateDefaultSystemTone(store);
+}
+
+static bool VibrateModeHasValue(NativeRdb::RdbStore &store,
+    const string &mode, const string &ringtoneType)
+{
+    const string sqlCountPreloadConf = "SELECT * FROM SimCardSetting WHERE mode = ? AND ringtone_type = ?";
+    vector<string> selectionArgs = {mode, ringtoneType};
+    auto resultSet = store.QuerySql(sqlCountPreloadConf, selectionArgs);
+    if (resultSet == nullptr || resultSet->GoToFirstRow() != NativeRdb::E_OK) {
+        RINGTONE_ERR_LOG("query error");
+        return false;
+    }
+    int32_t count = GetInt32Val(SIMCARD_SETTING_COLUMN_VIBRATE_MODE, resultSet);
+    if (count == 1) {
+        return false;
+    }
+    return true;
+}
+
+static bool RingModeHasValue(NativeRdb::RdbStore &store,
+    const string &mode, const string &ringtoneType)
+{
+    const string sqlCountPreloadConf = "SELECT * FROM SimCardSetting WHERE mode = ? AND ringtone_type = ?";
+    vector<string> selectionArgs = {mode, ringtoneType};
+    auto resultSet = store.QuerySql(sqlCountPreloadConf, selectionArgs);
+    if (resultSet == nullptr || resultSet->GoToFirstRow() != NativeRdb::E_OK) {
+        RINGTONE_ERR_LOG("query error");
+        return false;
+    }
+    int32_t count = GetInt32Val(SIMCARD_SETTING_COLUMN_RING_MODE, resultSet);
+    if (count == 0) {
+        return false;
+    }
+    return true;
+}
+
+static void UpdateSimCardSettingESIMValue(NativeRdb::RdbStore &store,
+    const string &mode, const string &ringtoneType, const string &modeOld, const string &ringtoneTypeOld)
+{
+    const string upDatesql = "UPDATE SimCardSetting SET (tone_file, vibrate_file)= \
+        (SELECT tone_file, vibrate_file FROM SimCardSetting WHERE mode = ? AND ringtone_type = ?) \
+        WHERE  mode = ? AND ringtone_type = ? ";
+    vector<NativeRdb::ValueObject> values = {
+        NativeRdb::ValueObject(modeOld),
+        NativeRdb::ValueObject(ringtoneTypeOld),
+        NativeRdb::ValueObject(mode),
+        NativeRdb::ValueObject(ringtoneType)
+    };
+    int32_t err = store.ExecuteSql(upDatesql, values);
+    if (err != NativeRdb::E_OK) {
+        RINGTONE_ERR_LOG("Failed to exec: %{private}s", upDatesql.c_str());
+    }
+    return;
+}
+
+static void UpdateSoundModeVibrateRecords(NativeRdb::RdbStore &store)
+{
+    //判断 mod = 1,ringtonetype = 101 是否存在数据，不存在继承 1，1
+    if (VibrateModeHasValue(store, "1", "101")) {
+        UpdateSimCardSettingESIMValue(store, "1", "101", "1", "1");
+    }
+    //判断 mod = 1,ringtonetype = 102 是否存在数据，不存在继承 1，2 //注意ring_mode = 0无震动不继承
+    if (VibrateModeHasValue(store, "1", "102") && RingModeHasValue(store, "1", "2")) {
+        UpdateSimCardSettingESIMValue(store, "1", "102", "1", "2");
+    }
+    //判断 mod = 2,ringtonetype = 101 是否存在数据，不存在继承 2，1
+    if (VibrateModeHasValue(store, "2", "101")) {
+        UpdateSimCardSettingESIMValue(store, "2", "101", "2", "1");
+    }
+    //判断 mod = 2,ringtonetype = 102 是否存在数据，不存在继承 2，2 //注意ring_mode = 0无震动不继承
+    if (VibrateModeHasValue(store, "2", "102") && RingModeHasValue(store, "2", "2")) {
+        UpdateSimCardSettingESIMValue(store, "2", "102", "2", "2");
+    }
+    //判断 mod = 3,ringtonetype = 103 是否存在数据，不存在继承 3，3
+    if (VibrateModeHasValue(store, "3", "103")) {
+        UpdateSimCardSettingESIMValue(store, "3", "103", "3", "3");
+    }
+}
+
 static void UpgradeExtension(NativeRdb::RdbStore &store, int32_t oldVersion)
 {
     if (oldVersion < VERSION_ADD_DISPLAY_LANGUAGE_COLUMN) {
         AddDisplayLanguageColumn(store);
-    }
-    if (oldVersion < VERSION_ADD_VIBRATE_TABLE) {
-        AddVibrateTable(store);
     }
     if (oldVersion < VERSION_UPDATE_MIME_TYPE) {
         UpdateMimeType(store);
@@ -486,6 +749,9 @@ static void UpgradeExtension(NativeRdb::RdbStore &store, int32_t oldVersion)
     if (oldVersion < VERSION_ADD_PRELOAD_CONF_TABLE) {
         AddPreloadConfTable(store);
         UpdateDefaultSystemTone(store);
+    }
+    if (oldVersion < VERSION_ADD_VIBRATE_TABLE) {
+        AddVibrateTable(store);
     }
     if (oldVersion < VERSION_UPDATE_WATCH_MIME_TYPE) {
         UpdateMimeType(store);
@@ -505,7 +771,9 @@ static void UpgradeExtension(NativeRdb::RdbStore &store, int32_t oldVersion)
     if (oldVersion < VERSION_ADD_SOUND_MODE_VIBRATE) {
         AddSoundModeVibrateRecords(store);
     }
-    if (oldVersion < VERSION_ADD_ESIM_SUPPORT) {
+    if (oldVersion < VERSION_UPDATE_PRELOAD_CONF_TABLE) {
+        UpdatePreloadConfTable(store);
+        UpdateSoundModeVibrateRecords(store);
         AddESimRecords(store);
     }
 }

@@ -61,13 +61,28 @@ protected:
     int32_t PopulateMetadata(const std::shared_ptr<NativeRdb::ResultSet> &resultSet,
         std::unique_ptr<RingtoneMetadata> &metaData);
     virtual void FlushSettings();
+
     bool IsDetermineNoRingtone(const std::string &typeColumn, const std::string &sourceColumn,
-        int type, int allSetType, const std::shared_ptr<NativeRdb::RdbStore> &rdbStore);
+        int cardBitType, const std::shared_ptr<NativeRdb::RdbStore> &rdbStore);
     bool HasCustomisedSetting(const std::string &typeColumn, const std::string &sourceColumn,
-        int type, int allSetType);
+        int cardBitType);
     bool NeedCommitSetting(const std::string &typeColumn, const std::string &sourceColumn,
-        int type, int allSetType);
-    void SetNotRingtone(const std::string &typeColumn, const std::string &sourceColumn, int32_t simCard);
+        int cardBitType);
+    void SetNotRingtoneForRingtone(int32_t cardBit);
+    void SetNotRingtoneForShot(int32_t cardBit);
+
+    bool IsDetermineNoRingtoneForNotification(const std::shared_ptr<NativeRdb::RdbStore> &rdbStore);
+    bool HasCustomisedNotification();
+    bool NeedCommitSettingForNotification();
+    void SetNotRingtoneForNotification();
+    void ClearLocalDBNotificationRecordTypeSetting(std::string restorePath);
+
+    bool IsDetermineNoRingtoneForAlarm(const std::shared_ptr<NativeRdb::RdbStore> &rdbStore);
+    bool HasCustomisedAlarm();
+    bool NeedCommitSettingForAlarm();
+    void SetNotRingtoneForAlarm();
+    void ClearLocalDBAlarmRecordTypeSetting(std::string restorePath);
+
     int32_t GetRingtoneLimit(RingtoneMediaType mediaType);
     void UpdateSettingTable(const SimcardSettingAsset &asset, bool forceUpdate = false);
     bool IsRingtoneSet(ToneSettingType toneType, SimcardMode simcard);

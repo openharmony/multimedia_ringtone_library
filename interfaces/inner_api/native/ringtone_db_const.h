@@ -65,12 +65,13 @@ const std::string RINGTONE_LIBRARY_DB_PATH_EL1 = "/data/storage/el1/database";
 const std::string RINGTONE_LIBRARY_DB_NAME = "ringtone_library.db";
 
 // ringtone db version
-const int32_t RINGTONE_RDB_VERSION = 12;
+const int32_t RINGTONE_RDB_VERSION = 13;
+
 enum {
     VERSION_ADD_DISPLAY_LANGUAGE_COLUMN = 2,
-    VERSION_ADD_VIBRATE_TABLE = 3,
-    VERSION_UPDATE_MIME_TYPE = 4,
-    VERSION_ADD_PRELOAD_CONF_TABLE = 5,
+    VERSION_UPDATE_MIME_TYPE = 3,
+    VERSION_ADD_PRELOAD_CONF_TABLE = 4,
+    VERSION_ADD_VIBRATE_TABLE = 5,
     VERSION_UPDATE_WATCH_MIME_TYPE = 6,
     VERSION_ADD_SCANNER_FLAG = 7,
     VERSION_UPDATE_MEDIA_TYPE_VIDEO = 8,
@@ -78,6 +79,7 @@ enum {
     VERSION_ADD_HAPTIC_2_TONE_TABLE = 10,
     VERSION_ADD_SOUND_MODE_VIBRATE = 11,
     VERSION_ADD_ESIM_SUPPORT = 12,
+    VERSION_UPDATE_PRELOAD_CONF_TABLE = 13,
 };
 
 // ringtone table name
@@ -107,6 +109,13 @@ const std::string RINGTONE_COLUMN_ALARM_TONE_SOURCE_TYPE        = "alarm_tone_so
 const std::string RINGTONE_COLUMN_DISPLAY_LANGUAGE_TYPE         = "display_language_type";
 const std::string RINGTONE_COLUMN_SCANNER_FLAG                  = "scanner_flag";
 
+// preload config table name
+const std::string PRELOAD_CONFIG_TABLE                          = "PreloadConfig";
+
+// preload config column name
+const std::string PRELOAD_CONFIG_COLUMN_RING_TONE_TYPE          = "ring_tone_type";
+const std::string PRELOAD_CONFIG_COLUMN_TONE_ID                 = "tone_id";
+const std::string PRELOAD_CONFIG_COLUMN_DISPLAY_NAME            = "display_name";
 // simcard setting table name
 const std::string SIMCARD_SETTING_TABLE                         = "SimCardSetting";
 const std::string SIMCARD_SETTING_URI_PATH                      = SIMCARD_SETTING_TABLE;
@@ -135,14 +144,6 @@ const std::string VIBRATE_COLUMN_DATE_MODIFIED                  = "date_modified
 const std::string VIBRATE_COLUMN_DATE_TAKEN                     = "date_taken";
 const std::string VIBRATE_COLUMN_PLAY_MODE                      = "play_mode";
 const std::string VIBRATE_COLUMN_SCANNER_FLAG                   = "scanner_flag";
-
-// preload config table name
-const std::string PRELOAD_CONFIG_TABLE                          = "PreloadConfig";
-
-// preload config column name
-const std::string PRELOAD_CONFIG_COLUMN_RING_TONE_TYPE          = "ring_tone_type";
-const std::string PRELOAD_CONFIG_COLUMN_TONE_ID                 = "tone_id";
-const std::string PRELOAD_CONFIG_COLUMN_DISPLAY_NAME            = "display_name";
 
 // haptic 2 tone table name
 const std::string HAPTIC_2_TONE_TABLE = "Haptic2ToneFiles";

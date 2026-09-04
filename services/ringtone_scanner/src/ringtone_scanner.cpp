@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#define MLOG_TAG "Scanner"
+#define MLOG_TAG "RingtoneScanner"
 
 #include "ringtone_scanner.h"
 
@@ -920,7 +920,7 @@ int32_t RingtoneScannerObj::Commit()
 
 int32_t RingtoneScannerObj::GetRingToneSourcePath(const char *source, vector<string> &sourcePaths)
 {
-    RINGTONE_INFO_LOG("start GetRingToneSourcePath");
+    RINGTONE_DEBUG_LOG("start GetRingToneSourcePath");
 #ifdef USE_CONFIG_POLICY
     CfgFiles *cfgFiles = GetCfgFiles(source);
     if (cfgFiles == nullptr) {
@@ -931,7 +931,7 @@ int32_t RingtoneScannerObj::GetRingToneSourcePath(const char *source, vector<str
     for (int32_t i = MAX_CFG_POLICY_DIRS_CNT - 1; i >= 0; i--) {
         if (cfgFiles->paths[i] && *(cfgFiles->paths[i]) != '\0') {
             sourcePaths.push_back(cfgFiles->paths[i]);
-            RINGTONE_INFO_LOG("extra parameter config file path: %{public}s",
+            RINGTONE_DEBUG_LOG("extra parameter config file path: %{public}s",
                 RingtoneScannerUtils::GetSafePath(cfgFiles->paths[i]).c_str());
         }
     }

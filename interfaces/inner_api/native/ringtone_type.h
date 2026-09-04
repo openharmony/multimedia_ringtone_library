@@ -65,12 +65,27 @@ enum ToneSettingType : int32_t {
     TONE_SETTING_TYPE_MAX
 };
 
+// shot_tone_type / ring_tone_type 采用 bitmap 编码，每位代表一张卡
+// bit0(0x01)=卡1  bit1(0x02)=卡2  bit2(0x04)=eSIM1  bit3(0x08)=eSIM2
+// 组合值通过 OR 运算产生，如: 卡1+eSIM1 = 0x01|0x04 = 5
 enum ShotToneType : int32_t {
-    SHOT_TONE_TYPE_NOT = 0, // not set
-    SHOT_TONE_TYPE_SIM_CARD_1, // SimCard 1
-    SHOT_TONE_TYPE_SIM_CARD_2, // SimCard 2
-    SHOT_TONE_TYPE_SIM_CARD_BOTH, // both 1 and 2
-    SHOT_TONE_TYPE_MAX
+    SHOT_TONE_TYPE_NOT = 0,              // 0b0000: 未设置
+    SHOT_TONE_TYPE_SIM_CARD_1 = 1,    // 0b0001: 仅卡1 SIM_CARD_1
+    SHOT_TONE_TYPE_SIM_CARD_2 = 2,    // 0b0010: 仅卡2
+    SHOT_TONE_TYPE_SIM_CARD_BOTH = 3, // 0b0011: 卡1和卡2
+    SHOT_TONE_TYPE_ESIM_CARD_1 = 4,   // 0b0100: 仅eSIM1
+    SHOT_TONE_TYPE_S1_ES1 = 5,   // 0b0101: 卡1和eSIM1
+    SHOT_TONE_TYPE_S2_ES1 = 6,   // 0b0110: 卡2和eSIM1
+    SHOT_TONE_TYPE_S12_ES1 = 7,   // 0b0111: 卡1、卡2和eSIM1
+    SHOT_TONE_TYPE_ESIM_CARD_2 = 8,   // 0b1000: 仅eSIM2
+    SHOT_TONE_TYPEE_S1_ES2 = 9,   // 0b1001: 卡1和eSIM2
+    SHOT_TONE_TYPE_S2_ES2 = 10,   // 0b1010: 卡2和eSIM2
+    SHOT_TONE_TYPE_S12_ES2 = 11,   // 0b1011: 卡1、卡2和eSIM2
+    SHOT_TONE_TYPE_ES12 = 12,   // 0b1100: eSIM1和eSIM2
+    SHOT_TONE_TYPE_S1_ES12 = 13,   // 0b1101: 卡1、eSIM1和eSIM2
+    SHOT_TONE_TYPE_S2_ES12 = 14,   // 0b1110: 卡2、eSIM1和eSIM2
+    SHOT_TONE_TYPE_S12_ES12 = 15,   // 0b1111: 卡1、卡2、eSIM1和eSIM2
+    SHOT_TONE_TYPE_MAX = 16,           // 上界(超过 ALL_CARD_MASK)
 };
 
 enum NotificationToneType : int32_t {
@@ -80,11 +95,23 @@ enum NotificationToneType : int32_t {
 };
 
 enum RingToneType : int32_t {
-    RING_TONE_TYPE_NOT = 0, // not set
-    RING_TONE_TYPE_SIM_CARD_1, // SimCard 1
-    RING_TONE_TYPE_SIM_CARD_2, // SimCard 2
-    RING_TONE_TYPE_SIM_CARD_BOTH, // both 1 and 2
-    RING_TONE_TYPE_MAX
+    RING_TONE_TYPE_NOT = 0,              // 0b0000: 未设置
+    RING_TONE_TYPE_SIM_CARD_1 = 1,    // 0b0001: 仅卡1 SIM_CARD_1
+    RING_TONE_TYPE_SIM_CARD_2 = 2,    // 0b0010: 仅卡2
+    RING_TONE_TYPE_SIM_CARD_BOTH = 3, // 0b0011: 卡1和卡2
+    RING_TONE_TYPE_ESIM_CARD_1 = 4,   // 0b0100: 仅eSIM1
+    RING_TONE_TYPE_S1_ES1 = 5,   // 0b0101: 卡1和eSIM1
+    RING_TONE_TYPE_S2_ES1 = 6,   // 0b0110: 卡2和eSIM1
+    RING_TONE_TYPE_S12_ES1 = 7,   // 0b0111: 卡1、卡2和eSIM1
+    RING_TONE_TYPE_ESIM_CARD_2 = 8,   // 0b1000: 仅eSIM2
+    RING_TONE_TYPEE_S1_ES2 = 9,   // 0b1001: 卡1和eSIM2
+    RING_TONE_TYPE_S2_ES2 = 10,   // 0b1010: 卡2和eSIM2
+    RING_TONE_TYPE_S12_ES2 = 11,   // 0b1011: 卡1、卡2和eSIM2
+    RING_TONE_TYPE_ES12 = 12,   // 0b1100: eSIM1和eSIM2
+    RING_TONE_TYPE_S1_ES12 = 13,   // 0b1101: 卡1、eSIM1和eSIM2
+    RING_TONE_TYPE_S2_ES12 = 14,   // 0b1110: 卡2、eSIM1和eSIM2
+    RING_TONE_TYPE_S12_ES12 = 15,   // 0b1111: 卡1、卡2、eSIM1和eSIM2
+    RING_TONE_TYPE_MAX = 16,           // 上界(超过 ALL_CARD_MASK)
 };
 
 enum AlarmToneType : int32_t {
@@ -169,7 +196,7 @@ inline int GetAppSandboxPathFromUri(std::string &uri)
 {
     const std::string prefixPart = "/data/app/el2/";
     const std::string targetPrefix = "/data/storage/el2/base/files/Ringtone";
-    if (uri.compare(0, prefixPart.size(), prefixPart) ==  0) {
+    if (uri.compare(0, prefixPart.size(), prefixPart) == 0) {
         uri = targetPrefix;
         return E_OK;
     } else {
@@ -268,29 +295,33 @@ constexpr int32_t MAX_ESIM_CARD_COUNT = 2;
 constexpr int32_t MAX_TOTAL_CARD_COUNT = 4;
 
 // eSIM铃声类型常量 (用于ToneFiles表shot_tone_type/ring_tone_type)
-constexpr int32_t SHOT_TONE_TYPE_ESIM_CARD_1 = ESIM_CARD_1_MASK;  // 4
-constexpr int32_t SHOT_TONE_TYPE_ESIM_CARD_2 = ESIM_CARD_2_MASK;  // 8
-constexpr int32_t RING_TONE_TYPE_ESIM_CARD_1 = ESIM_CARD_1_MASK;  // 4
-constexpr int32_t RING_TONE_TYPE_ESIM_CARD_2 = ESIM_CARD_2_MASK;  // 8
+constexpr int32_t SHOT_TONE_TYPE_ES1_ALIAS = ESIM_CARD_1_MASK;  // 4
+constexpr int32_t SHOT_TONE_TYPE_ES2_ALIAS = ESIM_CARD_2_MASK;  // 8
+constexpr int32_t RING_TONE_TYPE_ES1_ALIAS = ESIM_CARD_1_MASK;  // 4
+constexpr int32_t RING_TONE_TYPE_ES2_ALIAS = ESIM_CARD_2_MASK;  // 8
 
 inline bool IsSimCard1Set(int32_t toneType)
 {
-    return (toneType & SIM_CARD_1_MASK) != 0;
+    uint32_t type = static_cast<uint32_t>(toneType);
+    return (type & SIM_CARD_1_MASK) != 0U;
 }
 
 inline bool IsSimCard2Set(int32_t toneType)
 {
-    return (toneType & SIM_CARD_2_MASK) != 0;
+    uint32_t type = static_cast<uint32_t>(toneType);
+    return (type & SIM_CARD_2_MASK) != 0U;
 }
 
 inline bool IsESimCard1Set(int32_t toneType)
 {
-    return (toneType & ESIM_CARD_1_MASK) != 0;
+    uint32_t type = static_cast<uint32_t>(toneType);
+    return (type & ESIM_CARD_1_MASK) != 0U;
 }
 
 inline bool IsESimCard2Set(int32_t toneType)
 {
-    return (toneType & ESIM_CARD_2_MASK) != 0;
+    uint32_t type = static_cast<uint32_t>(toneType);
+    return (type & ESIM_CARD_2_MASK) != 0U;
 }
 
 inline int32_t GetSimCardCount(int32_t toneType)
@@ -305,36 +336,72 @@ inline int32_t GetSimCardCount(int32_t toneType)
 
 inline bool HasAnyCardSet(int32_t toneType)
 {
-    return (toneType & ALL_CARD_MASK) != 0;
+    uint32_t type = static_cast<uint32_t>(toneType);
+    return (type & ALL_CARD_MASK) != 0U;
+}
+
+/**
+* @brief 获取包含指定卡类型的所有可能 ShotToneType 组合。
+*
+* ShotToneType 本质是4位位图: bit0=卡1, bit1=卡2, bit2=eSIM1, bit3=eSIM2
+* 传入某个单卡类型值，返回该卡位为1的所有组合。
+*
+* 示例:
+*   传入 SHOT_TONE_TYPE_S1(1)  → {1, 3, 5, 7, 9, 11, 13, 15}
+*   传入 SHOT_TONE_TYPE_S2(2)  → {2, 3, 6, 7, 10, 11, 14, 15}
+*   传入 SHOT_TONE_TYPE_ES1(4) → {4, 5, 6, 7, 12, 13, 14, 15}
+*   传入 SHOT_TONE_TYPE_ES2(8) → {8, 9, 10, 11, 12, 13, 14, 15}
+*
+* @param cardBitType 单卡类型值（SHOT_TONE_TYPE_S1/S2/ES1/ES2）
+* @return 包含该卡的所有组合类型列表
+*/
+inline std::vector<int32_t> GetCombinationsForCard(int32_t cardBitType)
+{
+    std::vector<int32_t> result;
+    uint32_t bitType = static_cast<uint32_t>(cardBitType);
+    // 遍历 SHOT_TONE_TYPE_NOT(0) ~ SHOT_TONE_TYPE_MAX-1(15)
+    // 跳过0（NOT），从1开始
+    for (int32_t i = 1; i < SHOT_TONE_TYPE_MAX; i++) {
+        if ((static_cast<uint32_t>(i) & bitType) != 0U) {
+            result.push_back(i);
+        }
+    }
+    return result;
 }
 
 inline int32_t ClearCardMask(int32_t toneType, int32_t cardMask)
 {
-    return toneType & ~cardMask;
+    uint32_t type = static_cast<uint32_t>(toneType);
+    uint32_t mask = static_cast<uint32_t>(cardMask);
+    uint32_t result = type & ~mask;  // ~mask 在 uint32_t 上是安全的
+    return static_cast<int32_t>(result);
 }
 
 inline int32_t SetCardMask(int32_t toneType, int32_t cardMask)
 {
-    return toneType | cardMask;
+    uint32_t type = static_cast<uint32_t>(toneType);
+    uint32_t mask = static_cast<uint32_t>(cardMask);
+    uint32_t result = type | mask;
+    return static_cast<int32_t>(result);
 }
 
 inline int32_t GetCardMaskFromSimcardMode(SimcardMode mode)
 {
     switch (mode) {
-        case SIMCARD_MODE_1: return SIM_CARD_1_MASK;
-        case SIMCARD_MODE_2: return SIM_CARD_2_MASK;
-        case SIMCARD_MODE_ESIM_1: return ESIM_CARD_1_MASK;
-        case SIMCARD_MODE_ESIM_2: return ESIM_CARD_2_MASK;
+        case SIMCARD_MODE_1: return static_cast<int32_t>(SIM_CARD_1_MASK);
+        case SIMCARD_MODE_2: return static_cast<int32_t>(SIM_CARD_2_MASK);
+        case SIMCARD_MODE_ESIM_1: return static_cast<int32_t>(ESIM_CARD_1_MASK);
+        case SIMCARD_MODE_ESIM_2: return static_cast<int32_t>(ESIM_CARD_2_MASK);
         default: return 0;
     }
 }
 
 inline SimcardMode GetSimcardModeFromCardMask(int32_t cardMask)
 {
-    if (cardMask & SIM_CARD_1_MASK) return SIMCARD_MODE_1;
-    if (cardMask & SIM_CARD_2_MASK) return SIMCARD_MODE_2;
-    if (cardMask & ESIM_CARD_1_MASK) return SIMCARD_MODE_ESIM_1;
-    if (cardMask & ESIM_CARD_2_MASK) return SIMCARD_MODE_ESIM_2;
+    if (static_cast<uint32_t>(cardMask) & SIM_CARD_1_MASK) return SIMCARD_MODE_1;
+    if (static_cast<uint32_t>(cardMask) & SIM_CARD_2_MASK) return SIMCARD_MODE_2;
+    if (static_cast<uint32_t>(cardMask) & ESIM_CARD_1_MASK) return SIMCARD_MODE_ESIM_1;
+    if (static_cast<uint32_t>(cardMask) & ESIM_CARD_2_MASK) return SIMCARD_MODE_ESIM_2;
     return SIMCARD_MODE_INVALID;
 }
 } // namespace Media
