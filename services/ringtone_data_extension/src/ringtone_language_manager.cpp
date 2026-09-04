@@ -40,6 +40,7 @@ const char *LANGUAGE_KEY = "persist.global.language";
 const char *DEFAULT_LANGUAGE_KEY = "const.global.language";
 const string CHINESE_ABBREVIATION = "zh-Hans";
 const string ENGLISH_ABBREVIATION = "en-Latn-US";
+const string DEFAULT_SYSTEM_LANGUAGE = "zh-Hans";
 const int32_t SYSPARA_SIZE = 64;
 const int32_t SYSINIT_TYPE = 1;
 const int32_t STANDARDVIBRATION = 1;
@@ -89,15 +90,15 @@ shared_ptr<RingtoneLanguageManager> RingtoneLanguageManager::GetInstance()
  * 3. 调用UpdateRingtoneLanguage()更新铃声的多语言显示名；
  * 4. 调用UpdateVibrationLanguage()更新振动的多语言显示名。
  *
- * 当系统语言获取失败时直接返回，不做任何更新。
+ * 当系统语言获取失败时回退到默认语言（zh-Hans），确保多语言同步不中断。
  */
 void RingtoneLanguageManager::SyncAssetLanguage()
 {
     RINGTONE_INFO_LOG("SyncAssetLanguage start.");
     systemLanguage_ = GetSystemLanguage();
     if (systemLanguage_.empty()) {
-        RINGTONE_ERR_LOG("Failed to get system language");
-        return;
+        RINGTONE_WARN_LOG("Failed to get system language, fallback to default: %{public}s", DEFAULT_SYSTEM_LANGUAGE.c_str());
+        systemLanguage_ = DEFAULT_SYSTEM_LANGUAGE;
     }
     RINGTONE_INFO_LOG("system language is %{public}s", systemLanguage_.c_str());
     if (strncmp(systemLanguage_.c_str(), CHINESE_ABBREVIATION.c_str(), CHINESE_ABBREVIATION.size()) == 0) {
