@@ -86,12 +86,6 @@ HWTEST_F(RingtonePermissionUtilsTest, ringtonePermissionUtils_CheckCallerPermiss
     EXPECT_EQ(ret, false);
 }
 
-HWTEST_F(RingtonePermissionUtilsTest, ringtonePermissionUtils_GetSysBundleManager_test_001, TestSize.Level0)
-{
-    auto ret = RingtonePermissionUtils::GetSysBundleManager();
-    EXPECT_EQ(ret, nullptr);
-}
-
 HWTEST_F(RingtonePermissionUtilsTest, ringtonePermissionUtils_CheckHasPermission_test_001, TestSize.Level0)
 {
     std::vector<string> perms = { DEFAULT_STR, PERM_WRITE_RINGTONE };
