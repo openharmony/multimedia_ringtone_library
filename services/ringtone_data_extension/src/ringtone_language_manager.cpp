@@ -97,7 +97,7 @@ void RingtoneLanguageManager::SyncAssetLanguage()
     RINGTONE_INFO_LOG("SyncAssetLanguage start.");
     systemLanguage_ = GetSystemLanguage();
     if (systemLanguage_.empty()) {
-        RINGTONE_WARN_LOG("Failed to get system language, fallback to default: %{public}s", DEFAULT_SYSTEM_LANGUAGE.c_str());
+        RINGTONE_WARN_LOG("Failed to get system language, fallback to default");
         systemLanguage_ = DEFAULT_SYSTEM_LANGUAGE;
     }
     RINGTONE_INFO_LOG("system language is %{public}s", systemLanguage_.c_str());
