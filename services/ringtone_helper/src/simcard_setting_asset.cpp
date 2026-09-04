@@ -90,12 +90,20 @@ void SimcardSettingAsset::SetRingMode(int32_t mode)
 
 int32_t SimcardSettingAsset::GetInt32Member(const string &name) const
 {
-    return (member_.count(name) > 0) ? get<int32_t>(member_.at(name)) : RINGTONE_DEFAULT_INT32;
+    if (member_.count(name) == 0) {
+        return RINGTONE_DEFAULT_INT32;
+    }
+    const auto *val = get_if<int32_t>(&member_.at(name));
+    return (val != nullptr) ? *val : RINGTONE_DEFAULT_INT32;
 }
 
 const string &SimcardSettingAsset::GetStrMember(const string &name) const
 {
-    return (member_.count(name) > 0) ? get<string>(member_.at(name)) : RINGTONE_DEFAULT_STR;
+    if (member_.count(name) == 0) {
+        return RINGTONE_DEFAULT_STR;
+    }
+    const auto *val = get_if<string>(&member_.at(name));
+    return (val != nullptr) ? *val : RINGTONE_DEFAULT_STR;
 }
 
 unordered_map<string, variant<int32_t, int64_t, string, double>> &SimcardSettingAsset::GetMemberMap()
