@@ -515,7 +515,7 @@ CardScenarioType RingtoneDualFwkRestore::AnalyzeCardScenario(bool hasSim1, bool 
         if (hasESim2) return SCENARIO_ESIM2_ONLY;
         if (hasSim1) return SCENARIO_SIM1_ONLY;
         if (hasSim2) return SCENARIO_SIM2_ONLY;
-    } else if (cardCount == 2) {
+    } else if (cardCount == 2) { // 2 sim2
         if (hasSim1 && hasSim2) return SCENARIO_SIM1_SIM2;
         if (hasSim1 && hasESim1) return SCENARIO_SIM1_ESIM1;
         if (hasSim1 && hasESim2) return SCENARIO_SIM1_ESIM2;
