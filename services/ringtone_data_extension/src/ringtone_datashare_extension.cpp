@@ -332,7 +332,7 @@ static std::string SanitizeUriForLog(const std::string &uriStr)
     sanitized.erase(std::remove_if(sanitized.begin(), sanitized.end(),
         [](char c) {
             return c == '\r' || c == '\n';
-            }), sanitized.end());
+        }), sanitized.end());
     return sanitized;
 }
 
