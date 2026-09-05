@@ -172,17 +172,29 @@ variant<int32_t, int64_t, string, double> &VibrateAsset::GetMemberValue(const st
 
 const string &VibrateAsset::GetStrMember(const string &name) const
 {
-    return (member_.count(name) > 0) ? get<string>(member_.at(name)) : RINGTONE_DEFAULT_STR;
+    if (member_.count(name) == 0) {
+        return RINGTONE_DEFAULT_STR;
+    }
+    const auto *val = get_if<string>(&member_.at(name));
+    return (val != nullptr) ? *val : RINGTONE_DEFAULT_STR;
 }
 
 int32_t VibrateAsset::GetInt32Member(const string &name) const
 {
-    return (member_.count(name) > 0) ? get<int32_t>(member_.at(name)) : RINGTONE_DEFAULT_INT32;
+    if (member_.count(name) == 0) {
+        return RINGTONE_DEFAULT_INT32;
+    }
+    const auto *val = get_if<int32_t>(&member_.at(name));
+    return (val != nullptr) ? *val : RINGTONE_DEFAULT_INT32;
 }
 
 int64_t VibrateAsset::GetInt64Member(const string &name) const
 {
-    return (member_.count(name) > 0) ? get<int64_t>(member_.at(name)) : RINGTONE_DEFAULT_INT64;
+    if (member_.count(name) == 0) {
+        return RINGTONE_DEFAULT_INT64;
+    }
+    const auto *val = get_if<int64_t>(&member_.at(name));
+    return (val != nullptr) ? *val : RINGTONE_DEFAULT_INT64;
 }
 } // namespace Media
 } // namespace OHOS

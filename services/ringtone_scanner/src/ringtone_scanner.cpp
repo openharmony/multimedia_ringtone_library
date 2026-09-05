@@ -17,6 +17,8 @@
 
 #include "ringtone_scanner.h"
 
+#include <mutex>
+
 #include "dfx_const.h"
 #include "directory_ex.h"
 #include "parameter.h"
@@ -112,6 +114,11 @@ static std::unordered_map<std::string, std::pair<int32_t, int32_t>> g_vibratePla
 };
 
 static std::unordered_map<std::string, std::pair<int32_t, int32_t>> g_ringMockHapticAudioTypeMap;
+
+// 文件作用域互斥锁：保护 g_typeMap / g_vibrateTypeMap / g_vibratePlayModeMap / g_ringMockHapticAudioTypeMap
+// 的并发访问。这些全局 map 在 Additional* 写入端与 Build*Data 读取端之间可能发生数据竞争，
+// 因 RingtoneScanExecutor 会在多个工作线程上并发执行扫描任务，必须加锁保护。
+static std::mutex g_typeMapMutex;
 
 static bool IsSupportPocketVibrationEnhancement()
 {
@@ -630,10 +637,13 @@ int32_t RingtoneScannerObj::BuildData(const struct stat &statInfo)
         return err;
     }
 
-    for (const auto& pair : g_typeMap) {
-        if (path_.find(pair.first) == 0) {
-            data_->SetSourceType(pair.second.first);
-            data_->SetToneType(pair.second.second);
+    {
+        std::lock_guard<std::mutex> lock(g_typeMapMutex);
+        for (const auto& pair : g_typeMap) {
+            if (path_.find(pair.first) == 0) {
+                data_->SetSourceType(pair.second.first);
+                data_->SetToneType(pair.second.second);
+            }
         }
     }
 
@@ -662,45 +672,39 @@ int32_t RingtoneScannerObj::BuildData(const struct stat &statInfo)
 int32_t RingtoneScannerObj::BuildVibrateData(const struct stat &statInfo)
 {
     vibrateData_ = make_unique<VibrateMetadata>();
-    if (vibrateData_ == nullptr) {
-        RINGTONE_ERR_LOG("failed to make unique ptr for metadata");
-        return E_DATA;
-    }
-
-    if (S_ISDIR(statInfo.st_mode)) {
-        return E_INVALID_ARGUMENTS;
-    }
+    CHECK_AND_RETURN_RET_LOG(vibrateData_ != nullptr, E_DATA, "failed to make unique ptr for metadata");
+    CHECK_AND_RETURN_RET(!S_ISDIR(statInfo.st_mode), E_INVALID_ARGUMENTS);
 
     int32_t err = RingtoneScannerDb::GetVibrateFileBasicInfo(path_, vibrateData_);
-    if (err != E_OK) {
-        RINGTONE_ERR_LOG("failed to get file basic info");
-        return err;
-    }
+    CHECK_AND_RETURN_RET_LOG(err == E_OK, err, "failed to get file basic info");
 
-    for (const auto &pair : g_vibrateTypeMap) {
-        if (path_.find(pair.first) == 0) {
-            vibrateData_->SetSourceType(pair.second.first);
-            vibrateData_->SetVibrateType(pair.second.second);
-            int32_t ntype = 0;
-            if (pair.second.second == VIBRATE_TYPE_STANDARD) {
-                ntype = (path_.find(ALARMS_TYPE) != string::npos) ? VIBRATE_TYPE_SALARM : VIBRATE_TYPE_STANDARD;
-                ntype = (path_.find(RINGTONES_TYPE) != string::npos) ? VIBRATE_TYPE_SRINGTONE : ntype;
-                ntype = (path_.find(NOTIFICATIONS_TYPE) != string::npos) ? \
-                    VIBRATE_TYPE_SNOTIFICATION : ntype;
-                vibrateData_->SetVibrateType(ntype);
-            } else {
-                ntype = (path_.find(ALARMS_TYPE) != string::npos) ? VIBRATE_TYPE_GALARM : VIBRATE_TYPE_GENTLE;
-                ntype = (path_.find(RINGTONES_TYPE) != string::npos) ? VIBRATE_TYPE_GRINGTONE : ntype;
-                ntype = (path_.find(NOTIFICATIONS_TYPE) != string::npos) ? \
-                    VIBRATE_TYPE_GNOTIFICATION : ntype;
-                vibrateData_->SetVibrateType(ntype);
+    {
+        std::lock_guard<std::mutex> lock(g_typeMapMutex);
+        for (const auto &pair : g_vibrateTypeMap) {
+            if (path_.find(pair.first) == 0) {
+                vibrateData_->SetSourceType(pair.second.first);
+                vibrateData_->SetVibrateType(pair.second.second);
+                int32_t ntype = 0;
+                if (pair.second.second == VIBRATE_TYPE_STANDARD) {
+                    ntype = (path_.find(ALARMS_TYPE) != string::npos) ? VIBRATE_TYPE_SALARM : VIBRATE_TYPE_STANDARD;
+                    ntype = (path_.find(RINGTONES_TYPE) != string::npos) ? VIBRATE_TYPE_SRINGTONE : ntype;
+                    ntype = (path_.find(NOTIFICATIONS_TYPE) != string::npos) ? \
+                        VIBRATE_TYPE_SNOTIFICATION : ntype;
+                    vibrateData_->SetVibrateType(ntype);
+                } else {
+                    ntype = (path_.find(ALARMS_TYPE) != string::npos) ? VIBRATE_TYPE_GALARM : VIBRATE_TYPE_GENTLE;
+                    ntype = (path_.find(RINGTONES_TYPE) != string::npos) ? VIBRATE_TYPE_GRINGTONE : ntype;
+                    ntype = (path_.find(NOTIFICATIONS_TYPE) != string::npos) ? \
+                        VIBRATE_TYPE_GNOTIFICATION : ntype;
+                    vibrateData_->SetVibrateType(ntype);
+                }
             }
         }
-    }
 
-    for (const auto &pair : g_vibratePlayModeMap) {
-        if (path_.find(pair.first) == 0) {
-            vibrateData_->SetPlayMode(pair.second.second);
+        for (const auto &pair : g_vibratePlayModeMap) {
+            if (path_.find(pair.first) == 0) {
+                vibrateData_->SetPlayMode(pair.second.second);
+            }
         }
     }
 
@@ -737,19 +741,22 @@ int32_t RingtoneScannerObj::BuildRingMockHapticAudioData(const struct stat &stat
         return err;
     }
 
-    for (const auto &pair : g_ringMockHapticAudioTypeMap) {
-        if (path_.find(pair.first) == 0) {
-            ringMockHapticAudioData_->SetSourceType(pair.second.first);
-            ringMockHapticAudioData_->SetRingMockHapticAudioType(pair.second.second);
-            int32_t ntype = 0;
-            if (pair.second.second == RING_MOCK_HAPTIC_AUDIO_TYPE_CLASSIC_STANDARD) {
-                ntype = (path_.find(ALARMS_TYPE) != string::npos) ?
-                    RING_MOCK_HAPTIC_AUDIO_TYPE_ALARM_STANDARD : RING_MOCK_HAPTIC_AUDIO_TYPE_CLASSIC_STANDARD;
-                ntype = (path_.find(RINGTONES_TYPE) != string::npos) ?
-                    RING_MOCK_HAPTIC_AUDIO_TYPE_RINGTONE_STANDARD : ntype;
-                ntype = (path_.find(NOTIFICATIONS_TYPE) != string::npos) ?
-                    RING_MOCK_HAPTIC_AUDIO_TYPE_NOTIFICATION_STANDARD : ntype;
-                ringMockHapticAudioData_->SetRingMockHapticAudioType(ntype);
+    {
+        std::lock_guard<std::mutex> lock(g_typeMapMutex);
+        for (const auto &pair : g_ringMockHapticAudioTypeMap) {
+            if (path_.find(pair.first) == 0) {
+                ringMockHapticAudioData_->SetSourceType(pair.second.first);
+                ringMockHapticAudioData_->SetRingMockHapticAudioType(pair.second.second);
+                int32_t ntype = 0;
+                if (pair.second.second == RING_MOCK_HAPTIC_AUDIO_TYPE_CLASSIC_STANDARD) {
+                    ntype = (path_.find(ALARMS_TYPE) != string::npos) ?
+                        RING_MOCK_HAPTIC_AUDIO_TYPE_ALARM_STANDARD : RING_MOCK_HAPTIC_AUDIO_TYPE_CLASSIC_STANDARD;
+                    ntype = (path_.find(RINGTONES_TYPE) != string::npos) ?
+                        RING_MOCK_HAPTIC_AUDIO_TYPE_RINGTONE_STANDARD : ntype;
+                    ntype = (path_.find(NOTIFICATIONS_TYPE) != string::npos) ?
+                        RING_MOCK_HAPTIC_AUDIO_TYPE_NOTIFICATION_STANDARD : ntype;
+                    ringMockHapticAudioData_->SetRingMockHapticAudioType(ntype);
+                }
             }
         }
     }
@@ -770,13 +777,31 @@ int32_t RingtoneScannerObj::BuildRingMockHapticAudioData(const struct stat &stat
     return E_OK;
 }
 
+/**
+ * @brief 扫描单个文件并入库。
+ *
+ * 执行流程：
+ * 1. 检查文件是否为隐藏文件，隐藏文件跳过扫描；
+ * 2. 根据文件路径判断文件类别，按优先级依次匹配：
+ *    a) 振动文件（.json）：路径匹配振动资源目录时，转交 ScanVibrateFile() 处理；
+ *    b) 口袋振动增强音频（.wav）：路径匹配且功能开关开启时，转交 ScanRingMockHapticAudioFile() 处理；
+ *    c) 铃声文件（音频/视频）：其余路径按普通铃声文件处理；
+ * 3. 对于铃声文件，依次执行：
+ *    a) GetFileMetadata() — 提取文件元数据（大小、日期等），匹配 sourceType/toneType；
+ *    b) GetMediaInfo() — 提取媒体信息（时长、MIME类型等）；
+ *    c) Commit() — 将扫描结果写入数据库。
+ *
+ * @return E_OK 扫描成功，E_FILE_HIDDEN 文件隐藏，其他错误码表示各步骤失败。
+ */
 int32_t RingtoneScannerObj::ScanFileInternal()
 {
+    // 1. 隐藏文件跳过扫描
     if (RingtoneScannerUtils::IsFileHidden(path_)) {
         RINGTONE_ERR_LOG("the file is hidden");
         return E_FILE_HIDDEN;
     }
 
+    // 2. 判断文件路径是否属于振动资源目录
     std::vector<string> vibratePath;
     GetRingToneSourcePath(VIBRATE_RESOURCE_PATH, vibratePath);
     bool flag = (path_.find(ROOT_VIBRATE_PRELOAD_PATH_NOAH_PATH) != std::string::npos) ? true : false;
@@ -785,6 +810,7 @@ int32_t RingtoneScannerObj::ScanFileInternal()
     flag |= ContainsAnyPath(path_, vibratePath);
     std::string extension = RingtoneScannerUtils::GetFileExtension(path_);
 
+    // 2a. 振动文件：仅处理 .json 格式，其他格式返回无效路径
     if (flag) {
         if (extension.compare("json") == 0) {
             isVibrateFile_ = true;
@@ -793,6 +819,7 @@ int32_t RingtoneScannerObj::ScanFileInternal()
         return E_INVALID_PATH;
     }
 
+    // 2b. 口袋振动增强音频文件：需同时满足路径匹配和功能开关开启
     std::vector<string> ringMockHapticAudioPath;
     GetRingToneSourcePath(RING_MOCK_HAPTIC_AUDIO_RESOURCE_PATH, ringMockHapticAudioPath);
     bool isRingMockHapticAudio = ContainsAnyPath(path_, ringMockHapticAudioPath);
@@ -804,6 +831,7 @@ int32_t RingtoneScannerObj::ScanFileInternal()
         return E_OK;
     }
 
+    // 2c. 普通铃声文件：提取元数据 → 提取媒体信息 → 提交入库
     int32_t err = GetFileMetadata();
     if (err != E_OK) {
         if (err != E_SCANNED) {
@@ -814,6 +842,7 @@ int32_t RingtoneScannerObj::ScanFileInternal()
     err = GetMediaInfo();
     if (err != E_OK) {
         RINGTONE_ERR_LOG("failed to get ringtone info");
+        return err;
     }
 
     err = Commit();
@@ -944,6 +973,7 @@ int32_t RingtoneScannerObj::AdditionalRingMockHapticAudioTypeMap(
     const std::vector<std::string>& ringMockHapticAudioPaths)
 {
     if (!ringMockHapticAudioPaths.empty()) {
+        std::lock_guard<std::mutex> lock(g_typeMapMutex);
         for (const auto &path : ringMockHapticAudioPaths) {
             g_ringMockHapticAudioTypeMap[path + PATH_VIBRATE_TYPE_STANDARD] = {
                 SOURCE_TYPE_PRESET, RING_MOCK_HAPTIC_AUDIO_TYPE_CLASSIC_STANDARD
@@ -1045,6 +1075,7 @@ vector<string> RingtoneScannerObj::BuildVibrateDirs(const vector<string>& source
 int32_t RingtoneScannerObj::AdditionalVibrateType(const std::vector<std::string>& vibratePaths)
 {
     if (!vibratePaths.empty()) {
+        std::lock_guard<std::mutex> lock(g_typeMapMutex);
         for (const auto& path : vibratePaths) {
             g_vibrateTypeMap[path+PATH_VIBRATE_TYPE_STANDARD] = {SOURCE_TYPE_PRESET, VIBRATE_TYPE_STANDARD};
             g_vibrateTypeMap[path+PATH_VIBRATE_TYPE_GENTLE] = {SOURCE_TYPE_PRESET, VIBRATE_TYPE_GENTLE};
@@ -1056,6 +1087,7 @@ int32_t RingtoneScannerObj::AdditionalVibrateType(const std::vector<std::string>
 int32_t RingtoneScannerObj::AdditionalVibratePlayMode(const std::vector<std::string>& vibratePaths)
 {
     if (!vibratePaths.empty()) {
+        std::lock_guard<std::mutex> lock(g_typeMapMutex);
         for (const auto& path : vibratePaths) {
             g_vibratePlayModeMap[path+PATH_VIBRATE_TYPE_STANDARD+PATH_PLAY_MODE_SYNC] = {
                 SOURCE_TYPE_PRESET, VIBRATE_PLAYMODE_SYNC
@@ -1086,6 +1118,7 @@ bool RingtoneScannerObj::ContainsAnyPath(const std::string& input, const std::ve
 int32_t RingtoneScannerObj::AdditionalToneTypeMap(const std::vector<std::string>& tonePaths)
 {
     if (!tonePaths.empty()) {
+        std::lock_guard<std::mutex> lock(g_typeMapMutex);
         for (const auto& path : tonePaths) {
             g_typeMap[path+ "/" + ALARMS_TYPE] = {
                 SOURCE_TYPE_PRESET, TONE_TYPE_ALARM

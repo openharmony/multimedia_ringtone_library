@@ -38,6 +38,7 @@
 #include "ringtone_restore_type.h"
 #include "ringtone_type.h"
 #include "ringtone_utils.h"
+#include "ringtone_language_manager.h"
 #include "customised_tone_processor.h"
 #ifdef CORE_SERVICE_ENABLE
 #include "core_service_client.h"
@@ -52,7 +53,6 @@ namespace Media {
 using namespace std;
 
 static const string DUALFWK_SOUND_CONF_XML = "backup";
-const int32_t SIM_LABLE_INDEX_TOW = 2;
 
 int32_t RingtoneDualFwkRestore::LoadDualFwkConf(const std::string &backupPath)
 {
@@ -392,6 +392,7 @@ int32_t RingtoneDualFwkRestore::StartRestore()
         ret = InsertTones(infos);
     }
     FlushSettings();
+    RingtoneLanguageManager::GetInstance()->SyncAssetLanguage();
     return ret;
 }
 
@@ -506,7 +507,7 @@ CardScenarioType RingtoneDualFwkRestore::AnalyzeCardScenario(bool hasSim1, bool 
 
     if (cardCount == 0) {
         RINGTONE_INFO_LOG("No active SIM cards found");
-        return SCENARIO_INVALID;
+        return SCENARIO_NO_CARD;
     }
 
     if (cardCount == 1) {
@@ -514,7 +515,7 @@ CardScenarioType RingtoneDualFwkRestore::AnalyzeCardScenario(bool hasSim1, bool 
         if (hasESim2) return SCENARIO_ESIM2_ONLY;
         if (hasSim1) return SCENARIO_SIM1_ONLY;
         if (hasSim2) return SCENARIO_SIM2_ONLY;
-    } else if (cardCount == SIM_LABLE_INDEX_TOW) {
+    } else if (cardCount == 2) { // 2 sim2
         if (hasSim1 && hasSim2) return SCENARIO_SIM1_SIM2;
         if (hasSim1 && hasESim1) return SCENARIO_SIM1_ESIM1;
         if (hasSim1 && hasESim2) return SCENARIO_SIM1_ESIM2;
@@ -524,6 +525,63 @@ CardScenarioType RingtoneDualFwkRestore::AnalyzeCardScenario(bool hasSim1, bool 
     }
 
     return SCENARIO_INVALID;
+}
+
+std::vector<MigrationStep> RingtoneDualFwkRestore::BuildMigrationSteps(CardScenarioType scenario)
+{
+    // 原则：只列出 fromMask != toMask 的步骤，fromMask==toMask 是空操作无需执行。
+    // 旧版本DB中 slotIndex=0 对应 SIM_CARD_1_MASK(0x01), slotIndex=1 对应 SIM_CARD_2_MASK(0x02)。
+    // 升级后数据已经在原位，只需将旧卡位数据额外复制到新的eSIM卡位，
+    // 或将SIM2场景中旧卡1(slotIndex=0)的数据复制到新卡2。
+    std::vector<MigrationStep> steps;
+    switch (scenario) {
+        case SCENARIO_NO_CARD:
+            // 序号1: 0卡，不处理
+            break;
+        case SCENARIO_SIM1_ONLY:
+            // 序号2: 只有SIM1，旧卡1数据已在卡1位，无需迁移
+            break;
+        case SCENARIO_SIM2_ONLY:
+            // 序号3: 只有SIM2，旧卡2数据已在卡2位，无需迁移
+            break;
+        case SCENARIO_ESIM1_ONLY:
+            // 序号4: 只有eSIM1(slotIndex=1=旧卡2)，需额外复制到eSIM1
+            steps.push_back({SIM_CARD_2_MASK, ESIM_CARD_1_MASK});
+            break;
+        case SCENARIO_ESIM2_ONLY:
+            // 序号5: 只有eSIM2(slotIndex=1=旧卡2)，需额外复制到eSIM2
+            steps.push_back({SIM_CARD_2_MASK, ESIM_CARD_2_MASK});
+            break;
+        case SCENARIO_SIM1_SIM2:
+            // 序号6: SIM1+SIM2，数据都已在原位，无需迁移
+            break;
+        case SCENARIO_SIM1_ESIM1:
+            // 序号7: SIM1+eSIM1，eSIM1在旧卡2位，需额外复制到eSIM1
+            steps.push_back({SIM_CARD_2_MASK, ESIM_CARD_1_MASK});
+            break;
+        case SCENARIO_SIM1_ESIM2:
+            // 序号8: SIM1+eSIM2，eSIM2在旧卡2位，需额外复制到eSIM2
+            steps.push_back({SIM_CARD_2_MASK, ESIM_CARD_2_MASK});
+            break;
+        case SCENARIO_SIM2_ESIM1:
+            // 序号9: SIM2(slotIndex=0)+eSIM1(slotIndex=1)
+            // SIM2底层在旧卡1位，需复制到新卡2保持UX一致；eSIM1需复制到eSIM1
+            steps.push_back({SIM_CARD_1_MASK, SIM_CARD_2_MASK});
+            steps.push_back({SIM_CARD_2_MASK, ESIM_CARD_1_MASK});
+            break;
+        case SCENARIO_SIM2_ESIM2:
+            // 序号10: SIM2(slotIndex=0)+eSIM2(slotIndex=1)
+            // SIM2底层在旧卡1位，需复制到新卡2保持UX一致；eSIM2需复制到eSIM2
+            steps.push_back({SIM_CARD_1_MASK, SIM_CARD_2_MASK});
+            steps.push_back({SIM_CARD_2_MASK, ESIM_CARD_2_MASK});
+            break;
+        case SCENARIO_ESIM1_ESIM2:
+            // eSIM1+eSIM2: 两者都在旧卡2位，无法拆分，无需迁移
+            break;
+        default:
+            break;
+    }
+    return steps;
 }
 
 void RingtoneDualFwkRestore::MigrateToneType(int32_t fromCardMask, int32_t toCardMask)
@@ -560,31 +618,52 @@ void RingtoneDualFwkRestore::MigrateSimCardSetting(int32_t fromMode, int32_t toM
 {
     RINGTONE_INFO_LOG("Migrating SimCardSetting from mode=%{public}d to mode=%{public}d", fromMode, toMode);
     auto rdbStore = GetBaseDb();
-    if (rdbStore == nullptr) {
-        RINGTONE_ERR_LOG("GetBaseDb failed, cannot migrate SimCardSetting");
-        return;
-    }
-    std::string migrateSql =
-        "INSERT OR REPLACE INTO " + SIMCARD_SETTING_TABLE + " (" +
+    CHECK_AND_RETURN_LOG(rdbStore != nullptr, "GetBaseDb failed, cannot migrate SimCardSetting");
+
+    // INSERT OR IGNORE 补行 — 只插入目标 mode 不存在的行，不覆盖已有数据
+    std::string insertSql =
+        "INSERT OR IGNORE INTO " + SIMCARD_SETTING_TABLE + " (" +
         SIMCARD_SETTING_COLUMN_MODE + ", " +
         SIMCARD_SETTING_COLUMN_RINGTONE_TYPE + ", " +
         SIMCARD_SETTING_COLUMN_TONE_FILE + ", " +
         SIMCARD_SETTING_COLUMN_VIBRATE_FILE + ", " +
         SIMCARD_SETTING_COLUMN_VIBRATE_MODE + ", " +
         SIMCARD_SETTING_COLUMN_RING_MODE + ") " +
-        "SELECT ?, " +
+        "SELECT " + std::to_string(toMode) + ", " +
         SIMCARD_SETTING_COLUMN_RINGTONE_TYPE + ", " +
         SIMCARD_SETTING_COLUMN_TONE_FILE + ", " +
         SIMCARD_SETTING_COLUMN_VIBRATE_FILE + ", " +
         SIMCARD_SETTING_COLUMN_VIBRATE_MODE + ", " +
         SIMCARD_SETTING_COLUMN_RING_MODE + " " +
         "FROM " + SIMCARD_SETTING_TABLE + " " +
-        "WHERE " + SIMCARD_SETTING_COLUMN_MODE + " = ?";
-    int32_t ret = rdbStore->ExecuteSql(migrateSql,
-        { NativeRdb::ValueObject(toMode), NativeRdb::ValueObject(fromMode) });
-    if (ret != E_OK) {
-        RINGTONE_ERR_LOG("Migrate SimCardSetting failed, ret=%{public}d", ret);
-    }
+        "WHERE " + SIMCARD_SETTING_COLUMN_MODE + " = " + std::to_string(fromMode);
+    int32_t ret = rdbStore->ExecuteSql(insertSql);
+    CHECK_AND_RETURN_LOG(ret == E_OK, "Insert SimCardSetting failed, ret=%{public}d", ret);
+
+    // UPDATE 填充空值列 — 用 COALESCE 一次性填充所有为空的列，避免逐列循环
+    // COALESCE(target_col, source_col): 如果目标列非空则保留原值，为空则取源列值
+    std::string updateSql =
+        "UPDATE " + SIMCARD_SETTING_TABLE + " SET " +
+        SIMCARD_SETTING_COLUMN_TONE_FILE + " = COALESCE(NULLIF(" +
+            SIMCARD_SETTING_COLUMN_TONE_FILE + ", ''), s2." + SIMCARD_SETTING_COLUMN_TONE_FILE + "), " +
+        SIMCARD_SETTING_COLUMN_VIBRATE_FILE + " = COALESCE(NULLIF(" +
+            SIMCARD_SETTING_COLUMN_VIBRATE_FILE + ", ''), s2." + SIMCARD_SETTING_COLUMN_VIBRATE_FILE + "), " +
+        SIMCARD_SETTING_COLUMN_RING_MODE + " = COALESCE(NULLIF(" +
+            SIMCARD_SETTING_COLUMN_RING_MODE + ", ''), s2." + SIMCARD_SETTING_COLUMN_RING_MODE + "), " +
+        SIMCARD_SETTING_COLUMN_VIBRATE_MODE + " = COALESCE(NULLIF(" +
+            SIMCARD_SETTING_COLUMN_VIBRATE_MODE + ", ''), s2." + SIMCARD_SETTING_COLUMN_VIBRATE_MODE + ") " +
+        "FROM (SELECT " +
+            SIMCARD_SETTING_COLUMN_RINGTONE_TYPE + " AS rt_type, " +
+            SIMCARD_SETTING_COLUMN_TONE_FILE + ", " +
+            SIMCARD_SETTING_COLUMN_VIBRATE_FILE + ", " +
+            SIMCARD_SETTING_COLUMN_RING_MODE + ", " +
+            SIMCARD_SETTING_COLUMN_VIBRATE_MODE + " " +
+            "FROM " + SIMCARD_SETTING_TABLE +
+            " WHERE " + SIMCARD_SETTING_COLUMN_MODE + " = " + std::to_string(fromMode) + ") s2 " +
+        "WHERE " + SIMCARD_SETTING_TABLE + "." + SIMCARD_SETTING_COLUMN_MODE + " = " + std::to_string(toMode) +
+        " AND " + SIMCARD_SETTING_TABLE + "." + SIMCARD_SETTING_COLUMN_RINGTONE_TYPE + " = s2.rt_type";
+    ret = rdbStore->ExecuteSql(updateSql);
+    CHECK_AND_RETURN_LOG(ret == E_OK, "Update SimCardSetting failed, ret=%{public}d", ret);
 }
 
 void RingtoneDualFwkRestore::ApplyMigration(int32_t fromCardMask, int32_t toCardMask)
@@ -612,13 +691,13 @@ int32_t RingtoneDualFwkRestore::HandleUpgradeWithESim()
         if (telInfo.isEsim) {
             if (telInfo.simLabelIndex == 1) {
                 hasESim1 = true;
-            } else if (telInfo.simLabelIndex == SIM_LABLE_INDEX_TOW) {
+            } else if (telInfo.simLabelIndex == 2) { // 2 SIM_LABLE_INDEX_TOW
                 hasESim2 = true;
             }
         } else {
             if (telInfo.simLabelIndex == 1) {
                 hasSim1 = true;
-            } else if (telInfo.simLabelIndex == SIM_LABLE_INDEX_TOW) {
+            } else if (telInfo.simLabelIndex == 2) { // 2 SIM_LABLE_INDEX_TOW
                 hasSim2 = true;
             }
         }
@@ -626,25 +705,22 @@ int32_t RingtoneDualFwkRestore::HandleUpgradeWithESim()
 
     auto scenario = AnalyzeCardScenario(hasSim1, hasSim2, hasESim1, hasESim2);
     RINGTONE_INFO_LOG("Card scenario type: %{public}d", scenario);
- 
+
     if (scenario == SCENARIO_INVALID) {
         RINGTONE_ERR_LOG("Unknown card scenario");
         return E_FAIL;
     }
 
-    for (const auto &config : MIGRATION_CONFIG_TABLE) {
-        if (config.scenario == scenario) {
-            RINGTONE_INFO_LOG("Applying migration for scenario=%{public}d, "
-                "fromCardMask=%{public}d, toCardMask=%{public}d",
-                scenario, config.fromCardMask, config.toCardMask);
-            ApplyMigration(config.fromCardMask, config.toCardMask);
-            break;
-        }
+    auto steps = BuildMigrationSteps(scenario);
+    for (const auto &step : steps) {
+        RINGTONE_INFO_LOG("Applying migration: fromCardMask=%{public}d, toCardMask=%{public}d",
+            step.fromCardMask, step.toCardMask);
+        ApplyMigration(step.fromCardMask, step.toCardMask);
     }
 #else
     RINGTONE_WARN_LOG("CORE_SERVICE_ENABLE not defined, skip HandleUpgradeWithESim");
 #endif
- 
+
     RINGTONE_INFO_LOG("HandleUpgradeWithESim end");
     return E_OK;
 }

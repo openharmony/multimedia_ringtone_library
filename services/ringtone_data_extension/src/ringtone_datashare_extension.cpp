@@ -255,9 +255,7 @@ static int32_t CheckRingtonePerm(RingtoneDataCommand &cmd, bool isWrite)
     }
 
     if (isWrite) {
-        err = (RingtonePermissionUtils::CheckCallerPermission(PERM_WRITE_RINGTONE)||
-            (RingtonePermissionUtils::CheckCallerPermission(PERM_ACCESS_CUSTOM_RINGTONE)) ?
-            E_SUCCESS : E_PERMISSION_DENIED);
+        err = (RingtonePermissionUtils::CheckCallerPermission(PERM_WRITE_RINGTONE) ? E_SUCCESS : E_PERMISSION_DENIED);
     }
 
     return err;
@@ -284,6 +282,23 @@ static int32_t GetValidUriTab(const Uri &uri, string &tab)
         proxyStringPos != std::string::npos && proxyStringPos > lastSlash) {
         auto tablePos = lastSlash + 1;
         tab = uriStr.substr(tablePos, proxyStringPos - tablePos);
+        // 白名单校验：提取的表名必须是已知的合法表名，防止任意表名注入
+        bool validTab = false;
+        for (const auto &pair : VALID_URI_TO_TABLE) {
+            if (tab == pair.second) {
+                validTab = true;
+                break;
+            }
+        }
+        if (!validTab) {
+            uriStr.erase(std::remove_if(uriStr.begin(), uriStr.end(),
+                [](char c) {
+                    return c == '\r' || c == '\n';
+                }), uriStr.end());
+            RINGTONE_ERR_LOG("Invalid table name extracted from proxy URI, tab=%{public}s, uri=%{public}s",
+                tab.c_str(), uriStr.c_str());
+            return E_INVALID_URI;
+        }
         return Media::E_OK;
     }
 
@@ -300,6 +315,25 @@ static int32_t GetValidUriTab(const Uri &uri, string &tab)
         }), uriStr.end());
     RINGTONE_INFO_LOG("INVALID uri=%{public}s", uriStr.c_str());
     return E_INVALID_URI;
+}
+
+/**
+ * @brief 过滤URI字符串中的换行控制字符，防止日志注入。
+ *
+ * 移除字符串中的 \r 和 \n 字符，避免恶意构造的URI在日志输出时
+ * 产生伪造的日志条目。
+ *
+ * @param uriStr 待过滤的URI字符串。
+ * @return 过滤后的安全字符串。
+ */
+static std::string SanitizeUriForLog(const std::string &uriStr)
+{
+    std::string sanitized = uriStr;
+    sanitized.erase(std::remove_if(sanitized.begin(), sanitized.end(),
+        [](char c) {
+            return c == '\r' || c == '\n';
+        }), sanitized.end());
+    return sanitized;
 }
 
 static const std::vector<string> g_ringToneTableFields = {
@@ -440,7 +474,7 @@ void RingtoneDataShareExtension::UpdataRdbPathData()
  */
 int RingtoneDataShareExtension::Insert(const Uri &uri, const DataShareValuesBucket &value)
 {
-    RINGTONE_DEBUG_LOG("entry, uri=%{public}s", uri.ToString().c_str());
+    RINGTONE_DEBUG_LOG("entry, uri=%{public}s", SanitizeUriForLog(uri.ToString()).c_str());
 
     DumpDataShareValueBucket(g_ringToneTableFields, value);
 
@@ -483,7 +517,7 @@ int RingtoneDataShareExtension::Insert(const Uri &uri, const DataShareValuesBuck
 int RingtoneDataShareExtension::Update(const Uri &uri, const DataSharePredicates &predicates,
     const DataShareValuesBucket &value)
 {
-    RINGTONE_DEBUG_LOG("entry, uri=%{public}s", uri.ToString().c_str());
+    RINGTONE_DEBUG_LOG("entry, uri=%{public}s", SanitizeUriForLog(uri.ToString()).c_str());
     RINGTONE_DEBUG_LOG("WhereClause=%{public}s", predicates.GetWhereClause().c_str());
 
     string tab("");
@@ -522,13 +556,12 @@ int RingtoneDataShareExtension::Update(const Uri &uri, const DataSharePredicates
  */
 int RingtoneDataShareExtension::Delete(const Uri &uri, const DataSharePredicates &predicates)
 {
-    RINGTONE_WARN_LOG("entry, uri=%{public}s", uri.ToString().c_str());
-
     string tab("");
     int err = GetValidUriTab(uri, tab);
     if (err != Media::E_OK) {
         return err;
     }
+    RINGTONE_WARN_LOG("entry, uri=%{public}s", SanitizeUriForLog(uri.ToString()).c_str());
 
     if (tab == HAPTIC_2_TONE_TABLE) {
         RINGTONE_ERR_LOG("Haptic2ToneFiles table does not support delete operation");
@@ -564,7 +597,7 @@ int RingtoneDataShareExtension::Delete(const Uri &uri, const DataSharePredicates
 shared_ptr<DataShareResultSet> RingtoneDataShareExtension::Query(const Uri &uri,
     const DataSharePredicates &predicates, vector<string> &columns, DatashareBusinessError &businessError)
 {
-    RINGTONE_DEBUG_LOG("entry, uri=%{public}s", uri.ToString().c_str());
+    RINGTONE_DEBUG_LOG("entry, uri=%{public}s", SanitizeUriForLog(uri.ToString()).c_str());
 
     string tab("");
     int err = GetValidUriTab(uri, tab);
@@ -607,7 +640,7 @@ shared_ptr<DataShareResultSet> RingtoneDataShareExtension::Query(const Uri &uri,
 int RingtoneDataShareExtension::OpenFile(const Uri &uri, const string &mode)
 {
     RINGTONE_DEBUG_LOG("entry, uri=%{public}s, mode=%{public}s",
-        uri.ToString().c_str(), mode.c_str());
+        SanitizeUriForLog(uri.ToString()).c_str(), mode.c_str());
 
     string tab("");
     int err = GetValidUriTab(uri, tab);
@@ -689,7 +722,7 @@ bool RingtoneDataShareExtension::CheckCurrentUser()
     char paramValue[RINGTONEPARA_SIZE] = {0};
     GetParameter(RINGTONE_PARAMETER_SCANNER_USERID_KEY, "", paramValue, RINGTONEPARA_SIZE);
     std::string ids(paramValue);
-    RINGTONE_INFO_LOG("GetParameter end, paramValue: %{private}s .", ids.c_str());
+    RINGTONE_WARN_LOG("GetParameter end, paramValue: %{private}s .", ids.c_str());
     int32_t currentUserId = GetUserId();
     if (IdExists(ids, currentUserId)) {
         return true;
@@ -733,7 +766,7 @@ void RingtoneDataShareExtension::RingtoneScanner()
     }
     GetParameter(RINGTONE_PARAMETER_SCANNER_FIRST_KEY, "", paramValue, RINGTONEPARA_SIZE);
     std::string parameter(paramValue);
-    RINGTONE_INFO_LOG("GetParameter end, paramValue: %{public}s .", parameter.c_str());
+    RINGTONE_WARN_LOG("GetParameter end, paramValue: %{public}s .", parameter.c_str());
     if (strcmp(paramValue, RINGTONE_PARAMETER_SCANNER_FIRST_FALSE) == 0) {
         RingtoneScannerManager::GetInstance()->Start(false);
     }
