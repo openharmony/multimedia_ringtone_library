@@ -200,7 +200,7 @@ void RingtoneRestore::CheckRestoreFileInfos(vector<FileInfo> &infos)
             toneExists, toneExceedLimit, srcPath.c_str());
         CustomizedRingToneHandle(*it);
         if (!toneExists || toneExceedLimit) {
-            if (it->sourceType == SOURCE_TYPE_PRESET) { // TODO 是否过滤 .json
+            if (it->sourceType == SOURCE_TYPE_PRESET) {
                 // preset铃声文件不存在时，不需要恢复文件，但需要保留设置
                 // restorePath指向本地preset路径，CheckSetting通过settingMgr_提交设置
                 it->restorePath = it->data;
