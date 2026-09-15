@@ -92,7 +92,7 @@ export default class RingtoneBackupExtAbility extends BackupExtensionAbility {
       const ringtoneBasePath = '/data/storage/el2/base/files/Ringtone/';
       // peerSlotNum: 传入实际值用于eSIM裁剪；ringtoneBasePath用于过滤未使用自定义铃声
       await this.copyDbAndClean(srcDbPath, tempDbPath, peerSlotNum, ringtoneBasePath);
-      const retStr = JSON.stringify({ compatibleDirMapping : ["/storage/media/local/files/.backup/backup/ringtone_temp_rdb/", "/data/storage/el1/database/rdb/"]})
+      const retStr = JSON.stringify({ compatibleDirMapping : ["/storage/media/local/files/.backup/backup/ringtone_temp_rdb/", "/data/storage/el1/database/rdb/"]});
       console.log(TAG, `onBackupEx end, retStr: ${retStr}`);
       return retStr;
     } catch (err) {
