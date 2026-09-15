@@ -15,6 +15,7 @@
 
 #include "ringtone_rdb_callbacks.h"
 
+#include <set>
 #include <sys/stat.h>
 
 #include "rdb_sql_utils.h"
@@ -139,11 +140,10 @@ static const vector<string> g_initSqls = {
     CREATE_HAPTIC_2_TONE_TABLE,
 };
 
-struct CardConfig {
-    bool hasSim1 = false;
-    bool hasSim2 = false;
-    bool hasESim1 = false;
-    bool hasESim2 = false;
+struct SimCardConfigInfo {
+    bool isEsim = false;
+    int32_t simLabelIndex = 0;
+    int32_t slotIndex = 0;
 };
 
 RingtoneDataCallBack::RingtoneDataCallBack(void)
@@ -356,6 +356,9 @@ static void AddVibrateTable(NativeRdb::RdbStore &store)
     ExecSqls(sqls, store);
 }
 
+// 拷贝 SimCardSetting 表数据：从 fromMode 列拷贝到 toMode 列
+// 拷贝字段：tone_file, vibrate_file, vibrate_mode, ring_mode
+// 限定 ringtone_type 为 1(短信), 2(来电), 101(振动短信), 102(振动来电)
 static void MigrateESimSimCardSetting(NativeRdb::RdbStore &store, int32_t fromMode, int32_t toMode)
 {
     RINGTONE_INFO_LOG("MigrateESimSimCardSetting: fromMode=%{public}d, toMode=%{public}d", fromMode, toMode);
@@ -391,11 +394,13 @@ static void MigrateESimSimCardSetting(NativeRdb::RdbStore &store, int32_t fromMo
     }
 }
 
+// 给包含 fromCardMask 比特位的行追加 toCardMask 比特位（OR 操作）
+// 同时处理 shot_tone_type 和 ring_tone_type 两列
 static void AddESimToneTypeBit(NativeRdb::RdbStore &store, int32_t fromCardMask, int32_t toCardMask)
 {
     RINGTONE_INFO_LOG("AddESimToneTypeBit: fromCardMask=%{public}d, toCardMask=%{public}d",
         fromCardMask, toCardMask);
-    // Add toCardMask bitmask to records that have fromCardMask set (OR operation)
+    // 短信铃声：给包含 fromCardMask 的行追加 toCardMask
     const string updateShotSql =
         "UPDATE " + RINGTONE_TABLE + " SET " +
         RINGTONE_COLUMN_SHOT_TONE_TYPE + " = " + RINGTONE_COLUMN_SHOT_TONE_TYPE + " | ?" +
@@ -406,6 +411,7 @@ static void AddESimToneTypeBit(NativeRdb::RdbStore &store, int32_t fromCardMask,
         RINGTONE_ERR_LOG("AddESimToneTypeBit shot_tone_type failed, ret=%{public}d", ret);
     }
 
+    // 来电铃声：给包含 fromCardMask 的行追加 toCardMask
     const string updateRingSql =
         "UPDATE " + RINGTONE_TABLE + " SET " +
         RINGTONE_COLUMN_RING_TONE_TYPE + " = " + RINGTONE_COLUMN_RING_TONE_TYPE + " | ?" +
@@ -419,44 +425,78 @@ static void AddESimToneTypeBit(NativeRdb::RdbStore &store, int32_t fromCardMask,
         fromCardMask, toCardMask);
 }
 
-static void ReplaceToneTypeBit(NativeRdb::RdbStore &store, int32_t fromCardMask, int32_t toCardMask)
-{
-    RINGTONE_INFO_LOG("ReplaceToneTypeBit: fromCardMask=%{public}d, toCardMask=%{public}d",
-        fromCardMask, toCardMask);
-    // Replace fromCardMask with toCardMask: clear fromCardMask bits, set toCardMask bits
-    const string updateShotSql =
-        "UPDATE " + RINGTONE_TABLE + " SET " +
-        RINGTONE_COLUMN_SHOT_TONE_TYPE + " = (" +
-        RINGTONE_COLUMN_SHOT_TONE_TYPE + " & ~?) | ?" +
-        " WHERE " + RINGTONE_COLUMN_SHOT_TONE_TYPE + " & ? != 0";
-    int32_t ret = store.ExecuteSql(updateShotSql,
-        { NativeRdb::ValueObject(fromCardMask), NativeRdb::ValueObject(toCardMask),
-          NativeRdb::ValueObject(fromCardMask) });
-    if (ret != E_OK) {
-        RINGTONE_ERR_LOG("ReplaceToneTypeBit shot_tone_type failed, ret=%{public}d", ret);
-    }
 
+// 消除指定卡位掩码的系统预置默认铃声（source_type=1 的行中清除对应比特位）
+static void RemovePresetToneTypeBit(NativeRdb::RdbStore &store, int32_t cardMask)
+{
+    RINGTONE_INFO_LOG("RemovePresetToneTypeBit: cardMask=%{public}d", cardMask);
+    // 消除来电铃声的系统预置默认值
     const string updateRingSql =
         "UPDATE " + RINGTONE_TABLE + " SET " +
-        RINGTONE_COLUMN_RING_TONE_TYPE + " = (" +
-        RINGTONE_COLUMN_RING_TONE_TYPE + " & ~?) | ?" +
-        " WHERE " + RINGTONE_COLUMN_RING_TONE_TYPE + " & ? != 0";
-    ret = store.ExecuteSql(updateRingSql,
-        { NativeRdb::ValueObject(fromCardMask), NativeRdb::ValueObject(toCardMask),
-          NativeRdb::ValueObject(fromCardMask) });
+        RINGTONE_COLUMN_RING_TONE_TYPE + " = " +
+        RINGTONE_COLUMN_RING_TONE_TYPE + " & ~?" +
+        " WHERE " + RINGTONE_COLUMN_RING_TONE_TYPE + " & ? != 0" +
+        " AND " + RINGTONE_COLUMN_RING_TONE_SOURCE_TYPE + " = ?";
+    int32_t ret = store.ExecuteSql(updateRingSql,
+        { NativeRdb::ValueObject(cardMask), NativeRdb::ValueObject(cardMask),
+          NativeRdb::ValueObject(SOURCE_TYPE_PRESET) });
     if (ret != E_OK) {
-        RINGTONE_ERR_LOG("ReplaceToneTypeBit ring_tone_type failed, ret=%{public}d", ret);
+        RINGTONE_ERR_LOG("RemovePresetToneTypeBit ring_tone_type failed, ret=%{public}d", ret);
     }
-    RINGTONE_INFO_LOG("ReplaceToneTypeBit complete, fromCardMask=%{public}d, toCardMask=%{public}d",
-        fromCardMask, toCardMask);
+
+    // 消除短信铃声的系统预置默认值
+    const string updateShotSql =
+        "UPDATE " + RINGTONE_TABLE + " SET " +
+        RINGTONE_COLUMN_SHOT_TONE_TYPE + " = " +
+        RINGTONE_COLUMN_SHOT_TONE_TYPE + " & ~?" +
+        " WHERE " + RINGTONE_COLUMN_SHOT_TONE_TYPE + " & ? != 0" +
+        " AND " + RINGTONE_COLUMN_SHOT_TONE_SOURCE_TYPE + " = ?";
+    ret = store.ExecuteSql(updateShotSql,
+        { NativeRdb::ValueObject(cardMask), NativeRdb::ValueObject(cardMask),
+          NativeRdb::ValueObject(SOURCE_TYPE_PRESET) });
+    if (ret != E_OK) {
+        RINGTONE_ERR_LOG("RemovePresetToneTypeBit shot_tone_type failed, ret=%{public}d", ret);
+    }
+    RINGTONE_INFO_LOG("RemovePresetToneTypeBit complete, cardMask=%{public}d", cardMask);
 }
 
-static CardConfig DetectActiveCards()
+// 清除所有行中指定卡位掩码的比特位（不限 source_type）
+static void ClearToneTypeBit(NativeRdb::RdbStore &store, int32_t cardMask)
 {
-    CardConfig config;
+    RINGTONE_INFO_LOG("ClearToneTypeBit: cardMask=%{public}d", cardMask);
+    // 清除来电铃声的卡位比特
+    const string updateRingSql =
+        "UPDATE " + RINGTONE_TABLE + " SET " +
+        RINGTONE_COLUMN_RING_TONE_TYPE + " = " +
+        RINGTONE_COLUMN_RING_TONE_TYPE + " & ~?" +
+        " WHERE " + RINGTONE_COLUMN_RING_TONE_TYPE + " & ? != 0";
+    int32_t ret = store.ExecuteSql(updateRingSql,
+        { NativeRdb::ValueObject(cardMask), NativeRdb::ValueObject(cardMask) });
+    if (ret != E_OK) {
+        RINGTONE_ERR_LOG("ClearToneTypeBit ring_tone_type failed, ret=%{public}d", ret);
+    }
+
+    // 清除短信铃声的卡位比特
+    const string updateShotSql =
+        "UPDATE " + RINGTONE_TABLE + " SET " +
+        RINGTONE_COLUMN_SHOT_TONE_TYPE + " = " +
+        RINGTONE_COLUMN_SHOT_TONE_TYPE + " & ~?" +
+        " WHERE " + RINGTONE_COLUMN_SHOT_TONE_TYPE + " & ? != 0";
+    ret = store.ExecuteSql(updateShotSql,
+        { NativeRdb::ValueObject(cardMask), NativeRdb::ValueObject(cardMask) });
+    if (ret != E_OK) {
+        RINGTONE_ERR_LOG("ClearToneTypeBit shot_tone_type failed, ret=%{public}d", ret);
+    }
+    RINGTONE_INFO_LOG("ClearToneTypeBit complete, cardMask=%{public}d", cardMask);
+}
+
+// DetectActiveCards: GetActiveSimAccountInfoList ret=0, listSize=2
+// [{"simId":1,"isEsim":false,"slotIndex":0,"simLabelIndex":1,"isActive":true,"iccId":"8986****1924****6716"}]
+// card[0]: isEsim=0, simLabelIndex=2
+static std::vector<SimCardConfigInfo> DetectActiveCards()
+{
+    std::vector<SimCardConfigInfo> config;
 #ifdef CORE_SERVICE_ENABLE
-    static constexpr int32_t SIM_LABEL_INDEX_1 = 1;
-    static constexpr int32_t SIM_LABEL_INDEX_2 = 2;
     std::vector<Telephony::IccAccountInfo> telIccAccountInfoList;
     int32_t ret = Telephony::CoreServiceClient::GetInstance().GetActiveSimAccountInfoList(telIccAccountInfoList);
     RINGTONE_INFO_LOG("DetectActiveCards: GetActiveSimAccountInfoList ret=%{public}d, listSize=%{public}zu",
@@ -471,77 +511,280 @@ static CardConfig DetectActiveCards()
     }
     for (size_t i = 0; i < telIccAccountInfoList.size(); i++) {
         const auto &telInfo = telIccAccountInfoList[i];
-        RINGTONE_INFO_LOG("  card[%{public}zu]: isEsim=%{public}d, simLabelIndex=%{public}d",
-            i, telInfo.isEsim, telInfo.simLabelIndex);
-        if (telInfo.isEsim) {
-            if (telInfo.simLabelIndex == SIM_LABEL_INDEX_1) {
-                config.hasESim1 = true;
-            } else if (telInfo.simLabelIndex == SIM_LABEL_INDEX_2) {
-                config.hasESim2 = true;
-            }
-        } else {
-            if (telInfo.simLabelIndex == SIM_LABEL_INDEX_1) {
-                config.hasSim1 = true;
-            } else if (telInfo.simLabelIndex == SIM_LABEL_INDEX_2) {
-                config.hasSim2 = true;
-            }
-        }
+        SimCardConfigInfo simInfo;
+        simInfo.isEsim = telInfo.isEsim;
+        simInfo.simLabelIndex = telInfo.simLabelIndex;
+        simInfo.slotIndex = telInfo.slotIndex;
+        config.push_back(simInfo);
     }
-    RINGTONE_INFO_LOG("Card detection result: hasSim1=%{public}d, hasSim2=%{public}d, "
-        "hasESim1=%{public}d, hasESim2=%{public}d",
-        config.hasSim1, config.hasSim2, config.hasESim1, config.hasESim2);
 #else
     RINGTONE_WARN_LOG("CORE_SERVICE_ENABLE not defined, skip eSIM detection");
 #endif
     return config;
 }
 
-static void ApplyESimMigration(NativeRdb::RdbStore &store, const CardConfig &config)
+// ==================== eSIM 迁移处理函数（对应 req.md 11 种场景） ====================
+
+// 场景1：0 张卡 — 不做任何处理
+static void ESimMigration1(NativeRdb::RdbStore &store)
 {
-    if (config.hasSim1 && config.hasESim1) {
-        // SIM1+eSIM1: 卡1 stays, old 卡2(=eSIM1) → new 卡2 + eSIM1
-        RINGTONE_INFO_LOG("Scenario: SIM1+eSIM1, migrate old 卡2→new 卡2+eSIM1");
-        MigrateESimSimCardSetting(store, SIMCARD_MODE_2, SIMCARD_MODE_ESIM_1);
-        AddESimToneTypeBit(store, SIM_CARD_2_MASK, ESIM_CARD_1_MASK);
-    } else if (config.hasSim1 && config.hasESim2) {
-        // SIM1+eSIM2: 卡1 stays, old 卡2(=eSIM2) → new 卡2 + eSIM2
-        RINGTONE_INFO_LOG("Scenario: SIM1+eSIM2, migrate old 卡2→new 卡2+eSIM2");
-        MigrateESimSimCardSetting(store, SIMCARD_MODE_2, SIMCARD_MODE_ESIM_2);
-        AddESimToneTypeBit(store, SIM_CARD_2_MASK, ESIM_CARD_2_MASK);
-    } else if (config.hasSim2 && config.hasESim1) {
-        // SIM2+eSIM1: 卡2 stays, old 卡1(=eSIM1) → new 卡1 + eSIM1
-        RINGTONE_INFO_LOG("Scenario: SIM2+eSIM1, migrate old 卡1→new 卡1+eSIM1");
-        MigrateESimSimCardSetting(store, SIMCARD_MODE_1, SIMCARD_MODE_ESIM_1);
-        AddESimToneTypeBit(store, SIM_CARD_1_MASK, ESIM_CARD_1_MASK);
-    } else if (config.hasSim2 && config.hasESim2) {
-        // SIM2+eSIM2: old 卡2→new 卡1, old 卡1(=eSIM2)→new 卡1+eSIM2
-        RINGTONE_INFO_LOG("Scenario: SIM2+eSIM2, migrate old 卡2→new 卡1, old 卡1(=eSIM2)→new 卡1+eSIM2");
-        // SimCardSetting: first copy 卡1→eSIM2, then copy 卡2→卡1
-        MigrateESimSimCardSetting(store, SIMCARD_MODE_1, SIMCARD_MODE_ESIM_2);
-        MigrateESimSimCardSetting(store, SIMCARD_MODE_2, SIMCARD_MODE_1);
-        // ToneFiles: first add eSIM2 bit to 卡1 records, then replace 卡2 bit with 卡1 bit
-        AddESimToneTypeBit(store, SIM_CARD_1_MASK, ESIM_CARD_2_MASK);
-        ReplaceToneTypeBit(store, SIM_CARD_2_MASK, SIM_CARD_1_MASK);
-    } else if (config.hasESim1 && config.hasESim2) {
-        // eSIM1+eSIM2: old 卡1→eSIM1, old 卡2→eSIM2
-        RINGTONE_INFO_LOG("Scenario: eSIM1+eSIM2, migrate old 卡1→eSIM1, old 卡2→eSIM2");
-        MigrateESimSimCardSetting(store, SIMCARD_MODE_1, SIMCARD_MODE_ESIM_1);
-        MigrateESimSimCardSetting(store, SIMCARD_MODE_2, SIMCARD_MODE_ESIM_2);
-        AddESimToneTypeBit(store, SIM_CARD_1_MASK, ESIM_CARD_1_MASK);
-        AddESimToneTypeBit(store, SIM_CARD_2_MASK, ESIM_CARD_2_MASK);
-    } else if (config.hasESim1) {
-        // eSIM1 only: old 卡2(=eSIM1) → new 卡2 + eSIM1
-        RINGTONE_INFO_LOG("Scenario: eSIM1 only, migrate old 卡2→new 卡2+eSIM1");
-        MigrateESimSimCardSetting(store, SIMCARD_MODE_2, SIMCARD_MODE_ESIM_1);
-        AddESimToneTypeBit(store, SIM_CARD_2_MASK, ESIM_CARD_1_MASK);
-    } else if (config.hasESim2) {
-        // eSIM2 only: old 卡2(=eSIM2) → new 卡2 + eSIM2
-        RINGTONE_INFO_LOG("Scenario: eSIM2 only, migrate old 卡2→new 卡2+eSIM2");
-        MigrateESimSimCardSetting(store, SIMCARD_MODE_2, SIMCARD_MODE_ESIM_2);
-        AddESimToneTypeBit(store, SIM_CARD_2_MASK, ESIM_CARD_2_MASK);
-    } else {
-        RINGTONE_INFO_LOG("No eSIM card active, skip eSIM data migration");
+    RINGTONE_INFO_LOG("ESimMigration1: 0 cards, 不做任何处理");
+}
+
+// 场景2：SIM1 — 不做任何处理
+static void ESimMigration2(NativeRdb::RdbStore &store)
+{
+    RINGTONE_INFO_LOG("ESimMigration2: SIM1 only, 不做任何处理");
+}
+
+// 场景3：SIM2 — 不做任何处理
+static void ESimMigration3(NativeRdb::RdbStore &store)
+{
+    RINGTONE_INFO_LOG("ESimMigration3: SIM2 only, 不做任何处理");
+}
+
+// 场景4：eSIM1
+// SimCardSetting: mode=2(原eSIM1) → mode=4(eSIM1) 拷贝 tone_file/vibrate_file/vibrate_mode/ring_mode
+// ToneFiles: 消除eSIM1预置默认铃声，将卡二铃声继承到eSIM1
+static void ESimMigration4(NativeRdb::RdbStore &store)
+{
+    RINGTONE_INFO_LOG("ESimMigration4: eSIM1 only");
+    // SimCardSetting: 卡槽2原eSIM1(mode=2) → eSIM1(mode=4)
+    MigrateESimSimCardSetting(store, SIMCARD_MODE_2, SIMCARD_MODE_ESIM_1);
+    // ToneFiles 步骤1-2: 消除eSIM1系统预置的默认铃声和短信音
+    RemovePresetToneTypeBit(store, ESIM_CARD_1_MASK);
+    // ToneFiles 步骤3-4: 包含卡二(SIM_CARD_2_MASK)的铃声追加eSIM1比特位(ESIM_CARD_1_MASK)
+    AddESimToneTypeBit(store, SIM_CARD_2_MASK, ESIM_CARD_1_MASK);
+}
+
+// 场景5：eSIM2
+// SimCardSetting: mode=2(原eSIM2) → mode=5(eSIM2) 拷贝 tone_file/vibrate_file/vibrate_mode/ring_mode
+// ToneFiles: 消除eSIM2预置默认铃声，将卡二铃声继承到eSIM2
+static void ESimMigration5(NativeRdb::RdbStore &store)
+{
+    RINGTONE_INFO_LOG("ESimMigration5: eSIM2 only");
+    // SimCardSetting: 卡槽2原eSIM2(mode=2) → eSIM2(mode=5)
+    MigrateESimSimCardSetting(store, SIMCARD_MODE_2, SIMCARD_MODE_ESIM_2);
+    // ToneFiles 步骤1-2: 消除eSIM2系统预置的默认铃声和短信音
+    RemovePresetToneTypeBit(store, ESIM_CARD_2_MASK);
+    // ToneFiles 步骤3-4: 包含卡二(SIM_CARD_2_MASK)的铃声追加eSIM2比特位(ESIM_CARD_2_MASK)
+    AddESimToneTypeBit(store, SIM_CARD_2_MASK, ESIM_CARD_2_MASK);
+}
+
+// 场景6：SIM1+SIM2 — 不做任何处理
+static void ESimMigration6(NativeRdb::RdbStore &store)
+{
+    RINGTONE_INFO_LOG("ESimMigration6: SIM1+SIM2, 不做任何处理");
+}
+
+// 场景7：SIM1+eSIM1
+// SimCardSetting: mode=2(原eSIM1) → mode=4(eSIM1)
+// ToneFiles: 消除eSIM1预置默认铃声，将卡二铃声继承到eSIM1
+static void ESimMigration7(NativeRdb::RdbStore &store)
+{
+    RINGTONE_INFO_LOG("ESimMigration7: SIM1+eSIM1");
+    // SimCardSetting: 卡槽2原eSIM1(mode=2) → eSIM1(mode=4)
+    MigrateESimSimCardSetting(store, SIMCARD_MODE_2, SIMCARD_MODE_ESIM_1);
+    // ToneFiles 步骤1-2: 消除eSIM1系统预置的默认铃声和短信音
+    RemovePresetToneTypeBit(store, ESIM_CARD_1_MASK);
+    // ToneFiles 步骤3-4: 包含卡二(SIM_CARD_2_MASK)的铃声追加eSIM1比特位(ESIM_CARD_1_MASK)
+    AddESimToneTypeBit(store, SIM_CARD_2_MASK, ESIM_CARD_1_MASK);
+}
+
+// 场景8：SIM1+eSIM2
+// SimCardSetting: mode=2(原eSIM2) → mode=5(eSIM2)
+// ToneFiles: 消除eSIM2预置默认铃声，将卡二铃声继承到eSIM2
+static void ESimMigration8(NativeRdb::RdbStore &store)
+{
+    RINGTONE_INFO_LOG("ESimMigration8: SIM1+eSIM2");
+    // SimCardSetting: 卡槽2原eSIM2(mode=2) → eSIM2(mode=5)
+    MigrateESimSimCardSetting(store, SIMCARD_MODE_2, SIMCARD_MODE_ESIM_2);
+    // ToneFiles 步骤1-2: 消除eSIM2系统预置的默认铃声和短信音
+    RemovePresetToneTypeBit(store, ESIM_CARD_2_MASK);
+    // ToneFiles 步骤3-4: 包含卡二(SIM_CARD_2_MASK)的铃声追加eSIM2比特位(ESIM_CARD_2_MASK)
+    AddESimToneTypeBit(store, SIM_CARD_2_MASK, ESIM_CARD_2_MASK);
+}
+
+// 场景9：SIM2+eSIM1
+// SimCardSetting: mode=2(原eSIM1) → mode=4(eSIM1), mode=1(原SIM2) → mode=2(覆盖卡1卡2)
+// ToneFiles: 消除eSIM1预置 → 卡二继承到eSIM1 → 清除卡二 → 卡一继承到卡二
+static void ESimMigration9(NativeRdb::RdbStore &store)
+{
+    RINGTONE_INFO_LOG("ESimMigration9: SIM2+eSIM1");
+    // ---- SimCardSetting 表 ----
+    // 步骤1: 卡槽2原eSIM1(mode=2) → eSIM1(mode=4)，必须先迁移eSIM避免被覆盖
+    MigrateESimSimCardSetting(store, SIMCARD_MODE_2, SIMCARD_MODE_ESIM_1);
+    // 步骤2: 卡槽1原SIM2(mode=1) → 卡1卡2(mode=2)，覆盖写入
+    MigrateESimSimCardSetting(store, SIMCARD_MODE_1, SIMCARD_MODE_2);
+    // ---- ToneFiles 表 ----
+    // 步骤1-2: 消除eSIM1系统预置的默认铃声和短信音
+    RemovePresetToneTypeBit(store, ESIM_CARD_1_MASK);
+    // 步骤3-4: 包含卡二(SIM_CARD_2_MASK)的铃声追加eSIM1比特位(ESIM_CARD_1_MASK)
+    AddESimToneTypeBit(store, SIM_CARD_2_MASK, ESIM_CARD_1_MASK);
+    // 步骤5-6: 清除原SIM2设置的铃声和短信音（清除卡二比特位）
+    ClearToneTypeBit(store, SIM_CARD_2_MASK);
+    // 步骤7-8: 包含卡一(SIM_CARD_1_MASK)的铃声追加卡二比特位(SIM_CARD_2_MASK)
+    AddESimToneTypeBit(store, SIM_CARD_1_MASK, SIM_CARD_2_MASK);
+}
+
+// 场景10：SIM2+eSIM2
+// SimCardSetting: mode=2(原eSIM2) → mode=5(eSIM2), mode=1(原SIM2) → mode=2(覆盖卡1卡2)
+// ToneFiles: 消除eSIM2预置 → 卡二继承到eSIM2 → 清除卡二 → 卡一继承到卡二
+static void ESimMigration10(NativeRdb::RdbStore &store)
+{
+    RINGTONE_INFO_LOG("ESimMigration10: SIM2+eSIM2");
+    // ---- SimCardSetting 表 ----
+    // 步骤1: 卡槽2原eSIM2(mode=2) → eSIM2(mode=5)，必须先迁移eSIM避免被覆盖
+    MigrateESimSimCardSetting(store, SIMCARD_MODE_2, SIMCARD_MODE_ESIM_2);
+    // 步骤2: 卡槽1原SIM2(mode=1) → 卡1卡2(mode=2)，覆盖写入
+    MigrateESimSimCardSetting(store, SIMCARD_MODE_1, SIMCARD_MODE_2);
+    // ---- ToneFiles 表 ----
+    // 步骤1-2: 消除eSIM2系统预置的默认铃声和短信音
+    RemovePresetToneTypeBit(store, ESIM_CARD_2_MASK);
+    // 步骤3-4: 包含卡二(SIM_CARD_2_MASK)的铃声追加eSIM2比特位(ESIM_CARD_2_MASK)
+    AddESimToneTypeBit(store, SIM_CARD_2_MASK, ESIM_CARD_2_MASK);
+    // 步骤5-6: 清除原SIM2设置的铃声和短信音（清除卡二比特位）
+    ClearToneTypeBit(store, SIM_CARD_2_MASK);
+    // 步骤7-8: 包含卡一(SIM_CARD_1_MASK)的铃声追加卡二比特位(SIM_CARD_2_MASK)
+    AddESimToneTypeBit(store, SIM_CARD_1_MASK, SIM_CARD_2_MASK);
+}
+
+// 场景11：eSIM1+eSIM2 — 不做任何处理
+static void ESimMigration11(NativeRdb::RdbStore &store)
+{
+    RINGTONE_INFO_LOG("ESimMigration11: eSIM1+eSIM2, 不做任何处理");
+}
+
+// ==================== 配置签名（用于顺序无关的场景匹配） ====================
+// 使用 (isEsim, simLabelIndex, slotIndex) 三元组标识每张卡，
+// 与设计表 configs 列完全对应，确保匹配精确无误。
+
+struct ConfigSig {
+    bool isEsim;
+    int32_t simLabelIndex;
+    int32_t slotIndex;
+
+    bool operator<(const ConfigSig &o) const
+    {
+        if (isEsim != o.isEsim) {
+            return isEsim < o.isEsim;
+        }
+        if (simLabelIndex != o.simLabelIndex) {
+            return simLabelIndex < o.simLabelIndex;
+        }
+        return slotIndex < o.slotIndex;
     }
+    bool operator==(const ConfigSig &o) const
+    {
+        return isEsim == o.isEsim && simLabelIndex == o.simLabelIndex && slotIndex == o.slotIndex;
+    }
+};
+
+// 从 SimCardConfigInfo 提取配置签名
+static ConfigSig MakeSig(const SimCardConfigInfo &c)
+{
+    return { c.isEsim, c.simLabelIndex, c.slotIndex };
+}
+
+// 将配置列表转换为有序签名集合，用于顺序无关的比较
+static std::set<ConfigSig> MakeSigSet(const std::vector<SimCardConfigInfo> &configs)
+{
+    std::set<ConfigSig> sigs;
+    for (const auto &c : configs) {
+        sigs.insert(MakeSig(c));
+    }
+    return sigs;
+}
+
+// 单卡场景分发：根据 (isEsim, simLabelIndex, slotIndex) 匹配场景2~5
+static void DispatchSingleCard(NativeRdb::RdbStore &store, const SimCardConfigInfo &card)
+{
+    ConfigSig sig = MakeSig(card);
+    // 场景2：SIM1 — (isEsim=false, simLabelIndex=1, slotIndex=0)
+    if (sig == ConfigSig{false, 1, 0}) {
+        ESimMigration2(store);
+        return;
+    }
+    // 场景3：SIM2 — (isEsim=false, simLabelIndex=2, slotIndex=1)
+    if (sig == ConfigSig{false, 2, 1}) {
+        ESimMigration3(store);
+        return;
+    }
+    // 场景4：eSIM1 — (isEsim=true, simLabelIndex=1, slotIndex=1)
+    if (sig == ConfigSig{true, 1, 1}) {
+        ESimMigration4(store);
+        return;
+    }
+    // 场景5：eSIM2 — (isEsim=true, simLabelIndex=2, slotIndex=1)
+    if (sig == ConfigSig{true, 2, 1}) {
+        ESimMigration5(store);
+        return;
+    }
+    RINGTONE_ERR_LOG("DispatchSingleCard: 无法识别的单卡配置 "
+        "isEsim=%{public}d, simLabelIndex=%{public}d, slotIndex=%{public}d",
+        card.isEsim, card.simLabelIndex, card.slotIndex);
+}
+
+// 双卡场景分发：使用有序签名集合做顺序无关匹配，匹配场景6~11
+static void DispatchDualCard(NativeRdb::RdbStore &store, const std::vector<SimCardConfigInfo> &configs)
+{
+    std::set<ConfigSig> sigs = MakeSigSet(configs);
+    // 场景6：SIM1+SIM2 — (false,1,0) + (false,2,1)
+    if (sigs == std::set<ConfigSig>{{false, 1, 0}, {false, 2, 1}}) {
+        ESimMigration6(store);
+        return;
+    }
+    // 场景7：SIM1+eSIM1 — (false,1,0) + (true,1,1)
+    if (sigs == std::set<ConfigSig>{{false, 1, 0}, {true, 1, 1}}) {
+        ESimMigration7(store);
+        return;
+    }
+    // 场景8：SIM1+eSIM2 — (false,1,0) + (true,2,1)
+    if (sigs == std::set<ConfigSig>{{false, 1, 0}, {true, 2, 1}}) {
+        ESimMigration8(store);
+        return;
+    }
+    // 场景9：SIM2+eSIM1 — (false,2,0) + (true,1,1)
+    if (sigs == std::set<ConfigSig>{{false, 2, 0}, {true, 1, 1}}) {
+        ESimMigration9(store);
+        return;
+    }
+    // 场景10：SIM2+eSIM2 — (false,2,0) + (true,2,1)
+    if (sigs == std::set<ConfigSig>{{false, 2, 0}, {true, 2, 1}}) {
+        ESimMigration10(store);
+        return;
+    }
+    // 场景11：eSIM1+eSIM2 — (true,1,0) + (true,2,1)
+    if (sigs == std::set<ConfigSig>{{true, 1, 0}, {true, 2, 1}}) {
+        ESimMigration11(store);
+        return;
+    }
+    RINGTONE_ERR_LOG("DispatchDualCard: 无法识别的双卡配置组合");
+    for (const auto &c : configs) {
+        RINGTONE_ERR_LOG("  config: isEsim=%{public}d, simLabelIndex=%{public}d, slotIndex=%{public}d",
+            c.isEsim, c.simLabelIndex, c.slotIndex);
+    }
+}
+
+// ==================== ApplyESimMigration 分发函数 ====================
+// 根据 configs 的卡数量和每张卡的 (isEsim, simLabelIndex, slotIndex) 组合，
+// 分发到对应的 ESimMigration1~11 处理函数。
+// configs 列表顺序可能不同，使用有序签名集合做顺序无关匹配。
+static void ApplyESimMigration(NativeRdb::RdbStore &store, const std::vector<SimCardConfigInfo> &configs)
+{
+    RINGTONE_INFO_LOG("ApplyESimMigration: configs.size=%{public}zu", configs.size());
+    if (configs.empty()) {
+        // 场景1：0 张卡
+        ESimMigration1(store);
+        return;
+    }
+    if (configs.size() == 1) {
+        // 单卡场景：分发到场景2~5
+        DispatchSingleCard(store, configs[0]);
+        return;
+    }
+    // 双卡场景：分发到场景6~11
+    DispatchDualCard(store, configs);
 }
 
 static void AddESimRecords(NativeRdb::RdbStore &store)
@@ -553,8 +796,8 @@ static void AddESimRecords(NativeRdb::RdbStore &store)
     RINGTONE_INFO_LOG("Step1: eSIM SimCardSetting rows inserted");
 
     // Step 2: Detect active SIM configuration and apply data migration
-    CardConfig config = DetectActiveCards();
-    ApplyESimMigration(store, config);
+    std::vector<SimCardConfigInfo> configs = DetectActiveCards();
+    ApplyESimMigration(store, configs);
 
     RINGTONE_INFO_LOG("AddESimRecords complete");
 }
@@ -592,8 +835,8 @@ static bool CheckAndGetDataUri(const string &displayName, const string &dataUri,
     if (dirName == ringDirName && fileName == displayName) {
         return true;
     } else {
-        size_t start_pos = 0;
-        if ((start_pos = dataUri.find(RINGTONE_CUSTOMIZED_BASE_PATH)) != std::string::npos) {
+        size_t startPos = 0;
+        if ((startPos = dataUri.find(RINGTONE_CUSTOMIZED_BASE_PATH)) != std::string::npos) {
             newDataUri = RINGTONE_CUSTOMIZED_BASE_PATH + "/Ringtone/" + ringDirName + "/" + displayName;
             if (RingtoneFileUtils::IsFileExists(newDataUri)) {
                 return false;
@@ -661,18 +904,18 @@ static void UpdatePreloadConfTable(NativeRdb::RdbStore &store)
     UpdateDefaultSystemTone(store);
 }
 
-static bool VibrateModeHasValue(NativeRdb::RdbStore &store,
+static bool VibrateModeIsNull(NativeRdb::RdbStore &store,
     const string &mode, const string &ringtoneType)
 {
-    const string sqlCountPreloadConf = "SELECT * FROM SimCardSetting WHERE mode = ? AND ringtone_type = ?";
+    const string sqlCountPreloadConf = "SELECT vibrate_mode FROM SimCardSetting WHERE mode = ? AND ringtone_type = ?";
     vector<string> selectionArgs = {mode, ringtoneType};
     auto resultSet = store.QuerySql(sqlCountPreloadConf, selectionArgs);
     if (resultSet == nullptr || resultSet->GoToFirstRow() != NativeRdb::E_OK) {
         RINGTONE_ERR_LOG("query error");
         return false;
     }
-    int32_t count = GetInt32Val(SIMCARD_SETTING_COLUMN_VIBRATE_MODE, resultSet);
-    if (count == 1) {
+    int32_t vibrateMode = GetInt32Val(SIMCARD_SETTING_COLUMN_VIBRATE_MODE, resultSet);
+    if (vibrateMode == 1) {
         return false;
     }
     return true;
@@ -717,23 +960,23 @@ static void UpdateSimCardSettingESIMValue(NativeRdb::RdbStore &store,
 static void UpdateSoundModeVibrateRecords(NativeRdb::RdbStore &store)
 {
     //判断 mod = 1,ringtonetype = 101 是否存在数据，不存在继承 1，1
-    if (VibrateModeHasValue(store, "1", "101")) {
+    if (VibrateModeIsNull(store, "1", "101")) {
         UpdateSimCardSettingESIMValue(store, "1", "101", "1", "1");
     }
     //判断 mod = 1,ringtonetype = 102 是否存在数据，不存在继承 1，2 //注意ring_mode = 0无震动不继承
-    if (VibrateModeHasValue(store, "1", "102") && RingModeHasValue(store, "1", "2")) {
+    if (VibrateModeIsNull(store, "1", "102") && RingModeHasValue(store, "1", "2")) {
         UpdateSimCardSettingESIMValue(store, "1", "102", "1", "2");
     }
     //判断 mod = 2,ringtonetype = 101 是否存在数据，不存在继承 2，1
-    if (VibrateModeHasValue(store, "2", "101")) {
+    if (VibrateModeIsNull(store, "2", "101")) {
         UpdateSimCardSettingESIMValue(store, "2", "101", "2", "1");
     }
     //判断 mod = 2,ringtonetype = 102 是否存在数据，不存在继承 2，2 //注意ring_mode = 0无震动不继承
-    if (VibrateModeHasValue(store, "2", "102") && RingModeHasValue(store, "2", "2")) {
+    if (VibrateModeIsNull(store, "2", "102") && RingModeHasValue(store, "2", "2")) {
         UpdateSimCardSettingESIMValue(store, "2", "102", "2", "2");
     }
     //判断 mod = 3,ringtonetype = 103 是否存在数据，不存在继承 3，3
-    if (VibrateModeHasValue(store, "3", "103")) {
+    if (VibrateModeIsNull(store, "3", "103")) {
         UpdateSimCardSettingESIMValue(store, "3", "103", "3", "3");
     }
 }

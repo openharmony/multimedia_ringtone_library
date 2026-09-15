@@ -52,27 +52,25 @@ private:
         std::unique_ptr<RingtoneMetadata> &metaData);
     EXPORT int32_t GetMetaDataFromResultSet(std::shared_ptr<NativeRdb::ResultSet> resultSet,
         std::vector<std::shared_ptr<RingtoneMetadata>> &metaDatas);
-    EXPORT int32_t CleanupSettingFromRdb(int32_t settingType, int32_t toneType, int32_t sourceType);
-    EXPORT int32_t UpdateSettingsWithTonePath(std::string &tonePath, int32_t settingType, int32_t toneType);
-    EXPORT int32_t UpdateSettingsWithToneId(int32_t settingType, int32_t toneId, int32_t toneType);
-    EXPORT int32_t CleanupSetting(int32_t settingType, int32_t toneType, int32_t sourceType);
     EXPORT int32_t TryMergeExistingSetting(const std::string &tonePath, int32_t settingType,
         int32_t toneType, int32_t sourceType);
     EXPORT int32_t MergeCardToneType(SettingItem &item, int32_t toneType);
     EXPORT void ExtractMetaFromColumn(const std::shared_ptr<NativeRdb::ResultSet> &resultSet,
         std::unique_ptr<RingtoneMetadata> &metadata, const std::string &col);
-    EXPORT int32_t UpdateSettingsByPath(std::string &tonePath, int32_t settingType, int32_t toneType,
-        int32_t sourceType);
-    EXPORT int32_t UpdateCardToneSetting(const std::string &toneTypeColumn,
-        const std::string &sourceTypeColumn, int32_t currentVal, int32_t notValue, int32_t toneType,
-        int32_t sourceType, int32_t toneId);
-    EXPORT int32_t UpdateShotSetting(std::shared_ptr<RingtoneMetadata> &meta, int32_t toneType, int32_t sourceType);
-    EXPORT int32_t UpdateRingtoneSetting(std::shared_ptr<RingtoneMetadata> &meta, int32_t toneType,
-        int32_t sourceType);
-    EXPORT int32_t UpdateNotificationSetting(std::shared_ptr<RingtoneMetadata> &meta, int32_t toneType,
-        int32_t sourceType);
-    EXPORT int32_t UpdateAlarmSetting(std::shared_ptr<RingtoneMetadata> &meta, int32_t toneType,
-        int32_t sourceType);
+    // 检查本机指定类型+卡位是否已有自定义(source_type=2)的记录
+    EXPORT bool IsCardAlreadyCustomised(int32_t settingType, int32_t cardMask);
+    // 通过tonePath找到local记录, 设置对应卡位bit + source_type
+    EXPORT int32_t ApplyCardSetting(const std::string &tonePath, int32_t settingType,
+        int32_t cardMask, int32_t sourceType);
+    // 清理local DB中预置记录(source_type=1)的指定卡位bit
+    EXPORT int32_t ClearPresetCardBit(int32_t settingType, int32_t cardMask);
+    // 处理NOTIFICATION/ALARM: 设置tone_type + source_type
+    EXPORT int32_t ApplyNonCardSetting(const std::string &tonePath, int32_t settingType,
+        int32_t toneType, int32_t sourceType);
+    // 逐卡位处理SHOT/RINGTONE设置
+    EXPORT void ApplyCardSettings(const std::string &tonePath, const SettingItem &item);
+    // 通过tonePath查询local DB中该记录的source_type
+    EXPORT int32_t GetTargetSourceType(const std::string &tonePath);
 private:
     bool forceFlush_ = false;
     std::shared_ptr<NativeRdb::RdbStore> ringtoneRdb_ = nullptr;
