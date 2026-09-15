@@ -490,7 +490,7 @@ static void ClearToneTypeBit(NativeRdb::RdbStore &store, int32_t cardMask)
     RINGTONE_INFO_LOG("ClearToneTypeBit complete, cardMask=%{public}d", cardMask);
 }
 
-// DetectActiveCards: GetActiveSimAccountInfoList ret=0, listSize=2 
+// DetectActiveCards: GetActiveSimAccountInfoList ret=0, listSize=2
 // [{"simId":1,"isEsim":false,"slotIndex":0,"simLabelIndex":1,"isActive":true,"iccId":"8986****1924****6716"}]
 // card[0]: isEsim=0, simLabelIndex=2
 static std::vector<SimCardConfigInfo> DetectActiveCards()
@@ -835,8 +835,8 @@ static bool CheckAndGetDataUri(const string &displayName, const string &dataUri,
     if (dirName == ringDirName && fileName == displayName) {
         return true;
     } else {
-        size_t start_pos = 0;
-        if ((start_pos = dataUri.find(RINGTONE_CUSTOMIZED_BASE_PATH)) != std::string::npos) {
+        size_t startPos = 0;
+        if ((startPos = dataUri.find(RINGTONE_CUSTOMIZED_BASE_PATH)) != std::string::npos) {
             newDataUri = RINGTONE_CUSTOMIZED_BASE_PATH + "/Ringtone/" + ringDirName + "/" + displayName;
             if (RingtoneFileUtils::IsFileExists(newDataUri)) {
                 return false;
