@@ -327,10 +327,14 @@ void RingtoneRestoreBase::CheckSetting(FileInfo &info)
         info.vibrateInfo.toneType, info.vibrateInfo.vibrateMode);
     // 更新SimCardSetting表中的震动设置
     CheckUpdateVibrateSetting(info);
-    // 提交短信铃声的卡位设置
-    CheckShotSetting(info);
-    // 提交来电铃声的卡位设置
-    CheckRingtoneSetting(info);
+    if (info.shotToneSourceType == SOURCE_TYPE_CUSTOMISED) { // 2
+       // 有自定义才 提交短信铃声的卡位设置
+        CheckShotSetting(info);
+    }
+    if (info.ringToneSourceType == SOURCE_TYPE_CUSTOMISED) { // 2
+        // 有自定义才 提交来电铃声的卡位设置
+        CheckRingtoneSetting(info);
+    }
 
     // 通知铃声处理：只处理CUSTOMISED和INVALID两种情况，PRESET未处理
     if (info.notificationToneType == NOTIFICATION_TONE_TYPE &&

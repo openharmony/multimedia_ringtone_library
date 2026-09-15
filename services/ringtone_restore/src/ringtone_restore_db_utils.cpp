@@ -16,13 +16,15 @@
 #include "ringtone_restore_db_utils.h"
 
 #include <unistd.h>
+#include <sys/stat.h>
+#include <sstream>
 #include "ringtone_db_const.h"
 #include "ringtone_log.h"
 #include "ringtone_errno.h"
 #include "result_set_utils.h"
 #include "ringtone_rdb_callbacks.h"
 #include "os_account_manager.h"
-
+#include "rdb_sql_utils.h"
 namespace OHOS {
 namespace Media {
 const static int32_t CONNECT_SIZE = 10;
@@ -275,6 +277,44 @@ static void DeleteUnusedFiles(const std::vector<std::string> &paths, const std::
     }
 }
 
+static bool IsFileExists(const std::string &fileName)
+{
+    struct stat statInfo {};
+    return (stat(fileName.c_str(), &statInfo) == E_SUCCESS);
+}
+
+static bool CreateDirectory(const std::string &dirPath)
+{
+    std::string subStr;
+    std::string segment;
+    std::stringstream folderStream(dirPath);
+    while (std::getline(folderStream, segment, '/')) {
+        if (segment.empty()) {
+            continue;
+        }
+        subStr.append("/" + segment);
+        if (!IsFileExists(subStr)) {
+            if (mkdir(subStr.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) != 0 && errno != EEXIST) {
+                RINGTONE_ERR_LOG("Failed to create directory: %{private}s, errno=%{public}d", subStr.c_str(), errno);
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+static int32_t PreparePath(const std::string &path)
+{
+    size_t index = path.rfind("/");
+    bool cond = (index == std::string::npos || index == path.length() - 1);
+    CHECK_AND_RETURN_RET_LOG(!cond, E_CHECK_DIR_FAIL, "Parse directory path failed: %{private}s", path.c_str());
+    std::string dirPath = path.substr(0, index);
+    cond = (!IsFileExists(dirPath) && !CreateDirectory(dirPath));
+    CHECK_AND_RETURN_RET_LOG(!cond, E_CHECK_DIR_FAIL,
+        "Directory path doesn't exist and was created failed: %{public}s", dirPath.c_str());
+    return E_OK;
+}
+
 int32_t RingtoneRestoreDbUtils::CleanESimData(const std::string &dbPath, int32_t peerSlotNum,
     const std::string &ringtoneBasePath)
 {
@@ -284,11 +324,38 @@ int32_t RingtoneRestoreDbUtils::CleanESimData(const std::string &dbPath, int32_t
         RINGTONE_ERR_LOG("Invalid peerSlotNum: %{public}d", peerSlotNum);
         return E_FAIL;
     }
-
+    std::shared_ptr<NativeRdb::RdbStore> localRdb;
+    int32_t errCode = 0;
+    std::string realPath = NativeRdb::RdbSqlUtils::GetDefaultDatabasePath(RINGTONE_LIBRARY_DB_PATH_EL1,
+        RINGTONE_LIBRARY_DB_NAME, errCode);
+    int32_t err = RingtoneRestoreDbUtils::InitDb(localRdb, RINGTONE_LIBRARY_DB_PATH_EL1, realPath,
+        RINGTONE_BUNDLE_NAME, true);
+    if (err != E_OK) {
+        RINGTONE_ERR_LOG("CleanESimData ringtone_library rdb fail, err = %{public}d", err);
+        return E_FAIL;
+    }
+    RINGTONE_INFO_LOG("Start BackupDb");
+    CHECK_AND_RETURN_RET_LOG(localRdb != nullptr, false, "localRdb is nullptr!");
+    std::string tmpDir = "/storage/media/local/files/.backup/backup/ringtone_temp_rdb";
+    std::string tmpDbPath = tmpDir + "/ringtone_library.db";
+    if (!IsFileExists(tmpDir)) {
+        RINGTONE_INFO_LOG("Temp backup dir does not exist, skip cleanup");
+    }
+    CHECK_AND_RETURN_RET_LOG(PreparePath(tmpDbPath) == E_OK,
+        false, "Prepare backup dir failed");
+    int32_t backupErr = localRdb->Backup(tmpDbPath);
+    CHECK_AND_RETURN_RET_LOG(backupErr == 0, false, "rdb backup fail: %{public}d", backupErr);
+    RINGTONE_INFO_LOG("End BackupDb");
+    if (peerSlotNum > 2) { // 2 no need EsimClean
+        RINGTONE_INFO_LOG("no need EsimClean");
+        return E_OK;
+    }
+    RINGTONE_INFO_LOG("need EsimClean");
     std::shared_ptr<NativeRdb::RdbStore> rdbStore = nullptr;
-    int32_t err = InitDb(rdbStore, RINGTONE_LIBRARY_DB_NAME, dbPath, RINGTONE_BUNDLE_NAME, false);
-    if (err != NativeRdb::E_OK || rdbStore == nullptr) {
-        RINGTONE_ERR_LOG("InitDb failed, err: %{public}d", err);
+    int32_t initErr = RingtoneRestoreDbUtils::InitDb(rdbStore, RINGTONE_LIBRARY_DB_NAME, dbPath,
+        RINGTONE_BUNDLE_NAME, false);
+    if (initErr != NativeRdb::E_OK || rdbStore == nullptr) {
+        RINGTONE_ERR_LOG("InitDb failed, err: %{public}d", initErr);
         return E_HAS_DB_ERROR;
     }
 
