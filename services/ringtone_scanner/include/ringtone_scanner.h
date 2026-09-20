@@ -77,7 +77,7 @@ private:
     EXPORT int32_t AdditionalVibratePlayMode(const std::vector<std::string>& vibratePaths);
     EXPORT bool ContainsAnyPath(const std::string& input, const std::vector<std::string>& paths);
     EXPORT int32_t AdditionalToneTypeMap(const std::vector<std::string>& tonePaths);
-    EXPORT void IncrementalScannResource();
+    EXPORT int32_t IncrementalScannResource();
 
     /* file */
     EXPORT int32_t ScanFile();
