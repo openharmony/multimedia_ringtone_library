@@ -1150,7 +1150,7 @@ int32_t RingtoneScannerObj::IncrementalScannResource()
     AdditionalVibrateType(filterVibratePath);
     AdditionalVibratePlayMode(filterVibratePath);
     int32_t ret = E_ERR;
-    if (!sourcePaths.empty()) {
+    if (!filterRingtonePath.empty()) {
         ret = ScanDirectories(BuildRingtoneDirs(filterRingtonePath));
         CHECK_AND_RETURN_RET_LOG(ret == E_OK, ret, "ScanDirectories for filterRingtonePath err, ret: %{public}d", ret);
     }
