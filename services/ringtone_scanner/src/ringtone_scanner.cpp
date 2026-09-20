@@ -237,7 +237,7 @@ int32_t RingtoneScannerObj::UpdateDefaultTone()
     int isScanner = prefs->GetInt(RINGTONE_RDB_SCANNER_FLAG_KEY, RINGTONE_RDB_SCANNER_FLAG_KEY_FALSE);
     if (isScanner == RINGTONE_RDB_SCANNER_FLAG_KEY_TRUE) {
         RingtoneDefaultSetting::GetObj(rawRdb)->UpdateDefaultSystemTone();
-        RINGTONE_INFO_LOG("The default ringtone has been set, no need to be configured again");
+        RINGTONE_WARN_LOG("The default ringtone has been set, no need to be configured again");
         return E_OK;
     }
     // reset ringtone default settings
