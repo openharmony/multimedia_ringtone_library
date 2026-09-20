@@ -1150,11 +1150,14 @@ int32_t RingtoneScannerObj::IncrementalScannResource()
     AdditionalVibrateType(filterVibratePath);
     AdditionalVibratePlayMode(filterVibratePath);
     int32_t ret = E_ERR;
-    ret = ScanDirectories(BuildRingtoneDirs(filterRingtonePath));
-    CHECK_AND_RETURN_RET_LOG(ret == E_OK, ret, "ScanDirectories for filterRingtonePath err, ret: %{public}d", ret);
-    ret = ScanDirectories(BuildVibrateDirs(filterVibratePath));
-    CHECK_AND_RETURN_RET_LOG(ret == E_OK, ret, "ScanDirectories for filterVibratePath err, ret: %{public}d", ret);
-
+    if (!sourcePaths.empty()) {
+        ret = ScanDirectories(BuildRingtoneDirs(filterRingtonePath));
+        CHECK_AND_RETURN_RET_LOG(ret == E_OK, ret, "ScanDirectories for filterRingtonePath err, ret: %{public}d", ret);
+    }
+    if (!filterVibratePath.empty()) {
+        ret = ScanDirectories(BuildVibrateDirs(filterVibratePath));
+        CHECK_AND_RETURN_RET_LOG(ret == E_OK, ret, "ScanDirectories for filterVibratePath err, ret: %{public}d", ret);
+    }
     if (IsSupportPocketVibrationEnhancement()) {
         RINGTONE_INFO_LOG("Pocket vibration enhancement is supported, start scanning sim ringtone");
         
