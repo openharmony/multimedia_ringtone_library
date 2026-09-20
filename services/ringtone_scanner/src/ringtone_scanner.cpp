@@ -252,7 +252,7 @@ int32_t RingtoneScannerObj::UpdateDefaultTone()
 int32_t RingtoneScannerObj::BootScanProcess()
 {
     int64_t scanStart = RingtoneFileUtils::UTCTimeMilliSeconds();
-    int32_t ret = E_ERR;
+    int32_t ret = E_OK;
     bool res = true;
     res = RingtoneScannerDb::UpdateScannerFlag();
     CHECK_AND_RETURN_RET_LOG(res, E_HAS_DB_ERROR, "UpdateScannerFlag operation failed, res: %{public}d",
@@ -1149,7 +1149,7 @@ int32_t RingtoneScannerObj::IncrementalScannResource()
     auto filterVibratePath = FilterResourcePaths(vibratePath, g_ringtoneAndVibratePaths);
     AdditionalVibrateType(filterVibratePath);
     AdditionalVibratePlayMode(filterVibratePath);
-    int32_t ret = E_ERR;
+    int32_t ret = E_OK;
     if (!filterRingtonePath.empty()) {
         ret = ScanDirectories(BuildRingtoneDirs(filterRingtonePath));
         CHECK_AND_RETURN_RET_LOG(ret == E_OK, ret, "ScanDirectories for filterRingtonePath err, ret: %{public}d", ret);
