@@ -1160,7 +1160,6 @@ int32_t RingtoneScannerObj::IncrementalScannResource()
     }
     if (IsSupportPocketVibrationEnhancement()) {
         RINGTONE_INFO_LOG("Pocket vibration enhancement is supported, start scanning sim ringtone");
-        
         std::vector<string> ringMockHapticAudioPath;
         GetRingToneSourcePath(RING_MOCK_HAPTIC_AUDIO_RESOURCE_PATH, ringMockHapticAudioPath);
         auto filterRingMockHapticAudioPath = FilterResourcePaths(ringMockHapticAudioPath, g_ringtoneAndVibratePaths);
@@ -1171,8 +1170,9 @@ int32_t RingtoneScannerObj::IncrementalScannResource()
             ringMockHapticAudioDirs.push_back(path + PATH_VIBRATE_TYPE_STANDARD);
             ringMockHapticAudioDirs.push_back(path + PATH_VIBRATE_TYPE_GENTLE);
         }
-        
-        ret = ScanDirectories(ringMockHapticAudioDirs);
+        if (!ringMockHapticAudioDirs.empty()) {
+            ret = ScanDirectories(ringMockHapticAudioDirs);
+        }
     } else {
         RINGTONE_INFO_LOG("Pocket vibration enhancement is not supported, skip sim ringtone scanning");
     }
