@@ -134,7 +134,7 @@ void RingtoneDataShareExtension::CheckRingtoneDbDefaultSettings()
     }
     string displayName = GetStringVal(PRELOAD_CONFIG_COLUMN_DISPLAY_NAME, resultSet);
     if (!displayName.empty()) {
-        RINGTONE_INFO_LOG("The default ringtone has been set. ringtone=%{public}s", displayName.c_str());
+        RINGTONE_WARN_LOG("RDBInitScanner set true. default ringtone=%{public}s", displayName.c_str());
         prefs->PutInt(RINGTONE_RDB_SCANNER_FLAG_KEY, RINGTONE_RDB_SCANNER_FLAG_KEY_TRUE);
         prefs->FlushSync();
     }
@@ -762,7 +762,7 @@ void RingtoneDataShareExtension::RingtoneScanner()
     GetParameter(RINGTONE_PARAMETER_SCANNER_FIRST_KEY, "", paramValue, RINGTONEPARA_SIZE);
     if (!currentFlag && strcmp(paramValue, RINGTONE_PARAMETER_SCANNER_FIRST_TRUE) == 0) {
         int result = SetParameter(RINGTONE_PARAMETER_SCANNER_FIRST_KEY, RINGTONE_PARAMETER_SCANNER_FIRST_FALSE);
-        RINGTONE_INFO_LOG("CheckCurrentUser SetParameter end, result: %{public}d", result);
+        RINGTONE_WARN_LOG("CheckCurrentUser scanner.first SetParameter false end, result: %{public}d", result);
     }
     GetParameter(RINGTONE_PARAMETER_SCANNER_FIRST_KEY, "", paramValue, RINGTONEPARA_SIZE);
     std::string parameter(paramValue);

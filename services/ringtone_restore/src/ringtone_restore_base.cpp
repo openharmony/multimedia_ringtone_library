@@ -842,11 +842,11 @@ void RingtoneRestoreBase::UpdateSettingTable(const SimcardSettingAsset &asset, b
     whereArgs.push_back(to_string(asset.GetRingtoneType()));
     absRdbPredicates.SetWhereClause(whereClause);
     absRdbPredicates.SetWhereArgs(whereArgs);
-    RINGTONE_INFO_LOG("UpdateSettingTable: mode=%{public}d, ringtoneType=%{public}d, ringMode=%{public}d, "
+    RINGTONE_WARN_LOG("UpdateSettingTable: mode=%{public}d, ringtoneType=%{public}d, ringMode=%{public}d, "
         "vibrateFile=%{public}s, forceUpdate=%{public}d", asset.GetMode(), asset.GetRingtoneType(),
         asset.GetRingMode(), asset.GetVibrateFile().c_str(), forceUpdate);
     localRdb_->Update(changeRows, valuesBucket, absRdbPredicates);
-    RINGTONE_INFO_LOG("UpdateSettingTable result: changeRows=%{public}d", changeRows);
+    RINGTONE_WARN_LOG("UpdateSettingTable result: changeRows=%{public}d", changeRows);
 }
 
 std::string RingtoneRestoreBase::QuerySingleColumn(const std::string &columnName,

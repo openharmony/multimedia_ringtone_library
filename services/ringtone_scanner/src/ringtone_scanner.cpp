@@ -225,6 +225,7 @@ void RingtoneScannerObj::Scan()
 
 int32_t RingtoneScannerObj::UpdateDefaultTone()
 {
+    RINGTONE_INFO_LOG("RingtoneScannerObj::UpdateDefaultTone() begin");
     auto rdbStore = RingtoneRdbStore::GetInstance();
     CHECK_AND_RETURN_RET_LOG(rdbStore != nullptr, E_ERR, "rdbStore is nullptr");
     auto rawRdb = rdbStore->GetRaw();
@@ -236,12 +237,13 @@ int32_t RingtoneScannerObj::UpdateDefaultTone()
     int isScanner = prefs->GetInt(RINGTONE_RDB_SCANNER_FLAG_KEY, RINGTONE_RDB_SCANNER_FLAG_KEY_FALSE);
     if (isScanner == RINGTONE_RDB_SCANNER_FLAG_KEY_TRUE) {
         RingtoneDefaultSetting::GetObj(rawRdb)->UpdateDefaultSystemTone();
-        RINGTONE_INFO_LOG("The default ringtone has been set, no need to be configured again");
+        RINGTONE_WARN_LOG("The default ringtone has been set, no need to be configured again");
         return E_OK;
     }
     // reset ringtone default settings
     RingtoneDefaultSetting::GetObj(rawRdb)->Update();
     RingtoneDefaultSetting::GetObj(rawRdb)->UpdateDefaultSystemTone();
+    RINGTONE_WARN_LOG("The RDBInitScanner has been set true");
     prefs->PutInt(RINGTONE_RDB_SCANNER_FLAG_KEY, RINGTONE_RDB_SCANNER_FLAG_KEY_TRUE);
     prefs->FlushSync();
     return E_OK;
@@ -262,7 +264,8 @@ int32_t RingtoneScannerObj::BootScanProcess()
             "UpdateRingMockHapticAudioScannerFlag operation failed, res: %{public}d", E_HAS_DB_ERROR);
     }
     
-    IncrementalScannResource();
+    ret = IncrementalScannResource();
+    CHECK_AND_RETURN_RET_LOG(ret == E_OK, ret, "IncrementalScannResource err, ret: %{public}d", ret);
 
     ret = ScanDirectories(g_preloadDirs);
     CHECK_AND_RETURN_RET_LOG(ret == E_OK, ret, "ScanDirectories for g_preloadDirs err, ret: %{public}d", ret);
@@ -292,7 +295,7 @@ int32_t RingtoneScannerObj::BootScan()
     scannerCv_.notify_one();
     if (ret == E_OK) {
         int result = SetParameter(RINGTONE_PARAMETER_SCANNER_FIRST_KEY, RINGTONE_PARAMETER_SCANNER_FIRST_TRUE);
-        RINGTONE_INFO_LOG("SetParameter scan end, result: %{public}d", result);
+        RINGTONE_INFO_LOG("SetParameter scanner.first true, scan end, result: %{public}d", result);
     }
     return ret;
 }
@@ -1134,7 +1137,7 @@ int32_t RingtoneScannerObj::AdditionalToneTypeMap(const std::vector<std::string>
     return E_OK;
 }
 
-void RingtoneScannerObj::IncrementalScannResource()
+int32_t RingtoneScannerObj::IncrementalScannResource()
 {
     std::vector<string> ringtonePath;
     GetRingToneSourcePath(RINGTONE_RESOURCE_PATH, ringtonePath);
@@ -1146,13 +1149,17 @@ void RingtoneScannerObj::IncrementalScannResource()
     auto filterVibratePath = FilterResourcePaths(vibratePath, g_ringtoneAndVibratePaths);
     AdditionalVibrateType(filterVibratePath);
     AdditionalVibratePlayMode(filterVibratePath);
-
-    ScanDirectories(BuildRingtoneDirs(filterRingtonePath));
-    ScanDirectories(BuildVibrateDirs(filterVibratePath));
-
+    int32_t ret = E_OK;
+    if (!filterRingtonePath.empty()) {
+        ret = ScanDirectories(BuildRingtoneDirs(filterRingtonePath));
+        CHECK_AND_RETURN_RET_LOG(ret == E_OK, ret, "ScanDirectories for filterRingtonePath err, ret: %{public}d", ret);
+    }
+    if (!filterVibratePath.empty()) {
+        ret = ScanDirectories(BuildVibrateDirs(filterVibratePath));
+        CHECK_AND_RETURN_RET_LOG(ret == E_OK, ret, "ScanDirectories for filterVibratePath err, ret: %{public}d", ret);
+    }
     if (IsSupportPocketVibrationEnhancement()) {
         RINGTONE_INFO_LOG("Pocket vibration enhancement is supported, start scanning sim ringtone");
-        
         std::vector<string> ringMockHapticAudioPath;
         GetRingToneSourcePath(RING_MOCK_HAPTIC_AUDIO_RESOURCE_PATH, ringMockHapticAudioPath);
         auto filterRingMockHapticAudioPath = FilterResourcePaths(ringMockHapticAudioPath, g_ringtoneAndVibratePaths);
@@ -1163,11 +1170,14 @@ void RingtoneScannerObj::IncrementalScannResource()
             ringMockHapticAudioDirs.push_back(path + PATH_VIBRATE_TYPE_STANDARD);
             ringMockHapticAudioDirs.push_back(path + PATH_VIBRATE_TYPE_GENTLE);
         }
-        
-        ScanDirectories(ringMockHapticAudioDirs);
+        if (!ringMockHapticAudioDirs.empty()) {
+            ret = ScanDirectories(ringMockHapticAudioDirs);
+        }
     } else {
         RINGTONE_INFO_LOG("Pocket vibration enhancement is not supported, skip sim ringtone scanning");
     }
+    CHECK_AND_RETURN_RET_LOG(ret == E_OK, ret, "ScanDirectories ringMockHapticAudioDirs err, ret: %{public}d", ret);
+    return ret;
 }
 } // namespace Media
 } // namespace OHOS
